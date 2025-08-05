@@ -1,0 +1,18 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config TESTING_LTP
+	tristate "Linux Test Project"
+	default n
+	---help---
+		Enable support for the Linux Test Project(LTP) framework
+
+if TESTING_LTP
+
+config TESTING_LTP_STACKSIZE
+	int "Linux Test Project stack size"
+	default 8192
+
+endif #TESTING_LTP

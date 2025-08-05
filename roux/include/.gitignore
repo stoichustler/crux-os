@@ -1,0 +1,16 @@
+/arch
+/math.h
+/float.h
+/stdarg.h
+/setjmp.h
+/features.h
+/uClibc++
+/libcxx
+/libcxxabi
+/machine
+/newlib
+/openamp
+/openlibm
+/metal
+/etl
+/minmea

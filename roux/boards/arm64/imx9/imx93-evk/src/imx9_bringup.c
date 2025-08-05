@@ -1,0 +1,131 @@
+/****************************************************************************
+ * boards/arm64/imx9/imx93-evk/src/imx9_bringup.c
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
+#include <roux/config.h>
+
+#include <sys/types.h>
+#include <syslog.h>
+
+#include <roux/fs/fs.h>
+
+#include "imx9_dma_alloc.h"
+
+#include "imx93-evk.h"
+
+#ifdef CONFIG_IMX9_BIN_ROMFS
+#include <roux/drivers/ramdisk.h>
+#include <arch/board/bin_romfsimg.h>
+
+/****************************************************************************
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+#define SECTORSIZE 512
+#define NSECTORS(b) (((b) + SECTORSIZE - 1) / SECTORSIZE)
+#endif /* CONFIG_IMX9_BIN_ROMFS */
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: imx_bringup
+ *
+ * Description:
+ *   Bring up board features
+ *
+ ****************************************************************************/
+
+int imx9_bringup(void)
+{
+	int ret;
+
+#ifdef CONFIG_FS_PROCFS
+	/* Mount the procfs file system */
+
+	ret = nx_mount(NULL, "/proc", "procfs", 0, NULL);
+	if (ret < 0) {
+		syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
+	}
+#endif
+
+#ifdef CONFIG_IMX9_BIN_ROMFS
+	/* Create a ROM disk for the /bin filesystem */
+
+	ret = romdisk_register(0, romfs_img, NSECTORS(romfs_img_len), SECTORSIZE);
+
+	if (ret < 0) {
+		syslog(LOG_ERR, "Failed to register ROMFS at /dev/ram0: %d\n", ret);
+	}
+#endif
+
+#ifdef CONFIG_IMX9_DMA_ALLOC
+	/* Initialize the DMA memory allocator */
+
+	ret = imx9_dma_alloc_init();
+	if (ret < 0) {
+		syslog(LOG_ERR, "ERROR: Failed initialize DMA allocator: %d\n", ret);
+	}
+#endif
+
+#ifdef CONFIG_PWM
+	/* Configure PWM outputs */
+
+	ret = imx9_pwm_setup();
+	if (ret < 0) {
+		syslog(LOG_ERR, "ERROR: Failed initialize PWM outputs: %d\n", ret);
+	}
+#endif
+
+#if defined(CONFIG_I2C_DRIVER)
+	/* Configure I2C peripheral interfaces */
+
+	ret = imx9_i2c_initialize();
+	if (ret < 0) {
+		syslog(LOG_ERR, "Failed to initialize I2C driver: %d\n", ret);
+	}
+#endif
+
+#if defined(CONFIG_SPI_DRIVER)
+	/* Configure SPI peripheral interfaces */
+
+	ret = imx9_spi_initialize();
+	if (ret < 0) {
+		syslog(LOG_ERR, "Failed to initialize SPI driver: %d\n", ret);
+	}
+#endif
+
+#ifdef CONFIG_MMCSD
+	ret = imx9_usdhc_init();
+
+	if (ret < 0) {
+		syslog(LOG_ERR, "Failed to init MMCSD driver: %d\n", ret);
+	}
+#endif
+
+	UNUSED(ret);
+	return OK;
+}

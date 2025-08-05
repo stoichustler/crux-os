@@ -1,0 +1,8 @@
+board:
+  name: radxa_zero3w
+  full_name: radxa_zero3w (Quad-core Cortex-A55)
+  vendor: radxa
+  socs:
+  - name: rk3568
+    variants:
+    - name: xen_dom0

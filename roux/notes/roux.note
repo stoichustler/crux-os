@@ -1,0 +1,33 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+To kick nsh_main:
+
+
+nx_bringup
+  |
+  +- nx_create_initthread
+       |
+       +- nx_start_application
+            |
+            +- task_spawn
+                 |
+                 +- nxtask_spawn_exec
+                      |
+                      +- nxtask_spawn_create
+                           |
+                           +- nxtask_init
+                           |
+                           +- nxtask_activate
+                                :
+                                +- up_switch_context
+
+nsh_main generated when REGISTER, check roux/users/
+Make.defs

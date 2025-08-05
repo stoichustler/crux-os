@@ -1,0 +1,34 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config NFS
+	bool "NFS client file system"
+	default n
+	depends on !DISABLE_MOUNTPOINT && ALLOW_BSD_COMPONENTS
+	select FS_LARGEFILE
+	---help---
+		Enable network file system (NFS) client file system
+
+if NFS
+
+config NFS_DONT_BIND_TCP_SOCKET
+	bool
+	default n
+	depends on NET_TCP
+	---help---
+		Some network drivers such as GS2200M do not support to bind
+		a local port for TCP client socket. In this case, this config
+		disables to bind the port.
+
+config NFS_STATISTICS
+	bool "NFS Statistics"
+	default n
+	depends on NFS
+	---help---
+		Collect support for NFS statistics.  There is no user interface to
+		obtain these statistics, however.  So they would only be of value
+		if you add debug instrumentation or use a debugger.
+
+endif

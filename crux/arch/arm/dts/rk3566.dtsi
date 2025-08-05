@@ -1,0 +1,168 @@
+/******************************************************
+ *                     _____     __  __
+ *            /\/\/\/\/ __  \/\ / _\/__\
+ *            \ - \ \ \ \/ // // _\/  \
+ *             \/\/\_/\_/\/ \__\__\\/\/ @2025
+ *
+ *                  - Hustle Embedded -
+ *****************************************************/
+
+/dts-v1/;
+
+/ {
+	interrupt-parent = <&gic>;
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "rockchip,rk3566";
+	model = "radxa-zero3w";
+
+	/* Check on android u-boot:
+	 *
+	 * => bdinfo
+	 * arch_number = 0x00000000
+	 * boot_params = 0x00000000
+	 * DRAM bank   = 0x00000000
+	 * -> start    = 0x00200000
+	 * -> size     = 0x08200000
+	 * DRAM bank   = 0x00000001
+	 * -> start    = 0x09400000
+	 * -> size     = 0xE6C00000
+	 * baudrate    = 1500000 bps
+	 * TLB addr    = 0xEFFF0000
+	 * relocaddr   = 0xEDD43000
+	 * reloc off   = 0xED343000
+	 * irq_sp      = 0xEB9F8FD0
+	 * sp start    = 0xEB9F8FD0
+	 * FB base     = 0x00000000
+	 * Early malloc usage: 35a8 / 80000
+	 * fdt_blob = 000000000a100000
+	 */
+
+	chosen {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		xen,xen-bootargs = "console=dtuart dtuart=/uart2 dom0_mem=32M dom0_max_vcpus=1 sched=rtds bootscrub=0";
+
+		/* DRAM bank 0: 0x00200000 - 0x08200000
+		 *
+		 * allocate 32M (0x200 0000) for service vm.
+		 *
+		 * => load mmc 1:1 0x00200000 boot/xen
+		 * => load mmc 1:1 0x00400000 boot/xen.dtb
+		 * => load mmc 1:1 0x02000000 boot/zephyr.bin
+		 * => load mmc 1:1 0x04000000 boot/roux.bin
+		 */
+		dom0 {
+			compatible = "multiboot,kernel","multiboot,module";
+			reg = <0x02000000 0x800000>; // 8M
+			/* capabilities = <0x1>; */
+		};
+
+		domU1 {
+			compatible = "xen,domain";
+			memory = <0x0 0x10000>; // 64M
+			cpus = <2>;
+			vpl011;
+
+			module@0x04000000 {
+				compatible = "multiboot,kernel","multiboot,module";
+				reg = <0x04000000 0x200000>; // 2M
+			};
+		};
+
+		/* DRAM bank 1: 0x09400000 - 0xe6c00000
+		 *
+		 * => load mmc 1:1 0x0a200000 boot/Image
+		 * => load mmc 1:1 0x0c200000 boot/initrd.ext4
+		 */
+		domU2 {
+			compatible = "xen,domain";
+			memory = <0x0 0x80000>; // 512M
+			cpus = <4>;
+			/* capabilities = <0x2>; */
+			vpl011;
+
+			module@0x0a200000 {
+				compatible = "multiboot,kernel","multiboot,module";
+				reg = <0x0a200000 0x2000000>; // 32M
+				bootargs = "rw root=/dev/ram console=ttyAMA0 init=/sbin/init";
+			};
+
+			module@0x0c200000 {
+				compatible = "multiboot,ramdisk","multiboot,module";
+				reg = <0x0c200000 0x1000000>; // 16M
+			};
+		};
+	};
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55";
+			reg = <0x0>;
+			enable-method = "psci";
+		};
+
+		cpu@100 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55";
+			reg = <0x100>;
+			enable-method = "psci";
+		};
+
+		cpu@200 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55";
+			reg = <0x200>;
+			enable-method = "psci";
+		};
+
+		cpu@300 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a55";
+			reg = <0x300>;
+			enable-method = "psci";
+		};
+	};
+
+	psci {
+		compatible = "arm,psci-0.2";
+		method = "smc";
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <0x01 0x0d 0xf04 0x01 0x0e 0xf04 0x01 0x0b 0xf04 0x01 0x0a 0xf04>;
+		arm,no-tick-in-suspend;
+	};
+
+	gic: interrupt-controller@fd400000 {
+		compatible = "arm,gic-v3";
+		#interrupt-cells = <3>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+		interrupt-controller;
+		reg = <0x0 0xfd400000 0x0 0x10000 0x0 0xfd460000 0x0 0xc0000>;
+		interrupts = <0x01 0x09 0x04>;
+
+		its: msi-controller@fd440000 {
+			compatible = "arm,gic-v3-its";
+			reg = <0x0 0xfd440000 0 0x20000>;
+			msi-controller;
+			#msi-cells = <1>;
+		};
+	};
+
+	uart2 {
+		compatible = "snps,dw-apb-uart","ns16550";
+		reg = <0x0 0xfe660000 0x0 0x10000>;
+		interrupts = <0x0 0x76 0x04>;
+		reg-io-width = <4>;
+		reg-shift = <2>;
+		clock-frequency = <24000000>;
+	};
+};

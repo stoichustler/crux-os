@@ -1,0 +1,44 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menuconfig SYSTEM_COREDUMP
+	tristate "Coredump tool capture system status"
+	default n
+	depends on COREDUMP
+
+if SYSTEM_COREDUMP
+
+config SYSTEM_COREDUMP_STACKSIZE
+	int "coredump stack size"
+	default DEFAULT_TASK_STACKSIZE
+	---help---
+		This is the stack size that will be used when starting the coredump.
+
+config SYSTEM_COREDUMP_PRIORITY
+	int "coredump priority"
+	default 254
+	---help---
+		This is the task priority that will be used when starting the coredump.
+
+config SYSTEM_COREDUMP_SWAPBUFFER_SIZE
+	int "coredump read/write swap buffer size"
+	default 16384
+	---help---
+		The coredump read/write swap buffer size in bytes.
+
+config SYSTEM_COREDUMP_RESTORE
+	bool "coredump restore from block/mtd device to filesystem"
+	default BOARD_COREDUMP_BLKDEV || BOARD_COREDUMP_MTDDEV
+	---help---
+		Userspace restore from block/mtd device to specific filesystem path.
+
+config SYSTEM_COREDUMP_DEVPATH
+	string "coredump block device path to restore"
+	depends on SYSTEM_COREDUMP_RESTORE
+	default BOARD_COREDUMP_DEVPATH if BOARD_COREDUMP_BLKDEV || BOARD_COREDUMP_MTDDEV
+	---help---
+		This is the block device path to restore.
+
+endif # SYSTEM_COREDUMP

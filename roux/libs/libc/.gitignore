@@ -1,0 +1,3 @@
+/exec_symtab.c
+/elf_symtab.c
+elf/gnu-elf.ld

@@ -1,0 +1,152 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+[ARM64 Assembly]
+
+x0  -  x7  parameter passing and/or scratch register
+           (volatile)
+
+x8  - x18  caller-saved scratch register (volatile)
+
+x19 - x29  callee-saved scratch register (non-volatile)
+
+---
+
+csel <Xd>,<Xn>,<Xm>,<cond>
+    - Instruction writes the value of the first source
+      register to the destination register if the
+      condition is TRUE. If the condition is FALSE, it
+      writes the value of the second source register to
+      the destination register.
+    - cond:
+        0000 EQ
+        0001 NE
+        0010 CS
+        0011 CC
+        0100 MI
+        0101 PL
+        0110 VS
+        0111 VC
+        1000 HI
+        1001 LS
+        1010 GE
+        1011 LT
+        1100 GT
+        1101 LE
+        1110 AL
+        1111 NV
+
+bfm <Xd>, <Xn>, #<immr>, #<imms>
+    - If <imms> is greater than or equal to <immr>, this
+      copies a bitfield of (<imms>-<immr>+1) bits
+      starting from bit position <immr> in the source
+      register to the least significant bits of the
+      destination register.
+    - If <imms> is less than <immr>, this copies a
+      bitfield of (<imms>+1) bits from the least
+      significant bits of the source register to bit
+      position (regsize-<immr>) of the destination
+      register, where regsize is the destination
+      register size of 32 or 64 bits.
+
+bfi <Xd>, <Xn>, #<lsb>, #<width>
+    - Instruction copies a bitfield of <width> bits
+      from the least significant bits of the source
+      register to bit position <lsb> of the destination
+      register, leaving the other destination bits
+      unchanged.
+
+bfc <Xd>, #<lsb>, #<width>
+    - Instruction sets a bitfield of <width> bits at
+      bit position <lsb> of the destination register
+      to zero, leaving the other destination bits
+      unchanged.
+
+ubfx <Xd>, <Xn>, #<lsb>, #<width>
+    - Instruction copies a bitfield of <width> bits
+      starting from bit position <lsb> in the source
+      register to the least significant bits of the
+      destination register, and sets destination bits
+      above the bitfield to zero.
+
+                   lsb
+        |<- width ->|
+~ ------+-----------+----* Xn
+         \           \
+          \           \
+           \           \
+            \           \
+~ -----------+-----------* Xd
+
+
+-------------------------------------------------------
+
+adr vs. ldr
+
+adr <Xd>, <label>
+    - Form PC-relative address adds an immediate value
+      to the PC value to form a PC-relative address,
+      and write the result to the destination register.
+
+ldr <Xt>, [<Xn|SP>], #<simm>
+    - Load Register (immediate) loads a word or
+      doubleword from memory and writes it to a
+      register.
+
+ldr <Xt>, <label>
+    - Load Register (literal) calculates an address
+      from the PC value and an immediate offset, loads
+      a word from memory, and writes it to a register.
+
+---
+
+Take a look at a piece of assembly:
+
+`
+        /* Find out where we are */
+        ldr   x0, =start     /* x0  := vaddr (start) */
+        adr   x19, start     /* x19 := paddr (start) */
+        sub   x20, x19, x0   /* x20 := phys-offset */
+`
+
+used for address translation in boot time.
+
+-------------------------------------------------------
+
+at <at_op>, <Xt>
+    - Address Translate
+
+    - <at_op>
+      s1e1r     - gva -> ipa
+      s1e1w
+      s1e1rp
+      s1e1wp
+      s1e1a
+
+      s1e0r
+      s1e0w
+
+      s1e2r     - va -> pa   (in hypervisor)
+      s1e2w
+      s1e2a
+
+      s12e1r    - gva -> mpa (stage-2 translation)
+      s12e1w
+      s12e0r
+      s12e0w
+
+      s1e3r
+      s1e3w
+      s1e3a
+
+Take a look at code pieces
+@arch/arm/include/asm/arm64/page.h
+
+-------------------------------------------------------

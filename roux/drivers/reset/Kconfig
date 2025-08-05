@@ -1,0 +1,17 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menuconfig RESET
+	bool "reset driver Support"
+	default n
+	---help---
+		This selection enables building of the "upper-half" reset driver.
+
+config RESET_RPMSG
+	bool "Reset rpmsg driver support"
+	depends on RESET && RPTUN
+	default n
+	---help---
+		This selection enables rpmsg support for reset.

@@ -1,0 +1,111 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+## CACHE ##
+
+A cache is a small, fast block of memory that
+sits between the core and main memory. It holds
+copies of items in main memory.
+
+A cache line refers to the smallest loadable
+unit of a cache, a block of contiguous words
+from main memory.
+
+## MMU ##
+
+When the stage 1 MMU is disabled:
+a) All data accesses are Device-nGnRnE.
+b) All instruction fetches are treated as
+   cacheable.
+c) All addresses have read/write access and are
+   executable.
+
+The Translation Lookaside Buffer (TLB) is a
+cache of recently accessed page translations in
+the MMU. For each memory access performed by the
+processor, the MMU checks whether the translation
+is cached in the TLB. If the requested address
+translation causes a hit within the TLB, the
+translation of the address is immediately
+available.
+
+The TLB can hold a fixed number of entries. We
+can achieve best performance by minimizing the
+number of external memory accesses caused by
+translation table traversal and obtaining a high
+TLB hit rate. The ARMv8-A architecture provides
+a feature known as contiguous block entries to
+efficiently use TLB space. Translation table
+block entries each contain a contiguous bit.
+When set, this bit signals to the TLB that it
+can cache a single entry covering translations
+for multiple blocks. A lookup can index anywhere
+into an address range covered by a contiguous
+block. The TLB can therefore cache one entry for
+a defined range of addresses, making it possible
+to store a larger range of Virtual Addresses
+within the TLB than is otherwise possible.
+
+Note 4KB granule since HYP_PT_LPAE_SHIFT=12, it
+use 4-level look up process. The 48-bit address
+has nine address bits for each level translated
+(that is, 512 entries each), with the final 12
+bits selecting a byte within the 4kB coming
+directly from the original address.
+
+Bits [47:39] of the virtual address index into
+the 512 entry L0 table. Each of these table
+entries spans a 512GB range and points to an L1
+table. Within that 512 entry L1 table.
+
+Bits [38:30] are used as index to select an
+entry and each entry points to either a 1GB block
+or an L2 table.
+
+Bits [29:21] index into a 512 entry L2 table and
+each entry points to a 2MB block or next table
+level. At the last level.
+
+Bits [20:12] index into a 512 entry L2 table and
+each entry points to a 4kB block.
+
+    [47:39]     [38:30]     [29:21]     [20:12]     [11:00]
++-----------+-----------+-----------+-----------+-----------+
+|           |           |           |           |           |
++-----------+-----------+-----------+-----------+-----------+
+
+
+The mapping between virtual and physical address
+spaces is defined in a set of translation tables,
+also sometimes called page tables. For each block
+or page of virtual addresses, the translation
+tables provide the corresponding physical address
+and the attributes for accessing that page. Each
+translation table entry is called a block or page
+descriptor.
+
+    +------------+-------- ~ ---------+-------------+
+    | Upper Attr |  Output Block Addr |  Lower Attr |
+    +------------+-------- ~ ---------+-------------+
+   /            /                      \             \
+  54  53  52                           11 10 9:8 7:6 5  4:2
+  |UXN|PXN|Contig|                     |nG|AF|SH |AP |NS|Indx|
+
+
+The MMU uses the most significant bits of the
+Virtual Address to index entries in a translation
+table and establish which block is being accessed.
+The MMU translates the Virtual Addresses of code
+and data to the Physical Addresses in the actual
+system. The translation is carried out automatically
+in hardware and is transparent to the application.
+In addition to address translation, the MMU controls
+memory access permissions, memory ordering, and
+cache policies for each region of memory.

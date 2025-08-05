@@ -1,0 +1,23 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config BENCHMARK_RTTESTS
+	tristate "RT-Tests"
+	default n
+	depends on PIPES && ALLOW_GPL_COMPONENTS
+	---help---
+		Measure the timer jitter
+
+if BENCHMARK_RTTESTS
+
+config BENCHMARK_RTTESTS_PRIORITY
+	int "RT-Tests task priority"
+	default 200
+
+config BENCHMARK_RTTESTS_STACKSIZE
+	int "RT-Tests stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

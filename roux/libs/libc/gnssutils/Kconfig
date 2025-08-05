@@ -1,0 +1,14 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config GNSSUTILS_MINMEA_LIB
+	bool "MINMEA NMEA Library"
+	default n
+	---help---
+		Enable support for the MINMEA NMEA library.
+
+		NOTE: This library depends on having some version of math.h
+		at include/roux.  There are some different ways to accomplish
+		this.  See the discussion in the top-level roux/README.txt file.

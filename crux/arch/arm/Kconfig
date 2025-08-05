@@ -1,0 +1,474 @@
+config ARM_32
+	def_bool y
+	depends on "$(ARCH)" = "arm32"
+	select ARCH_MAP_DOMAIN_PAGE
+
+config ARM_64
+	def_bool y
+	depends on !ARM_32
+	select 64BIT
+	select HAS_FAST_MULTIPLY
+	select HAS_VPCI_GUEST_SUPPORT if PCI_PASSTHROUGH
+
+config ARM
+	def_bool y
+	select DOMAIN_BUILD_HELPERS
+	select FUNCTION_ALIGNMENT_4B
+	select GENERIC_UART_INIT
+	select HAS_ALTERNATIVE if HAS_VMAP
+	select HAS_DEVICE_TREE_DISCOVERY
+	select HAS_DOM0LESS
+	select HAS_GRANT_CACHE_FLUSH if GRANT_TABLE
+	select HAS_STACK_PROTECTOR
+	select HAS_UBSAN
+
+config ARCH_DEFCONFIG
+	string
+	default "arch/arm/configs/arm32_defconfig" if ARM_32
+	default "arch/arm/configs/arm64_defconfig" if ARM_64
+
+config XEN_START_ADDRESS
+	hex "xen start address: keep default to use platform defined address"
+	default 0xFFFFFFFF
+	depends on MPU
+	help
+	  Used to set customized address at which which xen will be linked on MPU
+	  systems. Must be aligned to 4KB.
+	  0xFFFFFFFF is used as default value to indicate that user has not
+	  customized this address.
+
+menu "Architecture Features"
+
+choice
+	prompt "Physical address space size" if ARM_32
+	default ARM_PA_BITS_40 if ARM_32
+	help
+	  User can choose to represent the width of physical address. This can
+	  sometimes help in optimizing the size of image when user chooses a
+	  smaller size to represent physical address.
+
+config ARM_PA_BITS_32
+	bool "32-bit"
+	depends on ARM_32
+	select PHYS_ADDR_T_32
+	help
+	  On platforms where any physical address can be represented within 32 bits,
+	  user should choose this option. This will help in reduced size of the
+	  binary.
+	  xen uses "unsigned long" and not "uint32_t" to denote the datatype of
+	  physical address. This is done to avoid using a cast each time PAGE_*
+	  macros are used on paddr_t. For eg PAGE_SIZE is defined as unsigned long.
+	  On 32-bit architecture, "unsigned long" is 32-bit wide. Thus, it can be
+	  used to denote physical address.
+
+config ARM_PA_BITS_40
+	bool "40-bit"
+	depends on ARM_32 && !MPU
+endchoice
+
+config PADDR_BITS
+	int
+	default 32 if ARM_PA_BITS_32
+	default 40 if ARM_PA_BITS_40
+	default 48 if ARM_64
+
+choice
+	prompt "Memory management system"
+	default MMU
+	help
+	  User can choose between the different forms of memory management system.
+
+config MMU
+	bool "MMU"
+	select ARCH_PAGING_MEMPOOL
+	select HAS_LLC_COLORING if !NUMA && ARM_64
+	select HAS_PMAP
+	select HAS_VMAP
+	select HAS_PASSTHROUGH
+	select IOMMU_FORCE_PT_SHARE
+	help
+	  Select it if you plan to run xen on A-profile Armv7+
+
+config MPU
+	bool "MPU" if UNSUPPORTED
+	select STATIC_MEMORY
+	help
+	  Memory Protection Unit (MPU). Select if you plan to run xen on ARMv8-R
+	  systems supporting EL2. (UNSUPPORTED)
+endchoice
+
+source "arch/Kconfig"
+
+config ACPI
+	bool "ACPI (Advanced Configuration and Power Interface) Support (UNSUPPORTED)" if UNSUPPORTED
+	depends on ARM_64 && ARM_EFI
+	help
+
+	  Advanced Configuration and Power Interface (ACPI) support for xen is
+	  an alternative to device tree on ARM64. This requires UEFI.
+
+config ARM_EFI
+	bool "UEFI boot service support"
+	depends on ARM_64 && !MPU
+	default y
+	help
+	  This option provides support for boot services through
+	  UEFI firmware. A UEFI stub is provided to allow xen to
+	  be booted as an EFI application.
+
+config GICV2
+	bool "GICv2 driver"
+	default y
+	select VGICV2
+	help
+	  Driver for the ARM Generic Interrupt Controller v2.
+	  If unsure, say Y
+
+config GICV3
+	bool "GICv3 driver"
+	depends on !NEW_VGIC
+	default n if ARM_32
+	default y if ARM_64
+	help
+
+	  Driver for the ARM Generic Interrupt Controller v3.
+	  If unsure, use the default setting.
+
+config HAS_ITS
+        bool "GICv3 ITS MSI controller support (UNSUPPORTED)" if UNSUPPORTED
+        depends on GICV3 && !NEW_VGIC && !ARM_32
+
+config OVERLAY_DTB
+	bool "DTB overlay support (UNSUPPORTED)" if UNSUPPORTED
+	depends on SYSCTL
+	help
+	  Dynamic addition/removal of xen device tree nodes using a dtbo.
+
+config VGICV2
+	bool "vGICv2 interface for domains"
+	default y
+	help
+	  Allow xen to expose a Generic Interrupt Controller version 2 like to xen
+	  domains. This can be configured at the domain creation.
+	  This option is mandatory when using GICv2.
+	  For GICv3, this allows domain to use GICv2 when the hardware supports it.
+	  If unsure say Y.
+
+config HVM
+        def_bool y
+
+config NEW_VGIC
+	bool "Use new VGIC implementation"
+	select GICV2
+	help
+
+	This is an alternative implementation of the ARM GIC interrupt
+	controller emulation, based on the Linux/KVM VGIC. It has a better
+	design and fixes many shortcomings of the existing GIC emulation in
+	xen. It will eventually replace the existing/old VGIC.
+	However at the moment it lacks support for Dom0 using the ITS for
+	using MSIs.
+	Say Y if you want to help testing this new code or if you experience
+	problems with the standard emulation.
+	At the moment this implementation is not security supported.
+
+config SBSA_VUART_CONSOLE
+	bool "Emulated SBSA UART console support"
+	default y
+	help
+	  Allows a guest to use SBSA Generic UART as a console. The
+	  SBSA Generic UART implements a subset of ARM PL011 UART.
+
+config HWDOM_VUART
+	bool "Emulated UART for hardware domain"
+	default y
+	help
+	  Allows a hardware domain to use a minimalistic UART (single transmit
+	  and status register) which takes information from dtuart. Note that this
+	  UART is not intended to be exposed (e.g. via device-tree) to a domain.
+
+config ARM_SSBD
+	bool "Speculative Store Bypass Disable" if EXPERT
+	depends on HAS_ALTERNATIVE
+	default y
+	help
+	  This enables mitigation of bypassing of previous stores by speculative
+	  loads.
+
+	  If unsure, say Y.
+
+config HARDEN_BRANCH_PREDICTOR
+	bool "Harden the branch predictor against aliasing attacks" if EXPERT
+	depends on MMU
+	default y
+	help
+	  Speculation attacks against some high-performance processors rely on
+	  being able to manipulate the branch predictor for a victim context by
+	  executing aliasing branches in the attacker context.  Such attacks
+	  can be partially mitigated against by clearing internal branch
+	  predictor state and limiting the prediction logic in some situations.
+
+	  This config option will take CPU-specific actions to harden the
+	  branch predictor against aliasing attacks and may rely on specific
+	  instruction sequences or control bits being set by the system
+	  firmware.
+
+	  If unsure, say Y.
+
+config ARM64_PTR_AUTH
+	def_bool n
+	depends on ARM_64
+	help
+	  Pointer authentication support.
+	  This feature is not supported in xen.
+
+config ARM64_SVE
+	bool "Enable Scalar Vector Extension support (UNSUPPORTED)" if UNSUPPORTED
+	depends on ARM_64
+	help
+	  Scalar Vector Extension (SVE/SVE2) support for guests.
+
+	  Please be aware that currently, enabling this feature will add latency on
+	  VM context switch between SVE enabled guests, between not-enabled SVE
+	  guests and SVE enabled guests and viceversa, compared to the time
+	  required to switch between not-enabled SVE guests.
+
+config ARM64_MTE
+	def_bool n
+	depends on ARM_64
+	help
+	  Memory Tagging Extension support.
+	  This feature is not supported in xen.
+
+config ARM64_BTI
+	def_bool n
+	depends on ARM_64
+	help
+	  Branch Target Identification support.
+	  This feature is not supported in xen.
+
+source "arch/arm/tee/Kconfig"
+
+config PARTIAL_EMULATION
+	bool "Enable partial emulation of system/coprocessor registers"
+	default y
+	help
+	  This option enables partial emulation of registers to prevent possible
+	  guests crashing when accessing registers which are not optional but have
+	  not been emulated to their complete functionality. Enabling this might
+	  result in unwanted/non-spec compliant behavior.
+
+source "arch/arm/firmware/Kconfig"
+
+config PCI_PASSTHROUGH
+	bool "PCI passthrough" if EXPERT
+	depends on ARM_64 && HAS_PASSTHROUGH
+	help
+	  This option enables PCI device passthrough
+
+endmenu
+
+menu "ARM errata workaround via the alternative framework"
+	depends on HAS_ALTERNATIVE
+
+config ARM64_ERRATUM_827319
+	bool "Cortex-A53: 827319: Data cache clean instructions might cause overlapping transactions to the interconnect"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 827319 on Cortex-A53 parts up to r0p2 with an AMBA 5 CHI
+	  master interface and an L2 cache.
+
+	  Under certain conditions this erratum can cause a clean line eviction
+	  to occur at the same time as another transaction to the same address
+	  on the AMBA 5 CHI interface, which can cause data corruption if the
+	  interconnect reorders the two transactions.
+
+	  The workaround promotes data cache clean instructions to
+	  data cache clean-and-invalidate.
+	  Please note that this does not necessarily enable the workaround,
+	  as it depends on the alternative framework, which will only patch
+	  the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_824069
+	bool "Cortex-A53: 824069: Cache line might not be marked as clean after a CleanShared snoop"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 824069 on Cortex-A53 parts up to r0p2 when it is connected
+	  to a coherent interconnect.
+
+	  If a Cortex-A53 processor is executing a store or prefetch for
+	  write instruction at the same time as a processor in another
+	  cluster is executing a cache maintenance operation to the same
+	  address, then this erratum might cause a clean cache line to be
+	  incorrectly marked as dirty.
+
+	  The workaround promotes data cache clean instructions to
+	  data cache clean-and-invalidate.
+	  Please note that this option does not necessarily enable the
+	  workaround, as it depends on the alternative framework, which will
+	  only patch the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_819472
+	bool "Cortex-A53: 819472: Store exclusive instructions might cause data corruption"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 819472 on Cortex-A53 parts up to r0p1 with an L2 cache
+	  present when it is connected to a coherent interconnect.
+
+	  If the processor is executing a load and store exclusive sequence at
+	  the same time as a processor in another cluster is executing a cache
+	  maintenance operation to the same address, then this erratum might
+	  cause data corruption.
+
+	  The workaround promotes data cache clean instructions to
+	  data cache clean-and-invalidate.
+	  Please note that this does not necessarily enable the workaround,
+	  as it depends on the alternative framework, which will only patch
+	  the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_843419
+	bool "Cortex-A53: 843419: A load or store might access an incorrect address"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 843419 on Cortex-A53 parts up to r0p4.
+
+	  When executing in AArch64 state, a load or store instruction which uses
+	  the result of an ADRP instruction as a base register, or which uses a
+	  base register written by an instruction immediately after an ADRP to the
+	  same register, might access an incorrect address.
+
+	  The workaround enables the linker to check if the affected sequence is
+	  produced and it will fix it with an alternative not affected sequence
+	  that produce the same behavior.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_832075
+	bool "Cortex-A57: 832075: possible deadlock on mixing exclusive memory accesses with device loads"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 832075 on Cortex-A57 parts up to r1p2.
+
+	  Affected Cortex-A57 parts might deadlock when exclusive load/store
+	  instructions to Write-Back memory are mixed with Device loads.
+
+	  The workaround is to promote device loads to use Load-Acquire
+	  semantics.
+	  Please note that this does not necessarily enable the workaround,
+	  as it depends on the alternative framework, which will only patch
+	  the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_834220
+	bool "Cortex-A57: 834220: Stage 2 translation fault might be incorrectly reported in presence of a Stage 1 fault"
+	default y
+	depends on ARM_64
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 834220 on Cortex-A57 parts up to r1p2.
+
+	  Affected Cortex-A57 parts might report a Stage 2 translation
+	  fault as the result of a Stage 1 fault for load crossing a
+	  page boundary when there is a permission or device memory
+	  alignment fault at Stage 1 and a translation fault at Stage 2.
+
+	  The workaround is to verify that the Stage 1 translation
+	  doesn't generate a fault before handling the Stage 2 fault.
+	  Please note that this does not necessarily enable the workaround,
+	  as it depends on the alternative framework, which will only patch
+	  the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM_ERRATUM_858921
+	bool "Cortex-A73: 858921: Possible wrong read value for CNTVCT or CNTPCT"
+	default y
+	help
+	  This option adds an alternative code sequence to work around ARM
+	  erratum 858921 on Cortex-A73 (all versions).
+
+	  Affected Cortex-A73 might return wrong read value for CNTVCT or CNTPCT
+	  when the counter crosses a 32bit boundary.
+
+	  The workaround involves performing the read twice, and to return
+	  one or the other value depending on whether a transition has taken place.
+	  Please note that this does not necessarily enable the workaround,
+	  as it depends on the alternative framework, which will only patch
+	  the kernel if an affected CPU is detected.
+
+	  If unsure, say Y.
+
+config ARM64_WORKAROUND_REPEAT_TLBI
+	bool
+
+config ARM64_ERRATUM_1286807
+	bool "Cortex-A76/Neoverse-N1: 1286807: Modification of the translation table for a virtual address might lead to read-after-read ordering violation"
+	default y
+	select ARM64_WORKAROUND_REPEAT_TLBI
+	depends on ARM_64
+	help
+	  This option adds a workaround for ARM Cortex-A76/Neoverse-N1 erratum 1286807.
+
+	  On the affected Cortex-A76/Neoverse-N1 cores (r0p0 to r3p0), if a virtual
+	  address for a cacheable mapping of a location is being
+	  accessed by a core while another core is remapping the virtual
+	  address to a new physical page using the recommended
+	  break-before-make sequence, then under very rare circumstances
+	  TLBI+DSB completes before a read using the translation being
+	  invalidated has been observed by other observers. The
+	  workaround repeats the TLBI+DSB operation for all the TLB flush
+	  operations.
+
+	  If unsure, say Y.
+
+config ARM64_ERRATUM_1508412
+	bool "Cortex-A77: 1508412: possible deadlock on sequence of NC/Device load and store exclusive or PAR read"
+	default y
+	depends on ARM_64
+	help
+	  This option adds a workaround for Arm Cortex-A77 erratum 1508412.
+
+	  Affected Cortex-A77 cores (r0p0, r1p0) could deadlock on a sequence
+	  of a store-exclusive or read of PAR_EL1 and a load with device or
+	  non-cacheable memory attributes. The workaround depends on a firmware
+	  counterpart.
+
+	  xen guests must also have the workaround implemented or they can
+	  deadlock the system.
+
+	  Work around the issue by inserting DMB SY barriers around PAR_EL1
+	  register reads and warning xen users. The DMB barrier is sufficient
+	  to prevent a speculative PAR_EL1 read.
+
+	  If unsure, say Y.
+
+endmenu
+
+config ARM64_HARDEN_BRANCH_PREDICTOR
+    def_bool y if ARM_64 && HARDEN_BRANCH_PREDICTOR
+
+config ARM32_HARDEN_BRANCH_PREDICTOR
+    def_bool y if ARM_32 && HARDEN_BRANCH_PREDICTOR
+
+source "arch/arm/platforms/Kconfig"
+
+source "common/Kconfig"
+
+source "drivers/Kconfig"

@@ -1,0 +1,477 @@
+############################################################################
+# drivers/sensors/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+# Include sensor drivers
+
+ifeq ($(CONFIG_SENSORS),y)
+
+CSRCS += sensor.c
+
+ifeq ($(CONFIG_USENSOR),y)
+  CSRCS += usensor.c
+endif
+
+ifeq ($(CONFIG_SENSORS_RPMSG),y)
+  CSRCS += sensor_rpmsg.c
+endif
+
+ifeq ($(CONFIG_SENSORS_NAU7802),y)
+  CSRCS += nau7802.c
+endif
+
+ifeq ($(CONFIG_SENSORS_L86_XXX),y)
+  CSRCS += l86xxx_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_GNSS),y)
+  CSRCS += gnss_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_WTGAHRS2),y)
+  CSRCS += wtgahrs2_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_FAKESENSOR),y)
+  CSRCS += fakesensor_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_GOLDFISH_GNSS),y)
+  CSRCS += goldfish_gnss_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_GOLDFISH_SENSOR),y)
+  CSRCS += goldfish_sensor_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_HCSR04),y)
+  CSRCS += hc_sr04.c
+endif
+
+ifeq ($(CONFIG_SENSORS_ADXL345),y)
+  CSRCS += adxl345_base.c
+endif
+
+ifeq ($(CONFIG_SENSORS_DHTXX),y)
+  CSRCS += dhtxx.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BMI270),y)
+  CSRCS += bmi270_base.c
+ifeq ($(CONFIG_SENSORS_BMI270_UORB),y)
+  CSRCS += bmi270_uorb.c
+else
+  CSRCS += bmi270.c
+endif
+endif
+
+# These drivers depend on I2C support
+
+ifeq ($(CONFIG_I2C),y)
+
+ifeq ($(CONFIG_SENSORS_APDS9960),y)
+  CSRCS += apds9960.c
+endif
+
+ifeq ($(CONFIG_SENSORS_APDS9922),y)
+  CSRCS += apds9922.c
+endif
+
+ifeq ($(CONFIG_SENSORS_AK09912),y)
+  CSRCS += ak09912.c
+endif
+
+ifeq ($(CONFIG_SENSORS_AS5048B),y)
+  CSRCS += as5048b.c
+endif
+
+ifeq ($(CONFIG_SENSORS_AS726X),y)
+  CSRCS += as726x.c
+endif
+
+ifeq ($(CONFIG_SENSORS_FXOS8700CQ),y)
+  CSRCS += fxos8700cq.c
+endif
+
+ifeq ($(CONFIG_SENSORS_HYT271),y)
+  CSRCS += hyt271_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_KXTJ9),y)
+  CSRCS += kxtj9.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LIS2DH),y)
+  CSRCS += lis2dh.c
+endif
+
+ifeq ($(CONFIG_LIS331DL),y)
+  CSRCS += lis331dl.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LSM303AGR),y)
+  CSRCS += lsm303agr.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LSM6DSL),y)
+  CSRCS += lsm6dsl.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LSM6DSO32),y)
+  CSRCS += lsm6dso32_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LSM9DS1),y)
+  CSRCS += lsm9ds1_base.c
+  ifeq ($(CONFIG_SENSORS_LSM9DS1_UORB),y)
+    CSRCS += lsm9ds1_uorb.c
+  else
+    CSRCS += lsm9ds1.c
+  endif
+endif
+
+ifeq ($(CONFIG_SENSORS_MSA301),y)
+  CSRCS += msa301.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LPS25H),y)
+  CSRCS += lps25h.c
+endif
+
+ifeq ($(CONFIG_ADXL345_I2C),y)
+  CSRCS += adxl345_i2c.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BH1749NUC),y)
+  CSRCS += bh1749nuc_base.c
+ifeq ($(CONFIG_SENSORS_BH1749NUC_UORB),y)
+  CSRCS += bh1749nuc_uorb.c
+else
+  CSRCS += bh1749nuc.c
+endif
+endif
+
+ifeq ($(CONFIG_SENSORS_BH1750FVI),y)
+  CSRCS += bh1750fvi.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BMG160),y)
+  CSRCS += bmg160.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BMI160),y)
+  CSRCS += bmi160_base.c
+ifeq ($(CONFIG_SENSORS_BMI160_UORB),y)
+  CSRCS += bmi160_uorb.c
+else
+  CSRCS += bmi160.c
+endif
+endif
+
+ifeq ($(CONFIG_SENSORS_BMI088),y)
+  CSRCS += bmi088_base.c
+ifeq ($(CONFIG_SENSORS_BMI088_UORB),y)
+  CSRCS += bmi088_uorb.c
+else
+  CSRCS += bmi088.c
+endif
+endif
+
+ifeq ($(CONFIG_SENSORS_BMP180),y)
+  CSRCS += bmp180_base.c
+ifeq ($(CONFIG_SENSORS_BMP180_UORB),y)
+  CSRCS += bmp180_uorb.c
+else
+  CSRCS += bmp180.c
+endif
+endif
+
+ifeq ($(CONFIG_SENSORS_BMP280),y)
+  CSRCS += bmp280_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BME680),y)
+  CSRCS += bme680_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BME688),y)
+  CSRCS += bme688_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_ISL29023),y)
+  CSRCS += isl29023.c
+endif
+
+ifeq ($(CONFIG_SENSORS_HTS221),y)
+  CSRCS += hts221.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LIS2MDL),y)
+  CSRCS += lis2mdl_uorb.c
+endif
+
+ifeq ($(CONFIG_LM75_I2C),y)
+  CSRCS += lm75.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LM92),y)
+  CSRCS += lm92.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MAX44009),y)
+  CSRCS += max44009.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MB7040),y)
+  CSRCS += mb7040.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MCP9600),y)
+  CSRCS += mcp9600_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MCP9844),y)
+  CSRCS += mcp9844.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MLX90393),y)
+  CSRCS += mlx90393.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MLX90614),y)
+  CSRCS += mlx90614.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MS56XX),y)
+  CSRCS += ms56xx_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MS58XX),y)
+  CSRCS += ms58xx.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LTC4151),y)
+  CSRCS += ltc4151.c
+endif
+
+ifeq ($(CONFIG_SENSORS_INA219),y)
+  CSRCS += ina219.c
+endif
+
+ifeq ($(CONFIG_SENSORS_INA226),y)
+  CSRCS += ina226.c
+endif
+
+ifeq ($(CONFIG_SENSORS_INA3221),y)
+  CSRCS += ina3221.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SCD30),y)
+  CSRCS += scd30.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SCD41),y)
+  CSRCS += scd41.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SGP30),y)
+  CSRCS += sgp30.c
+endif
+
+ifeq ($(CONFIG_SENSORS_AHT10),y)
+  CSRCS += aht10.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SHT21),y)
+  CSRCS += sht21.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SHT3X),y)
+  CSRCS += sht3x.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SHT4X),y)
+  CSRCS += sht4x_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_SPS30),y)
+  CSRCS += sps30.c
+endif
+
+ifeq ($(CONFIG_SENSORS_T67XX),y)
+  CSRCS += t67xx.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LTR308),y)
+  CSRCS += ltr308_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_FS3000),y)
+  CSRCS += fs3000_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_BMM150),y)
+  CSRCS += bmm150_uorb.c
+endif
+
+endif # CONFIG_I2C
+
+# These drivers depend on SPI support
+
+ifeq ($(CONFIG_SPI),y)
+
+ifeq ($(CONFIG_ADXL345_SPI),y)
+  CSRCS += adxl345_spi.c
+endif
+
+ifeq ($(CONFIG_SENSORS_ADXL362),y)
+  CSRCS += adxl362_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_ADXL372),y)
+ifeq ($(CONFIG_SENSORS_ADXL372_UORB),y)
+  CSRCS += adxl372_uorb.c
+else
+  CSRCS += adxl372.c
+endif
+endif
+
+ifeq ($(CONFIG_LIS3DSH),y)
+  CSRCS += lis3dsh.c
+endif
+
+ifeq ($(CONFIG_LIS3DH),y)
+  CSRCS += lis3dh.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MAX31855),y)
+  CSRCS += max31855.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MAX6675),y)
+  CSRCS += max6675.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MPL115A),y)
+  CSRCS += mpl115a.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LIS3MDL),y)
+  CSRCS += lis3mdl.c
+endif
+
+ifeq ($(CONFIG_SENSORS_LSM330SPI),y)
+  CSRCS += lsm330_spi.c
+endif
+
+ifeq ($(CONFIG_SENSORS_L3GD20),y)
+  CSRCS += l3gd20_uorb.c
+endif
+
+ifeq ($(CONFIG_SENSORS_ADT7320),y)
+  CSRCS += adt7320.c
+endif
+
+ifeq ($(CONFIG_SENSORS_AS5048A),y)
+  CSRCS += as5048a.c
+endif
+
+endif # CONFIG_SPI
+
+# These drivers depend on 1WIRE support
+
+ifeq ($(CONFIG_1WIRE),y)
+
+ifeq ($(CONFIG_SENSORS_DS18B20),y)
+  CSRCS += ds18b20_uorb.c
+endif
+
+endif # CONFIG_1WIRE
+
+ifeq ($(CONFIG_SENSORS_MPU60X0),y)
+  CSRCS += mpu60x0.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MPU9250),y)
+  CSRCS += mpu9250_uorb.c
+endif
+
+# Quadrature encoder upper half
+
+ifeq ($(CONFIG_SENSORS_QENCODER),y)
+  CSRCS += qencoder.c
+endif
+
+# 3-phase Hall effect sensor upper half
+
+ifeq ($(CONFIG_SENSORS_HALL3PHASE),y)
+  CSRCS += hall3ph.c
+endif
+
+# Vishay VEML6070
+
+ifeq ($(CONFIG_SENSORS_VEML6070),y)
+  CSRCS += veml6070.c
+endif
+
+# ST VL53L1X
+
+ifeq ($(CONFIG_SENSORS_VL53L1X),y)
+  CSRCS += vl53l1x.c
+endif
+
+# Sensixs XEN1210
+
+ifeq ($(CONFIG_SENSORS_XEN1210),y)
+  CSRCS += xen1210.c
+endif
+
+# Zero Cross upper half
+
+ifeq ($(CONFIG_SENSORS_ZEROCROSS),y)
+  CSRCS += zerocross.c
+endif
+
+# TI HDC1008
+
+ifeq ($(CONFIG_SENSORS_HDC1008),y)
+  CSRCS += hdc1008.c
+endif
+
+# ANALOG MAX31865
+
+ifeq ($(CONFIG_SENSORS_MAX31865),y)
+  CSRCS += max31865.c
+endif
+
+# SONY CXD5602PWBIMU
+
+ifeq ($(CONFIG_SENSORS_CXD5602PWBIMU),y)
+  CSRCS += cxd5602pwbimu.c
+endif
+
+# Include sensor driver build support
+
+DEPPATH += --dep-path sensors
+VPATH += :sensors
+CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/drivers/sensors
+
+endif # CONFIG_SENSORS

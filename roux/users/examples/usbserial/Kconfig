@@ -1,0 +1,125 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config EXAMPLES_USBSERIAL
+	tristate "USB serial test example"
+	default n
+	depends on BOARDCTL
+	select BOARDCTL_USBDEVCTRL
+	---help---
+		Enable the USB serial test example
+
+if EXAMPLES_USBSERIAL
+
+config EXAMPLES_USBSERIAL_BUFSIZE
+	int "Target I/O Buffer Size"
+	default 512
+	---help---
+		The size of the array that is used as an I/O buffer for USB serial
+		data transfers.
+
+choice
+	prompt "USB serial transfer"
+	default EXAMPLES_USBSERIAL_INANDOUT
+	---help---
+		Select usb serial transfer in or out
+
+config EXAMPLES_USBSERIAL_INANDOUT
+	bool "in and out"
+
+config EXAMPLES_USBSERIAL_INONLY
+	bool "in only"
+
+config EXAMPLES_USBSERIAL_OUTONLY
+	bool "out only"
+
+endchoice # USBSERIAL in or out
+
+config EXAMPLES_USBSERIAL_CONFIG_WAIT
+	bool "Config waiting time"
+	default n
+	---help---
+		Config waiting time after transfer
+
+if EXAMPLES_USBSERIAL_CONFIG_WAIT
+
+config EXAMPLES_USBSERIAL_IN_WAITING_TIME
+	int "In waiting time (ms)"
+	default 100
+
+config EXAMPLES_USBSERIAL_OUT_WAITING_TIME
+	int "Out waiting time (ms)"
+	default 100
+
+endif # USERSERIAL config wait
+
+choice
+	prompt "USB serial message"
+	default EXAMPLES_USBSERIAL_SMALLANDBIG
+	---help---
+		Select usb serial small or big message
+
+config EXAMPLES_USBSERIAL_SMALLANDBIG
+	bool "small and big"
+
+config EXAMPLES_USBSERIAL_ONLYSMALL
+	bool "only small"
+
+config EXAMPLES_USBSERIAL_ONLYBIG
+	bool "only big"
+
+endchoice # USBSERIAL small or big message
+
+config EXAMPLES_USBSERIAL_TRACEINIT
+	bool "USB Trace Initialization"
+	default n
+	depends on USBDEV_TRACE || DEBUG_USB
+	---help---
+		If USBDEV_TRACE is enabled (or CONFIG_DEBUG_FEATURES and CONFIG_DEBUG_USB),
+		then the example code will also manage the USB trace output.  The
+		amount of trace output can be controlled this configuration value:
+		This setting will show USB initialization events
+
+config EXAMPLES_USBSERIAL_TRACECLASS
+	bool "USB Trace Class"
+	default n
+	depends on USBDEV_TRACE || DEBUG_USB
+	---help---
+		If USBDEV_TRACE is enabled (or CONFIG_DEBUG_FEATURES and CONFIG_DEBUG_USB),
+		then the example code will also manage the USB trace output.  The
+		amount of trace output can be controlled this configuration value:
+		This setting will show USB class driver events
+
+config EXAMPLES_USBSERIAL_TRACETRANSFERS
+	bool "USB Trace Transfers"
+	default n
+	depends on USBDEV_TRACE || DEBUG_USB
+	---help---
+		If USBDEV_TRACE is enabled (or CONFIG_DEBUG_FEATURES and CONFIG_DEBUG_USB),
+		then the example code will also manage the USB trace output.  The
+		amount of trace output can be controlled this configuration value:
+		This setting will show USB data transfer events
+
+config EXAMPLES_USBSERIAL_TRACECONTROLLER
+	bool "USB Trace Device Controller Events"
+	default n
+	depends on USBDEV_TRACE || DEBUG_USB
+	---help---
+		If USBDEV_TRACE is enabled (or CONFIG_DEBUG_FEATURES and CONFIG_DEBUG_USB),
+		then the example code will also manage the USB trace output.  The
+		amount of trace output can be controlled this configuration value:
+		This setting will show USB device controller events
+
+config EXAMPLES_USBSERIAL_TRACEINTERRUPTS
+	bool "USB Trace Device Controller Interrupt Events"
+	default n
+	depends on USBDEV_TRACE || DEBUG_USB
+	---help---
+		If USBDEV_TRACE is enabled (or CONFIG_DEBUG_FEATURES and CONFIG_DEBUG_USB),
+		then the example code will also manage the USB trace output.  The
+		amount of trace output can be controlled this configuration value:
+		This setting will show USB device controller interrupt-related events.
+
+endif

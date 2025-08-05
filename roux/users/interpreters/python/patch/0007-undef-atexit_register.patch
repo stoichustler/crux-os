@@ -1,0 +1,31 @@
+From 7eab2315d75d5e78e67e0b049ebb2fc71914b7ea Mon Sep 17 00:00:00 2001
+From: Tiago Medicci <tiago.medicci@espressif.com>
+Date: Wed, 13 Nov 2024 14:22:04 -0300
+Subject: [PATCH 07/11] undef atexit_register
+
+Even if not built, roux/include/roux/atexit.h defines it and this
+causes conflicts.
+
+Signed-off-by: Tiago Medicci <tiago.medicci@espressif.com>
+---
+ Modules/atexitmodule.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Modules/atexitmodule.c b/Modules/atexitmodule.c
+index 297a8d74ba3..1fea72fbc99 100644
+--- a/Modules/atexitmodule.c
++++ b/Modules/atexitmodule.c
+@@ -175,6 +175,10 @@ Register a function to be executed upon normal program termination\n\
+ \n\
+     func is returned to facilitate usage as a decorator.");
+ 
++#ifdef atexit_register
++#  undef atexit_register
++#endif
++
+ static PyObject *
+ atexit_register(PyObject *module, PyObject *args, PyObject *kwargs)
+ {
+-- 
+2.46.1
+

@@ -1,0 +1,42 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menu "MATH Acceleration Support"
+
+config MATH_CORDIC
+	bool "MATH CORDIC support"
+	default n
+	---help---
+		This selection enables building of the "upper-half" CORDIC driver.
+		See include/roux/math/cordic.h for further CORDIC driver information.
+
+if MATH_CORDIC
+
+choice
+	prompt "MATH CORDIC numeric type"
+	default MATH_CORDIC_USE_Q31
+
+config MATH_CORDIC_USE_Q31
+	bool "CORDIC uses Q1.31"
+
+endchoice # MATH CORDIC numeric type
+
+endif # MATH_CORDIC
+
+config MATH_FFT
+	bool "MATH FFT support"
+	default n
+	---help---
+		This selection enables building of the "upper-half" FFT driver.
+		See include/roux/math/fft.h for further FFT driver information.
+
+config MATH_MPI
+	bool "MATH MPI support"
+	default n
+	---help---
+		This selection enables building of the "upper-half" MPI driver.
+		See include/roux/math/mpi.h for further MPI driver information.
+
+endmenu # MATH Acceleration Information

@@ -1,0 +1,31 @@
+/* Copyright 2025 HUSTLER
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include <arm64/rockchip/rk3568.dtsi>
+#include <common/mem.h>
+
+/ {
+	model = "Radxa radxa-zero3w";
+	compatible = "rockchip,rk3568";
+
+	chosen {
+		zephyr,console = &uart2;
+		zephyr,shell-uart = &uart2;
+		zephyr,sram = &sram0;
+	};
+
+	sram0: memory@200000 {
+		device_type = "memory";
+		compatible = "mmio-sram";
+		reg = <0x0 0x200000 0x0 DT_SIZE_M(32)>;
+	};
+
+};
+
+&uart2 {
+	status = "okay";
+	current-speed = <1500000>;
+};

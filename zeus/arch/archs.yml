@@ -1,0 +1,4 @@
+archs:
+  - name: arm64
+    path: arm64
+    full_name: ARM 64

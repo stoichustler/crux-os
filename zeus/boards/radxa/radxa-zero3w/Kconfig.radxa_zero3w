@@ -1,0 +1,5 @@
+# Copyright 2025 HUSTLER
+# SPDX-License-Identifier: Apache-2.0
+
+config BOARD_RADXA_ZERO3W
+    select SOC_RK3568

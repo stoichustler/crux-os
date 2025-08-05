@@ -1,0 +1,69 @@
+config TESTING_CRYPTO
+	tristate "crypto test"
+	default n
+	---help---
+		Enable crypto test
+
+if TESTING_CRYPTO
+
+config TESTING_CRYPTO_3DES_CBC
+	bool "3des-cbc crypto test"
+	default y
+
+config TESTING_CRYPTO_AES_CBC
+	bool "aes-cbc crypto test"
+	default y
+
+config TESTING_CRYPTO_AES_CTR
+	bool "aes-ctr crypto test"
+	default y
+
+config TESTING_CRYPTO_AES_XTS
+	bool "aes-xts crypto test"
+	default y
+
+config TESTING_CRYPTO_HMAC
+	bool "hmac crypto test"
+	default y
+
+config TESTING_CRYPTO_HASH
+	bool "hash crypto test"
+	default n
+
+if TESTING_CRYPTO_HASH
+
+config TESTING_CRYPTO_HASH_HUGE_BLOCK
+	bool "hash huge block crypto test"
+	default y
+
+endif
+
+config TESTING_CRYPTO_CRC32
+	bool "crc32 crypto test"
+	default n
+
+config TESTING_CRYPTO_AES_CMAC
+	bool "aes-cmac crypto test"
+	default n
+
+config TESTING_CRYPTO_ECDSA
+	bool "ecdsa crypto test"
+	default n
+
+config TESTING_CRYPTO_ECDH
+	bool "ecdh crypto test"
+	default n
+
+config TESTING_CRYPTO_RSA
+	bool "rsa crypto test"
+	default n
+
+config TESTING_CRYPTO_PRIORITY
+	int "crypto test task priority"
+	default 100
+
+config TESTING_CRYPTO_STACKSIZE
+	int "crypto test stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

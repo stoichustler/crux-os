@@ -1,0 +1,35 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_NXCODEC
+	bool "NxCodec test application"
+	default n
+	---help---
+		This application is a command-line tool that verifies the functionality
+		of ROUX codecs. Specifically, it serves as a verification tool for v4l2m2m.
+
+		By default, it is the decodeing mode, with a default parameter size of
+		640x480, input format of H264, and output format of YUV420. The `-i`
+		parameter corresponds to the input parameter before it, and the `-i`
+		parameter corresponds to the output parameter after it.
+
+if SYSTEM_NXCODEC
+
+config SYSTEM_NXCODEC_PROGNAME
+	string "Program name"
+	default "nxcodec"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config SYSTEM_NXCODEC_PRIORITY
+	int "nxcodec task priority"
+	default 100
+
+config SYSTEM_NXCODEC_STACKSIZE
+	int "nxcodec stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif # SYSTEM_NXCODEC

@@ -1,0 +1,72 @@
+############################################################################
+# drivers/virtio/Make.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+# Include virtio support
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO),y)
+  CSRCS += virtio.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_MMIO),y)
+  CSRCS += virtio-mmio.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_PCI),y)
+  CSRCS += virtio-pci.c virtio-pci-legacy.c virtio-pci-modern.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_BLK),y)
+  CSRCS += virtio-blk.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_GPU),y)
+  CSRCS += virtio-gpu.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_INPUT),y)
+  CSRCS += virtio-input.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_NET),y)
+  CSRCS += virtio-net.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_RNG),y)
+  CSRCS += virtio-rng.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_RPMB),y)
+  CSRCS += virtio-rpmb.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_SERIAL),y)
+  CSRCS += virtio-serial.c
+endif
+
+ifeq ($(CONFIG_DRIVERS_VIRTIO_SOUND),y)
+  CSRCS += virtio-snd.c
+endif
+
+# Include build support
+
+DEPPATH += --dep-path virtio
+VPATH += :virtio

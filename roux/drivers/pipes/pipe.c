@@ -1,0 +1,294 @@
+/****************************************************************************
+ * drivers/pipes/pipe.c
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
+#include <roux/config.h>
+
+#include <sys/types.h>
+
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <errno.h>
+#include <sys/ioctl.h>
+
+#include <roux/fs/fs.h>
+#include <roux/mutex.h>
+
+#include "pipe_common.h"
+
+#if CONFIG_DEV_PIPE_SIZE > 0
+
+/****************************************************************************
+ * Private Types
+ ****************************************************************************/
+
+/****************************************************************************
+ * Private Function Prototypes
+ ****************************************************************************/
+
+static int pipe_mmap(FAR struct file *filep, FAR struct mm_map_entry_s *entry);
+
+/****************************************************************************
+ * Private Data
+ ****************************************************************************/
+
+static const struct file_operations g_pipe_fops = {
+	pipecommon_open,  /* open */
+	pipecommon_close, /* close */
+	pipecommon_read,  /* read */
+	pipecommon_write, /* write */
+	NULL,			  /* seek */
+	pipecommon_ioctl, /* ioctl */
+	pipe_mmap,		  /* mmap */
+	NULL,			  /* truncate */
+	pipecommon_poll	  /* poll */
+};
+
+static mutex_t g_pipelock = NXMUTEX_INITIALIZER;
+static int g_pipeno;
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: pipe_allocate
+ ****************************************************************************/
+
+static inline int pipe_allocate(void)
+{
+	int ret;
+
+	ret = nxmutex_lock(&g_pipelock);
+	if (ret < 0) {
+		return ret;
+	}
+
+	ret = g_pipeno++;
+	if (g_pipeno < 0) {
+		g_pipeno = 0;
+	}
+
+	nxmutex_unlock(&g_pipelock);
+	return ret;
+}
+
+/****************************************************************************
+ * Name: pipe_mmap
+ ****************************************************************************/
+
+static int pipe_mmap(FAR struct file *filep, FAR struct mm_map_entry_s *entry)
+{
+	UNUSED(filep);
+	UNUSED(entry);
+
+	return -ENODEV;
+}
+
+/****************************************************************************
+ * Name: pipe_register
+ ****************************************************************************/
+
+static int pipe_register(size_t bufsize, int flags, FAR char *devname, size_t namesize)
+{
+	FAR struct pipe_dev_s *dev;
+	int pipeno;
+	int ret;
+
+	/* Allocate a minor number for the pipe device */
+
+	pipeno = pipe_allocate();
+	if (pipeno < 0) {
+		return pipeno;
+	}
+
+	/* Create a pathname to the pipe device */
+
+	snprintf(devname, namesize, CONFIG_DEV_PIPE_VFS_PATH "/%d", pipeno);
+
+	/* Allocate and initialize a new device structure instance */
+
+	dev = pipecommon_allocdev(bufsize);
+	if (dev == NULL) {
+		return -ENOMEM;
+	}
+
+	PIPE_UNLINK(dev->d_flags);
+
+	/* Register the pipe device */
+
+	ret = register_pipedriver(devname, &g_pipe_fops, 0666, (FAR void *)dev);
+	if (ret != 0) {
+		pipecommon_freedev(dev);
+	}
+
+	return ret;
+}
+
+/****************************************************************************
+ * Public Functions
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: file_pipe
+ *
+ * Description:
+ *   file_pipe() creates a pair of file descriptors, pointing to a pipe
+ *   inode, and places them in the array pointed to by 'filep'. filep[0]
+ *   is for reading, filep[1] is for writing.
+ *
+ * Input Parameters:
+ *   filep[2] - The user provided array in which to catch the pipe file
+ *   descriptors
+ *   bufsize - The size of the in-memory, circular buffer in bytes.
+ *   flags - The file status flags.
+ *
+ * Returned Value:
+ *   0 is returned on success; a negated errno value is returned on a
+ *   failure.
+ *
+ ****************************************************************************/
+
+int file_pipe(FAR struct file *filep[2], size_t bufsize, int flags)
+{
+	char devname[32];
+	int nonblock = !!(flags & O_NONBLOCK);
+	int ret;
+
+	/* Register a new pipe device */
+
+	ret = pipe_register(bufsize, flags, devname, sizeof(devname));
+	if (ret < 0) {
+		return ret;
+	}
+
+	/* Get a write file descriptor */
+
+	ret = file_open(filep[1], devname, O_WRONLY | O_NONBLOCK | flags);
+	if (ret < 0) {
+		goto errout_with_driver;
+	}
+
+	/* Clear O_NONBLOCK if it was set previously */
+
+	if (!nonblock) {
+		ret = file_ioctl(filep[1], FIONBIO, &nonblock);
+		if (ret < 0) {
+			goto errout_with_driver;
+		}
+	}
+
+	/* Get a read file descriptor */
+
+	ret = file_open(filep[0], devname, O_RDONLY | flags);
+	if (ret < 0) {
+		goto errout_with_wrfd;
+	}
+
+	/* Remove the pipe name from file system */
+
+	unregister_pipedriver(devname);
+	return OK;
+
+errout_with_wrfd:
+	file_close(filep[1]);
+
+errout_with_driver:
+	unregister_pipedriver(devname);
+	return ret;
+}
+
+/****************************************************************************
+ * Name: pipe2
+ *
+ * Description:
+ *   pipe2() creates a pair of file descriptors, pointing to a pipe inode,
+ *   and  places them in the array pointed to by 'fd'. fd[0] is for reading,
+ *   fd[1] is for writing.
+ *
+ * Input Parameters:
+ *   fd[2] - The user provided array in which to catch the pipe file
+ *   descriptors
+ *   flags - The file status flags.
+ *
+ * Returned Value:
+ *   0 is returned on success; -1 (ERROR) is returned on a failure
+ *   with the errno value set appropriately.
+ *
+ ****************************************************************************/
+
+int pipe2(int fd[2], int flags)
+{
+	char devname[32];
+	int nonblock = !!(flags & O_NONBLOCK);
+	int ret;
+
+	/* Register a new pipe device */
+
+	ret = pipe_register(CONFIG_DEV_PIPE_SIZE, flags, devname, sizeof(devname));
+	if (ret < 0) {
+		set_errno(-ret);
+		return ERROR;
+	}
+
+	/* Get a write file descriptor setting O_NONBLOCK temporarily */
+
+	fd[1] = open(devname, O_WRONLY | O_NONBLOCK | flags);
+	if (fd[1] < 0) {
+		goto errout_with_driver;
+	}
+
+	/* Clear O_NONBLOCK if it was set previously */
+
+	if (!nonblock) {
+		ret = ioctl(fd[1], FIONBIO, &nonblock);
+		if (ret < 0) {
+			goto errout_with_driver;
+		}
+	}
+
+	/* Get a read file descriptor */
+
+	fd[0] = open(devname, O_RDONLY | flags);
+	if (fd[0] < 0) {
+		goto errout_with_wrfd;
+	}
+
+	/* Remove the pipe name from file system */
+
+	unregister_pipedriver(devname);
+	return OK;
+
+errout_with_wrfd:
+	nx_close(fd[1]);
+
+errout_with_driver:
+	unregister_pipedriver(devname);
+	return ERROR;
+}
+
+#endif /* CONFIG_DEV_PIPE_SIZE > 0 */

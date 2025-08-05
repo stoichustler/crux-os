@@ -1,0 +1,48 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menuconfig SYSTEM_FASTBOOTD
+	bool "fastbootd"
+	default n
+	depends on USBFASTBOOT || (NET_TCP && NET_TCPBACKLOG)
+	---help---
+		Enable Fastboot daemon.
+		The USB transport depends on USBFASTBOOT.
+		The TCP network transport depends on NET_TCP and NET_TCPBACKLOG.
+
+if SYSTEM_FASTBOOTD
+
+config SYSTEM_FASTBOOTD_PRIORITY
+	int "USB-fastboot task priority"
+	default 100
+
+config SYSTEM_FASTBOOTD_STACKSIZE
+	int "USB-fastboot stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config SYSTEM_FASTBOOTD_DOWNLOAD_MAX
+	int "USB-fastboot download buffer size"
+	default 40960
+
+config SYSTEM_FASTBOOTD_USB_BOARDCTL
+	bool "USB Board Control"
+	default n
+	depends on BOARDCTL
+	depends on BOARDCTL_USBDEVCTRL
+	depends on USBFASTBOOT
+	---help---
+		Connect usbdev before running fastboot daemon.
+
+config SYSTEM_FASTBOOTD_SHELL
+	bool "Execute custom commands"
+	default n
+	depends on SCHED_CHILD_STATUS
+	depends on SYSTEM_POPEN
+	---help---
+		Enable to support executing custom commands.
+		e.g. fastboot oem shell ps
+		e.g. fastboot oem shell "mkrd -m 10 -s 512 640"
+
+endif # SYSTEM_FASTBOOTD

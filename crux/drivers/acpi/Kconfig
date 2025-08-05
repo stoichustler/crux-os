@@ -1,0 +1,10 @@
+
+config ACPI
+	bool
+
+config ACPI_LEGACY_TABLES_LOOKUP
+	bool
+
+config ACPI_NUMA
+	bool
+	select NUMA

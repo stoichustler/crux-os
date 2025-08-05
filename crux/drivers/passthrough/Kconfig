@@ -1,0 +1,94 @@
+
+config HAS_PASSTHROUGH
+	bool
+
+if ARM
+config ARM_SMMU
+	bool "ARM SMMUv1 and v2 driver"
+	default y
+	help
+	  Support for implementations of the ARM System MMU architecture
+	  versions 1 and 2.
+
+	  Say Y here if your SoC includes an IOMMU device implementing the
+	  ARM SMMU architecture.
+
+config ARM_SMMU_V3
+	bool "ARM Ltd. System MMU Version 3 (SMMUv3) Support" if EXPERT
+	depends on ARM_64 && (!ACPI || BROKEN)
+	help
+	 Support for implementations of the ARM System MMU architecture
+	 version 3. Driver is in experimental stage and should not be used in
+	 production.
+
+	 Say Y here if your system includes an IOMMU device implementing
+	 the ARM SMMUv3 architecture.
+
+config IPMMU_VMSA
+	bool "Renesas IPMMU-VMSA found in R-Car Gen3/Gen4 SoCs"
+	depends on ARM_64
+	help
+	  Support for implementations of the Renesas IPMMU-VMSA found
+	  in R-Car Gen3/Gen4 SoCs.
+
+	  Say Y here if you are using newest R-Car Gen3 SoCs revisions
+	  (H3 ES3.0, M3-W+, etc) or Gen4 SoCs which IPMMU hardware supports stage 2
+	  translation table format and is able to use CPU's P2M table as is.
+
+endif
+
+config AMD_IOMMU
+	bool "AMD IOMMU" if EXPERT
+	depends on X86
+	default y
+	help
+	  Enables I/O virtualization on platforms that implement the
+	  AMD I/O Virtualization Technology (IOMMU).
+
+	  If your system includes an IOMMU implementing AMD-Vi, say Y.
+	  This is required if your system has more than 254 CPUs.
+	  If in doubt, say Y.
+
+config INTEL_IOMMU
+	bool "Intel VT-d" if EXPERT
+	depends on X86
+	default y
+	help
+	  Enables I/O virtualization on platforms that implement the
+	  Intel Virtualization Technology for Directed I/O (Intel VT-d).
+
+	  If your system includes an IOMMU implementing Intel VT-d, say Y.
+	  This is required if your system has more than 254 CPUs.
+	  If in doubt, say Y.
+
+config IOMMU_FORCE_PT_SHARE
+	bool
+
+choice
+	prompt "IOMMU device quarantining default behavior"
+	depends on HAS_PCI
+	default IOMMU_QUARANTINE_BASIC
+	help
+	  When a PCI device is assigned to an untrusted domain, it is possible
+	  for that domain to program the device to DMA to an arbitrary address.
+	  The IOMMU is used to protect the host from malicious DMA by making
+	  sure that the device addresses can only target memory assigned to the
+	  guest.  However, when the guest domain is torn down, assigning the
+	  device back to the hardware domain would allow any in-flight DMA to
+	  potentially target critical host data.  To avoid this, quarantining
+	  should be enabled.  Quarantining can be done in two ways: In its basic
+	  form, all in-flight DMA will simply be forced to encounter IOMMU
+	  faults.  Since there are systems where doing so can cause host lockup,
+	  an alternative form is available where writes to memory will be made
+	  fault, but reads will be directed to a scratch page.  The implication
+	  here is that such reads will go unnoticed, i.e. an admin may not
+	  become aware of the underlying problem.
+
+	config IOMMU_QUARANTINE_NONE
+		bool "none"
+	config IOMMU_QUARANTINE_BASIC
+		bool "basic"
+	config IOMMU_QUARANTINE_SCRATCH_PAGE
+		bool "scratch page"
+		depends on AMD_IOMMU || INTEL_IOMMU
+endchoice

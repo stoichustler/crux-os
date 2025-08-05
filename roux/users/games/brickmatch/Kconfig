@@ -1,0 +1,121 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config GAMES_BRICKMATCH
+	bool "Brickmatch Game"
+	default n
+	---help---
+		Enable Brickmatch games. Brickmatch is like a mix
+		between Tetris and Crush Candy. The inspiration came
+		from a Shift game that was available for Android in the
+		F-Droid store. The original game source code still here:
+		https://github.com/boombuler/Shift/ but the game only works
+		for old Android versions (4.x).
+		NOTE: The source code here is not based on that code from
+		above github.
+
+if GAMES_BRICKMATCH
+
+config GAMES_BRICKMATCH_PROGNAME
+	string "Program name"
+	default "brick"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config GAMES_BRICKMATCH_PRIORITY
+	int "Brickmatch Game task priority"
+	default 100
+
+config GAMES_BRICKMATCH_STACKSIZE
+	int "Brickmatch Game stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+#
+# Output Device Selection
+#
+
+choice
+	prompt "Output Device (LED Matrix, LCD Screen, etc)"
+	default GAMES_BRICKMATCH_USE_LCD_SCREEN
+
+config GAMES_BRICKMATCH_USE_LCD_SCREEN
+	bool "LCD Screen as Output (Also APA102 Matrix as LCD Interface)"
+
+config GAMES_BRICKMATCH_USE_LED_MATRIX
+	bool "LED Matrix as Output"
+endchoice
+
+if GAMES_BRICKMATCH_USE_LED_MATRIX
+
+config GAMES_BRICKMATCH_LED_MATRIX_PATH
+	string "LED matrix path"
+	default "/dev/leds0"
+	---help---
+		Path of the led matrix
+
+config GAMES_BRICKMATCH_LED_MATRIX_ROWS
+	int "LED Matrix row count"
+	default 8
+
+config GAMES_BRICKMATCH_LED_MATRIX_COLS
+	int "LED Matrix column count"
+	default 8
+
+endif #GAMES_BRICKMATCH_LED_MATRIX_PATH
+
+#
+# Input Device Selection
+#
+
+choice
+	prompt "Input Device (Joystick, Gesture Sensor, etc)"
+	default GAMES_BRICKMATCH_USE_CONSOLEKEY
+
+config GAMES_BRICKMATCH_USE_CONSOLEKEY
+	bool "Serial Console as Input"
+	depends on !INPUT_DJOYSTICK && !SENSORS_APDS9960
+
+config GAMES_BRICKMATCH_USE_DJOYSTICK
+	bool "Discrete Joystick as Input"
+	depends on INPUT_DJOYSTICK
+
+config GAMES_BRICKMATCH_USE_GESTURE
+	bool "Gesture Sensor APDS-9960 as Input"
+	depends on SENSORS_APDS9960
+
+config GAMES_BRICKMATCH_USE_GPIO
+	bool "GPIO pins as Input"
+endchoice
+
+if GAMES_BRICKMATCH_USE_GPIO
+
+config GAMES_BRICKMATCH_UP_KEY_PATH
+	string "Up key path"
+	default "/dev/gpio0"
+	---help---
+		Path of the up key to read
+
+config GAMES_BRICKMATCH_DOWN_KEY_PATH
+	string "Down key path"
+	default "/dev/gpio1"
+	---help---
+		Path of the down key to read
+
+config GAMES_BRICKMATCH_LEFT_KEY_PATH
+	string "Left key path"
+	default "/dev/gpio2"
+	---help---
+		Path of the left key to read
+
+config GAMES_BRICKMATCH_RIGHT_KEY_PATH
+	string "Right key path"
+	default "/dev/gpio3"
+	---help---
+		Path of the right key to read
+
+endif #GAMES_BRICKMATCH_USE_GPIO
+
+endif

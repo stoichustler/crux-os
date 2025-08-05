@@ -1,0 +1,33 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config OPENAMP
+	bool
+	default n
+	---help---
+		Enable or disable Open Asymmetric Multi Processing features
+
+if OPENAMP
+
+config OPENAMP_CACHE
+	bool "Enable OpenAMP Cache support"
+	default n
+	---help---
+		Enable or disable OpenAMP Cache support (VIRTIO_CACHED_BUFFERS and
+		VIRTIO_CACHED_VRINGS)
+
+config OPENAMP_DEBUG
+	bool "Enable OpenAMP Debug"
+	default n
+
+config OPENAMP_VIRTIO_DEVICE_SUPPORT
+	bool "Enable VIRTIO_DEVICE_SUPPORT"
+	default y
+
+config OPENAMP_VIRTIO_DRIVER_SUPPORT
+	bool "Enable VIRTIO_DRIVER_SUPPORT"
+	default y
+
+endif # OPENAMP

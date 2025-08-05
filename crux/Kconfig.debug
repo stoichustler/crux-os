@@ -1,0 +1,158 @@
+
+menu "Debugging Options"
+
+config DEBUG
+	bool "Developer Checks"
+	default y
+	help
+	  If you say Y here this will enable developer checks such as asserts
+	  and extra printks. This option is intended for development purposes
+	  only, and not for production use.
+
+	  You probably want to say 'N' here.
+
+if DEBUG || EXPERT
+
+config GDBSX
+	bool "Guest debugging with gdbsx"
+	depends on X86
+	default y
+	help
+	  If you want to enable support for debugging guests from dom0 via
+	  gdbsx then say Y.
+
+config FRAME_POINTER
+	bool "Compile xen with frame pointers"
+	default DEBUG
+	help
+	  If you say Y here the resulting xen will be slightly larger and
+	  maybe slower, but it gives very useful debugging information
+	  in case of any xen bugs.
+
+config SELF_TESTS
+	bool "Extra self-testing"
+	default DEBUG
+	help
+	  Enable extra unit and functional testing.
+
+config COVERAGE
+	bool "Code coverage support"
+	depends on SYSCTL && !LIVEPATCH
+	select SUPPRESS_DUPLICATE_SYMBOL_WARNINGS if !ENFORCE_UNIQUE_SYMBOLS
+	help
+	  Enable code coverage support.
+
+	  If unsure, say N here.
+
+config CONDITION_COVERAGE
+	bool "Condition coverage support"
+	depends on COVERAGE && CC_HAS_MCDC
+	help
+	  Enable condition coverage support. Used for collecting MC/DC
+	  (Modified Condition/Decision Coverage) metrics.
+
+	  If unsure, say N here.
+
+config DEBUG_LOCK_PROFILE
+	bool "Lock Profiling"
+	select DEBUG_LOCKS
+	help
+	  Lock profiling allows you to see how often locks are taken and blocked.
+	  You can use serial console to print (and reset) using 'l' and 'L'
+	  respectively, or the 'xenlockprof' tool.
+
+config DEBUG_LOCKS
+	bool "Lock debugging"
+	default DEBUG
+	help
+	  Enable debugging features of lock handling.  Some additional
+	  checks will be performed when acquiring and releasing locks.
+
+config PERF_COUNTERS
+	bool "Performance Counters"
+	help
+	  Enables software performance counters that allows you to analyze
+	  bottlenecks in the system.  To access this data you can use serial
+	  console to print (and reset) using 'p' and 'P' respectively, or
+	  the 'xenperf' tool.
+
+config PERF_ARRAYS
+	bool "Performance Counter Array Histograms"
+	depends on PERF_COUNTERS
+	help
+	  Enables software performance counter array histograms.
+
+
+config VERBOSE_DEBUG
+	bool "Verbose debug messages"
+	default DEBUG
+	help
+	  Guest output from HYPERVISOR_console_io and hypervisor parsing
+	  ELF images (dom0) will be logged in the xen ring buffer.
+
+config DEVICE_TREE_DEBUG
+	bool "Device tree debug messages"
+	depends on DEVICE_TREE_PARSE
+	help
+	  Device tree parsing and DOM0 device tree building messages are
+	  logged in the xen ring buffer.
+	  If unsure, say N here.
+
+config SCRUB_DEBUG
+	bool "Page scrubbing test"
+	default DEBUG
+	help
+	  Verify that pages that need to be scrubbed before being allocated to
+	  a guest are indeed scrubbed.
+
+config UBSAN
+	bool "Undefined behaviour sanitizer"
+	depends on HAS_UBSAN
+	help
+	  Enable undefined behaviour sanitizer. It uses compiler to insert code
+	  snippets so that undefined behaviours in C are detected during runtime.
+	  This requires a UBSAN capable compiler and it is a debug only feature.
+
+	  If unsure, say N here.
+
+config UBSAN_FATAL
+	bool "Panic on UBSAN failure"
+	depends on UBSAN
+	help
+	  Enabling this option will cause xen to panic when an undefined behavior
+	  is detected by UBSAN. If unsure, say N here.
+
+config DEBUG_TRACE
+	bool "Debug trace support"
+	help
+	  Debug trace enables to record debug trace messages which are printed
+	  either directly to the console or are printed to console in case of
+	  a system crash.
+
+config XMEM_POOL_POISON
+	bool "Poison free xenpool blocks"
+	default DEBUG
+	help
+	  Poison free blocks with 0xAA bytes and verify them when a block is
+	  allocated in order to spot use-after-free issues.
+
+source "arch/$(SRCARCH)/Kconfig.debug"
+
+endif # DEBUG || EXPERT
+
+config DEBUG_INFO
+	bool "Compile xen with debug info"
+	default DEBUG || LIVEPATCH
+	help
+	  Say Y here if you want to build xen with debug information. This
+	  information is needed e.g. for doing crash dump analysis of the
+	  hypervisor via the "crash" tool.
+	  Saying Y will increase the size of the xen-syms and xen.efi
+	  binaries. In case the space on the EFI boot partition is rather
+	  limited, you may want to install a stripped variant of xen.efi in
+	  the EFI boot partition (look for "INSTALL_EFI_STRIP" in
+	  docs/misc/efi.pandoc for more information - when not using
+	  "make install-xen" for installing xen.efi, stripping needs to be
+	  done outside the xen build environment).
+
+endmenu

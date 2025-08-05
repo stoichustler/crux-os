@@ -1,0 +1,96 @@
+############################################################################
+# apps/interpreters/wamr/Toolchain.defs
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+# Wamrc toolchain flags
+
+WRC ?= wamrc
+
+ifeq ($(CONFIG_ARCH_XTENSA),y)
+  WTARGET = xtensa
+else ifeq ($(CONFIG_ARCH_X86_64),y)
+  WTARGET = x86_64
+else ifeq ($(CONFIG_ARCH_X86),y)
+  WTARGET = i386
+else ifeq ($(CONFIG_ARCH_MIPS),y)
+  WTARGET = mips
+else ifeq ($(CONFIG_ARCH_SIM),y)
+  RCFLAGS += --disable-simd
+  ifeq ($(CONFIG_SIM_M32),y)
+    WTARGET = i386
+  else
+    WTARGET = x86_64
+  endif
+else ifeq ($(LLVM_ARCHTYPE),thumbv7a)
+  WTARGET = thumbv7
+else ifeq ($(findstring thumb,$(LLVM_ARCHTYPE)),thumb)
+
+  # target triple of thumb may very complex, such as thumbv8m.main+dsp+mve.fp+fp.dp
+  # so we just use the target name before the first plus sign
+
+  WTARGET = $(shell echo $(LLVM_ARCHTYPE) | cut -d'+' -f1)
+else ifeq ($(LLVM_ARCHTYPE),armv7a)
+  WTARGET = armv7
+endif
+
+# If WTARGET is not defined, then use the same as LLVM_ARCHTYPE
+
+ifeq ($(WTARGET),)
+  WTARGET = $(LLVM_ARCHTYPE)
+endif
+
+# If WCPU is not defined, then use the same as LLVM_CPU
+
+ifeq ($(WCPU),)
+  WCPU = $(LLVM_CPUTYPE)
+endif
+
+# If LLVM_ABITYPE is eabihf, then convert it to gnueabihf which is used by wamrc
+
+ifeq ($(LLVM_ABITYPE),eabihf)
+  WABITYPE = gnueabihf
+else
+  WABITYPE = $(LLVM_ABITYPE)
+endif
+
+RCFLAGS += --target=$(WTARGET) --target-abi=$(WABITYPE) --cpu=$(WCPU)
+
+define WAMR_AOT_COMPILE
+	$(if $(wildcard $(APPDIR)/wasm/*.wo), \
+	  $(foreach bin,$(wildcard $(APPDIR)/wasm/*.wo), \
+	    $(eval PROGNAME=$(shell echo $(notdir $(bin)) | cut -d'#' -f1)) \
+	    $(eval WAMRMODE=$(shell echo $(notdir $(bin)) | cut -d'#' -f5)) \
+	    $(if $(CONFIG_INTERPRETERS_WAMR_AOT), \
+	      $(if $(filter AOT,$(WAMRMODE)), \
+	        $(info Wamrc Generate AoT: $(BINDIR)/wasm/$(PROGNAME).aot) \
+	        $(shell $(WRC) $(RCFLAGS) -o $(BINDIR)/wasm/$(PROGNAME).aot \
+	                          $(BINDIR)/wasm/$(PROGNAME).wasm > /dev/null), \
+	        $(if $(filter XIP,$(WAMRMODE)), \
+	          $(info Wamrc Generate XiP: $(BINDIR)/wasm/$(PROGNAME).xip) \
+	          $(shell $(WRC) $(RCFLAGS) --enable-indirect-mode --disable-llvm-intrinsics \
+	                         -o $(BINDIR)/wasm/$(PROGNAME).xip \
+	                            $(BINDIR)/wasm/$(PROGNAME).wasm > /dev/null) \
+	         ) \
+	       ) \
+	     ) \
+	   ) \
+	 )
+endef

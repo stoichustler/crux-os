@@ -1,0 +1,33 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_DD
+	tristate "system 'dd' command"
+	default !DEFAULT_SMALL
+	---help---
+		Enable support for the system 'dd' command.
+
+if SYSTEM_DD
+
+config SYSTEM_DD_PROGNAME
+	string "dd program name"
+	default "dd"
+	---help---
+		This is the name of the program that will be used when the dd
+		program is installed.
+
+config SYSTEM_DD_PRIORITY
+	int "dd task priority"
+	default 100
+
+config SYSTEM_DD_STACKSIZE
+	int "dd stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config SYSTEM_DD_STATS
+	bool "dd: Support transfer statistics"
+	default y
+
+endif

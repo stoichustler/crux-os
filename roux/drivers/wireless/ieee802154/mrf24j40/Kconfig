@@ -1,0 +1,14 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+if IEEE802154_MRF24J40
+
+config IEEE802154_MRF24J40_FREQUENCY
+	int "SPI Frequency for MRF24J40"
+	default 8000000
+	---help---
+		SPI SLCK frequency in Hz
+
+endif # IEEE802154_MRF24J40

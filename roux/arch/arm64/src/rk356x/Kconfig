@@ -1,0 +1,25 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+if ARCH_CHIP_RK356X
+
+menu "RK356X Virt Chip Selection"
+
+choice
+	prompt "RK356X Core Configuration"
+	default ARCH_CHIP_RK356X_A53
+
+config ARCH_CHIP_RK356X_A53
+	bool "RK356X virtual Processor (cortex-a53)"
+	select ARCH_HAVE_MULTICPU
+	select ARMV8A_HAVE_GICv3
+	select ARM64_HAVE_PSCI
+	select ARCH_CORTEX_A53
+
+endchoice # RK356X Chip Selection
+
+endmenu # "RK356X Chip Selection"
+
+endif # ARCH_CHIP_RK356X

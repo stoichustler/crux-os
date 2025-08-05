@@ -1,0 +1,32 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_IPTABLES
+	tristate "'iptables' command"
+	default n
+	depends on NET_IPTABLES && NET_IPv4
+	select NETUTILS_NETLIB
+	---help---
+		Enable support for the 'iptables' command.
+
+config SYSTEM_IP6TABLES
+	tristate "'ip6tables' command"
+	default n
+	depends on NET_IPTABLES && NET_IPv6
+	select NETUTILS_NETLIB
+	---help---
+		Enable support for the 'ip6tables' command.
+
+if SYSTEM_IPTABLES || SYSTEM_IP6TABLES
+
+config SYSTEM_IPTABLES_PRIORITY
+	int "iptables & ip6tables task priority"
+	default 100
+
+config SYSTEM_IPTABLES_STACKSIZE
+	int "iptables & ip6tables stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

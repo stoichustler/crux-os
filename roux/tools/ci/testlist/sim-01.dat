@@ -1,0 +1,16 @@
+/sim/*/*/*/[a-b]*
+/sim/*/*/*/c[0-i]*
+
+# macOS doesn't have ALSA
+-Darwin,sim:alsa
+
+# clang doesn't -fsanitize=kernel-address
+-Darwin,sim:citest
+
+# macOS can compilation is not currently supported
+-Darwin,sim:can
+
+# Boards build by CMake
+CMake,sim:alsa
+CMake,sim:bluetooth
+CMake,sim:bthcisock

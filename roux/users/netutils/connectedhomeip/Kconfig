@@ -1,0 +1,20 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config MATTER
+	bool "Connected Home over IP (CHIP)"
+	default n
+	---help---
+		Enable the Connected Home over IP (CHIP)
+
+if MATTER
+
+config MATTER_LOG
+	bool "Build matter with logs"
+	default n
+	---help---
+		To reduce flash size, logs are not opened by default
+
+endif

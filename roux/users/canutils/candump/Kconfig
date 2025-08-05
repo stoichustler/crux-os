@@ -1,0 +1,20 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config CANUTILS_CANDUMP
+	tristate "SocketCAN candump tool"
+	default n
+	depends on NET_CAN && CANUTILS_LIBCANUTILS
+	---help---
+		Enable the SocketCAN candump tool ported from
+		https://github.com/linux-can/can-utils
+
+if CANUTILS_CANDUMP
+
+config CANUTILS_CANDUMP_STACKSIZE
+	int "SocketCAN candump stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

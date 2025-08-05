@@ -1,0 +1,14 @@
+/* Copyright 2025 HUSTLER
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+ #include "radxa_zero3w.dts"
+
+/delete-node/ &{/cpus/cpu@100};
+/delete-node/ &{/cpus/cpu@200};
+/delete-node/ &{/cpus/cpu@300};
+
+&uart2 {
+	status = "disabled";
+	current-speed = <1500000>;
+};

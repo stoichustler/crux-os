@@ -1,0 +1,136 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+*** boottime memory management
+
+MAIR_EL2
+    -  Provides the memory attribute encodings
+       corresponding to the possible AttrIndx values
+       in a Long-descriptor format translation table
+       entry for stage 1 translations at EL2.
+
+TCR_EL2
+    - The control register for stage 1 of the EL2, or
+      EL2&0, translation regime:
+      • When the Effective value of HCR_EL2.E2H is 0,
+        this register controls stage 1 of the EL2
+        translation regime, that supports a single VA
+        range, translated using TTBR0_EL2.
+      • When the value of HCR_EL2.E2H is 1, this
+        register controls stage 1 of the EL2&0
+        translation regime, that supports both:
+        ◦ A lower VA range, translated using TTBR0_EL2
+        ◦ A higher VA range, translated using TTBR1_EL2
+
+SCTLR_EL2
+    - Provides top level control of the system,
+      including its memory system, at EL2. When FEAT_VHE
+      is implemented, and the value of HCR_EL2.{E2H, TGE}
+      is {1, 1}, these controls apply also to execution
+      at EL0.
+
+>>>>>
+
+enable_boot_cpu_mm @arch/arm/arm64/mmu/head.S
+    |
+    +- create_page_tables
+
+Virtual Address as below:
+
+    [47:39]     [38:30]     [29:21]     [20:12]     [11:00]
+~ +-----------+-----------+-----------+-----------+-----------+
+  |           |           |   index   |           |           |
+~ +-----------+-----------+-----------+-----------+-----------+
+      A                         \                       |
+      |                          A table slot       page shift
+  +-------+
+  | 64Bit | * (1 << 12)
+  +-------+
+
+
+Example of creating page table entry:
+
+  +-------+
+  |       |<-+ [index]
+  +-------+  |
+             |
+             |  +-------+
+             +--|       |
+                +-------+
+
+Here it takes the paddr(boot_first), store the address
+at boot_pgtable[index], where index is the value of
+HYP_VIRT_START[47:39].
+
+Follow this logic, we can easily understand the
+assembly code.
+
+with boottime page table created, then map the HYP
+(PT_MEM_L3 attribute) over boot_third.
+
+-------------------------------------------------------
+
+*** runtime memory management
+
+start_hyp @arch/arm/setup.c
+    :
+    |
+    +- llc_coloring_init @common/llc_coloring.c
+            :
+            +- arch_llc_coloring_init
+    |
+    +- setup_pagetables @arch/arm/mmu/setup.c
+            :
+            +- arch_setup_page_tables
+    :
+    |
+    +- setup_mm @arch/arm/arm64/mmu/mm.c
+    |
+    +- vm_init
+    :
+
+
+## LLC Coloring
+
+GOOD: guarantee more predictable performance for
+      memory accesses.
+
+Cache coloring is a fragmentation of the memory space
+into a set of sub-spaces called colors that are mapped
+to disjoint cache partitions. Technically, the whole
+memory space is first divided into a number of
+subsequent regions. Then each region is in turn divided
+into a number of subsequent sub-colors. The generic
+i-th color is then obtained by all the i-th sub-colors
+in each region.
+
+How colors are actually defined depends on the function
+that maps memory to cache lines. In case of physically
+-indexed, physically-tagged caches with linear mapping,
+the set index is found by extracting some contiguous
+bits from the physical address.
+
+- llc-coloring
+- llc_size                 the size of the LLC
+- llc_nr_ways              the number of the LLC ways
+
+max_nr_colors = (llc_size / llc_nr_ways) >> PAGE_SHIFT
+
+[cache partitioning aka. cache coloring]
+- Each VM gets its own allocation of cache entries
+- No shared cache entries between VMs
+- Allow real-time apps to run with deterministic IRQ
+  latency
+
+## Address Translation
+
+check `at` in asm.edu
+
+-------------------------------------------------------

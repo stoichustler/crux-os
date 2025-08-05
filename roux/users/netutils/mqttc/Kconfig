@@ -1,0 +1,38 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config NETUTILS_MQTTC
+	tristate "Enable MQTT-C"
+	default n
+	---help---
+		Enable MQTT-C
+
+if NETUTILS_MQTTC
+
+config NETUTILS_MQTTC_EXAMPLE
+	tristate "Enable MQTT-C example"
+	default n
+	---help---
+		Enable MQTT-C example
+
+if NETUTILS_MQTTC_EXAMPLE
+
+config NETUTILS_MQTTC_EXAMPLE_STACKSIZE
+	int "Task's stack size"
+	default 8192
+
+endif
+
+config NETUTILS_MQTTC_WITH_MBEDTLS
+	bool "Enable MQTT-C with mbedtls"
+	default n
+	depends on CRYPTO_MBEDTLS
+	select DEV_URANDOM
+
+config NETUTILS_MQTTC_VERSION
+	string "MQTT-C Version"
+	default "1.1.5"
+
+endif

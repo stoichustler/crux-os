@@ -1,0 +1,85 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
++-----------------------------------------------------+
+|    make it work, make it right, make it fast!!!     |
++-----------------------------------------------------+
+
+
+# radxa-zero3w #
+
+## Boot crux on Android u-boot ##
+
+hit 'bdinfo' on u-boot to check available RAM banks:
+
+=> bdinfo
+arch_number = 0x00000000
+boot_params = 0x00000000
+DRAM bank   = 0x00000000
+-> start    = 0x00200000
+-> size     = 0x08200000
+DRAM bank   = 0x00000001
+-> start    = 0x09400000
+-> size     = 0xE6C00000
+baudrate    = 1500000 bps
+TLB addr    = 0xEFFF0000
+relocaddr   = 0xEDD43000
+reloc off   = 0xED343000
+irq_sp      = 0xEB9F8FD0
+sp start    = 0xEB9F8FD0
+FB base     = 0x00000000
+Early malloc usage: 35a8 / 80000
+fdt_blob = 000000000a100000
+
+keep on trying several times, then
+
+load mmc 1:1 0x00200000 boot/crux
+load mmc 1:1 0x00800000 boot/crux.dtb
+load mmc 1:1 0x02000000 boot/zeus.bin
+load mmc 1:1 0x04000000 boot/roux.bin
+load mmc 1:1 0x0a200000 boot/Image
+load mmc 1:1 0x0c200000 boot/Initrd
+booti 0x00200000 - 0x00800000
+
+-------------------------------------------------------
+
+Zephyr (vm0)
+
+- check zeus/snippets/xen_dom0/boards/radxa_zero3w.overlay
+- currently works ok.
+
+- compilation
+  $ python3 cook.py -t [cross-compile toolchain path] -b \
+    radxa_zero3w/rk3568/xen_dom0
+
+RouX (vm1)
+
+- not fully work currently.
+
+- compilation
+  $ tools/configure.sh -l crux-gvm:nsh_smp
+  $ make
+
+Linux (vm2)
+
+- currently works ok.
+
+- compilation
+  $ python3 cook.py -t [cross-compile toolchain path] \
+    -f crux_defconfig
+  $ python3 cook.py -t [cross-compile toolchain path] -b
+
+NOTE:
+
+[cross-compile toolchain path] => {xxx/bin}
+
+e.g. ~/mbed/mbed-cc/arm/baremetal-cc/bin
+
+-------------------------------------------------------

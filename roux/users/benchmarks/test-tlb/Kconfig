@@ -1,0 +1,23 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config BENCHMARK_TESTTLB
+	tristate "Memory Latency profiling"
+	depends on ALLOW_GPL_COMPONENTS
+	default n
+	---help---
+		Measure the memory latency
+
+if BENCHMARK_TESTTLB
+
+config BENCHMARK_TESTTLB_PRIORITY
+	int "TestTLB task priority"
+	default 100
+
+config BENCHMARK_TESTTLB_STACKSIZE
+	int "TestTLB stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

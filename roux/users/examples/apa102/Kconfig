@@ -1,0 +1,22 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config EXAMPLES_APA102
+	tristate "APA102 LED Strip example"
+	default n
+	depends on LCD_APA102
+	---help---
+		Enable the APA102 example
+
+if EXAMPLES_APA102
+
+config EXAMPLES_APA102_PROGNAME
+	string "Program name"
+	default "apa102"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+endif

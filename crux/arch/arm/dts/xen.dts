@@ -1,0 +1,25 @@
+/******************************************************
+ *                     _____     __  __
+ *            /\/\/\/\/ __  \/\ / _\/__\
+ *            \ - \ \ \ \/ // // _\/  \
+ *             \/\/\_/\_/\/ \__\__\\/\/ @2025
+ *
+ *                  - Hustle Embedded -
+ *****************************************************/
+
+#if defined(CONFIG_RK3566)
+#include "rk3566.dtsi"
+#elif defined(CONFIG_RK3588)
+#include "rk3588.dtsi"
+#else
+/dts-v1/;
+
+/ {
+	#address-cells = <2>;
+	#size-cells = <2>;
+	compatible = "dummy,dummy";
+	model = "dummy";
+
+	/* Empty device tree setting */
+};
+#endif

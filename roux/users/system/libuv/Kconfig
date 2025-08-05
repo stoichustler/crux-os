@@ -1,0 +1,83 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config LIBUV
+	bool "libuv asynchronous I/O Library"
+	default n
+	depends on PIPES
+	---help---
+		Enable build for libuv asynchronous I/O Library
+
+if LIBUV
+
+config LIBUV_THREADPOOL_SIZE
+	int "libuv default thread pool size"
+	default 1
+
+config LIBUV_THREAD_STACKSIZE
+	int "libuv worker thread stack size"
+	default PTHREAD_STACK_DEFAULT
+
+config LIBUV_THREADPOOL_PRIORITY
+	int "libuv default thread pool priority"
+	default 100
+
+config LIBUV_STREAM_READ_BUF_SIZE
+	int "libuv stream read buffer size"
+	default 4096
+
+config LIBUV_BACKEND_EPOLL
+	bool "Using epoll backend in libuv"
+	default y
+
+if LIBUV_BACKEND_EPOLL
+
+config LIBUV_MAX_EPOLL_EVENTS
+	int "libuv max epoll events"
+	default 64
+
+config LIBUV_PREP_EVENT_SIZE
+	int "libuv prep event size"
+	default 1
+
+endif
+
+config LIBUV_HANDLE_BACKTRACE
+	int "the depth of libuv handle backtrace"
+	default 0
+	---help---
+		Config the depth of backtrace for libuv handle creation by specified this
+		config: disable backtrace by 0
+		when enabled, uv_print_all_handles & uv_print_active_handles will print
+		handle alloc backtrace additionally.
+		it's useful for libuv handle leak debugging
+
+choice
+	prompt "libuv utils"
+	default LIBUV_UTILS_NONE
+
+config LIBUV_UTILS_NONE
+	bool "none"
+
+config LIBUV_UTILS_TEST
+	bool "uv_run_tests"
+
+config LIBUV_UTILS_BENCHMARK
+	bool "uv_run_benchmarks"
+
+endchoice
+
+if !LIBUV_UTILS_NONE
+
+config LIBUV_UTILS_PRIORITY
+	int "libuv utils priority"
+	default 100
+
+config LIBUV_UTILS_STACKSIZE
+	int "libuv utils stack size"
+	default 8192
+endif
+
+endif

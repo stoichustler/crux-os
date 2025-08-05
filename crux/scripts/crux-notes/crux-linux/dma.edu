@@ -1,0 +1,51 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+## Dynamic DMA ##
+
+In linux, the physical address is not directly useful
+to a driver; it must use ioremap() to map the space
+and produce a virtual address.
+
+check /proc/iomem
+
+I/O devices use a third kind of address: a "bus address".
+If a device has registers at an MMIO address, or if it
+performs DMA to read or write system memory, the
+addresses used by the device are bus addresses. In some
+systems, bus addresses are identical to CPU physical
+addresses, but in general they are not. IOMMUs and host
+bridges can produce arbitrary mappings between physical
+and bus addresses.
+
+From a device’s point of view, DMA uses the bus address
+space, but it may be restricted to a subset of that space.
+
+             CPU                  CPU                  Bus
+           Virtual              Physical             Address
+           Address              Address               Space
+            Space                Space
+
+          +-------+             +------+             +------+
+          |       |             |MMIO  |   Offset    |      |
+          |       |  Virtual    |Space |   applied   |      |
+        C +-------+ --------> B +------+ ----------> +------+ A
+          |       |  mapping    |      |   by host   |      |
++-----+   |       |             |      |   bridge    |      |   +--------+
+|     |   |       |             +------+             |      |   |        |
+| CPU |   |       |             | RAM  |             |      |   | Device |
+|     |   |       |             |      |             |      |   |        |
++-----+   +-------+             +------+             +------+   +--------+
+          |       |  Virtual    |Buffer|   Mapping   |      |
+        X +-------+ --------> Y +------+ <---------- +------+ Z
+          |       |  mapping    | RAM  |   by IOMMU
+          |       |             |      |
+          |       |             |      |
+          +-------+             +------+

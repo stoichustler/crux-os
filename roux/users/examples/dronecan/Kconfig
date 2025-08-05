@@ -1,0 +1,49 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config EXAMPLES_DRONECAN
+	tristate "DroneCAN example"
+	default n
+	depends on CANUTILS_LIBDRONECAN && SYSTEM_TIME64
+	---help---
+		Enable the LIBDRONECAN example
+
+if EXAMPLES_DRONECAN
+
+config EXAMPLES_DRONECAN_DEVPATH
+	string "Device Path"
+	default "/dev/can0"
+	depends on CAN
+	---help---
+		The device path
+
+config EXAMPLES_DRONECAN_NODE_ID
+	int "Node ID"
+	default 1
+	range 1 127
+	---help---
+		Specifies the node's ID
+
+config EXAMPLES_DRONECAN_APP_NODE_NAME
+	string "Node name"
+	default "org.dronecan.roux.demo"
+	---help---
+		app node name
+
+config EXAMPLES_DRONECAN_NODE_MEM_POOL_SIZE
+	int "Node Memory Pool Size"
+	default 1024
+	---help---
+		Specifies the node's memory pool size
+
+config EXAMPLES_DRONECAN_DAEMON_PRIORITY
+	int "daemon task priority"
+	default 100
+
+config EXAMPLES_DRONECAN_STACKSIZE
+	int "canard stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

@@ -1,0 +1,123 @@
+#
+# For a description of the syntax of this configuration file,
+# see docs/misc/kconfig-language.txt
+#
+mainmenu "xen/$(SRCARCH) $(XEN_FULLVERSION) Configuration"
+
+source "scripts/Kconfig.include"
+
+config BROKEN
+	bool
+
+config CC_IS_GCC
+	def_bool $(success,$(CC) --version | head -n 1 | grep -q gcc)
+
+config GCC_VERSION
+	int
+	default $(shell,$(srctree)/scripts/gcc-version.sh $(CC))
+
+config CC_IS_CLANG
+	def_bool $(success,$(CC) --version | head -n 1 | grep -q clang)
+
+config CLANG_VERSION
+	int
+	default $(shell,$(srctree)/scripts/clang-version.sh $(CC))
+
+config LD_IS_GNU
+	def_bool $(success,$(LD) --version | head -n 1 | grep -q "^GNU ld")
+
+config LD_IS_LLVM
+	def_bool $(success,$(LD) --version | head -n 1 | grep -q "^LLD")
+
+config CC_HAS_ASM_INLINE
+	# GCC >= 9, Clang >= 11
+	def_bool $(success,echo 'void foo(void) { asm inline (""); }' | $(CC) -x c - -c -o /dev/null)
+
+# Use -f{function,data}-sections compiler parameters
+config CC_SPLIT_SECTIONS
+	bool
+
+# Fixed in GCC 14, 13.3, 12.4 and 11.5
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=113921
+config GCC_ASM_GOTO_OUTPUT_BROKEN
+	bool
+	depends on CC_IS_GCC
+	default y if GCC_VERSION < 110500
+	default y if GCC_VERSION >= 120000 && GCC_VERSION < 120400
+	default y if GCC_VERSION >= 130000 && GCC_VERSION < 130300
+
+config CC_HAS_ASM_GOTO_OUTPUT
+	def_bool y
+	depends on !GCC_ASM_GOTO_OUTPUT_BROKEN
+	depends on $(success,echo 'int foo(int x) { asm goto ("": "=r"(x) ::: bar); return x; bar: return 0; }' | $(CC) -x c - -c -o /dev/null)
+
+# Compiler supports -fcondition-coverage aka MC/DC
+config CC_HAS_MCDC
+	def_bool $(cc-option,-fcondition-coverage)
+
+# Set code alignment.
+#
+# Allow setting on a boolean basis, and then convert such selection to an
+# integer for the build system and code to consume more easily.
+config FUNCTION_ALIGNMENT_4B
+	bool
+config FUNCTION_ALIGNMENT_8B
+	bool
+config FUNCTION_ALIGNMENT_16B
+	bool
+config FUNCTION_ALIGNMENT
+	int
+	default 16 if FUNCTION_ALIGNMENT_16B
+	default  8 if  FUNCTION_ALIGNMENT_8B
+	default  4 if  FUNCTION_ALIGNMENT_4B
+	default  0
+
+source "arch/$(SRCARCH)/Kconfig"
+
+config DEFCONFIG_LIST
+	string
+	option defconfig_list
+	default ARCH_DEFCONFIG
+
+config EXPERT
+	bool "Configure EXPERT features"
+	help
+	  This option allows certain base xen options and settings
+	  to be disabled or tweaked. This is for specialized environments
+	  which can tolerate a "non-standard" xen.
+	  Only use this if you really know what you are doing.
+	  xen binaries built with this option enabled are not security
+	  supported.
+	default n
+
+config UNSUPPORTED
+	bool "Configure UNSUPPORTED features"
+	default EXPERT
+	help
+	  This option allows certain unsupported xen options to be changed,
+	  which includes non-security-supported, experimental, and tech
+	  preview features as defined by SUPPORT.md. (Note that if an option
+	  doesn't depend on UNSUPPORTED it doesn't imply that is supported.)
+
+config LTO
+	bool "Link Time Optimisation"
+	depends on BROKEN
+	help
+	  Enable Link Time Optimisation.
+
+	  If unsure, say N.
+
+#
+# For architectures that know their compiler __int128 support is sound
+#
+config ARCH_SUPPORTS_INT128
+	bool
+
+#
+# For platforms that require specific handling of per-vCPU ioreq completion
+# events
+#
+config ARCH_VCPU_IOREQ_COMPLETION
+	bool
+
+source "Kconfig.debug"

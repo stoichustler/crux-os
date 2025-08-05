@@ -1,0 +1,12 @@
+name: xen_dom0
+append:
+  EXTRA_DTC_OVERLAY_FILE: xen_dom0.overlay
+  EXTRA_CONF_FILE: xen_dom0.conf
+
+boards:
+  qemu_cortex_a53/qemu_cortex_a53:
+    append:
+      EXTRA_DTC_OVERLAY_FILE: boards/qemu_cortex_a53.overlay
+  radxa_zero3w/rk3568/xen_dom0:
+    append:
+      EXTRA_DTC_OVERLAY_FILE: boards/radxa_zero3w.overlay

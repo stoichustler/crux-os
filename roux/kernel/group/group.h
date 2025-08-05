@@ -1,0 +1,114 @@
+/****************************************************************************
+ * sched/group/group.h
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.  The
+ * ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ *
+ ****************************************************************************/
+
+#ifndef __SCHED_GROUP_GROUP_H
+#define __SCHED_GROUP_GROUP_H
+
+/****************************************************************************
+ * Included Files
+ ****************************************************************************/
+
+#include <roux/config.h>
+
+#include <sys/types.h>
+#include <stdbool.h>
+#include <sched.h>
+
+#include <roux/kmalloc.h>
+#include <roux/sched.h>
+
+/****************************************************************************
+ * Public Type Definitions
+ ****************************************************************************/
+
+typedef int (*foreachchild_t)(pid_t pid, FAR void *arg);
+
+/****************************************************************************
+ * Public Data
+ ****************************************************************************/
+
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+#ifdef CONFIG_SCHED_CHILD_STATUS
+void task_initialize(void);
+#else
+#define task_initialize()
+#endif
+
+/* Task group data structure management */
+
+int group_initialize(FAR struct task_tcb_s *tcb, uint8_t ttype);
+void group_postinitialize(FAR struct task_tcb_s *tcb);
+#ifndef CONFIG_DISABLE_PTHREAD
+void group_bind(FAR struct pthread_tcb_s *tcb);
+void group_join(FAR struct pthread_tcb_s *tcb);
+#endif
+void group_leave(FAR struct tcb_s *tcb);
+void group_drop(FAR struct task_group_s *group);
+#if defined(CONFIG_SCHED_WAITPID) && !defined(CONFIG_SCHED_HAVE_PARENT)
+void group_add_waiter(FAR struct task_group_s *group);
+void group_del_waiter(FAR struct task_group_s *group);
+#endif
+
+#ifdef HAVE_GROUP_MEMBERS
+int group_foreachchild(FAR struct task_group_s *group, foreachchild_t handler, FAR void *arg);
+int group_kill_children(FAR struct tcb_s *tcb);
+#ifdef CONFIG_SIG_SIGSTOP_ACTION
+int group_suspend_children(FAR struct tcb_s *tcb);
+int group_continue(FAR struct tcb_s *tcb);
+#endif
+#endif
+
+/* Convenience functions */
+
+FAR struct task_group_s *task_getgroup(pid_t pid);
+
+/* Signaling group members */
+
+int group_signal(FAR struct task_group_s *group, FAR siginfo_t *siginfo);
+
+/* Parent/child data management */
+
+#ifdef CONFIG_SCHED_HAVE_PARENT
+int task_reparent(pid_t ppid, pid_t chpid);
+
+#ifdef CONFIG_SCHED_CHILD_STATUS
+FAR struct child_status_s *group_alloc_child(void);
+void group_free_child(FAR struct child_status_s *status);
+void group_add_child(FAR struct task_group_s *group, FAR struct child_status_s *child);
+FAR struct child_status_s *group_exit_child(FAR struct task_group_s *group);
+FAR struct child_status_s *group_find_child(FAR struct task_group_s *group, pid_t pid);
+FAR struct child_status_s *group_remove_child(FAR struct task_group_s *group, pid_t pid);
+void group_remove_children(FAR struct task_group_s *group);
+
+#endif /* CONFIG_SCHED_CHILD_STATUS */
+#endif /* CONFIG_SCHED_HAVE_PARENT */
+
+/* Group data resource configuration */
+
+int group_setupidlefiles(void);
+int group_setuptaskfiles(FAR struct task_tcb_s *tcb, FAR const posix_spawn_file_actions_t *actions,
+						 bool cloexec);
+
+#endif /* __SCHED_GROUP_GROUP_H */

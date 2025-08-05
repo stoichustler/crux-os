@@ -1,0 +1,22 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config BENCHMARK_TINY_MEMBENCH
+	tristate "TinyMemBench"
+	default n
+	---help---
+		Measure the memory bandwidth and latency
+
+if BENCHMARK_TINY_MEMBENCH
+
+config BENCHMARK_TINY_MEMBENCH_PRIORITY
+	int "TinyMemBench task priority"
+	default 100
+
+config BENCHMARK_TINY_MEMBENCH_STACKSIZE
+	int "TinyMemBench stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

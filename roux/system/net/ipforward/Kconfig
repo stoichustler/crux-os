@@ -1,0 +1,60 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config NET_IPFORWARD
+	bool "Enable L2 forwarding"
+	default n
+	---help---
+		Enable forwarding of packets.  Packets received with IP addresses
+		that are not supported by this platform will be forwarded to the
+		appropriate network device.  Routing table support may be required.
+
+config NET_IPFORWARD_BROADCAST
+	bool "Forward broadcast/multicast packets"
+	default n
+	depends on NET_IPFORWARD
+	---help---
+		If selected, broadcast packets received on one network device will
+		be forwarded though other network devices.
+
+config NET_IPFORWARD_NSTRUCT
+	int "Number of pre-allocated forwarding structures"
+	default 4
+	depends on NET_IPFORWARD
+	---help---
+		When packets are forwarded from on device to another, a structure
+		must be allocated to hold the state of forwarding across several
+		asynchronous events.  Those structures are pre-allocated for
+		minimal, deterministic performance and to prevent hogging of memory
+		(of course, that means that this value must be carefully selected
+		for your application).  This setting defines the number of such pre-
+		allocated structures.
+
+		NOTE: This setting effectively puts a maximum on the number of
+		packets that may be waiting to be forwarded from one network device
+		to another.  CONFIG_IOB_NBUFFERS also limits the forward because the
+		payload of the packet (up to the MSS) is retain in IOBs.
+
+		WARNING: DO NOT set this setting to a value greater than or equal to
+		CONFIG_IOB_NBUFFERS, otherwise it may consume all the IOB and let
+		netdev fail to work.
+
+config NET_IPFORWARD_ALLOC_STRUCT
+	int "Dynamic forwarding structures allocation"
+	default 1
+	---help---
+		When set to 0 all dynamic allocations are disabled
+
+		When set to 1 a new forwarding structure will be allocated every
+		time, and it will be free'd when no longer needed.
+
+		Setting this to 2 or more will allocate the forwarding structures
+		in batches (with batch size equal to this config). When a I/O buffer
+		chain head is no longer needed, it will be returned to the free
+		forwarding structures pool, and it will never be deallocated!
+
+		Note: maximum number of allocated forwarding structures is limited
+		to CONFIG_IOB_NBUFFERS - CONFIG_IOB_THROTTLE to avoid consuming all
+		the IOBs.

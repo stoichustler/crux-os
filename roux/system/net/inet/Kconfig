@@ -1,0 +1,10 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config NET_IPV4_CHECKSUMS
+	bool "IPV4 checksums"
+	default y
+	---help---
+		Enable/disable IPV4 checksum support.

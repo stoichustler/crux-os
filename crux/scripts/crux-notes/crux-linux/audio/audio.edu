@@ -1,0 +1,107 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+===
+
+Check crux-os/core (linux-6.15.x) source code for more details
+
+###
+
+PCM
+
+rate (Hz)
+	- the amount of samples consumed or produced per second.
+
+frame
+	- group of samples for each channel at one moment of time.
+
+The higher rate => the higher resolution
+
+###
+
+Android Audio Framework
+
+		JNI
+		 |
+		Native Framework
+		 |
+		Binder IPC Proxies
+		 |
+		Media Server
+		 |
+		HAL
+		 |
+		Kernel
+		  \
+		  ALSA/others
+
+ALSA (Advanced Linux Sound Architecture)
+
+In ALSA system on chip (ASoC):
+
+- I2C (for control channel)
+- I2S (for audio data)
+- ...
+
+collectively called Digital Audio Interfaces (DAIs).
+
+###
+
+codec (coder-decoder)
+
+module that encodes and decodes an audio signal from one
+representation to another (typically analog to PCM or PCM to
+analog).
+
+DSP (Digital Signal Processor)
+
+optional component primarily used to offload the app processor
+and provide signal processing features at a lower power cost.
+
+###
+
++---------+               +-----+
+|SoC      |               |     |
+|         |               |     |
+| +-------+ Digital Audio |     |
+| |  DAI  |-------------->|     |              +----------+
+| +-------+               |     | Analog Audio |          |
+|         |               |CODEC|------------->| Ampifier |
+| +-------+ Configuration |     |              |          |
+| |I2C/SPI|-------------->|     |              +----------+
+| +-------+               |     |                    |
+|         |               |     |                    |
++---------+               +-----+                    |
+                             |    +-----------+      |
+                             +--->| Connector |<-----+
+                                  +-----------+
+
+###
+
+               +--- codec/system clock
+               |
++-------+     MCLK      +-------+
+|SoC    |---------------|       |
+|       |               |       |   @BCLK - Bit clock
+| +-----+     BCLK      |       |
+| |     |<------------->|       |   @WCLK - Word clock
+| |     |     WCLK      |       |
+| | DAI |<------------->| CODEC |   @FCLK - Frame clock
+| |     | TXD       DIN |       |
+| |     |-------------->|       |
+| |     | RXD      DOUT |       |
+| |     |<--------------|       |
+| +-----+               |       |
++-------+               +-------+
+
+###
+
+
+===

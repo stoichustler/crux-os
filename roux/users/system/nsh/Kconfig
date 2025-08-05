@@ -1,0 +1,31 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_NSH
+	tristate "NuttShell (NSH) example"
+	default n
+	select NSH_LIBRARY
+	select SYSTEM_READLINE
+	---help---
+		Enable the NuttShell (NSH) example
+
+if SYSTEM_NSH
+
+config SYSTEM_NSH_PRIORITY
+	int "ROUX shell thread priority"
+	default 100
+
+config SYSTEM_NSH_STACKSIZE
+	int "ROUX shell stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config SYSTEM_NSH_PROGNAME
+	string "Program name"
+	default "nsh"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+endif

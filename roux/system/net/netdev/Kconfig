@@ -1,0 +1,102 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menu "Network Device Operations"
+
+config NETDEV_IOCTL
+	bool
+	default n
+
+config NETDEV_PHY_IOCTL
+	bool "Enable PHY ioctl()"
+	default n
+	select NETDEV_IOCTL
+	---help---
+		Enable support for ioctl() commands to access PHY registers
+
+config NETDEV_CAN_BITRATE_IOCTL
+	bool "Enable CAN bitrate ioctl()"
+	default n
+	select NETDEV_IOCTL
+	depends on NET_CAN
+	---help---
+		Enable support for ioctl() commands to change CAN bitrate
+
+config NETDEV_CAN_FILTER_IOCTL
+	bool "Enable CAN filter ioctl()"
+	default n
+	select NETDEV_IOCTL
+	depends on NET_CAN
+	---help---
+		Enable support for ioctl() commands to add/remove CAN hardware-level
+		filters (NOTE: Not supported by all drivers)
+
+config NETDEV_CAN_STATE_IOCTL
+	bool "Enable CAN state ioctl()"
+	default n
+	select NETDEV_IOCTL
+	depends on NET_CAN
+	---help---
+		Enable support for ioctl() commands to set/see CAN or LIN controller-state
+		(NOTE: Not supported by all drivers)
+
+config NETDEV_WIRELESS_IOCTL
+	bool "Enable Wireless ioctl()"
+	default n
+	select NETDEV_IOCTL
+	depends on DRIVERS_WIRELESS
+	---help---
+		Enable support for wireless device ioctl() commands
+
+config NETDEV_MODEM_LTE_IOCTL
+	bool "Enable LTE ioctl()"
+	default n
+	select NETDEV_IOCTL
+	depends on MODEM
+	---help---
+		Enable support for modem device ioctl() commands
+
+config NETDEV_IFINDEX
+	bool "Enable IF index support"
+	default n
+	---help---
+		Enable support for references devices by an interface index.
+
+		This feature is automatically enabled when raw, PACKET sockets
+		are enabled.
+
+		When enabled, these option also enables the user interfaces:
+		if_nametoindex() and if_indextoname().
+
+config NETDEV_MULTIPLE_IPv6
+	bool "Enable multiple IPv6 addresses support"
+	default n
+	select NETDEV_IFINDEX
+	depends on NET_IPv6
+	---help---
+		Enable support for multiple IPv6 addresses per network device.
+
+config NETDEV_MAX_IPv6_ADDR
+	int "Maximum number of IPv6 addresses per network device"
+	range 2 255
+	default 2
+	depends on NETDEV_MULTIPLE_IPv6
+	---help---
+		Maximum number of IPv6 addresses that can be assigned to a single
+		network device. Normally a link-local address and a global address
+		are needed.
+
+config NETDOWN_NOTIFIER
+	bool "Support network down notifications"
+	default n
+	depends on SCHED_WORKQUEUE
+	select WQUEUE_NOTIFIER
+	---help---
+		Enable building of logic that will execute on the low priority work
+		thread when the network is taken down.  This is is a general purpose
+		notifier, but was developed specifically to support SIGHUP poll()
+		logic.
+
+endmenu # Network Device Operations

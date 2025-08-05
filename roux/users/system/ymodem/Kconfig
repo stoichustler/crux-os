@@ -1,0 +1,34 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_YMODEM
+	tristate "YMODEM"
+	---help---
+		Enable support for ymodem.
+
+if SYSTEM_YMODEM
+
+config SYSTEM_YMODEM_STACKSIZE
+	int "ymodem stack size"
+	default DEFAULT_TASK_STACKSIZE
+	---help---
+		The size of stack allocated for the ymodem task.
+
+config SYSTEM_YMODEM_PRIORITY
+	int "ymodem priority"
+	default 100
+	---help---
+		The priority of the ymodem task.
+
+config SYSTEM_YMODEM_DEBUG
+	bool "ymodem debug"
+	default n
+
+config SYSTEM_YMODEM_DEBUG_FILEPATH
+	string "save ymodem debug log path"
+	depends on SYSTEM_YMODEM_DEBUG
+	default "/tmp/ymodem"
+
+endif

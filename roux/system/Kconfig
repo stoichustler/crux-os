@@ -1,0 +1,59 @@
+#
+# RouX System
+#
+
+menu "System Support"
+source "system/syscall/Kconfig"
+endmenu
+
+menu "Networking Support"
+source "system/net/Kconfig"
+endmenu
+
+menu "Crypto API"
+source "system/crypto/Kconfig"
+endmenu
+
+menu "File Systems"
+source "system/fs/Kconfig"
+endmenu
+
+menu "Graphics Support"
+source "system/graphics/Kconfig"
+endmenu
+
+menu "Memory Management"
+source "system/mm/Kconfig"
+endmenu
+
+menu "Audio Support"
+source "system/audio/Kconfig"
+endmenu
+
+menu "Video Support"
+source "system/video/Kconfig"
+endmenu
+
+menu "Wireless Support"
+source "system/wireless/Kconfig"
+endmenu
+
+menu "Binary Loader"
+source "system/binfmt/Kconfig"
+endmenu
+
+menu "Open Asymmetric Multi Processing"
+source "system/openamp/Kconfig"
+endmenu
+
+# Support optionally including external code
+# into the OS build. EXTERNALDIR will be used
+# to either point to 'roux/system/external' or
+# 'roux/system/dummy', if 'roux/system/external'
+# does not contain a Kconfig file
+
+config EXTERNALDIR
+	string
+	option env="EXTERNALDIR"
+
+source "$EXTERNALDIR/Kconfig"

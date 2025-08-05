@@ -1,0 +1,18 @@
+CONFIG_X86 := y
+CONFIG_X86_64 := y
+
+CONFIG_MIGRATE := y
+CONFIG_XCUTILS := y
+
+CONFIG_XEN_INSTALL_SUFFIX := .gz
+
+CFLAGS += -m64
+
+SunOS_LIBDIR = $(SunOS_LIBDIR_x86_64)
+
+EFI_DIR ?= /usr/lib64/efi
+
+# Use only if calling $(LD) directly.
+LDFLAGS_DIRECT += -melf_x86_64$(XEN_ELF_SUB_FLAVOR)
+
+IOEMU_CPU_ARCH ?= x86_64

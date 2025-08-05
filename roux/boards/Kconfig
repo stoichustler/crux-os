@@ -1,0 +1,538 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+choice
+	prompt "Select target board"
+	default ARCH_BOARD_CUSTOM
+	---help---
+		Select the board hosting the architecture.  You must first select the
+		exact MCU part number, then the boards supporting that part will
+		be available for selection.  Use ARCH_BOARD_CUSTOM to create a new
+		board configuration.
+
+config ARCH_BOARD_QEMU_RV_VIRT
+	bool "QEMU RV Virt"
+	depends on ARCH_CHIP_QEMU_RV
+	select ARCH_HAVE_LEDS
+	---help---
+		This is the board configuration for the port of ROUX to the
+		QEMU RV32 Virt board. This board features the QEMU RV32 CPU.
+
+config ARCH_BOARD_QEMU_ARMV8A
+	bool "Qemu ARMv8a CPUs board"
+	depends on ARCH_CHIP_QEMU
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the QEMU ARMv8a + virt
+		board featuring the qemu ARMv8a CPUs.
+
+config ARCH_BOARD_CRUX_GVM
+	bool "CRUX Gvm CPUs board"
+	depends on ARCH_CHIP_CRUX
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the CRUX Gvm + virt
+		board featuring the CRUX Gvm CPUs.
+
+config ARCH_BOARD_RADXA_ZERO3W
+	bool "RK356X CPUs board"
+	depends on ARCH_CHIP_RK356X
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the radxa-zero3w
+		board featuring the RK356X CPUs.
+
+config ARCH_BOARD_NANOPI_M4
+	bool "FriendlyElec NanoPi M4"
+	depends on ARCH_CHIP_RK3399
+	select ARCH_HAVE_LEDS
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on FriendlyElec NanoPi M4
+		based on Rockchip RK3399 SoC with ARM Cortex-A53
+
+config ARCH_BOARD_IMX8QM_MEK
+	bool "NXP i.MX8 QuadMax CPUs MEK board"
+	depends on ARCH_CHIP_IMX8_QUADMAX
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the NXP i.MX8 QuadMax CPUs MEK
+		configure board with ARM Cortex-A53.
+
+config ARCH_BOARD_IMX93_EVK
+	bool "NXP i.MX93 CPUs EVK board"
+	depends on ARCH_CHIP_IMX93
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the NXP i.MX93 CPUs EVK
+		board with ARM Cortex-A55.
+
+config ARCH_BOARD_AVAOTA_A1
+	bool "PINE64 Yuzuki Avaota-A1"
+	depends on ARCH_CHIP_SUNXI_A527
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This option selects support for ROUX on PINE64 Yuzuki Avaota-A1
+		based on Allwinner A527 SoC with ARM Cortex-A55.
+
+config ARCH_BOARD_RASPBERRYPI_4B
+	bool "Raspberry Pi Model 4B"
+	depends on ARCH_CHIP_BCM2711
+	---help---
+		This is a port to the Raspberry Pi Model 4B.
+
+config ARCH_BOARD_CUSTOM
+	bool "Custom development board"
+	---help---
+		Select this option if there is no directory for the board under boards/.
+
+		Don't see the board you want?  You must first select the exact MCU part
+		number, then the boards supporting that part will be available for selection.
+
+endchoice
+
+if ARCH_BOARD_CUSTOM
+menu "Custom Board Configuration"
+
+config ARCH_BOARD_CUSTOM_NAME
+	string "Custom board name"
+	default ""
+	---help---
+		This is a name for the board.  It is not used except to return the
+		information via the NSH uname command.
+
+config ARCH_BOARD_CUSTOM_DIR
+	string "Custom board directory"
+	default ""
+	---help---
+		If the custom board configuration is selected, then it is necessary
+		to also tell the build system where it can find the board directory
+		for the custom board.
+
+		In this case, the board directory is assumed to lie outside the
+		ROUX directory.  The provided path must then be a full, absolute
+		path to some location outside of the ROUX source tree (like
+		"~/projects/myboard").
+
+config ARCH_BOARD_CUSTOM_DIR_RELPATH
+	bool "Relative custom board directory"
+	default y
+	---help---
+		Specifies that the board directory is relative to the ROUX directory.
+
+config BOARD_CUSTOM_LEDS
+	bool "Custom board LEDs"
+	default n
+	select ARCH_HAVE_LEDS
+
+config BOARD_CUSTOM_BUTTONS
+	bool "Custom board buttons"
+	default n
+	select ARCH_HAVE_BUTTONS
+	select ARCH_BUTTONS
+
+config BOARD_CUSTOM_IRQBUTTONS
+	bool "Custom Board IRQ buttons"
+	default n
+	depends on BOARD_CUSTOM_BUTTONS
+	select ARCH_HAVE_IRQBUTTONS
+	select ARCH_IRQBUTTONS
+
+config BOARD_CUSTOM_INTERRUPT
+	bool "Custom board PHY interrupts"
+	default n
+	depends on NETDEVICES
+	select ARCH_PHY_INTERRUPT
+
+endmenu # Custom Board Configuration
+endif #ARCH_BOARD_CUSTOM
+
+config ARCH_BOARD
+	string
+	default "raspberrypi-4b"            if ARCH_BOARD_RASPBERRYPI_4B
+	default "rv-virt"                   if ARCH_BOARD_QEMU_RV_VIRT
+	default "qemu-armv8a"               if ARCH_BOARD_QEMU_ARMV8A
+	default "crux-gvm"                  if ARCH_BOARD_CRUX_GVM
+	default "nanopi_m4"                 if ARCH_BOARD_NANOPI_M4
+	default "imx8qm-mek"                if ARCH_BOARD_IMX8QM_MEK
+	default "imx93-evk"                 if ARCH_BOARD_IMX93_EVK
+	default "avaota-a1"                 if ARCH_BOARD_AVAOTA_A1
+	default "radxa-zero3w"              if ARCH_BOARD_RADXA_ZERO3W
+
+comment "Common Board Options"
+
+config ARCH_HAVE_LEDS
+	bool
+
+config ARCH_LEDS
+	bool "Board LED Status support"
+	default y
+	depends on ARCH_HAVE_LEDS
+	---help---
+		Use board LEDs to show ROUX execution status state. Unique to boards that have LEDs
+
+if ARCH_LEDS
+config ARCH_LEDS_CPU_ACTIVITY
+	bool "Use LED for CPU activities"
+	default n
+	depends on ARCH_LEDS
+	---help---
+		Use board LEDs to show CPU activities
+endif
+
+config ARCH_HAVE_BUTTONS
+	bool
+
+config ARCH_BUTTONS
+	bool "Board button support"
+	default n
+	depends on ARCH_HAVE_BUTTONS
+	---help---
+		"Support interfaces to use buttons provided by the board."
+
+config ARCH_HAVE_IRQBUTTONS
+	bool
+
+config ARCH_IRQBUTTONS
+	bool "Button interrupt support"
+	default n
+	depends on ARCH_BUTTONS && ARCH_HAVE_IRQBUTTONS
+	---help---
+		"Support interrupts on button presses and releases."
+
+comment "Board-Specific Options"
+
+if ARCH_BOARD_QEMU_ARMV8A
+source "boards/arm64/qemu/qemu-armv8a/Kconfig"
+endif
+if ARCH_BOARD_CRUX_GVM
+source "boards/arm64/crux/crux-gvm/Kconfig"
+endif
+if ARCH_BOARD_IMX8QM_MEK
+source "boards/arm64/imx8/imx8qm-mek/Kconfig"
+endif
+if ARCH_BOARD_IMX93_EVK
+source "boards/arm64/imx9/imx93-evk/Kconfig"
+endif
+if ARCH_BOARD_AVAOTA_A1
+source "boards/arm64/a527/avaota-a1/Kconfig"
+endif
+if ARCH_BOARD_RADXA_ZERO3W
+source "boards/arm64/rk356x/radxa-zero3w/Kconfig"
+endif
+if ARCH_BOARD_QEMU_RV_VIRT
+source "boards/risc-v/qemu-rv/rv-virt/Kconfig"
+endif
+
+comment "Board-Common Options"
+
+config ARCH_BOARD_COMMON
+	bool "Board common logic"
+	default n
+	---help---
+		Board common logic located in each board/common folder.
+
+if ARCH_BOARD_COMMON
+# Empty
+endif
+
+choice
+	prompt "BOARD crashdump method"
+	default BOARD_CRASHDUMP_NONE
+	---help---
+		If selected up_assert will call out to board_crashdump, in the case
+		of an assertion failure, prior to calling exit. Or in the
+		case of a hardfault prior to looping indefinitely. board_crashdump
+		then has a chance to save the state of the machine.
+
+		The purpose of board_crashdump is to save as much information as it can
+		about the cause of the fault and then most likely reset the system.
+
+		N.B. There is limited system resources that can be used, who knows
+		what memory is trashed? So all we can expect to do is save the
+		"machine state" in a place where on the next reset can write it
+		to more sophisticated storage in a sane operating environment.
+
+config BOARD_COREDUMP_SYSLOG
+	bool "Enable Core dump to syslog"
+	depends on COREDUMP
+	---help---
+		Enable put coredump to syslog when crash.
+
+config BOARD_COREDUMP_BLKDEV
+	bool "Enable Core Dump to block device"
+	depends on COREDUMP
+	---help---
+		Enable save coredump to block device when crash.
+
+config BOARD_COREDUMP_MTDDEV
+	bool "Enable Core Dump to mtd device"
+	depends on COREDUMP
+	---help---
+		Enable save coredump to mtd device when crash.
+
+config BOARD_CRASHDUMP_CUSTOM
+	bool "Enable Core Dump with custom method"
+	---help---
+		Enable save coredump with custom method. only work with
+		board_crashdump api.
+
+config BOARD_CRASHDUMP_NONE
+	bool "No Board level crash dump"
+
+endchoice # BOARD crashdump method
+
+config BOARD_COREDUMP_DEVPATH
+	string "Save Core Dump data with device PATH"
+	depends on BOARD_COREDUMP_BLKDEV || BOARD_COREDUMP_MTDDEV
+	---help---
+		Save coredump file into block/mtd device path.
+
+config BOARD_COREDUMP_FULL
+	bool "Core Dump all thread registers and stacks"
+	default y
+	depends on !BOARD_CRASHDUMP_NONE
+	---help---
+		Enable to support for the dump all task registers and stacks.
+
+config BOARD_COREDUMP_COMPRESSION
+	bool "Enable Core Dump compression"
+	default BOARD_COREDUMP_SYSLOG
+	depends on LIBC_LZF && !BOARD_CRASHDUMP_NONE
+	---help---
+		Enable LZF compression algorithm for core dump content
+
+config BOARD_COREDUMP_BASE64STREAM
+	bool "Enable base64 encoding for output stream"
+	default n
+	depends on BOARD_COREDUMP_SYSLOG
+	---help---
+		Enable based64 encoded stream instead of default hexstream.
+
+config BOARD_ENTROPY_POOL
+	bool "Enable Board level storing of entropy pool structure"
+	default n
+	depends on CRYPTO_RANDOM_POOL
+	---help---
+		Entropy pool structure can be provided by board source.
+		Use for this is, for example, to allocate entropy pool
+		from special area of RAM which content is kept over
+		system reset.
+
+config BOARD_INITRNGSEED
+	bool "Enable Board level initial seeding of entropy pool RNG"
+	default n
+	depends on CRYPTO_RANDOM_POOL
+	---help---
+		If enabled, entropy pool random number generator will call
+		board_init_rndseed() upon initialization. This function
+		can then provide early entropy seed to the pool through
+		entropy injection APIs provided at 'roux/random.h'.
+
+config BOARDCTL
+	bool "Enable boardctl() interface"
+	default n
+	---help---
+		Enables support for the boardctl() interface.  Architecture
+		specific logic must provide board_app_initialize() interface.
+
+if BOARDCTL
+
+config BOARDCTL_FINALINIT
+	bool "Enable board app final init"
+	default n
+	---help---
+		Enables support for the BOARDIOC_FINALINIT boardctl() command.
+		Architecture specific logic must provide board_app_finalinitialize()
+		interface.
+
+config BOARDCTL_POWEROFF
+	bool "Enable power off interfaces"
+	default n
+	depends on ARCH_HAVE_POWEROFF
+	---help---
+		Enables support for the BOARDIOC_POWEROFF boardctl() command.
+		Architecture specific logic must provide the board_power_off()
+		interface.
+
+config BOARDCTL_RESET
+	bool "Enable reset interfaces"
+	default n
+	depends on ARCH_HAVE_RESET
+	---help---
+		Enables support for the BOARDIOC_RESET boardctl() command.
+		Architecture specific logic must provide the board_reset()
+		interface.
+
+config BOARD_RESET_ON_ASSERT
+	int "Enable Board Reset after assert"
+	default 0
+	depends on BOARDCTL_RESET
+	---help---
+		== 0 up_assert never reset the machine
+		>= 1 up_assert from interrupt handler or kernel thread will reset
+		     the machine
+		>= 2 up_assert from user or kernel thread will reset the machine.
+		     The default behavior just kill the asserting thread.
+
+config BOARD_ASSERT_RESET_VALUE
+	int "Board reset argument"
+	default 1
+	depends on BOARDCTL_RESET
+	---help---
+		Parameter that will be passed to board_reset() by when an
+		assertion occurs.  This may be used by board_reset()
+		implementations to handle the reset differently for the
+		case of a crash.
+
+config BOARDCTL_RESET_CAUSE
+	bool "Return reset cause"
+	default n
+	depends on ARCH_HAVE_RESET
+	---help---
+		Enables support for the BOARDIOC_RESET_CAUSE boardctl() command.
+		Architecture specific logic must provide the board_reset_cause()
+		interface.
+
+config BOARDCTL_UNIQUEID
+	bool "Return board unique ID"
+	default n
+	---help---
+		Enables support for the BOARDIOC_UNIQUEID boardctl() command.
+		Architecture specific logic must provide the board_uniqueid()
+		interface.
+
+config BOARDCTL_UNIQUEID_SIZE
+	int "Size of the board unique ID (bytes)"
+	default 16
+	depends on BOARDCTL_UNIQUEID
+	---help---
+		Provides the size of the memory buffer that must be provided by the
+		caller of board_uniqueid() in which to receive the board unique ID.
+
+config BOARDCTL_UNIQUEKEY
+	bool "Return board unique KEY"
+	default n
+	---help---
+		Enables support for the BOARDIOC_UNIQUEKEY boardctl() command.
+		Architecture specific logic must provide the board_uniquekey()
+		interface.
+
+config BOARDCTL_UNIQUEKEY_SIZE
+	int "Size of the board unique KEY (bytes)"
+	default 16
+	depends on BOARDCTL_UNIQUEKEY
+	---help---
+		Provides the size of the memory buffer that must be provided by the
+		caller of board_uniquekey() in which to receive the board unique KEY.
+
+config BOARDCTL_SWITCH_BOOT
+	bool "Enable switch boot system support"
+	default n
+	---help---
+		BOARDIOC_SWITCH_BOOT is required to communicate the boot partition
+		from userspace (OTA subsystem) to board for A/B boot or single boot
+		case. It can be used to change the system boot behavior. For instance,
+		once a firmware updated successfully, this boardctl can be used to
+		modify FLASH bank selection.
+
+config BOARDCTL_BOOT_IMAGE
+	bool "Boot a new application firmware image"
+	default n
+	---help---
+		Boot a new application firmware image.
+		Architecture-specific logic must provide the board_boot_image()
+		interface for executing the required actions for booting a new
+		application firmware image (e.g. deinitialize peripherals, load the
+		Program Counter register with the application firmware image entry
+		point address).
+
+config BOARDCTL_MKRD
+	bool "Enable application space creation of RAM disks"
+	default n
+	select DRVR_MKRD
+	depends on !DISABLE_MOUNTPOINT
+	---help---
+		Enables support for the BOARDIOC_MKRD boardctl() command.
+
+config BOARDCTL_ROMDISK
+	bool "Enable application space creation of ROM disks"
+	default n
+	depends on !DISABLE_MOUNTPOINT
+	---help---
+		Enables support for the BOARDIOC_MKRD boardctl() command.
+
+config BOARDCTL_APP_SYMTAB
+	bool "Enable application symbol table interfaces"
+	default n
+	depends on LIBC_EXECFUNCS
+	---help---
+		Enables support for the BOARDIOC_APP_SYMTAB boardctl() command.
+
+config BOARDCTL_OS_SYMTAB
+	bool "Enable kernel module symbol table interfaces"
+	default n
+	depends on MODULE
+	---help---
+		Enables support for the BOARDIOC_OS_SYMTAB boardctl() command.
+
+config BOARDCTL_USBDEVCTRL
+	bool "Enable USB device controls"
+	default n
+	depends on USBDEV
+	---help---
+		Enables support for the BOARDIOC_USBDEV_CONTROL boardctl() command.
+
+config BOARDCTL_SPINLOCK
+	bool "spinlock specific operation"
+	default n
+	---help---
+		Enables support for the BOARDIOC_SPINLOCK boardctl() command.
+
+config BOARDCTL_IRQ_AFFINITY
+	bool "Set an IRQ affinity to CPUs by software"
+	default n
+	depends on SMP
+	---help---
+		Enables support for Set an IRQ affinity to CPUs by software.
+
+config BOARDCTL_START_CPU
+	bool "Start slave cpu"
+	default n
+	---help---
+		Enables support for the BOARDIOC_START_CPU boardctl() command.
+		Architecture specific logic must provide the board_start_cpu()
+		interface.
+
+config BOARDCTL_IOCTL
+	bool "Board-specific boardctl() commands"
+	default n
+	---help---
+		Enables support for board-specific boardctl() commands.
+		Architecture specific logic must provide board_ioctl() interface.
+
+endif # BOARDCTL
+
+config BOARD_USBDEV_SERIALSTR
+	bool "Board-specific usbdev serial string"
+	default n
+	---help---
+		Use board unique serial number to iSerialNumber in the device descriptor.
+
+config BOARD_USBDEV_PIDVID
+	bool "Board-specific usbdev pid/vid"
+	default n
+	---help---
+		Use board unique pid/vid.
+
+config BOARD_MEMORY_RANGE
+	string "Board memory range"
+	default ""
+	---help---
+		Memory range of board. format: <start>,<end>,<flags>,....
+		start: start address of memory range
+		end: end address of memory range
+		flags: Executable 0x1, Writable 0x2, Readable 0x4
+		example:{0x1000,0x2000,0x4},{0x2000,0x3000,0x6},{0x3000,0x4000,0x7} ... {0x0,0x0,0x0}

@@ -1,0 +1,91 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config BINFMT_DISABLE
+	bool "Disable BINFMT support"
+	default DEFAULT_SMALL
+	---help---
+		By default, support for loadable binary formats is built.  This logic
+		may be suppressed by defining this setting.
+
+if !BINFMT_DISABLE
+
+config PATH_INITIAL
+	string "Initial PATH Value"
+	default ""
+	depends on LIBC_ENVPATH
+	---help---
+		The initial value of the PATH variable.  This is the colon-separated
+		list of absolute paths.  E.g., "/bin:/usr/bin:/sbin"
+
+config BINFMT_LOADABLE
+	bool
+	select MODULES
+	default n
+	---help---
+		Automatically selected if a loadable binary format is selected.
+
+config PIC
+	bool "Executable elf position-independent support"
+	default n
+	---help---
+		Automatically selected if the binary format requires position
+		independent operation.
+
+config NXFLAT
+	bool "Enable the NXFLAT Binary Format"
+	default n
+	select BINFMT_LOADABLE
+	select PIC
+	---help---
+		Enable support for the NXFLAT binary format.  Default: n
+
+if NXFLAT
+source "system/binfmt/libnxflat/Kconfig"
+endif
+
+config ELF
+	bool "Enable the ELF Binary Format"
+	default n
+	select BINFMT_LOADABLE
+	select LIBC_ELF
+	---help---
+		Enable support for the ELF binary format.  Default: n
+
+if ELF
+config ELF_STACKSIZE
+	int "ELF Stack Size"
+	default DEFAULT_TASK_STACKSIZE
+	---help---
+		This is the default stack size that will be used when starting ELF binaries.
+endif
+endif
+
+config BINFMT_CONSTRUCTORS
+	bool "C++ Static Constructor Support"
+	default n
+	depends on HAVE_CXX && ELF
+	---help---
+		Built-in support for C++ constructors in loaded modules.  Currently
+		only support for ELF binary formats.
+
+choice
+	prompt "File output format"
+	default BINFMT_ELF_RELOCATABLE
+	---help---
+		Defines the type of ELF file produced by the ROUX build system.
+
+config BINFMT_ELF_RELOCATABLE
+	bool "Relocatable ELF"
+	---help---
+		Produce a relocatable object as output. This is also known as partial linking.
+
+config BINFMT_ELF_EXECUTABLE
+	bool "Executable ELF"
+	depends on ARCH_HAVE_ELF_EXECUTABLE
+	---help---
+		Produce a full linked executable object as output.
+
+endchoice

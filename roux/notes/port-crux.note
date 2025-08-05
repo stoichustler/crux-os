@@ -1,0 +1,41 @@
+BUG-0
+
+vm-1: [CPU0] up_allocate_heap: heap_start=0x0x4066e000, heap_size=0x3992000
+vm-1: [CPU0] default_fatal_handler: (IFSC/DFSC) for Data/Instruction aborts: level 2 translation fault
+vm-1: [CPU0] arm64_exception_handler: CurrentEL: MODE_EL1
+vm-1: [CPU0] arm64_exception_handler: ESR_ELn: 0x96000006
+vm-1: [CPU0] arm64_exception_handler: FAR_ELn: 0x3010fe8
+vm-1: [CPU0] arm64_exception_handler: ELR_ELn: 0x404881a0
+vm-1: [CPU0] print_ec_cause: DABT (current EL)
+vm-1: [CPU0] print_ec_cause: Data Abort taken without a change in Exception level
+vm-1: [CPU0] dump_assert_info: Current Version: ROUX  0.0.0 0 Jul 30 2025 11:04:53 arm64
+vm-1: [CPU0] dump_assert_info: Assertion failed panic: at file: common/arm64_fatal.c:544 task(CPU0): CPU0 IDLE process: Kernel 0x404
+vm-1: 9487c
+
+Fixed with GICD_REGION/GICR_REGION mapped.
+
+BUG-1
+
+v1v0 vpl011: unhandled read r0 offset 0x000030
+v1v0 vpl011: unhandled write r0 offset 0x000030
+v1v0 vpl011: unhandled read r0 offset 0x00002c
+v1v0 vpl011: unhandled write r0 offset 0x00002c
+v1v0 vpl011: unhandled write r3 offset 0x000024
+v1v0 vpl011: unhandled write r1 offset 0x000028
+v1v0 vpl011: unhandled read r1 offset 0x00002c
+v1v0 vpl011: unhandled write r1 offset 0x00002c
+v1v0 vpl011: unhandled read r0 offset 0x00002c
+v1v0 vpl011: unhandled write r0 offset 0x00002c
+v1v0 vpl011: unhandled read r0 offset 0x00002c
+v1v0 vpl011: unhandled write r0 offset 0x00002c
+v1v0 vpl011: unhandled write r31 offset 0x000048
+v1v0 vpl011: unhandled read r0 offset 0x000030
+v1v0 vpl011: unhandled write r0 offset 0x000030
+v1v0 vpl011: unhandled read r0 offset 0x000030
+v1v0 vpl011: unhandled write r0 offset 0x000030
+v1v0 vpl011: unhandled read r0 offset 0x000030
+v1v0 vpl011: unhandled write r0 offset 0x000030
+
+This bug notes that userspace console not ready.
+
+Fixed with CRUX vpl011 CR (0x30) enabled.

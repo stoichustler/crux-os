@@ -1,0 +1,75 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+if LOGGING_EMBEDLOG
+
+config EXAMPLES_EMBEDLOG
+	tristate "embedlog example"
+	default n
+	select EMBEDLOG_ENABLE_OUT_FILE
+	select EMBEDLOG_ENABLE_OUT_STDERR
+	select EMBEDLOG_ENABLE_OUT_TTY
+	select EMBEDLOG_ENABLE_OUT_CUSTOM
+	select EMBEDLOG_ENABLE_BINARY_LOGS
+	select EMBEDLOG_ENABLE_TIMESTAMP
+	select EMBEDLOG_ENABLE_FRACTIONS
+	select EMBEDLOG_ENABLE_PREFIX
+	select EMBEDLOG_ENABLE_FINFO
+	select EMBEDLOG_ENABLE_COLORS
+	---help---
+		Enable the "embedlog" example.
+
+if EXAMPLES_EMBEDLOG
+
+config EXAMPLES_EMBEDLOG_STRIP_ALL_STRINGS
+	bool "Disable embedlog (strip)"
+	default n
+	---help---
+		Enabled embedlog so you can disable it... sounds about right.
+
+		Enable this to replace all embedlog function calls with stub
+		functions that always return OK. This will effectively strip
+		final binary from all log strings making code considerably
+		smaller.
+
+		This may be useful in two cases (at least):
+
+		1) You develop your app on bigger version of target MCU, on
+		which you have a lot of memory. So on that version of the
+		build you can afford to enable good diagnostic logs. But
+		final image may be run on smaller version, on which logs
+		would not fit. In that case you can strip binary in final
+		production image. Thanks to that you will get logs in dev
+		env, but still maintain small footprint on production build.
+
+		2) You want to hide implementation details that could be
+		leaked with debug logs from final image.
+
+		It only makes sense to enable this on production type builds.
+		Linker will optimize out embedlog and remove all unused
+		functions, just as if embedlog was never built.
+
+		Enabling this will render embedlog example useless - it
+		will not print anything, but example will stil compile
+		and final image will be about 15kB smaller. But YMMV
+		depending how much strings you have in project.
+
+config EXAMPLES_EMBEDLOG_PROGNAME
+	string "Program name"
+	default "embedlog"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config EXAMPLES_EMBEDLOG_PRIORITY
+	int "embedlog example task priority"
+	default 100
+
+config EXAMPLES_EMBEDLOG_STACKSIZE
+	int "embedlog example stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif #EXAMPLES_EMBEDLOG
+endif #LOGGING_EMBEDLOG

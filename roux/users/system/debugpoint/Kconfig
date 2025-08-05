@@ -1,0 +1,33 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config SYSTEM_DEBUGPOINT
+	tristate "Debugpoint utility"
+	default n
+	depends on ARCH_HAVE_DEBUG
+	depends on LIB_GDBSTUB
+	---help---
+		Enable the DEBUGPOINT test program. It is a simple
+		utility for testing the debug point support and
+		add debug points to the system by command line.
+
+if SYSTEM_DEBUGPOINT
+
+config SYSTEM_DEBUGPOINT_PROGNAME
+	string "Program name"
+	default "debugpoint"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config SYSTEM_DEBUGPOINT_PRIORITY
+	int "Task priority"
+	default 100
+
+config SYSTEM_DEBUGPOINT_STACKSIZE
+	int "Stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

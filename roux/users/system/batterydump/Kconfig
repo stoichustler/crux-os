@@ -1,0 +1,29 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+#
+config SYSTEM_BATTERYDUMP
+	tristate "Battery dump system tool"
+	default n
+	---help---
+		Enable the battery dump
+
+if SYSTEM_BATTERYDUMP
+
+config SYSTEM_BATTERYDUMP_PROGNAME
+	string "Program name"
+	default "batterydump"
+	---help---
+		This is the name of the program that will be used when the NSH ELF
+		program is installed.
+
+config SYSTEM_BATTERYDUMP_PRIORITY
+	int "Battery dump task priority"
+	default 100
+
+config SYSTEM_BATTERYDUMP_STACKSIZE
+	int "Battery dump stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+endif

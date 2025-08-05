@@ -1,0 +1,13 @@
+
+config VIDEO
+	bool
+
+config VGA
+	bool "VGA support"
+	select VIDEO
+	depends on X86
+	default y if !PV_SHIM_EXCLUSIVE
+	help
+	  Enable VGA output for the xen hypervisor.
+
+	  If unsure, say Y.

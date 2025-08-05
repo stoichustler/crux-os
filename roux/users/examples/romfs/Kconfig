@@ -1,0 +1,21 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config EXAMPLES_ROMFS
+	tristate "ROMFS example"
+	default n
+	depends on FS_ROMFS && BUILD_FLAT && BOARDCTL_ROMDISK
+	---help---
+		Enable the ROMFS example
+
+if EXAMPLES_ROMFS
+
+config EXAMPLES_ROMFS_RAMDEVNO
+	int "ROMFS example ramdevno"
+	default 10
+	---help---
+		Custom RAMDisk number
+
+endif

@@ -1,0 +1,84 @@
+############################################################################
+# apps/mlearning/tflite-micro/Kconfig
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.  The
+# ASF licenses this file to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance with the
+# License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+############################################################################
+
+config TFLITEMICRO
+	bool "TFLiteMicro"
+	default n
+	depends on SYSTEM_FLATBUFFERS && MATH_GEMMLOWP && MATH_KISSFFT && MATH_RUY
+
+if TFLITEMICRO
+config TFLITEMICRO_DEBUG
+	bool "Print tflite-micro's debug message"
+	default n
+
+config TFLITEMICRO_TOOL
+	bool "tflite-micro cmdline tool"
+	default n
+
+config TFLITEMICRO_SYSLOG
+	bool "tflite-micro syslog backend"
+	default n
+
+if TFLITEMICRO_SYSLOG
+
+config TFLITEMICRO_SYSLOG_LEVEL
+	int "tflite-micro syslog level"
+	default 6
+	---help---
+		Syslog level mapping of tflm, This log level mapping is consistent
+		with the roux syslog level, please refer to syslog.h:
+
+		define LOG_EMERG     0  /* System is unusable */
+		define LOG_ALERT     1  /* Action must be taken immediately */
+		define LOG_CRIT      2  /* Critical conditions */
+		define LOG_ERR       3  /* Error conditions */
+		define LOG_WARNING   4  /* Warning conditions */
+		define LOG_NOTICE    5  /* Normal, but significant, condition */
+		define LOG_INFO      6  /* Informational message */
+		define LOG_DEBUG     7  /* Debug-level message */
+
+endif # TFLITEMICRO_SYSLOG
+
+if TFLITEMICRO_TOOL
+config TFLITEMICRO_TOOL_PRIORITY
+	int "tflite-micro tool priority"
+	default 100
+
+config TFLITEMICRO_TOOL_STACKSIZE
+	int "tflite-micro tool stacksize"
+	default 4096
+
+endif # TFLITEMICRO_TOOL
+
+config TFLITEMICRO_HELLOWORLD
+	bool "Enable Tflite-micro hello world example"
+	default n
+
+if TFLITEMICRO_HELLOWORLD
+config TFLITEMICRO_HELLOWORLD_PRIORITY
+	int "Tflite-micro hello world priority"
+	default 100
+
+config TFLITEMICRO_HELLOWORLD_STACKSIZE
+	int "Tflite-micro hello world stacksize"
+	default 4096
+
+endif # TFLITEMICRO_HELLOWORLD
+endif # TFLITEMICRO

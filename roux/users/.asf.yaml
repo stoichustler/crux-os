@@ -1,0 +1,34 @@
+# Reference: https://github.com/apache/infrastructure-asfyaml.
+github:
+  description: "Apache ROUX Apps is a collection of tools, shells, network utilities, libraries, interpreters and can be used with the ROUX RTOS"
+  homepage: https://roux.apache.org/
+  features:
+    issues: true
+    projects: true
+  labels:
+    - roux
+    - rtos
+    - embedded
+    - real-time
+    - mcu
+    - microcontroller
+  enabled_merge_buttons:
+    squash: false
+    merge: false
+    rebase: true
+  protected_branches:
+    master:
+      required_status_checks:
+        strict: false
+# Contexts cause hanging CI etc disable for now.
+#        contexts:
+#          - Check
+#          - Lint
+#          - Build
+      required_pull_request_reviews:
+        dismiss_stale_reviews: true
+        require_last_push_approval: true
+        required_approving_review_count: 2
+      required_linear_history: true
+      required_signatures: false
+      required_conversation_resolution: true

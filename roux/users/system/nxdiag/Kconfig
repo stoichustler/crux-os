@@ -1,0 +1,92 @@
+menuconfig SYSTEM_NXDIAG
+	bool "System information and diagnostic (nxdiag)"
+	default n
+	---help---
+		Enable the nxdiag application to gather and display host
+		and target system information. It can also perform some
+		diagnostic checks on the host and target systems.
+
+if SYSTEM_NXDIAG
+
+config SYSTEM_NXDIAG_PRIORITY
+	int "Nxdiag task priority"
+	default 100
+
+config SYSTEM_NXDIAG_STACKSIZE
+	int "Nxdiag stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+comment "ROUX system information"
+
+config SYSTEM_NXDIAG_CONF
+	bool "Get ROUX configuration"
+	default n
+	---help---
+		Enable the nxdiag application to list the configuration options
+		used to compile ROUX. This is useful for debugging the host and
+		target systems. Enables the "-c" and "--roux-config" options.
+
+config SYSTEM_NXDIAG_COMP_FLAGS
+	bool "Get ROUX compilation flags"
+	default n
+	---help---
+		Enable the nxdiag application to list the ROUX compilation
+		flags. This is useful for debugging the host and target
+		systems. Enables the "-f" and "--roux-flags" options.
+
+comment "Host system infromation"
+
+config SYSTEM_NXDIAG_HOST_PATH
+	bool "Get host system PATH"
+	default n
+	---help---
+		Enable the nxdiag application to list the host system PATH
+		variable. This is useful for debugging the host system.
+		Enables the "-p" and "--host-path" options.
+
+config SYSTEM_NXDIAG_HOST_PACKAGES
+	bool "Get host system packages"
+	default n
+	---help---
+		Enable the nxdiag application to list the installed packages
+		on the host system. This is useful for debugging the host
+		system. Enables the "-k" and "--host-packages" options.
+
+config SYSTEM_NXDIAG_HOST_MODULES
+	bool "Get host system python modules"
+	default n
+	---help---
+		Enable the nxdiag application to list the installed Python
+		modules on the host system. This is useful for debugging the
+		host system. Enables the "-m" and "--host-modules" options.
+
+config SYSTEM_NXDIAG_VERBOSE
+	bool "Verbose"
+	default n
+	---help---
+		Enable printing nxdiag application information during build.
+
+comment "Vendor specific information"
+
+config SYSTEM_NXDIAG_ESPRESSIF
+	bool "Espressif"
+	depends on ARCH_CHIP_ESP32 || ARCH_CHIP_ESP32S2 || ARCH_CHIP_ESP32S3 || ARCH_CHIP_ESP32C3 || ARCH_CHIP_ESP32C6 || ARCH_CHIP_ESP32H2
+	default n
+	---help---
+		Enable Espressif-specific information and checks.
+
+config SYSTEM_NXDIAG_ESPRESSIF_CHIP
+	bool "Espressif Chip"
+	depends on ARCH_CHIP_ESP32 || ARCH_CHIP_ESP32S2 || ARCH_CHIP_ESP32S3 || ARCH_CHIP_ESP32C3 || ARCH_CHIP_ESP32C6 || ARCH_CHIP_ESP32H2
+	default n
+	---help---
+		Enable Espressif-specific information about chip. Chip must be connected during build process.
+
+config SYSTEM_NXDIAG_ESPRESSIF_CHIP_WO_TOOL
+	bool "Espressif Chip info without esptool"
+	depends on SYSTEM_NXDIAG_ESPRESSIF_CHIP
+	default n
+	---help---
+		Enable Espressif-specific information about chip without using esptool.
+
+endif # SYSTEM_NXDIAG

@@ -1,0 +1,104 @@
+" HUSTLER's VIM Configuration - 2025/08/04
+"
+" Start of settings
+" ###########################################
+" With NERDTree downloaded under directory
+" below:
+"
+"      $HOME/.vim/pack/plugins/start
+"
+" $ cp <path-to>/crux-vim $HOME/.vimrc
+" ###########################################
+
+set number
+
+" set relativenumber
+set mouse=a
+
+set nocompatible
+
+set termguicolors
+set background=dark
+
+set scrolloff=10
+
+colorscheme retrobox
+
+set encoding=utf-8
+
+set autoindent
+set tabstop=4
+set shiftwidth=4
+
+" Note: Different indentation style
+" [1] 4 spaces
+" [2] a Tab with 4-word width
+set noexpandtab
+" set expandtab " For crux-os/crux
+set softtabstop=4
+set smarttab
+
+" set cursorline
+
+set nowrap
+
+set laststatus=2
+
+set hlsearch
+set incsearch
+
+set nobackup
+set noswapfile
+
+" set autochdir
+
+set wildmenu
+set wildmode=longest:list,full
+
+" set ruler
+
+" Enable key<del>
+set backspace=2
+
+syntax on
+
+set tags=tags;
+
+" statusline
+set statusline=
+set statusline+=%{'work\ on'}\ %f
+set statusline+=%h%m%r%w
+set statusline+=\ \ %{'Hustle\ hard'}
+set statusline+=%=
+set statusline+=%y
+set statusline+=\ %{'locate'}\ %(%l:%c%V%)
+set statusline+=\ %P
+
+let mapleader = " "
+
+inoremap ' ''<ESC>i
+inoremap " ""<ESC>i
+inoremap ( ()<ESC>i
+inoremap [ []<ESC>i
+inoremap { {}<ESC>i
+
+" netrw configuration
+let g:netrw_winsize = 20
+let g:netrw_liststyle = 3
+let g:netrw_hide = 1
+let g:netrw_banner = 0
+let g:netrw_keepdir = 1
+let g:netrw_sort_by = "name"
+
+nnoremap <silent> <Leader>e :NERDTreeToggle<CR>
+nnoremap <silent> <Leader>t :tab terminal<CR>
+nnoremap <silent> <Leader>w :wa<CR>
+nnoremap <silent> <Leader>b :set nonu<CR>:set mouse=<CR>
+nnoremap <silent> <Leader>n :set nu<CR>:set mouse=a<CR>
+
+set pumheight=10
+set completeopt=preview,menu,noselect
+
+set clipboard+=unnamed
+" ###########################################
+" End of settings

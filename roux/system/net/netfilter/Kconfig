@@ -1,0 +1,13 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config NET_IPTABLES
+	bool "Iptables & Ip6tables Interface"
+	default y
+	depends on NET_IPv4 || NET_IPv6
+	depends on NET_SOCKOPTS
+	depends on NET_NAT || NET_IPFILTER
+	---help---
+		Enable or disable iptables compatible interface (for NAT).

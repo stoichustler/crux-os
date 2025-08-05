@@ -1,0 +1,50 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+Timers
+Timekeeping
+Tick & Tickless
+
+Based on linux-6.15.X
+
+struct timekeeper
+
+                                    @clocksource can be changed
+                                    +- tk_clock_read()
+                                    |        |
+ktime_get                           |        +- clock->read()
+    |                               V
+    +- timekeeping_get_ns <= read from clocksource (cycles)
+             |
+             |<= delta = (cycles - tkr->cycle_last) & tkr->mask
+             |
+             |<= nsecs = ((delta * tkr->mult) + tkr->xtime_nsec) >> tkr->shift;
+             |
+             V
+tkr_mino.base + nsecs + [*offset]
+
+Note: timekeeper updates every jiffy via update_wall_time
+
+@ MONOTONIC -
+@ REALTIME
+@ BOOTTIME  - accounts for suspend time
+@ TAI
+
+High-level view from event_handler of clock event:
+
+[0] tick_handle_periodic
+       |
+
+[1] tick_handle_periodic_broadcast
+       |
+
+hrtimer:
+
+tick_nohz_handler

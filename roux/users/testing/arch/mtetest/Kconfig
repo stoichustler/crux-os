@@ -1,0 +1,19 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config TESTING_MTE
+	tristate "MTE instruction set test"
+	depends on ARM64_MTE
+	default n
+	---help---
+		Enable MTE instruction set test
+
+if TESTING_MTE
+
+config TESTING_MTE_PRIORITY
+	int "Task priority"
+	default 101
+
+endif

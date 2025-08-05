@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Cleaning up
+
+src := $(obj)
+
+# shortcuts
+srcdir := $(srctree)/$(src)
+
+clean::
+
+include $(srctree)/scripts/Kbuild.include
+
+include $(src)/Makefile
+
+# Figure out what we need to clean from the various variables
+
+subdir-all := $(subdir-y) $(subdir-n) $(subdir-) \
+              $(patsubst %/,%, $(filter %/, $(obj-y) $(obj-n) $(obj-)))
+
+subdir-all := $(addprefix $(obj)/,$(subdir-all))
+
+__clean-files := \
+    $(clean-files) $(hostprogs-y) $(hostprogs-) \
+    $(extra-y) $(extra-) $(targets) \
+    $(hostprogs-always-y) $(hostprogs-always-)
+
+# clean-files is given relative to the current directory, unless it
+# starts with $(objtree)/ (which means "./", so do not add "./" unless
+# you want to delete a file from the toplevel object directory).
+
+__clean-files := $(wildcard \
+		   $(addprefix $(obj)/, $(filter-out /% $(objtree)/%, $(__clean-files))) \
+		   $(filter /% $(objtree)/%, $(__clean-files)))
+
+.PHONY: clean
+clean:: $(subdir-all)
+ifneq ($(strip $(__clean-files)),)
+	rm -rf $(__clean-files)
+endif
+	@:
+
+# Descending
+
+PHONY += $(subdir-all)
+$(subdir-all):
+	$(Q)$(MAKE) $(clean)=$@
+
+.PHONY: $(PHONY)

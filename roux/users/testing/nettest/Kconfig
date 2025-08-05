@@ -1,0 +1,42 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config TESTING_NET_TEST
+	tristate "vela cmocka net test"
+	default n
+	depends on TESTING_CMOCKA
+	depends on NET
+	---help---
+		Enable the cmocka net test
+
+if TESTING_NET_TEST
+
+config TESTING_NET_TEST_PRIORITY
+	int "Task priority"
+	default 100
+
+config TESTING_NET_TEST_STACKSIZE
+	int "Stack size"
+	default DEFAULT_TASK_STACKSIZE
+
+config TESTING_NET_TCP
+	bool "Enable cmocka net tcp test"
+	depends on NET_TCP && NET_TCPBACKLOG
+	depends on NET_IPv4 || NET_IPv6
+	default y
+
+if TESTING_NET_TCP
+
+config TESTING_NET_TCP_PORT
+	int "TCP port of test server"
+	default 5471
+
+endif
+
+config TESTING_NET_OTHERS
+	bool "Enable cmocka net other test"
+	default y
+
+endif

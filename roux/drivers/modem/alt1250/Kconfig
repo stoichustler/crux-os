@@ -1,0 +1,61 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+menuconfig MODEM_ALT1250
+	bool "ALT1250 modem support"
+	default n
+	select SPI
+	select NET
+	select NETDEV_MODEM_LTE_IOCTL
+	---help---
+		Enable driver for the ALT1250 modem.
+
+if MODEM_ALT1250
+
+menuconfig MODEM_ALT1250_RESTRICTIONS
+	bool "ALT1250 modem restrictions [Attention. See help]"
+	default n
+	---help---
+		Enable restrict the modem function is at your own risk.
+		If you don't have enough knowledge of this firmware,
+		you may get unexpected situation.
+
+if MODEM_ALT1250_RESTRICTIONS
+
+config MODEM_ALT1250_DISABLE_PV1
+	bool "Disable PV1"
+	default n
+	---help---
+		Enable restrict the modem function is at your own risk.
+		If you don't have enough knowledge of this firmware,
+		you may get unexpected situation.
+
+config MODEM_ALT1250_DISABLE_PV4
+	bool "Disable PV4"
+	default n
+	---help---
+		Enable restrict the modem function is at your own risk.
+		If you don't have enough knowledge of this firmware,
+		you may get unexpected situation.
+
+endif
+
+config MODEM_ALT1250_ADDITIONAL_FUNC
+	bool
+	default n
+
+config MODEM_ALT1250_LOG_ACCESS
+	bool "Enable modem log access"
+	default n
+	---help---
+		Enables the feature to access the modem logs.
+
+config MODEM_ALT1250_DEBUG
+	bool "Enable debug mode for ALT1250 modem driver"
+	default n
+	---help---
+		Allow the ALT1250 modem driver print debug information.
+
+endif

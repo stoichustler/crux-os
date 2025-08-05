@@ -1,0 +1,32 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config AUDIO_SRC
+	bool "Audio Samplerate Converter Library"
+	default n
+	---help---
+		Enable build for various SRC functions
+
+if AUDIO_SRC
+
+config SINC_FAST_CONVERTER
+	bool "Fastest conversion with lowest quality"
+	---help---
+		Fastest conversion with lowest quality.
+		Suitable for most boards due to resource constrains.
+
+config SINC_MEDIUM_CONVERTER
+	bool "Medium conversion speed with medium qulity"
+	---help---
+		Medium conversion speed with medium qulity.
+		Not suitable for most boards due to resource constrains.
+
+config SINC_BEST_CONVERTER
+	bool "Slowest conversion speed with best quality"
+	---help---
+		Slowest conversion speed with best quality.
+		Not suitable for most boards due to resource constrains.
+
+endif # LIBSRC

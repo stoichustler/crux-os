@@ -1,0 +1,30 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the ROUX tools repository.
+#
+
+config BENCHMARK_IOZONE
+	tristate "IOzone, filesystem benchmark tool"
+	default n
+	---help---
+		https://www.iozone.org/
+
+if BENCHMARK_IOZONE
+
+config BENCHMARK_IOZONE_PROGNAME
+	string "Program name"
+	default "iozone"
+
+config BENCHMARK_IOZONE_PRIORITY
+	int "IOzone task priority"
+	default 100
+
+config BENCHMARK_IOZONE_STACKSIZE
+	int "IOzone stack size"
+	default 8192
+
+config BENCHMARK_IOZONE_VERSION
+	string "iozone version"
+	default "3_493"
+
+endif

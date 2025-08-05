@@ -1,0 +1,14 @@
+identifier: radxa_zero3w/rk3568/xen_dom0
+name: radxa zero 3w
+type: mcu
+arch: arm64
+toolchain:
+  - zephyr
+  - cross-compile
+ram: 1024
+supported:
+  - smp
+testing:
+  ignore_tags:
+    - net
+    - bluetooth
