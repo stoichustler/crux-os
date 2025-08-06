@@ -1,7 +1,15 @@
+#############################################
+#         _______  __  __
+#        /__\_  _\/  \/ _\
+#       /  \ / / / / /\ \
+#       \/\/ \/  \__/\__/ DEUX 2025
+#
+#############################################
+
 cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
 # Set up the project
-project(threadx
+project(deux
     LANGUAGES C ASM
 )
 
@@ -30,6 +38,7 @@ endif()
 
 # Pick up the common stuff
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_smp)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_deux)
 
 # If the user provided an override, copy it to the custom directory
 if (NOT TX_USER_FILE)
@@ -48,14 +57,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC "TX_INCLUDE_USER_DEFINE_FILE")
 
 # Enable a build target that produces a ZIP file of all sources
 set(CPACK_SOURCE_GENERATOR "ZIP")
-set(CPACK_SOURCE_IGNORE_FILES
-  \\.git/
-  \\.github/
-  _build/
-  \\.git
-  \\.gitattributes
-  \\.gitignore
-  ".*~$"
-)
+
 set(CPACK_VERBATIM_VARIABLES YES)
 include(CPack)
