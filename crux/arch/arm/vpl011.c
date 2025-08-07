@@ -107,7 +107,7 @@ static void vpl011_write_data_crux(struct domain *d, uint8_t data)
             if ( data != '\n' )
                 intf->out[intf->out_prod++] = '\n';
             intf->out[intf->out_prod++] = '\0';
-            printk("DOM%u: %s", d->domain_id, intf->out);
+            printk("dom%u: %s", d->domain_id, intf->out);
             intf->out_prod = 0;
         }
     }

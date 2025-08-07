@@ -62,7 +62,7 @@ enum {
 };
 
 /* Prefix for hypervisor's diagnostic console messages. */
-#define CONSOLE_PREFIX      "(CRUX) "
+#define CONSOLE_PREFIX      "<crux> "
 
 static void console_send(const char *str, size_t len, unsigned int flags);
 
@@ -556,7 +556,7 @@ static void console_switch_input(void)
         if ( next_rx++ >= max_console_rx )
         {
             console_rx = 0;
-            printk("*** Serial input to crux");
+            printk("### Serial input to crux");
             break;
         }
 
@@ -573,7 +573,7 @@ static void console_switch_input(void)
                 continue;
 
             console_rx = next_rx;
-            printk("*** Serial input to DOM%u", domid);
+            printk("### Serial input to dom%u", domid);
             break;
         }
     }
@@ -1006,7 +1006,7 @@ static void vprintk_common(const char *fmt, va_list args, const char *prefix)
             state->do_print = printk_prefix_check(p, &p);
         if ( state->do_print )
         {
-            if ( !state->continued )
+            if ( !state->continued && (console_rx < 2) )
                 printk_start_of_line(prefix);
             __putstr(p);
         }

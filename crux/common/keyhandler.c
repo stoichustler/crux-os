@@ -146,13 +146,13 @@ void cf_check dump_execstate(const struct cpu_user_regs *regs)
 
     if ( !guest_mode(regs) )
     {
-        printk("*** Dumping CPU%u host state: ***\n", cpu);
+        printk("### Dumping CPU%u host state:\n", cpu);
         show_execution_state(regs);
     }
 
     if ( !is_idle_vcpu(current) )
     {
-        printk("*** Dumping CPU%u guest state (%pv): ***\n",
+        printk("### Dumping CPU%u guest state (%pv):\n",
                smp_processor_id(), current);
         show_execution_state(guest_cpu_user_regs());
         printk("\n");

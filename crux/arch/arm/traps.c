@@ -183,7 +183,7 @@ static void print_crux_info(void)
 {
     char taint_str[TAINT_STRING_MAX_LEN];
 
-    printk("----[ crux-%d.%d%s  %s  %s  %s ]----\n",
+    printk("### [crux-%d.%d%s  %s  %s  %s] ###\n",
            crux_major_version(), crux_minor_version(), crux_extra_version(),
 #ifdef CONFIG_ARM_32
            "arm32",
@@ -1194,7 +1194,7 @@ void show_execution_state(const struct cpu_user_regs *regs)
 
 void vcpu_show_execution_state(struct vcpu *v)
 {
-    printk("*** Dumping Dom%d vcpu#%d state: ***\n",
+    printk("### Dumping Dom%d vcpu#%d state:\n",
            v->domain->domain_id, v->vcpu_id);
 
     if ( v == current )
@@ -1368,21 +1368,21 @@ static void do_debug_trap(struct cpu_user_regs *regs, unsigned int code)
     {
     case 0xe0 ... 0xef:
         reg = code - 0xe0;
-        printk("DOM%d: R%d = 0x%"PRIregister" at 0x%"PRIvaddr"\n",
+        printk("dom%d: R%d = 0x%"PRIregister" at 0x%"PRIvaddr"\n",
                domid, reg, get_user_reg(regs, reg), regs->pc);
         break;
     case 0xfd:
-        printk("DOM%d: Reached %"PRIvaddr"\n", domid, regs->pc);
+        printk("dom%d: Reached %"PRIvaddr"\n", domid, regs->pc);
         break;
     case 0xfe:
         printk("%c", (char)(get_user_reg(regs, 0) & 0xff));
         break;
     case 0xff:
-        printk("DOM%d: DEBUG\n", domid);
+        printk("dom%d: DEBUG\n", domid);
         show_execution_state(regs);
         break;
     default:
-        printk("DOM%d: Unhandled debug trap %#x\n", domid, code);
+        printk("dom%d: Unhandled debug trap %#x\n", domid, code);
         break;
     }
 }

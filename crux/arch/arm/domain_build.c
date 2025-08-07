@@ -1157,7 +1157,7 @@ int __init make_hypervisor_node(struct domain *d,
         u64 start = ext_regions->bank[i].start;
         u64 size = ext_regions->bank[i].size;
 
-        printk("%pd: extended region %d: %#"PRIx64"->%#"PRIx64"\n",
+        printk("%pd: extended region %d: %#"PRIpaddr"-%#"PRIpaddr"\n",
                d, i, start, start + size);
 
         dt_child_set_range(&cells, addrcells, sizecells, start, size);
@@ -1962,7 +1962,7 @@ static int __init construct_dom0(struct domain *d)
     /* Sanity! */
     BUG_ON(d->domain_id != 0);
 
-    printk("*** LOADING DOMAIN 0 ***\n");
+    printk("### LOADING DOM0\n");
 
     /* The ordering of operands is to work around a clang5 issue. */
     if ( CONFIG_DOM0_MEM[0] && !dom0_mem_set )

@@ -406,10 +406,10 @@ static void __init early_print_info(void)
     unsigned int i;
 
     for ( i = 0; i < mi->nr_banks; i++ )
-        printk("RAM: %"PRIpaddr" - %"PRIpaddr"\n",
+        printk("RAM:       %"PRIpaddr" - %"PRIpaddr"\n",
                 mi->bank[i].start,
                 mi->bank[i].start + mi->bank[i].size - 1);
-    printk("\n");
+
     for ( i = 0 ; i < mods->nr_mods; i++ )
         printk("MODULE[%d]: %"PRIpaddr" - %"PRIpaddr" %-12s\n",
                 i,
@@ -426,12 +426,12 @@ static void __init early_print_info(void)
 #ifdef CONFIG_STATIC_SHM
     early_print_info_shmem();
 #endif
-    printk("\n");
+
     for ( i = 0 ; i < cmds->nr_mods; i++ )
-        printk("CMDLINE[%"PRIpaddr"]:%s %s\n", cmds->cmdline[i].start,
+        printk("CMDLINE[%"PRIpaddr"]: %s %s\n", cmds->cmdline[i].start,
                cmds->cmdline[i].dt_name,
                &cmds->cmdline[i].cmdline[0]);
-    printk("\n");
+
 }
 
 /* This function assumes that memory regions are not overlapped */
