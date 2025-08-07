@@ -1,25 +1,25 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/gic.c
+ * crux/arch/arm/gic.c
  *
  * ARM Generic Interrupt Controller support
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/errno.h>
-#include <xen/softirq.h>
-#include <xen/list.h>
-#include <xen/device_tree.h>
-#include <xen/acpi.h>
-#include <xen/cpu.h>
-#include <xen/notifier.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/errno.h>
+#include <crux/softirq.h>
+#include <crux/list.h>
+#include <crux/device_tree.h>
+#include <crux/acpi.h>
+#include <crux/cpu.h>
+#include <crux/notifier.h>
 #include <asm/p2m.h>
 #include <asm/domain.h>
 #include <asm/platform.h>
@@ -105,10 +105,10 @@ static void gic_set_irq_priority(struct irq_desc *desc, unsigned int priority)
     gic_hw_ops->set_irq_priority(desc, priority);
 }
 
-/* Program the GIC to route an interrupt to the host (i.e. xen)
+/* Program the GIC to route an interrupt to the host (i.e. Xen)
  * - needs to be called with desc.lock held
  */
-void gic_route_irq_to_xen(struct irq_desc *desc, unsigned int priority)
+void gic_route_irq_to_crux(struct irq_desc *desc, unsigned int priority)
 {
     ASSERT(priority <= 0xff);     /* Only 8 bits of priority */
     ASSERT(desc->irq < gic_number_lines());/* Can't route interrupts that don't exist */
@@ -253,7 +253,7 @@ void __init gic_init(void)
     clear_cpu_lr_mask();
 
     if ( gic_number_lines() > VGIC_MAX_IRQS )
-        printk(XENLOG_WARNING "Maximum number of vGIC IRQs exceeded\n");
+        printk(CRUXLOG_WARNING "Maximum number of vGIC IRQs exceeded\n");
 }
 
 void send_SGI_mask(const cpumask_t *cpumask, enum gic_sgi sgi)

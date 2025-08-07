@@ -10,9 +10,9 @@
 #ifndef XZ_PRIVATE_H
 #define XZ_PRIVATE_H
 
-#ifdef __XEN__
-#include <xen/kernel.h>
-#include <xen/unaligned.h>
+#ifdef __CRUX__
+#include <crux/kernel.h>
+#include <crux/unaligned.h>
 #else
 
 static inline uint32_t get_unaligned_le32(const void *p)

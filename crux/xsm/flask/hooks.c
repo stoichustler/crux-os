@@ -1,5 +1,5 @@
 /*
- *  This file contains the Flask hook function implementations for xen.
+ *  This file contains the Flask hook function implementations for Xen.
  *
  *  Author:  George Coker, <gscoker@alpha.ncsc.mil>
  *
@@ -8,28 +8,28 @@
  *      as published by the Free Software Foundation.
  */
 
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/paging.h>
-#include <xen/xmalloc.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/paging.h>
+#include <crux/xmalloc.h>
 #include <xsm/xsm.h>
-#include <xen/spinlock.h>
-#include <xen/cpumask.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/xenoprof.h>
-#include <xen/iommu.h>
+#include <crux/spinlock.h>
+#include <crux/cpumask.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/cruxoprof.h>
+#include <crux/iommu.h>
 #ifdef CONFIG_HAS_PCI_MSI
 #include <asm/msi.h>
 #endif
-#include <public/xen.h>
+#include <public/crux.h>
 #include <public/physdev.h>
 #include <public/platform.h>
 #include <public/version.h>
 #include <public/hvm/params.h>
-#include <public/xenoprof.h>
+#include <public/cruxoprof.h>
 #include <public/xsm/flask_op.h>
 
 #include <avc.h>
@@ -104,11 +104,11 @@ static int domain_has_evtchn(
     return avc_has_perm(dsid, esid, SECCLASS_EVENT, perms, NULL);
 }
 
-static int domain_has_xen(struct domain *d, uint32_t perms)
+static int domain_has_crux(struct domain *d, uint32_t perms)
 {
     uint32_t dsid = domain_sid(d);
 
-    return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_XEN, perms, NULL);
+    return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_CRUX, perms, NULL);
 }
 
 static int get_irq_sid(int irq, uint32_t *sid, struct avc_audit_data *ad)
@@ -156,12 +156,12 @@ static int avc_unknown_permission(const char *name, int id)
 
     if ( !flask_enforcing || security_get_allow_unknown() )
     {
-        printk(XENLOG_G_WARNING "FLASK: Allowing unknown %s: %d.\n", name, id);
+        printk(CRUXLOG_G_WARNING "FLASK: Allowing unknown %s: %d.\n", name, id);
         rc = 0;
     }
     else
     {
-        printk(XENLOG_G_ERR "FLASK: Denying unknown %s: %d.\n", name, id);
+        printk(CRUXLOG_G_ERR "FLASK: Denying unknown %s: %d.\n", name, id);
         rc = -EPERM;
     }
 
@@ -182,16 +182,16 @@ static int cf_check flask_domain_alloc_security(struct domain *d)
     switch ( d->domain_id )
     {
     case DOMID_IDLE:
-        dsec->sid = SECINITSID_XENBOOT;
+        dsec->sid = SECINITSID_CRUXBOOT;
         break;
-    case DOMID_XEN:
-        dsec->sid = SECINITSID_DOMXEN;
+    case DOMID_CRUX:
+        dsec->sid = SECINITSID_DOMCRUX;
         break;
     case DOMID_IO:
         dsec->sid = SECINITSID_DOMIO;
         break;
     default:
-        if ( domain_sid(current->domain) == SECINITSID_XENBOOT )
+        if ( domain_sid(current->domain) == SECINITSID_CRUXBOOT )
         {
             if ( d->is_privileged )
                 dsec->sid = SECINITSID_DOM0;
@@ -215,8 +215,8 @@ static int cf_check flask_set_system_active(void)
     dsec = d->ssid;
 
     ASSERT(d->is_privileged);
-    ASSERT(dsec->sid == SECINITSID_XENBOOT);
-    ASSERT(dsec->self_sid == SECINITSID_XENBOOT);
+    ASSERT(dsec->sid == SECINITSID_CRUXBOOT);
+    ASSERT(dsec->self_sid == SECINITSID_CRUXBOOT);
 
     if ( d->domain_id != DOMID_IDLE )
     {
@@ -231,7 +231,7 @@ static int cf_check flask_set_system_active(void)
      */
     d->is_privileged = false;
 
-    dsec->self_sid = dsec->sid = SECINITSID_XEN;
+    dsec->self_sid = dsec->sid = SECINITSID_CRUX;
 
     return 0;
 }
@@ -500,16 +500,16 @@ static int cf_check flask_console_io(struct domain *d, int cmd)
     switch ( cmd )
     {
     case CONSOLEIO_read:
-        perm = XEN__READCONSOLE;
+        perm = CRUX__READCONSOLE;
         break;
     case CONSOLEIO_write:
-        perm = XEN__WRITECONSOLE;
+        perm = CRUX__WRITECONSOLE;
         break;
     default:
         return avc_unknown_permission("console_io", cmd);
     }
 
-    return domain_has_xen(d, perm);
+    return domain_has_crux(d, perm);
 }
 
 static int cf_check flask_profile(struct domain *d, int op)
@@ -518,35 +518,35 @@ static int cf_check flask_profile(struct domain *d, int op)
 
     switch ( op )
     {
-    case XENOPROF_init:
-    case XENOPROF_enable_virq:
-    case XENOPROF_disable_virq:
-    case XENOPROF_get_buffer:
-        perm = XEN__NONPRIVPROFILE;
+    case CRUXOPROF_init:
+    case CRUXOPROF_enable_virq:
+    case CRUXOPROF_disable_virq:
+    case CRUXOPROF_get_buffer:
+        perm = CRUX__NONPRIVPROFILE;
         break;
-    case XENOPROF_reset_active_list:
-    case XENOPROF_reset_passive_list:
-    case XENOPROF_set_active:
-    case XENOPROF_set_passive:
-    case XENOPROF_reserve_counters:
-    case XENOPROF_counter:
-    case XENOPROF_setup_events:
-    case XENOPROF_start:
-    case XENOPROF_stop:
-    case XENOPROF_release_counters:
-    case XENOPROF_shutdown:
-        perm = XEN__PRIVPROFILE;
+    case CRUXOPROF_reset_active_list:
+    case CRUXOPROF_reset_passive_list:
+    case CRUXOPROF_set_active:
+    case CRUXOPROF_set_passive:
+    case CRUXOPROF_reserve_counters:
+    case CRUXOPROF_counter:
+    case CRUXOPROF_setup_events:
+    case CRUXOPROF_start:
+    case CRUXOPROF_stop:
+    case CRUXOPROF_release_counters:
+    case CRUXOPROF_shutdown:
+        perm = CRUX__PRIVPROFILE;
         break;
     default:
-        return avc_unknown_permission("xenoprof op", op);
+        return avc_unknown_permission("cruxoprof op", op);
     }
 
-    return domain_has_xen(d, perm);
+    return domain_has_crux(d, perm);
 }
 
 static int cf_check flask_kexec(void)
 {
-    return domain_has_xen(current->domain, XEN__KEXEC);
+    return domain_has_crux(current->domain, CRUX__KEXEC);
 }
 
 static int cf_check flask_schedop_shutdown(struct domain *d1, struct domain *d2)
@@ -555,7 +555,7 @@ static int cf_check flask_schedop_shutdown(struct domain *d1, struct domain *d2)
 }
 
 static void cf_check flask_security_domaininfo(
-    struct domain *d, struct xen_domctl_getdomaininfo *info)
+    struct domain *d, struct crux_domctl_getdomaininfo *info)
 {
     info->ssidref = domain_sid(d);
 }
@@ -613,12 +613,12 @@ static int cf_check flask_domctl_scheduler_op(struct domain *d, int op)
 {
     switch ( op )
     {
-    case XEN_DOMCTL_SCHEDOP_putinfo:
-    case XEN_DOMCTL_SCHEDOP_putvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_putinfo:
+    case CRUX_DOMCTL_SCHEDOP_putvcpuinfo:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__SETSCHEDULER);
 
-    case XEN_DOMCTL_SCHEDOP_getinfo:
-    case XEN_DOMCTL_SCHEDOP_getvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_getinfo:
+    case CRUX_DOMCTL_SCHEDOP_getvcpuinfo:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETSCHEDULER);
 
     default:
@@ -631,11 +631,11 @@ static int cf_check flask_sysctl_scheduler_op(int op)
 {
     switch ( op )
     {
-    case XEN_SYSCTL_SCHEDOP_putinfo:
-        return domain_has_xen(current->domain, XEN__SETSCHEDULER);
+    case CRUX_SYSCTL_SCHEDOP_putinfo:
+        return domain_has_crux(current->domain, CRUX__SETSCHEDULER);
 
-    case XEN_SYSCTL_SCHEDOP_getinfo:
-        return domain_has_xen(current->domain, XEN__GETSCHEDULER);
+    case CRUX_SYSCTL_SCHEDOP_getinfo:
+        return domain_has_crux(current->domain, CRUX__GETSCHEDULER);
 
     default:
         return avc_unknown_permission("sysctl_scheduler_op", op);
@@ -672,185 +672,185 @@ static int cf_check flask_domctl(struct domain *d, unsigned int cmd,
 {
     switch ( cmd )
     {
-    case XEN_DOMCTL_createdomain:
+    case CRUX_DOMCTL_createdomain:
         /*
          * There is a later hook too, but at this early point simply check
          * that the calling domain is privileged enough to create a domain.
          *
          * Note that d is NULL because we haven't even allocated memory for it
-         * this early in XEN_DOMCTL_createdomain.
+         * this early in CRUX_DOMCTL_createdomain.
          */
         return avc_current_has_perm(ssidref, SECCLASS_DOMAIN, DOMAIN__CREATE, NULL);
 
     /* These have individual XSM hooks (common/domctl.c) */
-    case XEN_DOMCTL_getdomaininfo:
-    case XEN_DOMCTL_scheduler_op:
-    case XEN_DOMCTL_irq_permission:
-    case XEN_DOMCTL_iomem_permission:
-    case XEN_DOMCTL_memory_mapping:
-    case XEN_DOMCTL_set_target:
-    case XEN_DOMCTL_vm_event_op:
-    case XEN_DOMCTL_get_domain_state:
+    case CRUX_DOMCTL_getdomaininfo:
+    case CRUX_DOMCTL_scheduler_op:
+    case CRUX_DOMCTL_irq_permission:
+    case CRUX_DOMCTL_iomem_permission:
+    case CRUX_DOMCTL_memory_mapping:
+    case CRUX_DOMCTL_set_target:
+    case CRUX_DOMCTL_vm_event_op:
+    case CRUX_DOMCTL_get_domain_state:
 
     /* These have individual XSM hooks (arch/../domctl.c) */
-    case XEN_DOMCTL_bind_pt_irq:
-    case XEN_DOMCTL_unbind_pt_irq:
+    case CRUX_DOMCTL_bind_pt_irq:
+    case CRUX_DOMCTL_unbind_pt_irq:
 #ifdef CONFIG_X86
     /* These have individual XSM hooks (arch/x86/domctl.c) */
-    case XEN_DOMCTL_shadow_op:
-    case XEN_DOMCTL_ioport_permission:
-    case XEN_DOMCTL_ioport_mapping:
-    case XEN_DOMCTL_gsi_permission:
+    case CRUX_DOMCTL_shadow_op:
+    case CRUX_DOMCTL_ioport_permission:
+    case CRUX_DOMCTL_ioport_mapping:
+    case CRUX_DOMCTL_gsi_permission:
 #endif
 #ifdef CONFIG_HAS_PASSTHROUGH
     /*
      * These have individual XSM hooks
      * (drivers/passthrough/{pci,device_tree.c)
      */
-    case XEN_DOMCTL_get_device_group:
-    case XEN_DOMCTL_test_assign_device:
-    case XEN_DOMCTL_assign_device:
-    case XEN_DOMCTL_deassign_device:
+    case CRUX_DOMCTL_get_device_group:
+    case CRUX_DOMCTL_test_assign_device:
+    case CRUX_DOMCTL_assign_device:
+    case CRUX_DOMCTL_deassign_device:
 #endif
         return 0;
 
-    case XEN_DOMCTL_destroydomain:
+    case CRUX_DOMCTL_destroydomain:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__DESTROY);
 
-    case XEN_DOMCTL_pausedomain:
+    case CRUX_DOMCTL_pausedomain:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__PAUSE);
 
-    case XEN_DOMCTL_unpausedomain:
+    case CRUX_DOMCTL_unpausedomain:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__UNPAUSE);
 
-    case XEN_DOMCTL_setvcpuaffinity:
-    case XEN_DOMCTL_setnodeaffinity:
+    case CRUX_DOMCTL_setvcpuaffinity:
+    case CRUX_DOMCTL_setnodeaffinity:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETAFFINITY);
 
-    case XEN_DOMCTL_getvcpuaffinity:
-    case XEN_DOMCTL_getnodeaffinity:
+    case CRUX_DOMCTL_getvcpuaffinity:
+    case CRUX_DOMCTL_getnodeaffinity:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETAFFINITY);
 
-    case XEN_DOMCTL_resumedomain:
+    case CRUX_DOMCTL_resumedomain:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__RESUME);
 
-    case XEN_DOMCTL_max_vcpus:
+    case CRUX_DOMCTL_max_vcpus:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__MAX_VCPUS);
 
-    case XEN_DOMCTL_max_mem:
+    case CRUX_DOMCTL_max_mem:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETDOMAINMAXMEM);
 
-    case XEN_DOMCTL_setdomainhandle:
+    case CRUX_DOMCTL_setdomainhandle:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETDOMAINHANDLE);
 
-    case XEN_DOMCTL_set_ext_vcpucontext:
-    case XEN_DOMCTL_set_vcpu_msrs:
-    case XEN_DOMCTL_setvcpucontext:
-    case XEN_DOMCTL_setvcpuextstate:
+    case CRUX_DOMCTL_set_ext_vcpucontext:
+    case CRUX_DOMCTL_set_vcpu_msrs:
+    case CRUX_DOMCTL_setvcpucontext:
+    case CRUX_DOMCTL_setvcpuextstate:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETVCPUCONTEXT);
 
-    case XEN_DOMCTL_get_ext_vcpucontext:
-    case XEN_DOMCTL_get_vcpu_msrs:
-    case XEN_DOMCTL_getvcpucontext:
-    case XEN_DOMCTL_getvcpuextstate:
+    case CRUX_DOMCTL_get_ext_vcpucontext:
+    case CRUX_DOMCTL_get_vcpu_msrs:
+    case CRUX_DOMCTL_getvcpucontext:
+    case CRUX_DOMCTL_getvcpuextstate:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETVCPUCONTEXT);
 
-    case XEN_DOMCTL_getvcpuinfo:
+    case CRUX_DOMCTL_getvcpuinfo:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETVCPUINFO);
 
-    case XEN_DOMCTL_settimeoffset:
+    case CRUX_DOMCTL_settimeoffset:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETTIME);
 
-    case XEN_DOMCTL_setdebugging:
+    case CRUX_DOMCTL_setdebugging:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETDEBUGGING);
 
-    case XEN_DOMCTL_getpageframeinfo3:
+    case CRUX_DOMCTL_getpageframeinfo3:
         return current_has_perm(d, SECCLASS_MMU, MMU__PAGEINFO);
 
-    case XEN_DOMCTL_hypercall_init:
+    case CRUX_DOMCTL_hypercall_init:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__HYPERCALL);
 
-    case XEN_DOMCTL_sethvmcontext:
+    case CRUX_DOMCTL_sethvmcontext:
         return current_has_perm(d, SECCLASS_HVM, HVM__SETHVMC);
 
-    case XEN_DOMCTL_gethvmcontext:
-    case XEN_DOMCTL_gethvmcontext_partial:
+    case CRUX_DOMCTL_gethvmcontext:
+    case CRUX_DOMCTL_gethvmcontext_partial:
         return current_has_perm(d, SECCLASS_HVM, HVM__GETHVMC);
 
-    case XEN_DOMCTL_set_address_size:
+    case CRUX_DOMCTL_set_address_size:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETADDRSIZE);
 
-    case XEN_DOMCTL_get_address_size:
+    case CRUX_DOMCTL_get_address_size:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETADDRSIZE);
 
-    case XEN_DOMCTL_mem_sharing_op:
+    case CRUX_DOMCTL_mem_sharing_op:
         return current_has_perm(d, SECCLASS_HVM, HVM__MEM_SHARING);
 
-    case XEN_DOMCTL_sendtrigger:
+    case CRUX_DOMCTL_sendtrigger:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__TRIGGER);
 
-    case XEN_DOMCTL_set_access_required:
+    case CRUX_DOMCTL_set_access_required:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__VM_EVENT);
 
-    case XEN_DOMCTL_monitor_op:
+    case CRUX_DOMCTL_monitor_op:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__VM_EVENT);
 
-    case XEN_DOMCTL_debug_op:
-    case XEN_DOMCTL_vmtrace_op:
-    case XEN_DOMCTL_gdbsx_guestmemio:
-    case XEN_DOMCTL_gdbsx_pausevcpu:
-    case XEN_DOMCTL_gdbsx_unpausevcpu:
-    case XEN_DOMCTL_gdbsx_domstatus:
+    case CRUX_DOMCTL_debug_op:
+    case CRUX_DOMCTL_vmtrace_op:
+    case CRUX_DOMCTL_gdbsx_guestmemio:
+    case CRUX_DOMCTL_gdbsx_pausevcpu:
+    case CRUX_DOMCTL_gdbsx_unpausevcpu:
+    case CRUX_DOMCTL_gdbsx_domstatus:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETDEBUGGING);
 
-    case XEN_DOMCTL_subscribe:
+    case CRUX_DOMCTL_subscribe:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SET_MISC_INFO);
 
-    case XEN_DOMCTL_set_virq_handler:
+    case CRUX_DOMCTL_set_virq_handler:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SET_VIRQ_HANDLER);
 
-    case XEN_DOMCTL_set_cpu_policy:
+    case CRUX_DOMCTL_set_cpu_policy:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__SET_CPU_POLICY);
 
-    case XEN_DOMCTL_gettscinfo:
+    case CRUX_DOMCTL_gettscinfo:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__GETTSC);
 
-    case XEN_DOMCTL_settscinfo:
+    case CRUX_DOMCTL_settscinfo:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__SETTSC);
 
-    case XEN_DOMCTL_audit_p2m:
+    case CRUX_DOMCTL_audit_p2m:
         return current_has_perm(d, SECCLASS_HVM, HVM__AUDIT_P2M);
 
-    case XEN_DOMCTL_cacheflush:
+    case CRUX_DOMCTL_cacheflush:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__CACHEFLUSH);
 
-    case XEN_DOMCTL_setvnumainfo:
+    case CRUX_DOMCTL_setvnumainfo:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN2__SET_VNUMAINFO);
-    case XEN_DOMCTL_psr_cmt_op:
+    case CRUX_DOMCTL_psr_cmt_op:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__PSR_CMT_OP);
 
-    case XEN_DOMCTL_psr_alloc:
+    case CRUX_DOMCTL_psr_alloc:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__PSR_ALLOC);
 
-    case XEN_DOMCTL_soft_reset:
+    case CRUX_DOMCTL_soft_reset:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__SOFT_RESET);
 
-    case XEN_DOMCTL_vuart_op:
+    case CRUX_DOMCTL_vuart_op:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__VUART_OP);
 
-    case XEN_DOMCTL_get_cpu_policy:
+    case CRUX_DOMCTL_get_cpu_policy:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__GET_CPU_POLICY);
 
-    case XEN_DOMCTL_get_paging_mempool_size:
+    case CRUX_DOMCTL_get_paging_mempool_size:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__GETPAGINGMEMPOOL);
 
-    case XEN_DOMCTL_set_paging_mempool_size:
+    case CRUX_DOMCTL_set_paging_mempool_size:
         return current_has_perm(d, SECCLASS_DOMAIN, DOMAIN__SETPAGINGMEMPOOL);
 
-    case XEN_DOMCTL_dt_overlay:
+    case CRUX_DOMCTL_dt_overlay:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__DT_OVERLAY);
 
-    case XEN_DOMCTL_set_llc_colors:
+    case CRUX_DOMCTL_set_llc_colors:
         return current_has_perm(d, SECCLASS_DOMAIN2, DOMAIN2__SET_LLC_COLORS);
 
     default:
@@ -864,73 +864,73 @@ static int cf_check flask_sysctl(int cmd)
     switch ( cmd )
     {
     /* These have individual XSM hooks */
-    case XEN_SYSCTL_readconsole:
-    case XEN_SYSCTL_getdomaininfolist:
-    case XEN_SYSCTL_page_offline_op:
-    case XEN_SYSCTL_scheduler_op:
+    case CRUX_SYSCTL_readconsole:
+    case CRUX_SYSCTL_getdomaininfolist:
+    case CRUX_SYSCTL_page_offline_op:
+    case CRUX_SYSCTL_scheduler_op:
 #ifdef CONFIG_X86
-    case XEN_SYSCTL_cpu_hotplug:
+    case CRUX_SYSCTL_cpu_hotplug:
 #endif
         return 0;
 
-    case XEN_SYSCTL_tbuf_op:
-        return domain_has_xen(current->domain, XEN__TBUFCONTROL);
+    case CRUX_SYSCTL_tbuf_op:
+        return domain_has_crux(current->domain, CRUX__TBUFCONTROL);
 
-    case XEN_SYSCTL_sched_id:
-        return domain_has_xen(current->domain, XEN__GETSCHEDULER);
+    case CRUX_SYSCTL_sched_id:
+        return domain_has_crux(current->domain, CRUX__GETSCHEDULER);
 
-    case XEN_SYSCTL_perfc_op:
-        return domain_has_xen(current->domain, XEN__PERFCONTROL);
+    case CRUX_SYSCTL_perfc_op:
+        return domain_has_crux(current->domain, CRUX__PERFCONTROL);
 
-    case XEN_SYSCTL_debug_keys:
-        return domain_has_xen(current->domain, XEN__DEBUG);
+    case CRUX_SYSCTL_debug_keys:
+        return domain_has_crux(current->domain, CRUX__DEBUG);
 
-    case XEN_SYSCTL_getcpuinfo:
-        return domain_has_xen(current->domain, XEN__GETCPUINFO);
+    case CRUX_SYSCTL_getcpuinfo:
+        return domain_has_crux(current->domain, CRUX__GETCPUINFO);
 
-    case XEN_SYSCTL_availheap:
-        return domain_has_xen(current->domain, XEN__HEAP);
+    case CRUX_SYSCTL_availheap:
+        return domain_has_crux(current->domain, CRUX__HEAP);
 
-    case XEN_SYSCTL_get_pmstat:
-        return domain_has_xen(current->domain, XEN__PM_OP);
+    case CRUX_SYSCTL_get_pmstat:
+        return domain_has_crux(current->domain, CRUX__PM_OP);
 
-    case XEN_SYSCTL_pm_op:
-        return domain_has_xen(current->domain, XEN__PM_OP);
+    case CRUX_SYSCTL_pm_op:
+        return domain_has_crux(current->domain, CRUX__PM_OP);
 
-    case XEN_SYSCTL_lockprof_op:
-        return domain_has_xen(current->domain, XEN__LOCKPROF);
+    case CRUX_SYSCTL_lockprof_op:
+        return domain_has_crux(current->domain, CRUX__LOCKPROF);
 
-    case XEN_SYSCTL_cpupool_op:
-        return domain_has_xen(current->domain, XEN__CPUPOOL_OP);
+    case CRUX_SYSCTL_cpupool_op:
+        return domain_has_crux(current->domain, CRUX__CPUPOOL_OP);
 
-    case XEN_SYSCTL_physinfo:
-    case XEN_SYSCTL_cputopoinfo:
-    case XEN_SYSCTL_numainfo:
-    case XEN_SYSCTL_pcitopoinfo:
-    case XEN_SYSCTL_get_cpu_policy:
-        return domain_has_xen(current->domain, XEN__PHYSINFO);
+    case CRUX_SYSCTL_physinfo:
+    case CRUX_SYSCTL_cputopoinfo:
+    case CRUX_SYSCTL_numainfo:
+    case CRUX_SYSCTL_pcitopoinfo:
+    case CRUX_SYSCTL_get_cpu_policy:
+        return domain_has_crux(current->domain, CRUX__PHYSINFO);
 
-    case XEN_SYSCTL_psr_cmt_op:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__PSR_CMT_OP, NULL);
-    case XEN_SYSCTL_psr_alloc:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__PSR_ALLOC, NULL);
+    case CRUX_SYSCTL_psr_cmt_op:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__PSR_CMT_OP, NULL);
+    case CRUX_SYSCTL_psr_alloc:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__PSR_ALLOC, NULL);
 
-    case XEN_SYSCTL_get_cpu_levelling_caps:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__GET_CPU_LEVELLING_CAPS, NULL);
+    case CRUX_SYSCTL_get_cpu_levelling_caps:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__GET_CPU_LEVELLING_CAPS, NULL);
 
-    case XEN_SYSCTL_get_cpu_featureset:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__GET_CPU_FEATURESET, NULL);
+    case CRUX_SYSCTL_get_cpu_featureset:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__GET_CPU_FEATURESET, NULL);
 
-    case XEN_SYSCTL_livepatch_op:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__LIVEPATCH_OP, NULL);
-    case XEN_SYSCTL_coverage_op:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__COVERAGE_OP, NULL);
+    case CRUX_SYSCTL_livepatch_op:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__LIVEPATCH_OP, NULL);
+    case CRUX_SYSCTL_coverage_op:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__COVERAGE_OP, NULL);
 
     default:
         return avc_unknown_permission("sysctl", cmd);
@@ -939,12 +939,12 @@ static int cf_check flask_sysctl(int cmd)
 
 static int cf_check flask_readconsole(uint32_t clear)
 {
-    uint32_t perms = XEN__READCONSOLE;
+    uint32_t perms = CRUX__READCONSOLE;
 
     if ( clear )
-        perms |= XEN__CLEARCONSOLE;
+        perms |= CRUX__CLEARCONSOLE;
 
-    return domain_has_xen(current->domain, perms);
+    return domain_has_crux(current->domain, perms);
 }
 #endif /* CONFIG_SYSCTL */
 
@@ -1079,7 +1079,7 @@ static int cf_check flask_unmap_domain_irq(
 }
 
 static int cf_check flask_bind_pt_irq(
-    struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     uint32_t dsid, rsid;
     int rc = -EPERM;
@@ -1106,7 +1106,7 @@ static int cf_check flask_bind_pt_irq(
 }
 
 static int cf_check flask_unbind_pt_irq(
-    struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     return current_has_perm(d, SECCLASS_RESOURCE, RESOURCE__REMOVE);
 }
@@ -1200,18 +1200,18 @@ static int cf_check flask_pci_config_permission(
 
 static int cf_check flask_resource_plug_core(void)
 {
-    return avc_current_has_perm(SECINITSID_DOMXEN, SECCLASS_RESOURCE, RESOURCE__PLUG, NULL);
+    return avc_current_has_perm(SECINITSID_DOMCRUX, SECCLASS_RESOURCE, RESOURCE__PLUG, NULL);
 }
 
 static int cf_check flask_resource_unplug_core(void)
 {
-    return avc_current_has_perm(SECINITSID_DOMXEN, SECCLASS_RESOURCE, RESOURCE__UNPLUG, NULL);
+    return avc_current_has_perm(SECINITSID_DOMCRUX, SECCLASS_RESOURCE, RESOURCE__UNPLUG, NULL);
 }
 
 #ifdef CONFIG_SYSCTL
 static int flask_resource_use_core(void)
 {
-    return avc_current_has_perm(SECINITSID_DOMXEN, SECCLASS_RESOURCE, RESOURCE__USE, NULL);
+    return avc_current_has_perm(SECINITSID_DOMCRUX, SECCLASS_RESOURCE, RESOURCE__USE, NULL);
 }
 #endif /* CONFIG_SYSCTL */
 
@@ -1275,7 +1275,7 @@ static int cf_check flask_resource_setup_gsi(int gsi)
 
 static int cf_check flask_resource_setup_misc(void)
 {
-    return avc_current_has_perm(SECINITSID_XEN, SECCLASS_RESOURCE, RESOURCE__SETUP, NULL);
+    return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_RESOURCE, RESOURCE__SETUP, NULL);
 }
 
 #ifdef CONFIG_SYSCTL
@@ -1297,7 +1297,7 @@ static inline int cf_check flask_page_offline(uint32_t cmd)
 
 static inline int cf_check flask_hypfs_op(void)
 {
-    return domain_has_xen(current->domain, XEN__HYPFS_OP);
+    return domain_has_crux(current->domain, CRUX__HYPFS_OP);
 }
 
 static int cf_check flask_add_to_physmap(struct domain *d1, struct domain *d2)
@@ -1350,13 +1350,13 @@ static int cf_check flask_hvm_altp2mhvm_op(struct domain *d, uint64_t mode, uint
      */
     switch ( mode )
     {
-    case XEN_ALTP2M_mixed:
+    case CRUX_ALTP2M_mixed:
         break;
-    case XEN_ALTP2M_limited:
+    case CRUX_ALTP2M_limited:
         if ( HVMOP_altp2m_vcpu_enable_notify == op )
             break;
         /* fall-through */
-    case XEN_ALTP2M_external:
+    case CRUX_ALTP2M_external:
         if ( d == current->domain )
             return -EPERM;
         break;
@@ -1533,66 +1533,66 @@ static int cf_check flask_platform_op(uint32_t op)
     {
 #ifdef CONFIG_X86
     /* These operations have their own XSM hooks */
-    case XENPF_cpu_online:
-    case XENPF_cpu_offline:
-    case XENPF_cpu_hotadd:
-    case XENPF_mem_hotadd:
+    case CRUXPF_cpu_online:
+    case CRUXPF_cpu_offline:
+    case CRUXPF_cpu_hotadd:
+    case CRUXPF_mem_hotadd:
         return 0;
 #endif
 
-    case XENPF_settime32:
-    case XENPF_settime64:
-        return domain_has_xen(current->domain, XEN__SETTIME);
+    case CRUXPF_settime32:
+    case CRUXPF_settime64:
+        return domain_has_crux(current->domain, CRUX__SETTIME);
 
-    case XENPF_add_memtype:
-        return domain_has_xen(current->domain, XEN__MTRR_ADD);
+    case CRUXPF_add_memtype:
+        return domain_has_crux(current->domain, CRUX__MTRR_ADD);
 
-    case XENPF_del_memtype:
-        return domain_has_xen(current->domain, XEN__MTRR_DEL);
+    case CRUXPF_del_memtype:
+        return domain_has_crux(current->domain, CRUX__MTRR_DEL);
 
-    case XENPF_read_memtype:
-        return domain_has_xen(current->domain, XEN__MTRR_READ);
+    case CRUXPF_read_memtype:
+        return domain_has_crux(current->domain, CRUX__MTRR_READ);
 
-    case XENPF_microcode_update:
-        return domain_has_xen(current->domain, XEN__MICROCODE);
+    case CRUXPF_microcode_update:
+        return domain_has_crux(current->domain, CRUX__MICROCODE);
 
-    case XENPF_platform_quirk:
-        return domain_has_xen(current->domain, XEN__QUIRK);
+    case CRUXPF_platform_quirk:
+        return domain_has_crux(current->domain, CRUX__QUIRK);
 
-    case XENPF_firmware_info:
-        return domain_has_xen(current->domain, XEN__FIRMWARE);
+    case CRUXPF_firmware_info:
+        return domain_has_crux(current->domain, CRUX__FIRMWARE);
 
-    case XENPF_efi_runtime_call:
-        return domain_has_xen(current->domain, XEN__FIRMWARE);
+    case CRUXPF_efi_runtime_call:
+        return domain_has_crux(current->domain, CRUX__FIRMWARE);
 
-    case XENPF_enter_acpi_sleep:
-        return domain_has_xen(current->domain, XEN__SLEEP);
+    case CRUXPF_enter_acpi_sleep:
+        return domain_has_crux(current->domain, CRUX__SLEEP);
 
-    case XENPF_change_freq:
-        return domain_has_xen(current->domain, XEN__FREQUENCY);
+    case CRUXPF_change_freq:
+        return domain_has_crux(current->domain, CRUX__FREQUENCY);
 
-    case XENPF_getidletime:
-        return domain_has_xen(current->domain, XEN__GETIDLE);
+    case CRUXPF_getidletime:
+        return domain_has_crux(current->domain, CRUX__GETIDLE);
 
-    case XENPF_set_processor_pminfo:
-    case XENPF_core_parking:
-        return domain_has_xen(current->domain, XEN__PM_OP);
+    case CRUXPF_set_processor_pminfo:
+    case CRUXPF_core_parking:
+        return domain_has_crux(current->domain, CRUX__PM_OP);
 
-    case XENPF_get_cpu_version:
-    case XENPF_get_cpuinfo:
-        return domain_has_xen(current->domain, XEN__GETCPUINFO);
+    case CRUXPF_get_cpu_version:
+    case CRUXPF_get_cpuinfo:
+        return domain_has_crux(current->domain, CRUX__GETCPUINFO);
 
-    case XENPF_resource_op:
-        return avc_current_has_perm(SECINITSID_XEN, SECCLASS_XEN2,
-                                    XEN2__RESOURCE_OP, NULL);
+    case CRUXPF_resource_op:
+        return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_CRUX2,
+                                    CRUX2__RESOURCE_OP, NULL);
 
-    case XENPF_get_symbol:
-        return avc_has_perm(domain_sid(current->domain), SECINITSID_XEN,
-                            SECCLASS_XEN2, XEN2__GET_SYMBOL, NULL);
+    case CRUXPF_get_symbol:
+        return avc_has_perm(domain_sid(current->domain), SECINITSID_CRUX,
+                            SECCLASS_CRUX2, CRUX2__GET_SYMBOL, NULL);
 
-    case XENPF_get_dom0_console:
-        return avc_has_perm(domain_sid(current->domain), SECINITSID_XEN,
-                            SECCLASS_XEN2, XEN2__GET_DOM0_CONSOLE, NULL);
+    case CRUXPF_get_dom0_console:
+        return avc_has_perm(domain_sid(current->domain), SECINITSID_CRUX,
+                            SECCLASS_CRUX2, CRUX2__GET_DOM0_CONSOLE, NULL);
 
     default:
         return avc_unknown_permission("platform_op", op);
@@ -1602,7 +1602,7 @@ static int cf_check flask_platform_op(uint32_t op)
 #ifdef CONFIG_X86
 static int cf_check flask_do_mca(void)
 {
-    return domain_has_xen(current->domain, XEN__MCA_OP);
+    return domain_has_crux(current->domain, CRUX__MCA_OP);
 }
 
 static int cf_check flask_shadow_control(struct domain *d, uint32_t op)
@@ -1611,18 +1611,18 @@ static int cf_check flask_shadow_control(struct domain *d, uint32_t op)
 
     switch ( op )
     {
-    case XEN_DOMCTL_SHADOW_OP_OFF:
+    case CRUX_DOMCTL_SHADOW_OP_OFF:
         perm = SHADOW__DISABLE;
         break;
-    case XEN_DOMCTL_SHADOW_OP_ENABLE:
-    case XEN_DOMCTL_SHADOW_OP_ENABLE_TEST:
-    case XEN_DOMCTL_SHADOW_OP_GET_ALLOCATION:
-    case XEN_DOMCTL_SHADOW_OP_SET_ALLOCATION:
+    case CRUX_DOMCTL_SHADOW_OP_ENABLE:
+    case CRUX_DOMCTL_SHADOW_OP_ENABLE_TEST:
+    case CRUX_DOMCTL_SHADOW_OP_GET_ALLOCATION:
+    case CRUX_DOMCTL_SHADOW_OP_SET_ALLOCATION:
         perm = SHADOW__ENABLE;
         break;
-    case XEN_DOMCTL_SHADOW_OP_ENABLE_LOGDIRTY:
-    case XEN_DOMCTL_SHADOW_OP_PEEK:
-    case XEN_DOMCTL_SHADOW_OP_CLEAN:
+    case CRUX_DOMCTL_SHADOW_OP_ENABLE_LOGDIRTY:
+    case CRUX_DOMCTL_SHADOW_OP_PEEK:
+    case CRUX_DOMCTL_SHADOW_OP_CLEAN:
         perm = SHADOW__LOGDIRTY;
         break;
     default:
@@ -1705,21 +1705,21 @@ static int cf_check flask_apic(struct domain *d, int cmd)
     {
     case PHYSDEVOP_apic_read:
     case PHYSDEVOP_alloc_irq_vector:
-        perm = XEN__READAPIC;
+        perm = CRUX__READAPIC;
         break;
     case PHYSDEVOP_apic_write:
-        perm = XEN__WRITEAPIC;
+        perm = CRUX__WRITEAPIC;
         break;
     default:
         return avc_unknown_permission("apic", cmd);
     }
 
-    return domain_has_xen(d, perm);
+    return domain_has_crux(d, perm);
 }
 
 static int cf_check flask_machine_memory_map(void)
 {
-    return avc_current_has_perm(SECINITSID_XEN, SECCLASS_MMU, MMU__MEMORYMAP, NULL);
+    return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_MMU, MMU__MEMORYMAP, NULL);
 }
 
 static int cf_check flask_domain_memory_map(struct domain *d)
@@ -1778,18 +1778,18 @@ static int cf_check flask_pmu_op(struct domain *d, unsigned int op)
 
     switch ( op )
     {
-    case XENPMU_mode_set:
-    case XENPMU_mode_get:
-    case XENPMU_feature_set:
-    case XENPMU_feature_get:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_XEN2,
-                            XEN2__PMU_CTRL, NULL);
-    case XENPMU_init:
-    case XENPMU_finish:
-    case XENPMU_lvtpc_set:
-    case XENPMU_flush:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_XEN2,
-                            XEN2__PMU_USE, NULL);
+    case CRUXPMU_mode_set:
+    case CRUXPMU_mode_get:
+    case CRUXPMU_feature_set:
+    case CRUXPMU_feature_get:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_CRUX2,
+                            CRUX2__PMU_CTRL, NULL);
+    case CRUXPMU_init:
+    case CRUXPMU_finish:
+    case CRUXPMU_lvtpc_set:
+    case CRUXPMU_flush:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_CRUX2,
+                            CRUX2__PMU_USE, NULL);
     default:
         return -EPERM;
     }
@@ -1801,45 +1801,45 @@ static int cf_check flask_dm_op(struct domain *d)
     return current_has_perm(d, SECCLASS_HVM, HVM__DM);
 }
 
-static int cf_check flask_xen_version(uint32_t op)
+static int cf_check flask_crux_version(uint32_t op)
 {
     uint32_t dsid = domain_sid(current->domain);
 
     switch ( op )
     {
-    case XENVER_version:
-    case XENVER_platform_parameters:
-    case XENVER_get_features:
+    case CRUXVER_version:
+    case CRUXVER_platform_parameters:
+    case CRUXVER_get_features:
         /* These sub-ops ignore the permission checks and return data. */
         return 0;
-    case XENVER_extraversion:
-    case XENVER_extraversion2:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_EXTRAVERSION, NULL);
-    case XENVER_compile_info:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_COMPILE_INFO, NULL);
-    case XENVER_capabilities:
-    case XENVER_capabilities2:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_CAPABILITIES, NULL);
-    case XENVER_changeset:
-    case XENVER_changeset2:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_CHANGESET, NULL);
-    case XENVER_pagesize:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_PAGESIZE, NULL);
-    case XENVER_guest_handle:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_GUEST_HANDLE, NULL);
-    case XENVER_commandline:
-    case XENVER_commandline2:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_COMMANDLINE, NULL);
-    case XENVER_build_id:
-        return avc_has_perm(dsid, SECINITSID_XEN, SECCLASS_VERSION,
-                            VERSION__XEN_BUILD_ID, NULL);
+    case CRUXVER_extraversion:
+    case CRUXVER_extraversion2:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_EXTRAVERSION, NULL);
+    case CRUXVER_compile_info:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_COMPILE_INFO, NULL);
+    case CRUXVER_capabilities:
+    case CRUXVER_capabilities2:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_CAPABILITIES, NULL);
+    case CRUXVER_changeset:
+    case CRUXVER_changeset2:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_CHANGESET, NULL);
+    case CRUXVER_pagesize:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_PAGESIZE, NULL);
+    case CRUXVER_guest_handle:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_GUEST_HANDLE, NULL);
+    case CRUXVER_commandline:
+    case CRUXVER_commandline2:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_COMMANDLINE, NULL);
+    case CRUXVER_build_id:
+        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_VERSION,
+                            VERSION__CRUX_BUILD_ID, NULL);
     default:
         return -EPERM;
     }
@@ -1853,7 +1853,7 @@ static int cf_check flask_domain_resource_map(struct domain *d)
 #ifdef CONFIG_ARGO
 static int cf_check flask_argo_enable(const struct domain *d)
 {
-    return avc_has_perm(domain_sid(d), SECINITSID_XEN, SECCLASS_ARGO,
+    return avc_has_perm(domain_sid(d), SECINITSID_CRUX, SECCLASS_ARGO,
                         ARGO__ENABLE, NULL);
 }
 
@@ -1866,7 +1866,7 @@ static int cf_check flask_argo_register_single_source(
 
 static int cf_check flask_argo_register_any_source(const struct domain *d)
 {
-    return avc_has_perm(domain_sid(d), SECINITSID_XEN, SECCLASS_ARGO,
+    return avc_has_perm(domain_sid(d), SECINITSID_CRUX, SECCLASS_ARGO,
                         ARGO__REGISTER_ANY_SOURCE, NULL);
 }
 
@@ -2017,7 +2017,7 @@ static const struct xsm_ops __initconst_cf_clobber flask_ops = {
     .pmu_op = flask_pmu_op,
 #endif
     .dm_op = flask_dm_op,
-    .xen_version = flask_xen_version,
+    .crux_version = flask_crux_version,
     .domain_resource_map = flask_domain_resource_map,
 #ifdef CONFIG_ARGO
     .argo_enable = flask_argo_enable,
@@ -2036,7 +2036,7 @@ const struct xsm_ops *__init flask_init(
     switch ( flask_bootparam )
     {
     case FLASK_BOOTPARAM_DISABLED:
-        printk(XENLOG_INFO "Flask: Disabled at boot.\n");
+        printk(CRUXLOG_INFO "Flask: Disabled at boot.\n");
         return NULL;
 
     case FLASK_BOOTPARAM_PERMISSIVE:
@@ -2062,11 +2062,11 @@ const struct xsm_ops *__init flask_init(
         panic("Unable to load FLASK policy\n");
 
     if ( ret )
-        printk(XENLOG_INFO "Flask:  Access controls disabled until policy is loaded.\n");
+        printk(CRUXLOG_INFO "Flask:  Access controls disabled until policy is loaded.\n");
     else if ( flask_enforcing )
-        printk(XENLOG_INFO "Flask:  Starting in enforcing mode.\n");
+        printk(CRUXLOG_INFO "Flask:  Starting in enforcing mode.\n");
     else
-        printk(XENLOG_INFO "Flask:  Starting in permissive mode.\n");
+        printk(CRUXLOG_INFO "Flask:  Starting in permissive mode.\n");
 
     return &flask_ops;
 }

@@ -13,8 +13,8 @@
 # define ELFSIZE 32
 #endif
 
-/* xen_ulong_t is always 64 bits */
-#define BITS_PER_XEN_ULONG 64
+/* crux_ulong_t is always 64 bits */
+#define BITS_PER_CRUX_ULONG 64
 
 #define CONFIG_PAGING_LEVELS 3
 
@@ -50,8 +50,8 @@
   name:
 #endif
 
-#include <xen/const.h>
-#include <xen/page-size.h>
+#include <crux/const.h>
+#include <crux/page-size.h>
 
 #if defined(CONFIG_MMU)
 #include <asm/mmu/layout.h>

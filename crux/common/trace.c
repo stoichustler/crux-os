@@ -1,7 +1,7 @@
 /******************************************************************************
  * common/trace.c
  *
- * xen Trace Buffer
+ * Xen Trace Buffer
  *
  * Copyright (C) 2004 by Intel Research Cambridge
  *
@@ -11,34 +11,34 @@
  *
  * Copyright (C) 2005 Bin Ren
  *
- * The trace buffer code is designed to allow debugging traces of xen to be
+ * The trace buffer code is designed to allow debugging traces of Xen to be
  * generated on UP / SMP machines.  Each trace entry is timestamped so that
  * it's possible to reconstruct a chronological record of trace events.
  */
 
 #include <asm/io.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/smp.h>
-#include <xen/trace.h>
-#include <xen/errno.h>
-#include <xen/event.h>
-#include <xen/tasklet.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/percpu.h>
-#include <xen/pfn.h>
-#include <xen/sections.h>
-#include <xen/cpu.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/smp.h>
+#include <crux/trace.h>
+#include <crux/errno.h>
+#include <crux/event.h>
+#include <crux/tasklet.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/percpu.h>
+#include <crux/pfn.h>
+#include <crux/sections.h>
+#include <crux/cpu.h>
 #include <asm/atomic.h>
 #include <public/sysctl.h>
 
 #ifdef CONFIG_COMPAT
 #include <compat/trace.h>
-#define xen_t_buf t_buf
+#define crux_t_buf t_buf
 CHECK_t_buf;
-#undef xen_t_buf
+#undef crux_t_buf
 #else
 #define compat_t_rec t_rec
 #endif
@@ -100,7 +100,7 @@ static uint32_t calc_tinfo_first_offset(void)
  * calculate_tbuf_size - check to make sure that the proposed size will fit
  * in the currently sized struct t_info and allows prod and cons to
  * reach double the value without overflow.
- * The t_info layout is fixed and cant be changed without breaking xentrace.
+ * The t_info layout is fixed and cant be changed without breaking cruxtrace.
  * Initialize t_info_pages based on number of trace pages.
  */
 static int calculate_tbuf_size(unsigned int pages, uint16_t t_info_first_offset)
@@ -138,7 +138,7 @@ static int calculate_tbuf_size(unsigned int pages, uint16_t t_info_first_offset)
 
     if ( pages > max_pages )
     {
-        printk(XENLOG_INFO "xentrace: requested number of %u pages "
+        printk(CRUXLOG_INFO "cruxtrace: requested number of %u pages "
                "reduced to %u\n",
                pages, max_pages);
         pages = max_pages;
@@ -150,7 +150,7 @@ static int calculate_tbuf_size(unsigned int pages, uint16_t t_info_first_offset)
      */
     t_info_words = nr_cpu_ids * pages + t_info_first_offset;
     t_info_pages = PFN_UP(t_info_words * sizeof(uint32_t));
-    printk(XENLOG_INFO "xentrace: requesting %u t_info pages "
+    printk(CRUXLOG_INFO "cruxtrace: requesting %u t_info pages "
            "for %u trace pages on %u cpus\n",
            t_info_pages, pages, nr_cpu_ids);
     return pages;
@@ -161,7 +161,7 @@ static int calculate_tbuf_size(unsigned int pages, uint16_t t_info_first_offset)
  *
  * This function is called at start of day in order to initialize the per-cpu
  * trace buffers.  The trace buffers are then available for debugging use, via
- * the %TRACE_xD macros exported in <xen/trace.h>.
+ * the %TRACE_xD macros exported in <crux/trace.h>.
  *
  * This function may also be called later when enabling trace buffers
  * via the SET_SIZE hypercall.
@@ -185,7 +185,7 @@ static int alloc_trace_bufs(unsigned int pages)
 
     pages = calculate_tbuf_size(pages, t_info_first_offset);
 
-    t_info = alloc_xenheap_pages(get_order_from_pages(t_info_pages), 0);
+    t_info = alloc_cruxheap_pages(get_order_from_pages(t_info_pages), 0);
     if ( t_info == NULL )
         goto out_fail;
 
@@ -206,10 +206,10 @@ static int alloc_trace_bufs(unsigned int pages)
 
         for ( i = 0; i < pages; i++ )
         {
-            void *p = alloc_xenheap_pages(0, MEMF_bits(32 + PAGE_SHIFT));
+            void *p = alloc_cruxheap_pages(0, MEMF_bits(32 + PAGE_SHIFT));
             if ( !p )
             {
-                printk(XENLOG_INFO "xentrace: memory allocation failed "
+                printk(CRUXLOG_INFO "cruxtrace: memory allocation failed "
                        "on cpu %d after %d pages\n", cpu, i);
                 t_info_mfn_list[offset + i] = 0;
                 goto out_dealloc;
@@ -233,25 +233,25 @@ static int alloc_trace_bufs(unsigned int pages)
         per_cpu(t_bufs, cpu) = buf = mfn_to_virt(t_info_mfn_list[offset]);
         buf->cons = buf->prod = 0;
 
-        printk(XENLOG_INFO "xentrace: p%d mfn %x offset %u\n",
+        printk(CRUXLOG_INFO "cruxtrace: p%d mfn %x offset %u\n",
                    cpu, t_info_mfn_list[offset], offset);
 
         /* Now share the trace pages */
         for ( i = 0; i < pages; i++ )
-            share_xen_page_with_privileged_guests(
+            share_crux_page_with_privileged_guests(
                 mfn_to_page(_mfn(t_info_mfn_list[offset + i])), SHARE_rw);
     }
 
     /* Finally, share the t_info page */
     for(i = 0; i < t_info_pages; i++)
-        share_xen_page_with_privileged_guests(
+        share_crux_page_with_privileged_guests(
             virt_to_page(t_info) + i, SHARE_ro);
 
     data_size  = (pages * PAGE_SIZE - sizeof(struct t_buf));
     t_buf_highwater = data_size >> 1; /* 50% high water */
     opt_tbuf_size = pages;
 
-    printk("xentrace: initialised\n");
+    printk("cruxtrace: initialised\n");
     smp_wmb(); /* above must be visible before tb_init_done flag set */
     tb_init_done = 1;
 
@@ -269,13 +269,13 @@ out_dealloc:
             if ( !mfn )
                 break;
             ASSERT(!(mfn_to_page(_mfn(mfn))->count_info & PGC_allocated));
-            free_xenheap_pages(mfn_to_virt(mfn), 0);
+            free_cruxheap_pages(mfn_to_virt(mfn), 0);
         }
     }
-    free_xenheap_pages(t_info, get_order_from_pages(t_info_pages));
+    free_cruxheap_pages(t_info, get_order_from_pages(t_info_pages));
     t_info = NULL;
 out_fail:
-    printk(XENLOG_WARNING "xentrace: allocation failed! Tracing disabled.\n");
+    printk(CRUXLOG_WARNING "cruxtrace: allocation failed! Tracing disabled.\n");
     return -ENOMEM;
 }
 
@@ -294,7 +294,7 @@ static int tb_set_size(unsigned int pages)
      */
     if ( opt_tbuf_size && pages != opt_tbuf_size )
     {
-        printk(XENLOG_INFO "xentrace: tb_set_size from %d to %d "
+        printk(CRUXLOG_INFO "cruxtrace: tb_set_size from %d to %d "
                "not implemented\n",
                opt_tbuf_size, pages);
         return -EINVAL;
@@ -334,7 +334,7 @@ int trace_will_trace_event(u32 event)
  *
  * This function is called at start of day in order to initialize the per-cpu
  * trace buffers.  The trace buffers are then available for debugging use, via
- * the %TRACE_xD macros exported in <xen/trace.h>.
+ * the %TRACE_xD macros exported in <crux/trace.h>.
  *
  * TODO: Try and make this a presmp_initcall() to improve alloc_trace_bufs().
  */
@@ -347,13 +347,13 @@ static void __init __constructor init_trace_bufs(void)
     {
         if ( alloc_trace_bufs(opt_tbuf_size) )
         {
-            printk("xentrace: allocation size %d failed, disabling\n",
+            printk("cruxtrace: allocation size %d failed, disabling\n",
                    opt_tbuf_size);
             opt_tbuf_size = 0;
         }
         else if ( opt_tevt_mask )
         {
-            printk("xentrace: Starting tracing, enabling mask %x\n",
+            printk("cruxtrace: Starting tracing, enabling mask %x\n",
                    opt_tevt_mask);
             tb_event_mask = opt_tevt_mask;
             tb_init_done=1;
@@ -363,9 +363,9 @@ static void __init __constructor init_trace_bufs(void)
 
 /**
  * tb_control - sysctl operations on trace buffers.
- * @tbc: a pointer to a struct xen_sysctl_tbuf_op to be filled out
+ * @tbc: a pointer to a struct crux_sysctl_tbuf_op to be filled out
  */
-int tb_control(struct xen_sysctl_tbuf_op *tbc)
+int tb_control(struct crux_sysctl_tbuf_op *tbc)
 {
     static DEFINE_SPINLOCK(lock);
     int rc = 0;
@@ -374,16 +374,16 @@ int tb_control(struct xen_sysctl_tbuf_op *tbc)
 
     switch ( tbc->cmd )
     {
-    case XEN_SYSCTL_TBUFOP_get_info:
+    case CRUX_SYSCTL_TBUFOP_get_info:
         tbc->evt_mask   = tb_event_mask;
         tbc->buffer_mfn = t_info ? virt_to_mfn(t_info) : 0;
         tbc->size = t_info_pages * PAGE_SIZE;
         break;
-    case XEN_SYSCTL_TBUFOP_set_cpu_mask:
+    case CRUX_SYSCTL_TBUFOP_set_cpu_mask:
     {
         cpumask_var_t mask;
 
-        rc = xenctl_bitmap_to_cpumask(&mask, &tbc->cpu_mask);
+        rc = cruxctl_bitmap_to_cpumask(&mask, &tbc->cpu_mask);
         if ( !rc )
         {
             cpumask_copy(&tb_cpu_mask, mask);
@@ -391,20 +391,20 @@ int tb_control(struct xen_sysctl_tbuf_op *tbc)
         }
     }
         break;
-    case XEN_SYSCTL_TBUFOP_set_evt_mask:
+    case CRUX_SYSCTL_TBUFOP_set_evt_mask:
         tb_event_mask = tbc->evt_mask;
         break;
-    case XEN_SYSCTL_TBUFOP_set_size:
+    case CRUX_SYSCTL_TBUFOP_set_size:
         rc = tb_set_size(tbc->size);
         break;
-    case XEN_SYSCTL_TBUFOP_enable:
+    case CRUX_SYSCTL_TBUFOP_enable:
         /* Enable trace buffers. Check buffers are already allocated. */
         if ( opt_tbuf_size == 0 )
             rc = -EINVAL;
         else
             tb_init_done = 1;
         break;
-    case XEN_SYSCTL_TBUFOP_disable:
+    case CRUX_SYSCTL_TBUFOP_disable:
     {
         /*
          * Disable trace buffers. Just stops new records from being written,
@@ -452,7 +452,7 @@ static inline bool bogus(u32 prod, u32 cons)
          unlikely(cons & 3) || unlikely(cons >= 2 * data_size) )
     {
         tb_init_done = 0;
-        printk(XENLOG_WARNING "trc#%u: bogus prod (%08x) and/or cons (%08x)\n",
+        printk(CRUXLOG_WARNING "trc#%u: bogus prod (%08x) and/or cons (%08x)\n",
                smp_processor_id(), prod, cons);
         return 1;
     }
@@ -576,7 +576,7 @@ static inline void __insert_record(struct t_buf *buf,
         if ( next_page == NULL )
         {
             /* access beyond end of buffer */
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "%s: size=%08x prod=%08x cons=%08x rec=%u remaining=%u\n",
                    __func__, data_size, next, buf->cons, rec_size, remaining);
             return;
@@ -695,7 +695,7 @@ void trace(uint32_t event, unsigned int extra, const void *extra_data)
      */
     if ( extra % sizeof(uint32_t) ||
          extra / sizeof(uint32_t) > TRACE_EXTRA_MAX )
-        return printk_once(XENLOG_WARNING
+        return printk_once(CRUXLOG_WARNING
                            "Trace event %#x bad size %u, discarding\n",
                            event, extra);
 
@@ -811,7 +811,7 @@ unlock:
 }
 
 void __trace_hypercall(uint32_t event, unsigned long op,
-                       const xen_ulong_t *args)
+                       const crux_ulong_t *args)
 {
     struct {
         uint32_t op;

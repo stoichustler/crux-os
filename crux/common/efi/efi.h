@@ -8,9 +8,9 @@
 #include <efi/efidevp.h>
 #include <efi/eficapsule.h>
 #include <efi/efiapi.h>
-#include <xen/efi.h>
-#include <xen/mm.h>
-#include <xen/spinlock.h>
+#include <crux/efi.h>
+#include <crux/mm.h>
+#include <crux/spinlock.h>
 #include <asm/page.h>
 
 struct efi_pci_rom {

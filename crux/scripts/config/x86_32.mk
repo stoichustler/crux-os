@@ -7,6 +7,6 @@ CONFIG_XCUTILS := y
 CFLAGS += -m32 -march=i686
 
 # Use only if calling $(LD) directly.
-LDFLAGS_DIRECT += -melf_i386$(XEN_ELF_SUB_FLAVOR)
+LDFLAGS_DIRECT += -melf_i386$(CRUX_ELF_SUB_FLAVOR)
 
 IOEMU_CPU_ARCH ?= i386

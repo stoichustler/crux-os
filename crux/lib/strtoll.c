@@ -2,7 +2,7 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/lib.h>
+#include <crux/lib.h>
 
 /**
  * simple_strtoll - convert a string to a signed long long

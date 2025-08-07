@@ -1,7 +1,7 @@
 About
 =====
 This file documents the upstream sources for files and directories
-in this part of the xen source tree. Note that the list may not
+in this part of the Xen source tree. Note that the list may not
 be complete: in particular for code that has been imported from
 the Linux Kernel underr a GPLv2 license.
 

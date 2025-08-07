@@ -1,8 +1,8 @@
 #ifndef _ARM_GUEST_ATOMICS_H
 #define _ARM_GUEST_ATOMICS_H
 
-#include <xen/bitops.h>
-#include <xen/sched.h>
+#include <crux/bitops.h>
+#include <crux/sched.h>
 
 /*
  * The guest atomics helpers shares the same logic. We first try to use
@@ -11,12 +11,12 @@
  *
  * If it did timeout, then it means we didn't manage to update the
  * memory. This is possibly because the guest is misbehaving (i.e tight
- * store loop) but can also happen for other reasons (i.e nested xen).
+ * store loop) but can also happen for other reasons (i.e nested Xen).
  * In that case pause the domain and retry the operation, this time
  * without a timeout.
  *
  * Note, those helpers rely on other part of the code to prevent sharing
- * a page between xen and multiple domain.
+ * a page between Xen and multiple domain.
  */
 
 DECLARE_PER_CPU(unsigned int, guest_safe_atomic_max);

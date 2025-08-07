@@ -1,14 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * The header provides default implementations for every xen/atomic.h-provided
+ * The header provides default implementations for every crux/atomic.h-provided
  * forward inline declaration that can be synthesized from other atomic
  * functions or being created from scratch.
  */
 #ifndef _ASM_GENERIC_ATOMIC_OPS_H_
 #define _ASM_GENERIC_ATOMIC_OPS_H_
 
-#include <xen/atomic.h>
-#include <xen/lib.h>
+#include <crux/atomic.h>
+#include <crux/lib.h>
 
 #ifndef ATOMIC_READ
 static inline int atomic_read(const atomic_t *v)

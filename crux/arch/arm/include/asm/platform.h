@@ -1,9 +1,9 @@
 #ifndef __ASM_ARM_PLATFORM_H
 #define __ASM_ARM_PLATFORM_H
 
-#include <xen/sched.h>
-#include <xen/mm.h>
-#include <xen/device_tree.h>
+#include <crux/sched.h>
+#include <crux/mm.h>
+#include <crux/device_tree.h>
 
 /* Describe specific operation for a board */
 struct platform_desc {

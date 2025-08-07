@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/debug-meson.inc
+ * crux/arch/arm/arm64/debug-meson.inc
  *
  * MESON specific debug code.
  *

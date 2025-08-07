@@ -5,8 +5,8 @@
  * Copyright (C) 2022 ARM Ltd.
  */
 
-#include <xen/sizes.h>
-#include <xen/types.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
 #include <asm/arm64/sve.h>
 #include <asm/arm64/sysregs.h>
 #include <asm/cpufeature.h>

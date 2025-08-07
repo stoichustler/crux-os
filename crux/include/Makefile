@@ -15,12 +15,12 @@ headers-y := \
     compat/sched.h \
     compat/vcpu.h \
     compat/version.h \
-    compat/xen.h \
+    compat/crux.h \
     compat/xlat.h
 headers-$(CONFIG_X86)     += compat/arch-x86/pmu.h
-headers-$(CONFIG_X86)     += compat/arch-x86/xen-mca.h
-headers-$(CONFIG_X86)     += compat/arch-x86/xen.h
-headers-$(CONFIG_X86)     += compat/arch-x86/xen-$(compat-arch-y).h
+headers-$(CONFIG_X86)     += compat/arch-x86/crux-mca.h
+headers-$(CONFIG_X86)     += compat/arch-x86/crux.h
+headers-$(CONFIG_X86)     += compat/arch-x86/crux-$(compat-arch-y).h
 headers-$(CONFIG_ARGO)    += compat/argo.h
 headers-$(CONFIG_PV)      += compat/callback.h
 headers-$(CONFIG_GRANT_TABLE) += compat/grant_table.h
@@ -31,12 +31,12 @@ headers-$(CONFIG_HVM)     += compat/hvm/hvm_vcpu.h
 headers-$(CONFIG_HYPFS)   += compat/hypfs.h
 headers-$(CONFIG_KEXEC)   += compat/kexec.h
 headers-$(CONFIG_TRACEBUFFER) += compat/trace.h
-headers-$(CONFIG_XENOPROF) += compat/xenoprof.h
+headers-$(CONFIG_CRUXOPROF) += compat/cruxoprof.h
 headers-$(CONFIG_XSM_FLASK) += compat/xsm/flask_op.h
 
 headers-n := $(sort $(filter-out $(headers-y),$(headers-n) $(headers-)))
 
-cppflags-y                := -include public/xen-compat.h -DXEN_GENERATING_COMPAT_HEADERS
+cppflags-y                := -include public/crux-compat.h -DCRUX_GENERATING_COMPAT_HEADERS
 cppflags-$(CONFIG_X86)    += -m32
 
 endif
@@ -56,7 +56,7 @@ quiet_cmd_stub_h = GEN     $@
 cmd_stub_h = echo '/* SAF-9-safe empty header */' >$@
 
 quiet_cmd_compat_i = CPP     $@
-cmd_compat_i = $(CPP) $(filter-out -Wa$(comma)% -include %/include/xen/config.h,$(XEN_CFLAGS)) $(cppflags-y) -o $@ $<
+cmd_compat_i = $(CPP) $(filter-out -Wa$(comma)% -include %/include/crux/config.h,$(CRUX_CFLAGS)) $(cppflags-y) -o $@ $<
 
 quiet_cmd_compat_c = GEN     $@
 cmd_compat_c = \
@@ -122,14 +122,14 @@ define cmd_genhyp
     awk -f $(srctree)/scripts/gen_hypercall.awk <$< >$@
 endef
 
-all: $(obj)/xen/hypercall-defs.h
+all: $(obj)/crux/hypercall-defs.h
 
-$(obj)/xen/hypercall-defs.h: $(obj)/hypercall-defs.i $(srctree)/scripts/gen_hypercall.awk FORCE
+$(obj)/crux/hypercall-defs.h: $(obj)/hypercall-defs.i $(srctree)/scripts/gen_hypercall.awk FORCE
 	$(call if_changed,genhyp)
 
-targets += hypercall-defs.i xen/hypercall-defs.h
+targets += hypercall-defs.i crux/hypercall-defs.h
 
-ifeq ($(XEN_TARGET_ARCH),$(XEN_COMPILE_ARCH))
+ifeq ($(CRUX_TARGET_ARCH),$(CRUX_COMPILE_ARCH))
 
 all: $(obj)/headers.chk $(obj)/headers99.chk $(obj)/headers++.chk
 
@@ -206,8 +206,8 @@ define cmd_headerscxx_chk
 	};                                                                    \
 	for i in $(filter %.h,$^); do                                         \
 	    echo "#include "\"$$i\"                                           \
-	    | $(CXX) -x c++ -std=gnu++98 -Wall -Werror -D__XEN_TOOLS__        \
-	      -include stdint.h -include $(srcdir)/public/xen.h               \
+	    | $(CXX) -x c++ -std=gnu++98 -Wall -Werror -D__CRUX_TOOLS__        \
+	      -include stdint.h -include $(srcdir)/public/crux.h               \
 	      $$(get_prereq $$i)                                              \
 	      -S -o /dev/null -                                               \
 	    || exit $$?; echo $$i >> $@.new; done;                            \
@@ -228,13 +228,13 @@ $(obj)/headers++.chk: $(PUBLIC_HEADERS) FORCE
 
 endif
 
-ifeq ($(XEN_TARGET_ARCH),x86_64)
+ifeq ($(CRUX_TARGET_ARCH),x86_64)
 .PHONY: lib-x86-all
 lib-x86-all:
-	@mkdir -p $(obj)/xen/lib/x86
-	$(Q)$(MAKE) -C $(obj)/xen/lib/x86 -f $(abs_srctree)/$(src)/xen/lib/x86/Makefile all
+	@mkdir -p $(obj)/crux/lib/x86
+	$(Q)$(MAKE) -C $(obj)/crux/lib/x86 -f $(abs_srctree)/$(src)/crux/lib/x86/Makefile all
 
 all: lib-x86-all
 endif
 
-clean-files := compat config generated xen/lib/x86/cpuid-autogen.h
+clean-files := compat config generated crux/lib/x86/cpuid-autogen.h

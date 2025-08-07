@@ -4,10 +4,10 @@
  * Copyright (c) 2015 Citrix Systems, Inc
  */
 
-#ifndef __XEN_DEVICE_TREE_DEFS_H__
-#define __XEN_DEVICE_TREE_DEFS_H__
+#ifndef __CRUX_DEVICE_TREE_DEFS_H__
+#define __CRUX_DEVICE_TREE_DEFS_H__
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 /*
  * The device tree compiler (DTC) is allocating the phandle from 1 to
  * onwards. Reserve high values for the specific phandles.

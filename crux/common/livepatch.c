@@ -3,28 +3,28 @@
  *
  */
 
-#include <xen/cpu.h>
-#include <xen/elf.h>
-#include <xen/err.h>
-#include <xen/guest_access.h>
-#include <xen/keyhandler.h>
-#include <xen/lib.h>
-#include <xen/list.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/smp.h>
-#include <xen/softirq.h>
-#include <xen/spinlock.h>
-#include <xen/string.h>
-#include <xen/symbols.h>
-#include <xen/tasklet.h>
-#include <xen/version.h>
-#include <xen/virtual_region.h>
-#include <xen/vmap.h>
-#include <xen/wait.h>
-#include <xen/livepatch_elf.h>
-#include <xen/livepatch.h>
-#include <xen/livepatch_payload.h>
+#include <crux/cpu.h>
+#include <crux/elf.h>
+#include <crux/err.h>
+#include <crux/guest_access.h>
+#include <crux/keyhandler.h>
+#include <crux/lib.h>
+#include <crux/list.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/smp.h>
+#include <crux/softirq.h>
+#include <crux/spinlock.h>
+#include <crux/string.h>
+#include <crux/symbols.h>
+#include <crux/tasklet.h>
+#include <crux/version.h>
+#include <crux/virtual_region.h>
+#include <crux/vmap.h>
+#include <crux/wait.h>
+#include <crux/livepatch_elf.h>
+#include <crux/livepatch.h>
+#include <crux/livepatch_payload.h>
 
 #include <asm/alternative.h>
 #include <asm/event.h>
@@ -73,9 +73,9 @@ static struct livepatch_work livepatch_work;
 static DEFINE_PER_CPU(bool, work_to_do);
 static DEFINE_PER_CPU(struct tasklet, livepatch_tasklet);
 
-static int get_name(const struct xen_livepatch_name *name, char *n)
+static int get_name(const struct crux_livepatch_name *name, char *n)
 {
-    if ( !name->size || name->size > XEN_LIVEPATCH_NAME_SIZE )
+    if ( !name->size || name->size > CRUX_LIVEPATCH_NAME_SIZE )
         return -EINVAL;
 
     if ( name->pad[0] || name->pad[1] || name->pad[2] )
@@ -90,7 +90,7 @@ static int get_name(const struct xen_livepatch_name *name, char *n)
     return 0;
 }
 
-static int verify_payload(const struct xen_sysctl_livepatch_upload *upload, char *n)
+static int verify_payload(const struct crux_sysctl_livepatch_upload *upload, char *n)
 {
     if ( get_name(&upload->name, n) )
         return -EINVAL;
@@ -211,12 +211,12 @@ static int resolve_old_address(struct livepatch_func *f,
         f->old_addr = (void *)livepatch_symbols_lookup_by_name(f->name);
         if ( !f->old_addr )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Could not resolve old address of %s\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Could not resolve old address of %s\n",
                    elf->name, f->name);
             return -ENOENT;
         }
     }
-    dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Resolved old address %s => %p\n",
+    dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Resolved old address %s => %p\n",
             elf->name, f->name, f->old_addr);
 
     return 0;
@@ -240,8 +240,8 @@ static struct payload *find_payload(const char *name)
 }
 
 /*
- * Functions related to XEN_SYSCTL_LIVEPATCH_UPLOAD (see livepatch_upload), and
- * freeing payload (XEN_SYSCTL_LIVEPATCH_ACTION:LIVEPATCH_ACTION_UNLOAD).
+ * Functions related to CRUX_SYSCTL_LIVEPATCH_UPLOAD (see livepatch_upload), and
+ * freeing payload (CRUX_SYSCTL_LIVEPATCH_ACTION:LIVEPATCH_ACTION_UNLOAD).
  */
 
 static void free_payload_data(struct payload *payload)
@@ -310,7 +310,7 @@ static int move_payload(struct payload *payload, struct livepatch_elf *elf)
             calc_section(&elf->sec[i], &payload->ro_size, &offset[i]);
         else
         {
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Not supporting %s section!\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Not supporting %s section!\n",
                     elf->name, elf->sec[i].name);
             rc = -EOPNOTSUPP;
             goto out;
@@ -327,10 +327,10 @@ static int move_payload(struct payload *payload, struct livepatch_elf *elf)
                       payload->ro_size;
 
     size = PFN_UP(size); /* Nr of pages. */
-    text_buf = vmalloc_xen(size * PAGE_SIZE);
+    text_buf = vmalloc_crux(size * PAGE_SIZE);
     if ( !text_buf )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Could not allocate memory for payload\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Could not allocate memory for payload\n",
                elf->name);
         rc = -ENOMEM;
         goto out;
@@ -378,7 +378,7 @@ static int move_payload(struct payload *payload, struct livepatch_elf *elf)
             {
                 memcpy(buf, elf->sec[i].addr,
                        elf->sec[i].sec->sh_size);
-                dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Loaded %s at %p\n",
+                dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Loaded %s at %p\n",
                         elf->name, elf->sec[i].name, buf);
             }
             else
@@ -440,7 +440,7 @@ static bool section_ok(const struct livepatch_elf *elf,
 
     if ( sec->sec->sh_size % sz )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Wrong size %"PRIuElfWord" of %s (must be multiple of %zu)\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Wrong size %"PRIuElfWord" of %s (must be multiple of %zu)\n",
                elf->name, sec->sec->sh_size, sec->name, sz);
         return false;
     }
@@ -463,7 +463,7 @@ static int parse_buildid(const struct livepatch_elf_sec *sec,
     if ( sec->sec->sh_size <= sizeof(*n) )
         return -EINVAL;
 
-    rc = xen_build_id_check(n, sec->sec->sh_size, &id->p, &id->len);
+    rc = crux_build_id_check(n, sec->sec->sh_size, &id->p, &id->len);
     if ( rc )
         return rc;
 
@@ -473,45 +473,44 @@ static int parse_buildid(const struct livepatch_elf_sec *sec,
    return 0;
 }
 
-static int check_xen_buildid(const struct livepatch_elf *elf)
+static int check_crux_buildid(const struct livepatch_elf *elf)
 {
-    const void *id;
-    unsigned int len;
+    const void *id = crux_build_id;
+    unsigned int len = crux_build_id_len;
     struct livepatch_build_id lp_id;
     const struct livepatch_elf_sec *sec =
-        livepatch_elf_sec_by_name(elf, ELF_LIVEPATCH_XEN_DEPENDS);
+        livepatch_elf_sec_by_name(elf, ELF_LIVEPATCH_CRUX_DEPENDS);
     int rc;
 
     if ( !sec )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: section %s is missing\n",
-               elf->name, ELF_LIVEPATCH_XEN_DEPENDS);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: section %s is missing\n",
+               elf->name, ELF_LIVEPATCH_CRUX_DEPENDS);
         return -EINVAL;
     }
 
     rc = parse_buildid(sec, &lp_id);
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH
+        printk(CRUXLOG_ERR LIVEPATCH
                "%s: failed to parse section %s as build-id: %d\n",
-               elf->name, ELF_LIVEPATCH_XEN_DEPENDS, rc);
+               elf->name, ELF_LIVEPATCH_CRUX_DEPENDS, rc);
         return -EINVAL;
     }
 
-    rc = xen_build_id(&id, &len);
-    if ( rc )
+    if ( !len )
     {
-        printk(XENLOG_ERR LIVEPATCH
-               "%s: unable to get running xen build-id: %d\n",
+        printk(CRUXLOG_ERR LIVEPATCH
+               "%s: unable to get running Xen build-id: %d\n",
                elf->name, rc);
-        return rc;
+        return -ENODATA;
     }
 
     if ( lp_id.len != len || memcmp(id, lp_id.p, len) )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: build-id mismatch:\n"
+        printk(CRUXLOG_ERR LIVEPATCH "%s: build-id mismatch:\n"
                                     "  livepatch: %*phN\n"
-                                    "        xen: %*phN\n",
+                                    "        crux: %*phN\n",
                elf->name, lp_id.len, lp_id.p, len, id);
         return -EINVAL;
     }
@@ -532,14 +531,14 @@ static int check_special_sections(const struct livepatch_elf *elf)
         sec = livepatch_elf_sec_by_name(elf, names[i]);
         if ( !sec )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: %s is missing\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: %s is missing\n",
                    elf->name, names[i]);
             return -EINVAL;
         }
 
         if ( !sec->sec->sh_size )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: %s is empty\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: %s is empty\n",
                    elf->name, names[i]);
             return -EINVAL;
         }
@@ -575,14 +574,14 @@ static int check_patching_sections(const struct livepatch_elf *elf)
         sec = livepatch_elf_sec_by_name(elf, names[i]);
         if ( !sec )
         {
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: %s is missing\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: %s is missing\n",
                     elf->name, names[i]);
             continue; /* This section is optional */
         }
 
         if ( !sec->sec->sh_size )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: %s is empty\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: %s is empty\n",
                    elf->name, names[i]);
             return -EINVAL;
         }
@@ -593,7 +592,7 @@ static int check_patching_sections(const struct livepatch_elf *elf)
     /* Checking if at least one section is present. */
     if ( !found )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Nothing to patch. Aborting...\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Nothing to patch. Aborting...\n",
                elf->name);
         return -EINVAL;
     }
@@ -625,7 +624,7 @@ static inline int livepatch_verify_expectation_fn(const struct livepatch_func *f
 
     if ( memcmp(func->old_addr, exp->data, exp->len) )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: expectation failed: expected:%*phN, actual:%*phN\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: expectation failed: expected:%*phN, actual:%*phN\n",
                func->name, exp->len, exp->data, exp->len, func->old_addr);
         return -EINVAL;
     }
@@ -637,7 +636,7 @@ static inline int livepatch_check_expectations(const struct payload *payload)
 {
     int i, rc;
 
-    printk(XENLOG_INFO LIVEPATCH "%s: Verifying enabled expectations for all functions\n",
+    printk(CRUXLOG_INFO LIVEPATCH "%s: Verifying enabled expectations for all functions\n",
            payload->name);
 
     for ( i = 0; i < payload->nfuncs; i++ )
@@ -647,7 +646,7 @@ static inline int livepatch_check_expectations(const struct payload *payload)
         rc = livepatch_verify_expectation_fn(func);
         if ( rc )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: expectations of %s failed (rc=%d), aborting!\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: expectations of %s failed (rc=%d), aborting!\n",
                    payload->name, func->name ?: "unknown", rc);
             return rc;
         }
@@ -716,7 +715,7 @@ static int prepare_payload(struct payload *payload,
 
             if ( f->version != LIVEPATCH_PAYLOAD_VERSION )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: Wrong version (%u). Expected %d\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: Wrong version (%u). Expected %d\n",
                        elf->name, f->version, LIVEPATCH_PAYLOAD_VERSION);
                 return -EOPNOTSUPP;
             }
@@ -724,7 +723,7 @@ static int prepare_payload(struct payload *payload,
             /* 'old_addr', 'new_addr', 'new_size' can all be zero. */
             if ( !f->old_size )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: Address or size fields are zero\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: Address or size fields are zero\n",
                        elf->name);
                 return -EINVAL;
             }
@@ -767,7 +766,7 @@ static int prepare_payload(struct payload *payload,
         if ( data->id.len == payload->id.len &&
              !memcmp(data->id.p, payload->id.p, data->id.len) )
         {
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Already loaded as %s!\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Already loaded as %s!\n",
                     elf->name, data->name);
             return -EEXIST;
         }
@@ -839,7 +838,7 @@ static int prepare_payload(struct payload *payload,
         /* ... but otherwise, there needs to be something to alter... */
         if ( payload->text_size == 0 )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s Alternatives provided, but no .text\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s Alternatives provided, but no .text\n",
                    elf->name);
             return -EINVAL;
         }
@@ -848,7 +847,7 @@ static int prepare_payload(struct payload *payload,
         repl_sec = livepatch_elf_sec_by_name(elf, ".altinstr_replacement");
         if ( !repl_sec )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s .altinstructions provided, but no .altinstr_replacement\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s .altinstructions provided, but no .altinstr_replacement\n",
                    elf->name);
             return -EINVAL;
         }
@@ -866,7 +865,7 @@ static int prepare_payload(struct payload *payload,
                  a->orig_len        > payload->text_size ||
                  orig + a->orig_len > payload->text_addr + payload->text_size )
             {
-                printk(XENLOG_ERR LIVEPATCH
+                printk(CRUXLOG_ERR LIVEPATCH
                        "%s Alternative orig %p+%#x outside payload text %p+%#zx\n",
                        elf->name, orig, a->orig_len,
                        payload->text_addr, payload->text_size);
@@ -881,7 +880,7 @@ static int prepare_payload(struct payload *payload,
                  a->repl_len        > repl_sec->sec->sh_size ||
                  repl + a->repl_len > repl_sec->addr + repl_sec->sec->sh_size )
             {
-                printk(XENLOG_ERR LIVEPATCH
+                printk(CRUXLOG_ERR LIVEPATCH
                        "%s Alternative repl %p+%#x outside .altinstr_replacement %p+%#"PRIxElfWord"\n",
                        elf->name, repl, a->repl_len,
                        repl_sec->addr, repl_sec->sec->sh_size);
@@ -892,14 +891,14 @@ static int prepare_payload(struct payload *payload,
         rc = apply_alternatives(start, end);
         if ( rc )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s applying alternatives failed: %d\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s applying alternatives failed: %d\n",
                    elf->name, rc);
             return rc;
         }
 
     alt_done:;
 #else
-        printk(XENLOG_ERR LIVEPATCH "%s: We don't support alternative patching\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: We don't support alternative patching\n",
                elf->name);
         return -EOPNOTSUPP;
 #endif
@@ -921,7 +920,7 @@ static int prepare_payload(struct payload *payload,
         /* ... but otherwise, there needs to be something to alter... */
         if ( payload->text_size == 0 )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s Alternative calls provided, but no .text\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s Alternative calls provided, but no .text\n",
                    elf->name);
             return -EINVAL;
         }
@@ -939,7 +938,7 @@ static int prepare_payload(struct payload *payload,
                  len        > payload->text_size ||
                  orig + len > payload->text_addr + payload->text_size )
             {
-                printk(XENLOG_ERR LIVEPATCH
+                printk(CRUXLOG_ERR LIVEPATCH
                        "%s: Alternative call %p+%#zx outside payload text %p+%#zx\n",
                        elf->name, orig, len,
                        payload->text_addr, payload->text_size);
@@ -950,14 +949,14 @@ static int prepare_payload(struct payload *payload,
         rc = livepatch_apply_alt_calls(start, end);
         if ( rc )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Applying alternative calls failed: %d\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Applying alternative calls failed: %d\n",
                    elf->name, rc);
             return rc;
         }
 
     alt_call_done:;
 #else /* CONFIG_ALTERNATIVE_CALL */
-        printk(XENLOG_ERR LIVEPATCH "%s: Alternative calls not supported\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Alternative calls not supported\n",
                elf->name);
         return -EOPNOTSUPP;
 #endif /* !CONFIG_ALTERNATIVE_CALL */
@@ -980,7 +979,7 @@ static int prepare_payload(struct payload *payload,
         region->ex = s;
         region->ex_end = e;
 #else
-        printk(XENLOG_ERR LIVEPATCH "%s: We don't support .ex_table\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: We don't support .ex_table\n",
                elf->name);
         return -EOPNOTSUPP;
 #endif
@@ -998,7 +997,7 @@ static int prepare_payload(struct payload *payload,
         /* The metadata is required to consists of null terminated strings. */
         if ( payload->metadata.data[payload->metadata.len - 1] != '\0' )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Incorrect metadata format detected\n", payload->name);
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Incorrect metadata format detected\n", payload->name);
             return -EINVAL;
         }
     }
@@ -1104,20 +1103,20 @@ static int build_symbol_table(struct payload *payload,
             if ( symbols_lookup_by_name(symtab[i].name) ||
                  livepatch_symbols_lookup_by_name(symtab[i].name) )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: duplicate new symbol: %s\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: duplicate new symbol: %s\n",
                        elf->name, symtab[i].name);
                 xfree(symtab);
                 xfree(strtab);
                 return -EEXIST;
             }
             symtab[i].new_symbol = 1;
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: new symbol %s\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: new symbol %s\n",
                      elf->name, symtab[i].name);
         }
         else
         {
             /* new_symbol is not set. */
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: overriding symbol %s\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: overriding symbol %s\n",
                     elf->name, symtab[i].name);
         }
     }
@@ -1152,7 +1151,7 @@ static int load_payload_data(struct payload *payload, void *raw, size_t len)
     if ( rc )
         goto out;
 
-    rc = check_xen_buildid(&elf);
+    rc = check_crux_buildid(&elf);
     if ( rc )
        goto out;
 
@@ -1196,10 +1195,10 @@ static int load_payload_data(struct payload *payload, void *raw, size_t len)
     return rc;
 }
 
-static int livepatch_upload(struct xen_sysctl_livepatch_upload *upload)
+static int livepatch_upload(struct crux_sysctl_livepatch_upload *upload)
 {
     struct payload *data, *found;
-    char n[XEN_LIVEPATCH_NAME_SIZE];
+    char n[CRUX_LIVEPATCH_NAME_SIZE];
     void *raw_data;
     int rc;
 
@@ -1254,11 +1253,11 @@ static int livepatch_upload(struct xen_sysctl_livepatch_upload *upload)
     return rc;
 }
 
-static int livepatch_get(struct xen_sysctl_livepatch_get *get)
+static int livepatch_get(struct crux_sysctl_livepatch_get *get)
 {
     struct payload *data;
     int rc;
-    char n[XEN_LIVEPATCH_NAME_SIZE];
+    char n[CRUX_LIVEPATCH_NAME_SIZE];
 
     rc = get_name(&get->name, n);
     if ( rc )
@@ -1285,9 +1284,9 @@ static int livepatch_get(struct xen_sysctl_livepatch_get *get)
     return 0;
 }
 
-static int livepatch_list(struct xen_sysctl_livepatch_list *list)
+static int livepatch_list(struct crux_sysctl_livepatch_list *list)
 {
-    struct xen_livepatch_status status;
+    struct crux_livepatch_status status;
     struct payload *data;
     unsigned int idx = 0, i = 0;
     int rc = 0;
@@ -1395,7 +1394,7 @@ static int livepatch_list(struct xen_sysctl_livepatch_list *list)
 /*
  * The following functions get the CPUs into an appropriate state and
  * apply (or revert) each of the payload's functions. This is needed
- * for XEN_SYSCTL_LIVEPATCH_ACTION operation (see livepatch_action).
+ * for CRUX_SYSCTL_LIVEPATCH_ACTION operation (see livepatch_action).
  */
 
 static inline void livepatch_display_metadata(const struct livepatch_metadata *metadata)
@@ -1404,9 +1403,9 @@ static inline void livepatch_display_metadata(const struct livepatch_metadata *m
 
     if ( metadata && metadata->data && metadata->len > 0 )
     {
-        printk(XENLOG_INFO LIVEPATCH "module metadata:\n");
+        printk(CRUXLOG_INFO LIVEPATCH "module metadata:\n");
         for ( str = metadata->data; str < (metadata->data + metadata->len); str += (strlen(str) + 1) )
-            printk(XENLOG_INFO LIVEPATCH "  %s\n", str);
+            printk(CRUXLOG_INFO LIVEPATCH "  %s\n", str);
     }
 
 }
@@ -1419,18 +1418,18 @@ static int apply_payload(struct payload *data)
     rc = arch_livepatch_safety_check();
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Safety checks failed: %d\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Safety checks failed: %d\n",
                data->name, rc);
         return rc;
     }
 
-    printk(XENLOG_INFO LIVEPATCH "%s: Applying %u functions\n",
+    printk(CRUXLOG_INFO LIVEPATCH "%s: Applying %u functions\n",
             data->name, data->nfuncs);
 
     rc = arch_livepatch_quiesce();
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: unable to quiesce!\n", data->name);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: unable to quiesce!\n", data->name);
         return rc;
     }
 
@@ -1454,7 +1453,7 @@ static int apply_payload(struct payload *data)
         /* If the action has been already executed on this function, do nothing. */
         if ( state->applied == LIVEPATCH_FUNC_APPLIED )
         {
-            printk(XENLOG_WARNING LIVEPATCH
+            printk(CRUXLOG_WARNING LIVEPATCH
                    "%s: %s has been already applied before\n",
                    __func__, func->name);
             continue;
@@ -1483,12 +1482,12 @@ int revert_payload(struct payload *data)
     unsigned int i;
     int rc;
 
-    printk(XENLOG_INFO LIVEPATCH "%s: Reverting\n", data->name);
+    printk(CRUXLOG_INFO LIVEPATCH "%s: Reverting\n", data->name);
 
     rc = arch_livepatch_quiesce();
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: unable to quiesce!\n", data->name);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: unable to quiesce!\n", data->name);
         return rc;
     }
 
@@ -1503,7 +1502,7 @@ int revert_payload(struct payload *data)
          */
         if ( !func->old_addr || state->applied == LIVEPATCH_FUNC_NOT_APPLIED )
         {
-            printk(XENLOG_WARNING LIVEPATCH
+            printk(CRUXLOG_WARNING LIVEPATCH
                    "%s: %s has not been applied before\n",
                    __func__, func->name);
             continue;
@@ -1551,7 +1550,7 @@ static inline bool was_action_consistent(const struct payload *data, livepatch_f
 
         if ( s->applied != expected_state )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Payload has a function: '%s' with inconsistent applied state.\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Payload has a function: '%s' with inconsistent applied state.\n",
                    data->name, f->name ?: "noname");
 
             return false;
@@ -1580,7 +1579,7 @@ static void livepatch_do_action(void)
     case LIVEPATCH_ACTION_APPLY:
         if ( is_hook_enabled(data->hooks.apply.action) )
         {
-            printk(XENLOG_INFO LIVEPATCH "%s: Calling apply action hook function\n", data->name);
+            printk(CRUXLOG_INFO LIVEPATCH "%s: Calling apply action hook function\n", data->name);
 
             rc = (*data->hooks.apply.action)(data);
         }
@@ -1597,7 +1596,7 @@ static void livepatch_do_action(void)
     case LIVEPATCH_ACTION_REVERT:
         if ( is_hook_enabled(data->hooks.revert.action) )
         {
-            printk(XENLOG_INFO LIVEPATCH "%s: Calling revert action hook function\n", data->name);
+            printk(CRUXLOG_INFO LIVEPATCH "%s: Calling revert action hook function\n", data->name);
 
             rc = (*data->hooks.revert.action)(data);
         }
@@ -1621,7 +1620,7 @@ static void livepatch_do_action(void)
         {
             if ( is_hook_enabled(other->hooks.revert.action) )
             {
-                printk(XENLOG_INFO LIVEPATCH "%s: Calling revert action hook function\n", other->name);
+                printk(CRUXLOG_INFO LIVEPATCH "%s: Calling revert action hook function\n", other->name);
 
                 other->rc = (*other->hooks.revert.action)(other);
             }
@@ -1653,14 +1652,14 @@ static void livepatch_do_action(void)
             rc = livepatch_check_expectations(data);
             if ( rc )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: SYSTEM MIGHT BE INSECURE: "
+                printk(CRUXLOG_ERR LIVEPATCH "%s: SYSTEM MIGHT BE INSECURE: "
                        "Replace action has been aborted after reverting ALL payloads!\n", data->name);
                 break;
             }
 
             if ( is_hook_enabled(data->hooks.apply.action) )
             {
-                printk(XENLOG_INFO LIVEPATCH "%s: Calling apply action hook function\n", data->name);
+                printk(CRUXLOG_INFO LIVEPATCH "%s: Calling apply action hook function\n", data->name);
 
                 rc = (*data->hooks.apply.action)(data);
             }
@@ -1735,7 +1734,7 @@ static int schedule_work(struct payload *data, uint32_t cmd, uint32_t timeout)
 
     if ( !get_cpu_maps() )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: unable to get cpu_maps lock!\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: unable to get cpu_maps lock!\n",
                data->name);
         return -EBUSY;
     }
@@ -1744,7 +1743,7 @@ static int schedule_work(struct payload *data, uint32_t cmd, uint32_t timeout)
     livepatch_work.data = data;
     livepatch_work.timeout = timeout ?: MILLISECS(30);
 
-    dprintk(XENLOG_DEBUG, LIVEPATCH "%s: timeout is %"PRIu32"ns\n",
+    dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: timeout is %"PRIu32"ns\n",
             data->name, livepatch_work.timeout);
 
     atomic_set(&livepatch_work.semaphore, -1);
@@ -1777,7 +1776,7 @@ static int livepatch_spin(atomic_t *counter, s_time_t timeout,
     /* Log & abort. */
     if ( atomic_read(counter) != cpus )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Timed out on semaphore in %s quiesce phase %u/%u\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Timed out on semaphore in %s quiesce phase %u/%u\n",
                livepatch_work.data->name, s, atomic_read(counter), cpus);
         rc = -EBUSY;
         livepatch_work.data->rc = rc;
@@ -1830,7 +1829,7 @@ static void noinline do_livepatch_work(void)
         p = livepatch_work.data;
         if ( !get_cpu_maps() )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: CPU%u - unable to get cpu_maps lock!\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: CPU%u - unable to get cpu_maps lock!\n",
                    p->name, cpu);
             per_cpu(work_to_do, cpu) = 0;
             livepatch_work.data->rc = -EBUSY;
@@ -1852,7 +1851,7 @@ static void noinline do_livepatch_work(void)
 
         if ( cpus )
         {
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: CPU%u - IPIing the other %u CPUs\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: CPU%u - IPIing the other %u CPUs\n",
                     p->name, cpu, cpus);
             for_each_online_cpu ( i )
                 if ( i != cpu )
@@ -1900,7 +1899,7 @@ static void noinline do_livepatch_work(void)
             case LIVEPATCH_ACTION_REVERT:
                 if ( is_hook_enabled(p->hooks.revert.post) )
                 {
-                    printk(XENLOG_INFO LIVEPATCH "%s: Calling post-revert hook function with rc=%d\n",
+                    printk(CRUXLOG_INFO LIVEPATCH "%s: Calling post-revert hook function with rc=%d\n",
                            p->name, p->rc);
 
                     (*p->hooks.revert.post)(p);
@@ -1910,7 +1909,7 @@ static void noinline do_livepatch_work(void)
             case LIVEPATCH_ACTION_APPLY:
                 if ( is_hook_enabled(p->hooks.apply.post) )
                 {
-                    printk(XENLOG_INFO LIVEPATCH "%s: Calling post-apply hook function with rc=%d\n",
+                    printk(CRUXLOG_INFO LIVEPATCH "%s: Calling post-apply hook function with rc=%d\n",
                            p->name, p->rc);
 
                     (*p->hooks.apply.post)(p);
@@ -1930,7 +1929,7 @@ static void noinline do_livepatch_work(void)
             }
         }
 
-        printk(XENLOG_INFO LIVEPATCH "%s finished %s with rc=%d\n",
+        printk(CRUXLOG_INFO LIVEPATCH "%s finished %s with rc=%d\n",
                p->name, names[livepatch_work.cmd], p->rc);
     }
     else
@@ -1984,7 +1983,6 @@ static int build_id_dep(struct payload *payload, bool internal)
 {
     const void *id = NULL;
     unsigned int len = 0;
-    int rc;
     const char *name = "hypervisor";
 
     ASSERT(payload->dep.len && payload->dep.p);
@@ -1992,9 +1990,10 @@ static int build_id_dep(struct payload *payload, bool internal)
     /* First time user is against hypervisor. */
     if ( internal )
     {
-        rc = xen_build_id(&id, &len);
-        if ( rc )
-            return rc;
+        id = crux_build_id;
+        len = crux_build_id_len;
+        if ( !len )
+            return -ENODATA;
     }
     else
     {
@@ -2011,7 +2010,7 @@ static int build_id_dep(struct payload *payload, bool internal)
     if ( payload->dep.len != len ||
          memcmp(id, payload->dep.p, len) )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: check against %s build-id failed\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: check against %s build-id failed\n",
                payload->name, name);
         return -EINVAL;
     }
@@ -2019,10 +2018,10 @@ static int build_id_dep(struct payload *payload, bool internal)
     return 0;
 }
 
-static int livepatch_action(struct xen_sysctl_livepatch_action *action)
+static int livepatch_action(struct crux_sysctl_livepatch_action *action)
 {
     struct payload *data;
-    char n[XEN_LIVEPATCH_NAME_SIZE];
+    char n[CRUX_LIVEPATCH_NAME_SIZE];
     int rc;
 
     if ( action->pad )
@@ -2074,7 +2073,7 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
             /* We should be the last applied one. */
             if ( p != data )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: can't unload. Top is %s\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: can't unload. Top is %s\n",
                        data->name, p->name);
                 rc = -EBUSY;
                 break;
@@ -2082,12 +2081,12 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
 
             if ( is_hook_enabled(data->hooks.revert.pre) )
             {
-                printk(XENLOG_INFO LIVEPATCH "%s: Calling pre-revert hook function\n", data->name);
+                printk(CRUXLOG_INFO LIVEPATCH "%s: Calling pre-revert hook function\n", data->name);
 
                 rc = (*data->hooks.revert.pre)(data);
                 if ( rc )
                 {
-                    printk(XENLOG_ERR LIVEPATCH "%s: pre-revert hook failed (rc=%d), aborting!\n",
+                    printk(CRUXLOG_ERR LIVEPATCH "%s: pre-revert hook failed (rc=%d), aborting!\n",
                            data->name, rc);
                     data->rc = rc;
                     break;
@@ -2110,7 +2109,7 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
              */
             if ( data->reverted && !data->safe_to_reapply )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: can't revert as payload has .data. Please unload\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: can't revert as payload has .data. Please unload\n",
                        data->name);
                 data->rc = -EINVAL;
                 break;
@@ -2134,12 +2133,12 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
 
             if ( is_hook_enabled(data->hooks.apply.pre) )
             {
-                printk(XENLOG_INFO LIVEPATCH "%s: Calling pre-apply hook function\n", data->name);
+                printk(CRUXLOG_INFO LIVEPATCH "%s: Calling pre-apply hook function\n", data->name);
 
                 rc = (*data->hooks.apply.pre)(data);
                 if ( rc )
                 {
-                    printk(XENLOG_ERR LIVEPATCH "%s: pre-apply hook failed (rc=%d), aborting!\n",
+                    printk(CRUXLOG_ERR LIVEPATCH "%s: pre-apply hook failed (rc=%d), aborting!\n",
                            data->name, rc);
                     data->rc = rc;
                     break;
@@ -2175,7 +2174,7 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
              */
             if ( has_payload_any_vetoing_hooks(data) || livepatch_applied_have_vetoing_hooks() )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: REPLACE action is not supported on livepatches with vetoing hooks!\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: REPLACE action is not supported on livepatches with vetoing hooks!\n",
                        data->name);
                 rc = -EOPNOTSUPP;
                 break;
@@ -2197,7 +2196,7 @@ static int livepatch_action(struct xen_sysctl_livepatch_action *action)
     return rc;
 }
 
-int livepatch_op(struct xen_sysctl_livepatch_op *livepatch)
+int livepatch_op(struct crux_sysctl_livepatch_op *livepatch)
 {
     int rc;
 
@@ -2207,19 +2206,19 @@ int livepatch_op(struct xen_sysctl_livepatch_op *livepatch)
 
     switch ( livepatch->cmd )
     {
-    case XEN_SYSCTL_LIVEPATCH_UPLOAD:
+    case CRUX_SYSCTL_LIVEPATCH_UPLOAD:
         rc = livepatch_upload(&livepatch->u.upload);
         break;
 
-    case XEN_SYSCTL_LIVEPATCH_GET:
+    case CRUX_SYSCTL_LIVEPATCH_GET:
         rc = livepatch_get(&livepatch->u.get);
         break;
 
-    case XEN_SYSCTL_LIVEPATCH_LIST:
+    case CRUX_SYSCTL_LIVEPATCH_LIST:
         rc = livepatch_list(&livepatch->u.list);
         break;
 
-    case XEN_SYSCTL_LIVEPATCH_ACTION:
+    case CRUX_SYSCTL_LIVEPATCH_ACTION:
         rc = livepatch_action(&livepatch->u.action);
         break;
 
@@ -2249,14 +2248,12 @@ static const char *state2str(unsigned int state)
 static void cf_check livepatch_printall(unsigned char key)
 {
     struct payload *data;
-    const void *binary_id = NULL;
-    unsigned int len = 0;
     unsigned int i;
 
     printk("'%c' pressed - Dumping all livepatch patches\n", key);
 
-    if ( !xen_build_id(&binary_id, &len) )
-        printk("build-id: %*phN\n", len, binary_id);
+    if ( crux_build_id_len )
+        printk("build-id: %*phN\n", crux_build_id_len, crux_build_id);
 
     if ( !spin_trylock(&payload_lock) )
     {

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/include/asm/tee/ffa.h
+ * crux/arch/arm/include/asm/tee/ffa.h
  *
  * Arm Firmware Framework for ARMv8-A(FFA) mediator
  *
@@ -10,7 +10,7 @@
 #ifndef __ASM_ARM_TEE_FFA_H__
 #define __ASM_ARM_TEE_FFA_H__
 
-#include <xen/const.h>
+#include <crux/const.h>
 
 #include <asm/smccc.h>
 #include <asm/types.h>

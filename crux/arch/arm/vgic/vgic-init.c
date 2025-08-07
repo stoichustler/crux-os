@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015, 2016 ARM Ltd.
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 #include <asm/new_vgic.h>
 
 #include "vgic.h"
@@ -179,7 +179,7 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
     if ( ret )
         return ret;
 
-    /* allocated_irqs() is used by xen to find available vIRQs */
+    /* allocated_irqs() is used by Xen to find available vIRQs */
     d->arch.vgic.allocated_irqs =
         xzalloc_array(unsigned long, BITS_TO_LONGS(vgic_num_irqs(d)));
     if ( !d->arch.vgic.allocated_irqs )
@@ -195,7 +195,7 @@ int domain_vgic_init(struct domain *d, unsigned int nr_spis)
 /**
  * vcpu_vgic_init() - Register VCPU-specific KVM iodevs
  * was: kvm_vgic_vcpu_init()
- * xen: adding vgic_vx_enable() call
+ * Xen: adding vgic_vx_enable() call
  * @v: pointer to the VCPU being created and initialized
  */
 int vcpu_vgic_init(struct vcpu *v)
@@ -226,7 +226,7 @@ void domain_vgic_free(struct domain *d)
 
         ret = release_guest_irq(d, irq->hwintid);
         if ( ret )
-            dprintk(XENLOG_G_WARNING,
+            dprintk(CRUXLOG_G_WARNING,
                     "d%u: Failed to release virq %u ret = %d\n",
                     d->domain_id, 32 + i, ret);
     }

@@ -22,15 +22,15 @@
  *
  */
 
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/param.h>
-#include <xen/smp.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/irq.h>
-#include <xen/errno.h>
-#include <xen/acpi.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/param.h>
+#include <crux/smp.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/irq.h>
+#include <crux/errno.h>
+#include <crux/acpi.h>
 
 #define PREFIX			"ACPI: "
 

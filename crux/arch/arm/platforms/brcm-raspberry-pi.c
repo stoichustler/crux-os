@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/brcm-raspberry-pi.c
+ * crux/arch/arm/platforms/brcm-raspberry-pi.c
  *
  * Raspberry Pi 4 Platform specific settings.
  *
@@ -17,9 +17,9 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/delay.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/delay.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 #include <asm/platform.h>
 
@@ -33,8 +33,8 @@ static const struct dt_device_match rpi4_blacklist_dev[] __initconst =
 {
     /*
      * The aux SPIs share an IRQ and a page with the aux UART.
-     * If the same page gets mapped to dom0 and xen, there is risk of
-     * dom0 writing to the UART that xen controls.
+     * If the same page gets mapped to dom0 and crux, there is risk of
+     * dom0 writing to the UART that crux controls.
      */
     DT_MATCH_COMPATIBLE("brcm,bcm2835-aux-spi"),
     /*

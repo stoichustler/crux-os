@@ -8,6 +8,6 @@ config VGA
 	depends on X86
 	default y if !PV_SHIM_EXCLUSIVE
 	help
-	  Enable VGA output for the xen hypervisor.
+	  Enable VGA output for the Xen hypervisor.
 
 	  If unsure, say Y.

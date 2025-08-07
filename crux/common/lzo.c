@@ -6,7 +6,7 @@
  *  The full LZO package can be found at:
  *  http://www.oberhumer.com/opensource/lzo/
  *
- *  Adapted for xen (files combined and syntactic/header changes) by:
+ *  Adapted for Xen (files combined and syntactic/header changes) by:
  *  Dan Magenheimer <dan.magenheimer@oracle.com>
  *
  */
@@ -66,14 +66,14 @@
  *  Richard Purdie <rpurdie@openedhand.com>
  */
 
-#ifdef __XEN__
-#include <xen/lib.h>
-#include <xen/unaligned.h>
+#ifdef __CRUX__
+#include <crux/lib.h>
+#include <crux/unaligned.h>
 #else
 #define get_unaligned_le16(_p) (*(u16 *)(_p))
 #endif
 
-#include <xen/lzo.h>
+#include <crux/lzo.h>
 
 #include "decompress.h"
 

@@ -1,36 +1,36 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * 9pfs.h -- xen 9PFS transport
+ * 9pfs.h -- Xen 9PFS transport
  *
  * Refer to docs/misc/9pfs.markdown for the specification
  *
  * Copyright (C) 2017 Stefano Stabellini <stefano@aporeto.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_9PFS_H__
-#define __XEN_PUBLIC_IO_9PFS_H__
+#ifndef __CRUX_PUBLIC_IO_9PFS_H__
+#define __CRUX_PUBLIC_IO_9PFS_H__
 
 #include "../grant_table.h"
 #include "ring.h"
 
 /*
- * See docs/misc/9pfs.pandoc in xen.git for the full specification:
- * https://xenbits.xen.org/docs/unstable/misc/9pfs.html
+ * See docs/misc/9pfs.pandoc in crux.git for the full specification:
+ * https://cruxbits.crux.org/docs/unstable/misc/9pfs.html
  */
 
 /*
  ******************************************************************************
- *                                  xenstore
+ *                                  Xenstore
  ******************************************************************************
  *
- * The frontend and the backend connect via xenstore to exchange
+ * The frontend and the backend connect via cruxstore to exchange
  * information. The toolstack creates front and back nodes with state
- * xenbusStateInitialising. The protocol node name is **9pfs**.
+ * XenbusStateInitialising. The protocol node name is **9pfs**.
  *
  * Multiple rings are supported for each frontend and backend connection.
  *
  ******************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  ******************************************************************************
  *
  * Backend specific properties, written by the backend, read by the
@@ -41,7 +41,7 @@
  *
  *         List of comma separated protocol versions supported by the backend.
  *         For example "1,2,3". Currently the value is just "1", as there is
- *         only one version. N.B.: this is the version of the xen transport
+ *         only one version. N.B.: this is the version of the Xen transport
  *         protocol, not the version of 9pfs supported by the server.
  *
  *    max-rings
@@ -106,14 +106,14 @@
  *         support of this node is optional.
  *
  ******************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  ******************************************************************************
  *
  *    version
  *         Values:         <string>
  *
  *         Protocol version, chosen among the ones supported by the backend
- *         (see **versions** under [Backend xenBus Nodes]). Currently the
+ *         (see **versions** under [Backend XenBus Nodes]). Currently the
  *         value must be "1".
  *
  *    num-rings
@@ -124,13 +124,13 @@
  *    event-channel-<num> (event-channel-0, event-channel-1, etc)
  *         Values:         <uint32_t>
  *
- *         The identifier of the xen event channel used to signal activity
+ *         The identifier of the Xen event channel used to signal activity
  *         in the ring buffer. One for each ring.
  *
  *    ring-ref<num> (ring-ref0, ring-ref1, etc)
  *         Values:         <uint32_t>
  *
- *         The xen grant reference granting permission for the backend to
+ *         The Xen grant reference granting permission for the backend to
  *         map a page with information to setup a share ring. One for each
  *         ring.
  *
@@ -147,7 +147,7 @@
  * Initialization:
  *
  *    *Front*                               *Back*
- *    xenbusStateInitialising               xenbusStateInitialising
+ *    XenbusStateInitialising               XenbusStateInitialising
  *                                          - Query backend device
  *                                            identification data.
  *                                          - Publish backend features
@@ -155,7 +155,7 @@
  *                                                         |
  *                                                         |
  *                                                         V
- *                                                  xenbusStateInitWait
+ *                                                  XenbusStateInitWait
  *
  *    - Query virtual device
  *      properties.
@@ -171,7 +171,7 @@
  *                 |
  *                 |
  *                 V
- *       xenbusStateInitialised
+ *       XenbusStateInitialised
  *
  *                                          - Query frontend transport
  *                                            parameters.
@@ -180,7 +180,7 @@
  *                                                         |
  *                                                         |
  *                                                         V
- *                                                 xenbusStateConnected
+ *                                                 XenbusStateConnected
  *
  *    - Query backend device properties.
  *    - Finalize OS virtual device
@@ -188,7 +188,7 @@
  *                |
  *                |
  *                V
- *       xenbusStateConnected
+ *       XenbusStateConnected
  *
  * Once frontend and backend are connected, they have a shared page per
  * ring, which are used to setup the rings, and an event channel per ring,
@@ -197,18 +197,18 @@
  * Shutdown:
  *
  *    *Front*                            *Back*
- *    xenbusStateConnected               xenbusStateConnected
+ *    XenbusStateConnected               XenbusStateConnected
  *                |
  *                |
  *                V
- *       xenbusStateClosing
+ *       XenbusStateClosing
  *
  *                                       - Unmap grants
  *                                       - Unbind evtchns
  *                                                 |
  *                                                 |
  *                                                 V
- *                                         xenbusStateClosing
+ *                                         XenbusStateClosing
  *
  *    - Unbind evtchns
  *    - Free rings
@@ -216,18 +216,18 @@
  *               |
  *               |
  *               V
- *       xenbusStateClosed
+ *       XenbusStateClosed
  *
  *                                       - Free remaining data structures
  *                                                 |
  *                                                 |
  *                                                 V
- *                                         xenbusStateClosed
+ *                                         XenbusStateClosed
  *
  ******************************************************************************
  */
 
-DEFINE_XEN_FLEX_RING_AND_INTF(xen_9pfs);
+DEFINE_CRUX_FLEX_RING_AND_INTF(crux_9pfs);
 
 #endif
 

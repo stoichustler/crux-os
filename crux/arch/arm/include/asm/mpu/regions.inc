@@ -14,14 +14,14 @@
 #define PRLAR_ELx_EN            0x1
 
 #ifdef CONFIG_ARM_64
-#define XEN_MPUMAP_ENTRY_SHIFT  0x4     /* 16 byte structure */
+#define CRUX_MPUMAP_ENTRY_SHIFT  0x4     /* 16 byte structure */
 
 .macro store_pair reg1, reg2, dst
     stp \reg1, \reg2, [\dst]
 .endm
 
 #else
-#define XEN_MPUMAP_ENTRY_SHIFT  0x3     /* 8 byte structure */
+#define CRUX_MPUMAP_ENTRY_SHIFT  0x3     /* 8 byte structure */
 
 .macro store_pair reg1, reg2, dst
     strd  \reg1, \reg2, [\dst]
@@ -52,7 +52,7 @@
  *
  * Note that all parameters using registers should be distinct.
  */
-.macro prepare_xen_region, sel, base, limit, prbar, prlar, maxcount, attr_prbar=REGION_DATA_PRBAR, attr_prlar=REGION_NORMAL_PRLAR
+.macro prepare_crux_region, sel, base, limit, prbar, prlar, maxcount, attr_prbar=REGION_DATA_PRBAR, attr_prlar=REGION_NORMAL_PRLAR
     /* Check if the region is empty */
     cmp   \base, \limit
     beq   1f
@@ -79,21 +79,21 @@
     dsb   sy
     isb
 
-    /* Load pair into xen_mpumap */
-    adr_l \base, xen_mpumap
-    add   \base, \base, \sel, LSL #XEN_MPUMAP_ENTRY_SHIFT
+    /* Load pair into crux_mpumap */
+    adr_l \base, crux_mpumap
+    add   \base, \base, \sel, LSL #CRUX_MPUMAP_ENTRY_SHIFT
     store_pair \prbar, \prlar, \base
 
-    /* Set/clear xen_mpumap_mask bitmap */
+    /* Set/clear crux_mpumap_mask bitmap */
     tst   \prlar, #PRLAR_ELx_EN
     bne   2f
     /* Region is disabled, clear the bit in the bitmap */
-    bitmap_clear_bit xen_mpumap_mask, \sel, \base, \limit, \prbar, \prlar
+    bitmap_clear_bit crux_mpumap_mask, \sel, \base, \limit, \prbar, \prlar
     b     3f
 
 2:
     /* Region is enabled, set the bit in the bitmap */
-    bitmap_set_bit xen_mpumap_mask, \sel, \base, \limit, \prbar, \prlar
+    bitmap_set_bit crux_mpumap_mask, \sel, \base, \limit, \prbar, \prlar
 
 3:
 

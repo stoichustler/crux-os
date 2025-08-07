@@ -24,13 +24,13 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include <xen/init.h>
-#include <xen/acpi.h>
-#include <xen/errno.h>
+#include <crux/init.h>
+#include <crux/acpi.h>
+#include <crux/errno.h>
 #include <acpi/actables.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/device_tree.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/device_tree.h>
 
 #include <asm/acpi.h>
 #include <asm/smp.h>
@@ -198,7 +198,7 @@ static int __init parse_acpi_param(const char *arg)
     if ( !arg )
         return -EINVAL;
 
-    /* Interpret the parameter for use within xen. */
+    /* Interpret the parameter for use within Xen. */
     if ( !parse_bool(arg, NULL) )
         param_acpi_off = true;
     else if ( !strcmp(arg, "force") ) /* force ACPI to be enabled */

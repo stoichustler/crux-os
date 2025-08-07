@@ -8,12 +8,12 @@
  *  as published by the Free Software Foundation.
  */
 #ifndef COMPAT
-#include <xen/errno.h>
-#include <xen/event.h>
+#include <crux/errno.h>
+#include <crux/event.h>
 #include <xsm/xsm.h>
-#include <xen/guest_access.h>
-#include <xen/err.h>
-#include <xen/param.h>
+#include <crux/guest_access.h>
+#include <crux/err.h>
+#include <crux/param.h>
 
 #include <public/xsm/flask_op.h>
 
@@ -85,7 +85,7 @@ static int domain_has_security(struct domain *d, uint32_t perms)
                         perms, NULL);
 }
 
-static int flask_security_relabel(struct xen_flask_transition *arg)
+static int flask_security_relabel(struct crux_flask_transition *arg)
 {
     int rv;
 
@@ -98,7 +98,7 @@ static int flask_security_relabel(struct xen_flask_transition *arg)
     return rv;
 }
 
-static int flask_security_create(struct xen_flask_transition *arg)
+static int flask_security_create(struct crux_flask_transition *arg)
 {
     int rv;
 
@@ -111,7 +111,7 @@ static int flask_security_create(struct xen_flask_transition *arg)
     return rv;
 }
 
-static int flask_security_access(struct xen_flask_access *arg)
+static int flask_security_access(struct crux_flask_access *arg)
 {
     struct av_decision avd;
     int rv;
@@ -132,7 +132,7 @@ static int flask_security_access(struct xen_flask_access *arg)
     return rv;
 }
 
-static int flask_security_member(struct xen_flask_transition *arg)
+static int flask_security_member(struct crux_flask_transition *arg)
 {
     int rv;
 
@@ -145,7 +145,7 @@ static int flask_security_member(struct xen_flask_transition *arg)
     return rv;
 }
 
-static int flask_security_setenforce(struct xen_flask_setenforce *arg)
+static int flask_security_setenforce(struct crux_flask_setenforce *arg)
 {
     int enforce = !!(arg->enforcing);
     int rv;
@@ -167,7 +167,7 @@ static int flask_security_setenforce(struct xen_flask_setenforce *arg)
 
 #endif /* COMPAT */
 
-static int flask_security_context(struct xen_flask_sid_context *arg)
+static int flask_security_context(struct crux_flask_sid_context *arg)
 {
     int rv;
     char *buf;
@@ -190,7 +190,7 @@ static int flask_security_context(struct xen_flask_sid_context *arg)
     return rv;
 }
 
-static int flask_security_sid(struct xen_flask_sid_context *arg)
+static int flask_security_sid(struct crux_flask_sid_context *arg)
 {
     int rv;
     char *context;
@@ -222,7 +222,7 @@ static int flask_security_sid(struct xen_flask_sid_context *arg)
 #ifndef COMPAT
 
 static int flask_security_setavc_threshold(
-    struct xen_flask_setavc_threshold *arg)
+    struct crux_flask_setavc_threshold *arg)
 {
     int rv = 0;
 
@@ -240,7 +240,7 @@ static int flask_security_setavc_threshold(
 
 #endif /* COMPAT */
 
-static int flask_security_resolve_bool(struct xen_flask_boolean *arg)
+static int flask_security_resolve_bool(struct crux_flask_boolean *arg)
 {
     char *name;
 
@@ -259,7 +259,7 @@ static int flask_security_resolve_bool(struct xen_flask_boolean *arg)
     return 0;
 }
 
-static int flask_security_set_bool(struct xen_flask_boolean *arg)
+static int flask_security_set_bool(struct crux_flask_boolean *arg)
 {
     int rv;
 
@@ -319,7 +319,7 @@ static int flask_security_set_bool(struct xen_flask_boolean *arg)
     return rv;
 }
 
-static int flask_security_get_bool(struct xen_flask_boolean *arg)
+static int flask_security_get_bool(struct crux_flask_boolean *arg)
 {
     int rv;
 
@@ -401,7 +401,7 @@ static int flask_security_make_bools(void)
 
 #ifdef CONFIG_XSM_FLASK_AVC_STATS
 
-static int flask_security_avc_cachestats(struct xen_flask_cache_stats *arg)
+static int flask_security_avc_cachestats(struct crux_flask_cache_stats *arg)
 {
     struct avc_cache_stats *st;
 
@@ -425,7 +425,7 @@ static int flask_security_avc_cachestats(struct xen_flask_cache_stats *arg)
 #endif
 #endif /* COMPAT */
 
-static int flask_security_load(struct xen_flask_load *load)
+static int flask_security_load(struct crux_flask_load *load)
 {
     int ret;
     void *buf = NULL;
@@ -455,7 +455,7 @@ static int flask_security_load(struct xen_flask_load *load)
         goto out;
 
     if ( !is_reload )
-        printk(XENLOG_INFO "Flask: Policy loaded, continuing in %s mode.\n",
+        printk(CRUXLOG_INFO "Flask: Policy loaded, continuing in %s mode.\n",
             flask_enforcing ? "enforcing" : "permissive");
 
     xfree(bool_pending_values);
@@ -469,7 +469,7 @@ static int flask_security_load(struct xen_flask_load *load)
     return ret;
 }
 
-static int flask_devicetree_label(const struct xen_flask_devicetree_label *arg)
+static int flask_devicetree_label(const struct crux_flask_devicetree_label *arg)
 {
     int rv;
     char *buf;
@@ -492,7 +492,7 @@ static int flask_devicetree_label(const struct xen_flask_devicetree_label *arg)
 
 #ifndef COMPAT
 
-static int flask_ocontext_del(const struct xen_flask_ocontext *arg)
+static int flask_ocontext_del(const struct crux_flask_ocontext *arg)
 {
     int rv;
 
@@ -506,7 +506,7 @@ static int flask_ocontext_del(const struct xen_flask_ocontext *arg)
     return security_ocontext_del(arg->ocon, arg->low, arg->high);
 }
 
-static int flask_ocontext_add(const struct xen_flask_ocontext *arg)
+static int flask_ocontext_add(const struct crux_flask_ocontext *arg)
 {
     int rv;
 
@@ -520,7 +520,7 @@ static int flask_ocontext_add(const struct xen_flask_ocontext *arg)
     return security_ocontext_add(arg->ocon, arg->low, arg->high, arg->sid);
 }
 
-static int flask_get_peer_sid(struct xen_flask_peersid *arg)
+static int flask_get_peer_sid(struct crux_flask_peersid *arg)
 {
     int rv = -EINVAL;
     struct domain *d = current->domain;
@@ -550,7 +550,7 @@ static int flask_get_peer_sid(struct xen_flask_peersid *arg)
     return rv;
 }
 
-static int flask_relabel_domain(const struct xen_flask_relabel *arg)
+static int flask_relabel_domain(const struct crux_flask_relabel *arg)
 {
     int rc;
     struct domain *d;
@@ -606,15 +606,15 @@ static int flask_relabel_domain(const struct xen_flask_relabel *arg)
 
 #endif /* !COMPAT */
 
-ret_t cf_check do_flask_op(XEN_GUEST_HANDLE_PARAM(void) u_flask_op)
+ret_t cf_check do_flask_op(CRUX_GUEST_HANDLE_PARAM(void) u_flask_op)
 {
-    xen_flask_op_t op;
+    crux_flask_op_t op;
     int rv;
 
     if ( copy_from_guest(&op, u_flask_op, 1) )
         return -EFAULT;
 
-    if ( op.interface_version != XEN_FLASK_INTERFACE_VERSION )
+    if ( op.interface_version != CRUX_FLASK_INTERFACE_VERSION )
         return -ENOSYS;
 
     switch ( op.cmd )
@@ -751,27 +751,27 @@ CHECK_flask_transition;
 
 #define COMPAT
 #define safe_copy_string_from_guest(ch, sz, mx) ({ \
-    XEN_GUEST_HANDLE_PARAM(char) gh; \
+    CRUX_GUEST_HANDLE_PARAM(char) gh; \
     guest_from_compat_handle(gh, ch); \
     safe_copy_string_from_guest(gh, sz, mx); \
 })
 
-#define xen_flask_load compat_flask_load
+#define crux_flask_load compat_flask_load
 #define flask_security_load compat_security_load
 
-#define xen_flask_sid_context compat_flask_sid_context
+#define crux_flask_sid_context compat_flask_sid_context
 #define flask_security_context compat_security_context
 #define flask_security_sid compat_security_sid
 
-#define xen_flask_boolean compat_flask_boolean
+#define crux_flask_boolean compat_flask_boolean
 #define flask_security_resolve_bool compat_security_resolve_bool
 #define flask_security_get_bool compat_security_get_bool
 #define flask_security_set_bool compat_security_set_bool
 
-#define xen_flask_devicetree_label compat_flask_devicetree_label
+#define crux_flask_devicetree_label compat_flask_devicetree_label
 #define flask_devicetree_label compat_devicetree_label
 
-#define xen_flask_op_t compat_flask_op_t
+#define crux_flask_op_t compat_flask_op_t
 #undef ret_t
 #define ret_t int
 #define do_flask_op compat_flask_op

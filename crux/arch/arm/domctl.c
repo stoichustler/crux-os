@@ -5,29 +5,29 @@
  * Copyright (c) 2012, Citrix Systems
  */
 
-#include <xen/dt-overlay.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/iocap.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/dt-overlay.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/iocap.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 #include <xsm/xsm.h>
 #include <public/domctl.h>
 
 void arch_get_domain_info(const struct domain *d,
-                          struct xen_domctl_getdomaininfo *info)
+                          struct crux_domctl_getdomaininfo *info)
 {
     /* All ARM domains use hardware assisted paging. */
-    info->flags |= XEN_DOMINF_hap;
+    info->flags |= CRUX_DOMINF_hap;
 
     info->gpaddr_bits = p2m_ipa_bits;
 }
 
 static int handle_vuart_init(struct domain *d, 
-                             struct xen_domctl_vuart_op *vuart_op)
+                             struct crux_domctl_vuart_op *vuart_op)
 {
     int rc;
     struct vpl011_init_info info;
@@ -38,7 +38,7 @@ static int handle_vuart_init(struct domain *d,
     if ( d->creation_finished )
         return -EPERM;
 
-    if ( vuart_op->type != XEN_DOMCTL_VUART_TYPE_VPL011 )
+    if ( vuart_op->type != CRUX_DOMCTL_VUART_TYPE_VPL011 )
         return -EOPNOTSUPP;
 
     rc = domain_vpl011_init(d, &info);
@@ -49,12 +49,12 @@ static int handle_vuart_init(struct domain *d,
     return rc;
 }
 
-long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
-                    XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+long arch_do_domctl(struct crux_domctl *domctl, struct domain *d,
+                    CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     switch ( domctl->cmd )
     {
-    case XEN_DOMCTL_cacheflush:
+    case CRUX_DOMCTL_cacheflush:
     {
         gfn_t s = _gfn(domctl->u.cacheflush.start_pfn);
         gfn_t e = gfn_add(s, domctl->u.cacheflush.nr_pfns);
@@ -73,10 +73,10 @@ long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
 
         return rc;
     }
-    case XEN_DOMCTL_bind_pt_irq:
+    case CRUX_DOMCTL_bind_pt_irq:
     {
         int rc;
-        struct xen_domctl_bind_pt_irq *bind = &domctl->u.bind_pt_irq;
+        struct crux_domctl_bind_pt_irq *bind = &domctl->u.bind_pt_irq;
         uint32_t irq = bind->u.spi.spi;
         uint32_t virq = bind->machine_irq;
 
@@ -119,10 +119,10 @@ long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
 
         return rc;
     }
-    case XEN_DOMCTL_unbind_pt_irq:
+    case CRUX_DOMCTL_unbind_pt_irq:
     {
         int rc;
-        struct xen_domctl_bind_pt_irq *bind = &domctl->u.bind_pt_irq;
+        struct crux_domctl_bind_pt_irq *bind = &domctl->u.bind_pt_irq;
         uint32_t irq = bind->u.spi.spi;
         uint32_t virq = bind->machine_irq;
 
@@ -150,11 +150,11 @@ long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
         return 0;
     }
 
-    case XEN_DOMCTL_vuart_op:
+    case CRUX_DOMCTL_vuart_op:
     {
         int rc;
         unsigned int i;
-        struct xen_domctl_vuart_op *vuart_op = &domctl->u.vuart_op;
+        struct crux_domctl_vuart_op *vuart_op = &domctl->u.vuart_op;
 
         /* check that structure padding must be 0. */
         for ( i = 0; i < sizeof(vuart_op->pad); i++ )
@@ -163,7 +163,7 @@ long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
 
         switch( vuart_op->cmd )
         {
-        case XEN_DOMCTL_VUART_OP_INIT:
+        case CRUX_DOMCTL_VUART_OP_INIT:
             rc = handle_vuart_init(d, vuart_op);
             break;
 
@@ -177,7 +177,7 @@ long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
 
         return rc;
     }
-    case XEN_DOMCTL_dt_overlay:
+    case CRUX_DOMCTL_dt_overlay:
         return dt_overlay_domctl(d, &domctl->u.dt_overlay);
     default:
         return subarch_do_domctl(domctl, d, u_domctl);

@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/brcm.c
+ * crux/arch/arm/platforms/brcm.c
  *
  * Broadcom Platform startup.
  *
@@ -18,10 +18,10 @@
  */
 
 #include <asm/platform.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
-#include <xen/delay.h>
+#include <crux/delay.h>
 
 struct brcm_plat_regs {
     uint32_t    hif_mask;
@@ -46,14 +46,14 @@ static __init int brcm_get_dt_node(const char *compat_str,
     node = dt_find_compatible_node(NULL, NULL, compat_str);
     if ( !node )
     {
-        dprintk(XENLOG_ERR, "%s: missing \"%s\" node\n", __func__, compat_str);
+        dprintk(CRUXLOG_ERR, "%s: missing \"%s\" node\n", __func__, compat_str);
         return -ENOENT;
     }
 
     rc = dt_device_get_paddr(node, 0, &reg_base_paddr, NULL);
     if ( rc )
     {
-        dprintk(XENLOG_ERR, "%s: missing \"reg\" prop\n", __func__);
+        dprintk(CRUXLOG_ERR, "%s: missing \"reg\" prop\n", __func__);
         return rc;
     }
 
@@ -79,21 +79,21 @@ static __init int brcm_populate_plat_regs(void)
 
     if ( !dt_property_read_u32(node, "cpu-reset-config-reg", &val) )
     {
-        dprintk(XENLOG_ERR, "Missing property \"cpu-reset-config-reg\"\n");
+        dprintk(CRUXLOG_ERR, "Missing property \"cpu-reset-config-reg\"\n");
         return -ENOENT;
     }
     regs.hif_cpu_reset_config = reg_base + val;
 
     if ( !dt_property_read_u32(node, "cpu0-pwr-zone-ctrl-reg", &val) )
     {
-        dprintk(XENLOG_ERR, "Missing property \"cpu0-pwr-zone-ctrl-reg\"\n");
+        dprintk(CRUXLOG_ERR, "Missing property \"cpu0-pwr-zone-ctrl-reg\"\n");
         return -ENOENT;
     }
     regs.cpu0_pwr_zone_ctrl = reg_base + val;
 
     if ( !dt_property_read_u32(node, "scratch-reg", &val) )
     {
-        dprintk(XENLOG_ERR, "Missing property \"scratch-reg\"\n");
+        dprintk(CRUXLOG_ERR, "Missing property \"scratch-reg\"\n");
         return -ENOENT;
     }
     regs.scratch_reg = reg_base + val;
@@ -104,13 +104,13 @@ static __init int brcm_populate_plat_regs(void)
 
     regs.hif_boot_continuation = reg_base;
 
-    dprintk(XENLOG_INFO, "hif_cpu_reset_config  : %08xh\n",
+    dprintk(CRUXLOG_INFO, "hif_cpu_reset_config  : %08xh\n",
                     regs.hif_cpu_reset_config);
-    dprintk(XENLOG_INFO, "cpu0_pwr_zone_ctrl    : %08xh\n",
+    dprintk(CRUXLOG_INFO, "cpu0_pwr_zone_ctrl    : %08xh\n",
                     regs.cpu0_pwr_zone_ctrl);
-    dprintk(XENLOG_INFO, "hif_boot_continuation : %08xh\n",
+    dprintk(CRUXLOG_INFO, "hif_boot_continuation : %08xh\n",
                     regs.hif_boot_continuation);
-    dprintk(XENLOG_INFO, "scratch_reg : %08xh\n",
+    dprintk(CRUXLOG_INFO, "scratch_reg : %08xh\n",
                     regs.scratch_reg);
 
     return 0;
@@ -125,14 +125,14 @@ static int brcm_cpu_power_on(int cpu)
     void __iomem *pwr_ctl;
     unsigned int timeout;
 
-    dprintk(XENLOG_ERR, "%s: Power on cpu %d\n", __func__, cpu);
+    dprintk(CRUXLOG_ERR, "%s: Power on cpu %d\n", __func__, cpu);
 
     pwr_ctl = ioremap_nocache(regs.cpu0_pwr_zone_ctrl + (cpu * sizeof(u32)),
                               sizeof(u32));
 
     if ( !pwr_ctl )
     {
-        dprintk(XENLOG_ERR, "%s: Unable to map \"cpu0_pwr_zone_ctrl\"\n",
+        dprintk(CRUXLOG_ERR, "%s: Unable to map \"cpu0_pwr_zone_ctrl\"\n",
                         __func__);
         return -EFAULT;
     }
@@ -162,7 +162,7 @@ static int brcm_cpu_power_on(int cpu)
 
     if ( timeout == 0 )
     {
-        dprintk(XENLOG_ERR, "CPU%d power enable failed\n", cpu);
+        dprintk(CRUXLOG_ERR, "CPU%d power enable failed\n", cpu);
         return -ETIMEDOUT;
     }
 
@@ -174,12 +174,12 @@ static int brcm_cpu_release(u32 cpu)
     u32 tmp;
     u32 __iomem *reg;
 
-    dprintk(XENLOG_INFO, "%s: Taking cpu %d out of reset \n", __func__, cpu);
+    dprintk(CRUXLOG_INFO, "%s: Taking cpu %d out of reset \n", __func__, cpu);
 
     reg = ioremap_nocache(regs.hif_cpu_reset_config, sizeof(u32));
     if ( !reg )
     {
-        dprintk(XENLOG_ERR, "%s: Unable to map \"hif_cpu_reset_config\"\n",
+        dprintk(CRUXLOG_ERR, "%s: Unable to map \"hif_cpu_reset_config\"\n",
                 __func__);
         return -EFAULT;
     }
@@ -197,13 +197,13 @@ static int brcm_cpu_release(u32 cpu)
 static int brcm_set_boot_continuation(u32 cpu, u32 pc)
 {
     u32 __iomem *reg;
-    dprintk(XENLOG_INFO, "%s: cpu %d pc 0x%x\n", __func__, cpu, pc);
+    dprintk(CRUXLOG_INFO, "%s: cpu %d pc 0x%x\n", __func__, cpu, pc);
 
     reg = ioremap_nocache(regs.hif_boot_continuation + (cpu * 2 * sizeof(u32)),
                           2 * sizeof(u32));
     if ( !reg )
     {
-        dprintk(XENLOG_ERR, "%s: Unable to map \"hif_boot_continuation\"\n",
+        dprintk(CRUXLOG_ERR, "%s: Unable to map \"hif_boot_continuation\"\n",
                 __func__);
         return -EFAULT;
     }
@@ -240,15 +240,15 @@ static int __init brcm_smp_init(void)
 
     if ( !scratch )
     {
-        dprintk(XENLOG_ERR, "%s: Unable to map \"scratch_reg\"\n", __func__);
+        dprintk(CRUXLOG_ERR, "%s: Unable to map \"scratch_reg\"\n", __func__);
         return -EFAULT;
     }
     /*
      * The HIF CPU BIU CTRL Scratch Register is used to pass
-     * addresses between this code in xen and the boot helper.
+     * addresses between this code in crux and the boot helper.
      * The helper puts its own entry point in the scratch register.
      * That address is written to the cpu boot continuation registers.
-     * The helper expects xen to put xen's entry point back in the register.
+     * The helper expects crux to put crux's entry point back in the register.
      * The helper will jump to that address.
      * The helper is in SRAM, which will always be a 32 bit address.
      */
@@ -260,7 +260,7 @@ static int __init brcm_smp_init(void)
 
     iounmap(scratch);
 
-    dprintk(XENLOG_INFO, "%s: target_pc 0x%x boot continuation pc 0x%x\n",
+    dprintk(CRUXLOG_INFO, "%s: target_pc 0x%x boot continuation pc 0x%x\n",
             __func__, target_pc, brcm_boot_continuation_pc);
 
     return 0;

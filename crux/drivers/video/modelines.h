@@ -1,5 +1,5 @@
 /*
- * xen/drivers/video/modelines.h
+ * crux/drivers/video/modelines.h
  *
  * Timings for many popular monitor resolutions
  *
@@ -25,8 +25,8 @@
  * Copyright (c) 2013 Citrix Systems
  */
 
-#ifndef _XEN_MODLINES_H
-#define _XEN_MODLINES_H
+#ifndef _CRUX_MODLINES_H
+#define _CRUX_MODLINES_H
 
 struct modeline {
     const char* mode;  /* in the form 1280x1024@60 */

@@ -2,7 +2,7 @@
 /*
  * arch/arm/guest_atomics.c
  */
-#include <xen/cpu.h>
+#include <crux/cpu.h>
 
 #include <asm/guest_atomics.h>
 
@@ -41,7 +41,7 @@ static void calibrate_safe_atomic(void)
 
     this_cpu(guest_safe_atomic_max) = counter;
 
-    printk(XENLOG_DEBUG
+    printk(CRUXLOG_DEBUG
            "CPU%u: Guest atomics will try %u times before pausing the domain\n",
            smp_processor_id(), counter);
 }

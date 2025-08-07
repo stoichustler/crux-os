@@ -6,12 +6,12 @@
  * Copyright (c) 2003-2008, K A Fraser
  */
 
-#include <xen/delay.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/sections.h>
-#include <xen/serial.h>
+#include <crux/delay.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/sections.h>
+#include <crux/serial.h>
 
 #include <asm/processor.h>
 
@@ -532,7 +532,7 @@ void __init serial_async_transmit(struct serial_port *port)
         serial_txbufsz = PAGE_SIZE;
     while ( serial_txbufsz & (serial_txbufsz - 1) )
         serial_txbufsz &= serial_txbufsz - 1;
-    port->txbuf = alloc_xenheap_pages(
+    port->txbuf = alloc_cruxheap_pages(
         get_order_from_bytes(serial_txbufsz), 0);
 }
 

@@ -14,17 +14,17 @@
 
 #define do_sched_op compat_sched_op
 
-#define xen_sched_pin_override sched_pin_override
+#define crux_sched_pin_override sched_pin_override
 CHECK_sched_pin_override;
-#undef xen_sched_pin_override
+#undef crux_sched_pin_override
 
-#define xen_sched_shutdown sched_shutdown
+#define crux_sched_shutdown sched_shutdown
 CHECK_sched_shutdown;
-#undef xen_sched_shutdown
+#undef crux_sched_shutdown
 
-#define xen_sched_remote_shutdown sched_remote_shutdown
+#define crux_sched_remote_shutdown sched_remote_shutdown
 CHECK_sched_remote_shutdown;
-#undef xen_sched_remote_shutdown
+#undef crux_sched_remote_shutdown
 
 static int compat_poll(const struct compat_sched_poll *compat)
 {

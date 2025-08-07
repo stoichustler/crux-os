@@ -8,7 +8,7 @@
 #ifndef _ARM_ARM64_SVE_H
 #define _ARM_ARM64_SVE_H
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 
 #define SVE_VL_MAX_BITS 2048U
 
@@ -17,7 +17,7 @@
 
 static inline unsigned int sve_decode_vl(unsigned int sve_vl)
 {
-    /* SVE vector length is stored as VL/128 in xen_arch_domainconfig */
+    /* SVE vector length is stored as VL/128 in crux_arch_domainconfig */
     return sve_vl * SVE_VL_MULTIPLE_VAL;
 }
 

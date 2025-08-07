@@ -3,8 +3,8 @@
  * Copyright (c) 2016, Citrix Systems, Inc.
  */
 
-#ifndef __XEN_PUBLIC_ARCH_X86_HVM_START_INFO_H__
-#define __XEN_PUBLIC_ARCH_X86_HVM_START_INFO_H__
+#ifndef __CRUX_PUBLIC_ARCH_X86_HVM_START_INFO_H__
+#define __CRUX_PUBLIC_ARCH_X86_HVM_START_INFO_H__
 
 /*
  * Start of day structure passed to PVH guests and to HVM guests in %ebx.
@@ -13,7 +13,7 @@
  * of the address fields should be treated as not present.
  *
  *  0 +----------------+
- *    | magic          | Contains the magic value XEN_HVM_START_MAGIC_VALUE
+ *    | magic          | Contains the magic value CRUX_HVM_START_MAGIC_VALUE
  *    |                | ("xEn3" with the 0x80 bit of the "E" set).
  *  4 +----------------+
  *    | version        | Version of this structure. Current version is 1. New
@@ -62,14 +62,14 @@
  *    | size           | Size of mapping in bytes
  * 16 +----------------+
  *    | type           | Type of mapping as defined between the hypervisor
- *    |                | and guest. See XEN_HVM_MEMMAP_TYPE_* values below.
+ *    |                | and guest. See CRUX_HVM_MEMMAP_TYPE_* values below.
  * 20 +----------------|
  *    | reserved       |
  * 24 +----------------+
  *
  * The address and sizes are always a 64bit little endian unsigned integer.
  *
- * NB: xen on x86 will always try to place all the data below the 4GiB
+ * NB: Xen on x86 will always try to place all the data below the 4GiB
  * boundary.
  *
  * Version numbers of the hvm_start_info structure have evolved like this:
@@ -83,7 +83,7 @@
  *             of the structure must check that memmap_entries is non-zero
  *             before trying to read the memory map.
  */
-#define XEN_HVM_START_MAGIC_VALUE 0x336ec578
+#define CRUX_HVM_START_MAGIC_VALUE 0x336ec578
 
 /*
  * The values used in the type field of the memory map table entries are
@@ -91,13 +91,13 @@
  * Address Map Interfaces" section of the ACPI Specification. Please refer to
  * section 15 in version 6.2 of the ACPI spec: http://uefi.org/specifications
  */
-#define XEN_HVM_MEMMAP_TYPE_RAM       1
-#define XEN_HVM_MEMMAP_TYPE_RESERVED  2
-#define XEN_HVM_MEMMAP_TYPE_ACPI      3
-#define XEN_HVM_MEMMAP_TYPE_NVS       4
-#define XEN_HVM_MEMMAP_TYPE_UNUSABLE  5
-#define XEN_HVM_MEMMAP_TYPE_DISABLED  6
-#define XEN_HVM_MEMMAP_TYPE_PMEM      7
+#define CRUX_HVM_MEMMAP_TYPE_RAM       1
+#define CRUX_HVM_MEMMAP_TYPE_RESERVED  2
+#define CRUX_HVM_MEMMAP_TYPE_ACPI      3
+#define CRUX_HVM_MEMMAP_TYPE_NVS       4
+#define CRUX_HVM_MEMMAP_TYPE_UNUSABLE  5
+#define CRUX_HVM_MEMMAP_TYPE_DISABLED  6
+#define CRUX_HVM_MEMMAP_TYPE_PMEM      7
 
 /*
  * C representation of the x86/HVM start info layout.
@@ -139,4 +139,4 @@ struct hvm_memmap_table_entry {
     uint32_t reserved;          /* Must be zero for Version 1.               */
 };
 
-#endif /* __XEN_PUBLIC_ARCH_X86_HVM_START_INFO_H__ */
+#endif /* __CRUX_PUBLIC_ARCH_X86_HVM_START_INFO_H__ */

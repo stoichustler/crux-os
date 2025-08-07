@@ -5,13 +5,13 @@
  * This source code is licensed under the GNU General Public License,
  * Version 2.  See the file COPYING for more details.
  */
-#include <xen/bitmap.h>
-#include <xen/bitops.h>
-#include <xen/byteorder.h>
-#include <xen/cpumask.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
+#include <crux/bitmap.h>
+#include <crux/bitops.h>
+#include <crux/byteorder.h>
+#include <crux/cpumask.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
 
 /*
  * bitmaps provide an array of bits, implemented using an an
@@ -359,13 +359,13 @@ static void bitmap_byte_to_long(unsigned long *lp, const uint8_t *bp,
 
 #endif
 
-int bitmap_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_bitmap,
+int bitmap_to_cruxctl_bitmap(struct cruxctl_bitmap *cruxctl_bitmap,
                             const unsigned long *bitmap, unsigned int nbits)
 {
     unsigned int guest_bytes, copy_bytes, i;
     uint8_t zero = 0;
     int err = 0;
-    unsigned int xen_bytes = DIV_ROUND_UP(nbits, BITS_PER_BYTE);
+    unsigned int crux_bytes = DIV_ROUND_UP(nbits, BITS_PER_BYTE);
     const uint8_t *bytemap;
     uint8_t last, *buf = NULL;
 
@@ -374,7 +374,7 @@ int bitmap_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_bitmap,
 
     if ( !IS_ENABLED(LITTLE_ENDIAN) )
     {
-        buf = xmalloc_array(uint8_t, xen_bytes);
+        buf = xmalloc_array(uint8_t, crux_bytes);
         if ( !buf )
             return -ENOMEM;
 
@@ -385,11 +385,11 @@ int bitmap_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_bitmap,
     else
         bytemap = (const uint8_t *)bitmap;
 
-    guest_bytes = DIV_ROUND_UP(xenctl_bitmap->nr_bits, BITS_PER_BYTE);
-    copy_bytes  = min(guest_bytes, xen_bytes);
+    guest_bytes = DIV_ROUND_UP(cruxctl_bitmap->nr_bits, BITS_PER_BYTE);
+    copy_bytes  = min(guest_bytes, crux_bytes);
 
     if ( copy_bytes > 1 &&
-         copy_to_guest(xenctl_bitmap->bitmap, bytemap, copy_bytes - 1) )
+         copy_to_guest(cruxctl_bitmap->bitmap, bytemap, copy_bytes - 1) )
         err = -EFAULT;
 
     /*
@@ -406,37 +406,37 @@ int bitmap_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_bitmap,
     xfree(buf);
 
     if ( copy_bytes &&
-         copy_to_guest_offset(xenctl_bitmap->bitmap, copy_bytes - 1, &last, 1) )
+         copy_to_guest_offset(cruxctl_bitmap->bitmap, copy_bytes - 1, &last, 1) )
         err = -EFAULT;
 
     for ( i = copy_bytes; !err && i < guest_bytes; i++ )
-        if ( copy_to_guest_offset(xenctl_bitmap->bitmap, i, &zero, 1) )
+        if ( copy_to_guest_offset(cruxctl_bitmap->bitmap, i, &zero, 1) )
             err = -EFAULT;
 
     return err;
 }
 
-int xenctl_bitmap_to_bitmap(unsigned long *bitmap,
-                            const struct xenctl_bitmap *xenctl_bitmap,
+int cruxctl_bitmap_to_bitmap(unsigned long *bitmap,
+                            const struct cruxctl_bitmap *cruxctl_bitmap,
                             unsigned int nbits)
 {
     unsigned int guest_bytes, copy_bytes;
     int err = 0;
-    unsigned int xen_bytes = DIV_ROUND_UP(nbits, BITS_PER_BYTE);
-    uint8_t *bytemap = xzalloc_array(uint8_t, xen_bytes);
+    unsigned int crux_bytes = DIV_ROUND_UP(nbits, BITS_PER_BYTE);
+    uint8_t *bytemap = xzalloc_array(uint8_t, crux_bytes);
 
     if ( !bytemap )
         return -ENOMEM;
 
-    guest_bytes = DIV_ROUND_UP(xenctl_bitmap->nr_bits, BITS_PER_BYTE);
-    copy_bytes  = min(guest_bytes, xen_bytes);
+    guest_bytes = DIV_ROUND_UP(cruxctl_bitmap->nr_bits, BITS_PER_BYTE);
+    copy_bytes  = min(guest_bytes, crux_bytes);
 
     if ( copy_bytes )
     {
-        if ( copy_from_guest(bytemap, xenctl_bitmap->bitmap, copy_bytes) )
+        if ( copy_from_guest(bytemap, cruxctl_bitmap->bitmap, copy_bytes) )
             err = -EFAULT;
-        if ( (xenctl_bitmap->nr_bits & 7) && (guest_bytes == copy_bytes) )
-            bytemap[guest_bytes - 1] &= ~(0xff << (xenctl_bitmap->nr_bits & 7));
+        if ( (cruxctl_bitmap->nr_bits & 7) && (guest_bytes == copy_bytes) )
+            bytemap[guest_bytes - 1] &= ~(0xff << (cruxctl_bitmap->nr_bits & 7));
     }
 
     if ( !err )
@@ -447,21 +447,21 @@ int xenctl_bitmap_to_bitmap(unsigned long *bitmap,
     return err;
 }
 
-int cpumask_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_cpumap,
+int cpumask_to_cruxctl_bitmap(struct cruxctl_bitmap *cruxctl_cpumap,
                              const cpumask_t *cpumask)
 {
-    return bitmap_to_xenctl_bitmap(xenctl_cpumap, cpumask_bits(cpumask),
+    return bitmap_to_cruxctl_bitmap(cruxctl_cpumap, cpumask_bits(cpumask),
                                    nr_cpu_ids);
 }
 
-int xenctl_bitmap_to_cpumask(cpumask_var_t *cpumask,
-                             const struct xenctl_bitmap *xenctl_cpumap)
+int cruxctl_bitmap_to_cpumask(cpumask_var_t *cpumask,
+                             const struct cruxctl_bitmap *cruxctl_cpumap)
 {
     int err = 0;
 
     if ( alloc_cpumask_var(cpumask) )
     {
-        err = xenctl_bitmap_to_bitmap(cpumask_bits(*cpumask), xenctl_cpumap,
+        err = cruxctl_bitmap_to_bitmap(cpumask_bits(*cpumask), cruxctl_cpumap,
                                       nr_cpu_ids);
         /* In case of error, cleanup is up to us, as the caller won't care! */
         if ( err )

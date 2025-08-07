@@ -5,7 +5,7 @@
  *
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _FLASK_SECURITY_H_
 #define _FLASK_SECURITY_H_
@@ -35,11 +35,11 @@
 #define POLICYDB_VERSION_NEW_OBJECT_DEFAULTS	27
 #define POLICYDB_VERSION_DEFAULT_TYPE	28
 #define POLICYDB_VERSION_CONSTRAINT_NAMES	29
-#define POLICYDB_VERSION_XEN_DEVICETREE 30
+#define POLICYDB_VERSION_CRUX_DEVICETREE 30
 
 /* Range of policy versions we understand*/
 #define POLICYDB_VERSION_MIN   POLICYDB_VERSION_BASE
-#define POLICYDB_VERSION_MAX   POLICYDB_VERSION_XEN_DEVICETREE
+#define POLICYDB_VERSION_MAX   POLICYDB_VERSION_CRUX_DEVICETREE
 
 enum flask_bootparam_t {
     FLASK_BOOTPARAM_PERMISSIVE,

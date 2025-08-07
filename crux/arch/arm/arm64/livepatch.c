@@ -2,14 +2,14 @@
  *  Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  */
 
-#include <xen/bitops.h>
-#include <xen/byteorder.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/livepatch_elf.h>
-#include <xen/livepatch.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/bitops.h>
+#include <crux/byteorder.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/livepatch_elf.h>
+#include <crux/livepatch.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 
 #include <asm/bitops.h>
 #include <asm/insn.h>
@@ -25,7 +25,7 @@ void arch_livepatch_apply(const struct livepatch_func *func,
     BUILD_BUG_ON(ARCH_PATCH_INSN_SIZE > sizeof(state->insn_buffer));
     BUILD_BUG_ON(ARCH_PATCH_INSN_SIZE != sizeof(insn));
 
-    ASSERT(vmap_of_xen_text);
+    ASSERT(vmap_of_crux_text);
 
     len = livepatch_insn_len(func, state);
     if ( !len )
@@ -44,7 +44,7 @@ void arch_livepatch_apply(const struct livepatch_func *func,
     /* Verified in livepatch_verify_distance. */
     ASSERT(insn != AARCH64_BREAK_FAULT);
 
-    new_ptr = func->old_addr - (void *)_start + vmap_of_xen_text;
+    new_ptr = func->old_addr - (void *)_start + vmap_of_crux_text;
     len = len / sizeof(uint32_t);
 
     /* PATCH! */
@@ -72,7 +72,7 @@ int arch_livepatch_verify_elf(const struct livepatch_elf *elf)
     if ( hdr->e_machine != EM_AARCH64 ||
          hdr->e_ident[EI_CLASS] != ELFCLASS64 )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Unsupported ELF Machine type\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Unsupported ELF Machine type\n",
                elf->name);
         return -EOPNOTSUPP;
     }
@@ -112,7 +112,7 @@ static u64 do_reloc(enum aarch64_reloc_op reloc_op, void *place, u64 val)
 
     }
 
-    dprintk(XENLOG_DEBUG, LIVEPATCH "do_reloc: unknown relocation operation %d\n", reloc_op);
+    dprintk(CRUXLOG_DEBUG, LIVEPATCH "do_reloc: unknown relocation operation %d\n", reloc_op);
 
     return 0;
 }
@@ -140,7 +140,7 @@ static int reloc_data(enum aarch64_reloc_op op, void *place, u64 val, int len)
         break;
 
     default:
-        dprintk(XENLOG_DEBUG, LIVEPATCH "Invalid length (%d) for data relocation\n", len);
+        dprintk(CRUXLOG_DEBUG, LIVEPATCH "Invalid length (%d) for data relocation\n", len);
         return 0;
     }
 
@@ -255,25 +255,25 @@ int arch_livepatch_perform_rela(struct livepatch_elf *elf,
 
         if ( symndx == STN_UNDEF )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Encountered STN_UNDEF\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Encountered STN_UNDEF\n",
                    elf->name);
             return -EOPNOTSUPP;
         }
         else if ( symndx >= elf->nsym )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Relative relocation wants symbol@%u which is past end\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Relative relocation wants symbol@%u which is past end\n",
                    elf->name, symndx);
             return -EINVAL;
         }
         else if ( !elf->sym[symndx].sym )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: No relative symbol@%u\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: No relative symbol@%u\n",
                    elf->name, symndx);
             return -EINVAL;
         }
         else if ( elf->sym[symndx].ignored )
         {
-            printk(XENLOG_ERR LIVEPATCH
+            printk(CRUXLOG_ERR LIVEPATCH
                    "%s: Relocation against ignored symbol %s cannot be resolved\n",
                    elf->name, elf->sym[symndx].name);
             return -EINVAL;
@@ -473,14 +473,14 @@ int arch_livepatch_perform_rela(struct livepatch_elf *elf,
             break;
 
         default:
-            printk(XENLOG_ERR LIVEPATCH "%s: Unhandled relocation %lu\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Unhandled relocation %lu\n",
                    elf->name, ELF64_R_TYPE(r->r_info));
             return -EOPNOTSUPP;
         }
 
         if ( overflow_check && ovf == -EOVERFLOW )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Overflow in relocation %u in %s for %s\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Overflow in relocation %u in %s for %s\n",
                    elf->name, i, rela->name, base->name);
             return ovf;
         }
@@ -488,7 +488,7 @@ int arch_livepatch_perform_rela(struct livepatch_elf *elf,
     return 0;
 
  bad_offset:
-    printk(XENLOG_ERR LIVEPATCH "%s: Relative relocation offset is past %s section\n",
+    printk(CRUXLOG_ERR LIVEPATCH "%s: Relative relocation offset is past %s section\n",
            elf->name, base->name);
     return -EINVAL;
 }

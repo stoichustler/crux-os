@@ -28,9 +28,9 @@
 ***************************************/
 #include "error_private.h"
 #include "mem.h"
-#ifdef __XEN__
-#include <xen/compiler.h>
-#include <xen/xxhash.h>
+#ifdef __CRUX__
+#include <crux/compiler.h>
+#include <crux/xxhash.h>
 #endif
 
 #define ALIGN(x, a) ((x + (a) - 1) & ~((a) - 1))

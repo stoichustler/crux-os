@@ -1,7 +1,7 @@
 /******************************************************************************
  * sched_arinc653.c
  *
- * An ARINC653-compatible scheduling algorithm for use in xen.
+ * An ARINC653-compatible scheduling algorithm for use in Xen.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -24,14 +24,14 @@
  * Copyright (c) 2010, DornerWorks, Ltd. <DornerWorks.com>
  */
 
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/timer.h>
-#include <xen/softirq.h>
-#include <xen/time.h>
-#include <xen/errno.h>
-#include <xen/list.h>
-#include <xen/guest_access.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/timer.h>
+#include <crux/softirq.h>
+#include <crux/time.h>
+#include <crux/errno.h>
+#include <crux/list.h>
+#include <crux/guest_access.h>
 #include <public/sysctl.h>
 
 #include "private.h"
@@ -71,7 +71,7 @@
  */
 typedef struct arinc653_unit_s
 {
-    /* unit points to xen's struct sched_unit so we can get to it from an
+    /* unit points to Xen's struct sched_unit so we can get to it from an
      * arinc653_unit_t pointer. */
     struct sched_unit * unit;
     /* awake holds whether the UNIT has been woken with vcpu_wake() */
@@ -89,14 +89,14 @@ typedef struct sched_entry_s
 {
     /* dom_handle holds the handle ("UUID") for the domain that this
      * schedule entry refers to. */
-    xen_domain_handle_t dom_handle;
+    crux_domain_handle_t dom_handle;
     /* unit_id holds the UNIT number for the UNIT that this schedule
      * entry refers to. */
     int                 unit_id;
     /* runtime holds the number of nanoseconds that the UNIT for this
      * schedule entry should be allowed to run per major frame. */
     s_time_t            runtime;
-    /* unit holds a pointer to the xen sched_unit structure */
+    /* unit holds a pointer to the Xen sched_unit structure */
     struct sched_unit * unit;
 } sched_entry_t;
 
@@ -140,7 +140,7 @@ typedef struct a653sched_priv_s
     s_time_t next_major_frame;
 
     /**
-     * pointers to all xen UNIT structures for iterating through
+     * pointers to all Xen UNIT structures for iterating through
      */
     struct list_head unit_list;
 
@@ -167,10 +167,10 @@ typedef struct a653sched_priv_s
  *                  <li> >0:  handle 1 is greater than handle 2
  *                  </ul>
  */
-static int dom_handle_cmp(const xen_domain_handle_t h1,
-                          const xen_domain_handle_t h2)
+static int dom_handle_cmp(const crux_domain_handle_t h1,
+                          const crux_domain_handle_t h2)
 {
-    return memcmp(h1, h2, sizeof(xen_domain_handle_t));
+    return memcmp(h1, h2, sizeof(crux_domain_handle_t));
 }
 
 /**
@@ -188,7 +188,7 @@ static int dom_handle_cmp(const xen_domain_handle_t h1,
  */
 static struct sched_unit *find_unit(
     const struct scheduler *ops,
-    xen_domain_handle_t handle,
+    crux_domain_handle_t handle,
     int unit_id)
 {
     arinc653_unit_t *aunit;
@@ -203,7 +203,7 @@ static struct sched_unit *find_unit(
 }
 
 /**
- * This function updates the pointer to the xen UNIT structure for each entry
+ * This function updates the pointer to the Xen UNIT structure for each entry
  * in the ARINC 653 schedule.
  *
  * @param ops       Pointer to this instance of the scheduler structure
@@ -235,7 +235,7 @@ static void update_schedule_units(const struct scheduler *ops)
 static int
 arinc653_sched_set(
     const struct scheduler *ops,
-    struct xen_sysctl_arinc653_schedule *schedule)
+    struct crux_sysctl_arinc653_schedule *schedule)
 {
     a653sched_priv_t *sched_priv = SCHED_PRIV(ops);
     s_time_t total_runtime = 0;
@@ -312,7 +312,7 @@ arinc653_sched_set(
 static int
 arinc653_sched_get(
     const struct scheduler *ops,
-    struct xen_sysctl_arinc653_schedule *schedule)
+    struct crux_sysctl_arinc653_schedule *schedule)
 {
     a653sched_priv_t *sched_priv = SCHED_PRIV(ops);
     unsigned int i;
@@ -432,7 +432,7 @@ a653sched_alloc_udata(const struct scheduler *ops, struct sched_unit *unit,
 
     /*
      * Initialize our ARINC 653 scheduler-specific information for the UNIT.
-     * The UNIT starts "asleep." When xen is ready for the UNIT to run, it
+     * The UNIT starts "asleep." When Xen is ready for the UNIT to run, it
      * will call the vcpu_wake scheduler callback function and our scheduler
      * will mark the UNIT awake.
      */
@@ -475,7 +475,7 @@ a653sched_free_udata(const struct scheduler *ops, void *priv)
 }
 
 /**
- * xen scheduler callback function to sleep a UNIT
+ * Xen scheduler callback function to sleep a UNIT
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -495,7 +495,7 @@ a653sched_unit_sleep(const struct scheduler *ops, struct sched_unit *unit)
 }
 
 /**
- * xen scheduler callback function to wake up a UNIT
+ * Xen scheduler callback function to wake up a UNIT
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -510,7 +510,7 @@ a653sched_unit_wake(const struct scheduler *ops, struct sched_unit *unit)
 }
 
 /**
- * xen scheduler callback function to select a UNIT to run.
+ * Xen scheduler callback function to select a UNIT to run.
  * This is the main scheduler routine.
  *
  * @param ops       Pointer to this instance of the scheduler structure
@@ -610,7 +610,7 @@ a653sched_do_schedule(
 }
 
 /**
- * xen scheduler callback function to select a resource for the UNIT to run on
+ * Xen scheduler callback function to select a resource for the UNIT to run on
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -640,7 +640,7 @@ a653sched_pick_resource(const struct scheduler *ops,
 }
 
 /**
- * xen scheduler callback to change the scheduler of a cpu
+ * Xen scheduler callback to change the scheduler of a cpu
  *
  * @param new_ops   Pointer to this instance of the scheduler structure
  * @param cpu       The cpu that is changing scheduler
@@ -663,7 +663,7 @@ a653_switch_sched(struct scheduler *new_ops, unsigned int cpu,
 
 #ifdef CONFIG_SYSCTL
 /**
- * xen scheduler callback function to perform a global (not domain-specific)
+ * Xen scheduler callback function to perform a global (not domain-specific)
  * adjustment. It is used by the ARINC 653 scheduler to put in place a new
  * ARINC 653 schedule or to retrieve the schedule currently in place.
  *
@@ -672,14 +672,14 @@ a653_switch_sched(struct scheduler *new_ops, unsigned int cpu,
  */
 static int cf_check
 a653sched_adjust_global(const struct scheduler *ops,
-                        struct xen_sysctl_scheduler_op *sc)
+                        struct crux_sysctl_scheduler_op *sc)
 {
-    struct xen_sysctl_arinc653_schedule local_sched;
+    struct crux_sysctl_arinc653_schedule local_sched;
     int rc = -EINVAL;
 
     switch ( sc->cmd )
     {
-    case XEN_SYSCTL_SCHEDOP_putinfo:
+    case CRUX_SYSCTL_SCHEDOP_putinfo:
         if ( copy_from_guest(&local_sched, sc->u.sched_arinc653.schedule, 1) )
         {
             rc = -EFAULT;
@@ -688,7 +688,7 @@ a653sched_adjust_global(const struct scheduler *ops,
 
         rc = arinc653_sched_set(ops, &local_sched);
         break;
-    case XEN_SYSCTL_SCHEDOP_getinfo:
+    case CRUX_SYSCTL_SCHEDOP_getinfo:
         memset(&local_sched, -1, sizeof(local_sched));
         rc = arinc653_sched_get(ops, &local_sched);
         if ( rc )
@@ -704,15 +704,15 @@ a653sched_adjust_global(const struct scheduler *ops,
 #endif /* CONFIG_SYSCTL */
 
 /**
- * This structure defines our scheduler for xen.
- * The entries tell xen where to find our scheduler-specific
+ * This structure defines our scheduler for Xen.
+ * The entries tell Xen where to find our scheduler-specific
  * callback functions.
- * The symbol must be visible to the rest of xen at link time.
+ * The symbol must be visible to the rest of Xen at link time.
  */
 static const struct scheduler sched_arinc653_def = {
     .name           = "ARINC 653 Scheduler",
     .opt_name       = "arinc653",
-    .sched_id       = XEN_SCHEDULER_ARINC653,
+    .sched_id       = CRUX_SCHEDULER_ARINC653,
     .sched_data     = NULL,
 
     .init           = a653sched_init,

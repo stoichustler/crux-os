@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/firmware/scmi-smc.c
+ * crux/arch/arm/firmware/scmi-smc.c
  *
  * ARM System Control and Management Interface (SCMI) over SMC
  * Generic handling layer
@@ -9,12 +9,12 @@
  * Copyright 2024 NXP
  */
 
-#include <xen/acpi.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/acpi.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 
 #include <asm/smccc.h>
 #include <asm/firmware/scmi-smc.h>
@@ -55,7 +55,7 @@ bool scmi_handle_smc(struct cpu_user_regs *regs)
     /* Only the hardware domain should use SCMI calls */
     if ( !is_hardware_domain(current->domain) )
     {
-        gdprintk(XENLOG_WARNING, "SCMI: Unprivileged access attempt\n");
+        gdprintk(CRUXLOG_WARNING, "SCMI: Unprivileged access attempt\n");
         return false;
     }
 
@@ -82,7 +82,7 @@ static int __init scmi_check_smccc_ver(void)
 {
     if ( smccc_ver < ARM_SMCCC_VERSION_1_1 )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "SCMI: No SMCCC 1.1 support, SCMI calls forwarding disabled\n");
         return -ENOSYS;
     }
@@ -109,7 +109,7 @@ static int __init scmi_dt_init_smccc(void)
     ret = dt_property_read_u32(scmi_node, SCMI_SMC_ID_PROP, &scmi_smc_id);
     if ( !ret )
     {
-        printk(XENLOG_ERR "SCMI: No valid \"%s\" property in \"%s\" DT node\n",
+        printk(CRUXLOG_ERR "SCMI: No valid \"%s\" property in \"%s\" DT node\n",
                SCMI_SMC_ID_PROP, scmi_node->full_name);
         return -ENOENT;
     }
@@ -126,7 +126,7 @@ static int __init scmi_init(void)
 
     if ( !acpi_disabled )
     {
-        printk(XENLOG_WARNING "SCMI is not supported when using ACPI\n");
+        printk(CRUXLOG_WARNING "SCMI is not supported when using ACPI\n");
         return -EINVAL;
     }
 
@@ -140,12 +140,12 @@ static int __init scmi_init(void)
     if ( ret )
         goto err;
 
-    printk(XENLOG_INFO "using SCMI with SMC ID: 0x%x\n", scmi_smc_id);
+    printk(CRUXLOG_INFO "Using SCMI with SMC ID: 0x%x\n", scmi_smc_id);
 
     return 0;
 
  err:
-    printk(XENLOG_ERR "SCMI: Initialization failed (ret = %d)\n", ret);
+    printk(CRUXLOG_ERR "SCMI: Initialization failed (ret = %d)\n", ret);
     return ret;
 }
 

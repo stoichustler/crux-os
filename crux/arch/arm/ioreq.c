@@ -5,8 +5,8 @@
  * Copyright (c) 2019 Arm ltd.
  */
 
-#include <xen/domain.h>
-#include <xen/ioreq.h>
+#include <crux/domain.h>
+#include <crux/ioreq.h>
 
 #include <asm/traps.h>
 #include <asm/ioreq.h>
@@ -68,7 +68,7 @@ enum io_state try_fwd_ioserv(struct cpu_user_regs *regs,
 
     if ( vio->req.state != STATE_IOREQ_NONE )
     {
-        gdprintk(XENLOG_ERR, "wrong state %u\n", vio->req.state);
+        gdprintk(CRUXLOG_ERR, "wrong state %u\n", vio->req.state);
         return IO_ABORT;
     }
 
@@ -83,7 +83,7 @@ enum io_state try_fwd_ioserv(struct cpu_user_regs *regs,
 
     /*
      * When the data abort is caused due to cache maintenance and the address
-     * belongs to an emulated region, xen should ignore this instruction.
+     * belongs to an emulated region, Xen should ignore this instruction.
      */
     if ( instr.state == INSTR_CACHE )
         return IO_HANDLED;
@@ -191,7 +191,7 @@ bool arch_ioreq_server_get_type_addr(const struct domain *d,
         return false;
 
     *type = (p->type == IOREQ_TYPE_PIO) ?
-             XEN_DMOP_IO_RANGE_PORT : XEN_DMOP_IO_RANGE_MEMORY;
+             CRUX_DMOP_IO_RANGE_PORT : CRUX_DMOP_IO_RANGE_MEMORY;
     *addr = p->addr;
 
     return true;

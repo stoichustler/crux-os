@@ -5,11 +5,11 @@
  * Copyright (C) 2012 Citrix Systems, Inc.
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/stdarg.h>
-#include <xen/string.h>
-#include <xen/early_printk.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/stdarg.h>
+#include <crux/string.h>
+#include <crux/early_printk.h>
 
 void early_putch(char c);
 void early_flush(void);
@@ -26,7 +26,7 @@ void early_puts(const char *s, size_t nr)
 
     /*
      * Wait the UART has finished to transfer all characters before
-     * to continue. This will avoid lost characters if xen abort.
+     * to continue. This will avoid lost characters if Xen abort.
      */
     early_flush();
 }

@@ -17,13 +17,13 @@
  *	Tuned number of hash slots for avtab to reduce memory usage
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/byteorder.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/types.h>
-#include <xen/xmalloc.h>
+#include <crux/byteorder.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/types.h>
+#include <crux/xmalloc.h>
 
 #include "avtab.h"
 #include "policydb.h"

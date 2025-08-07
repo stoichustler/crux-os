@@ -2,11 +2,11 @@
  *  Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  */
 
-#include <xen/errno.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/livepatch_elf.h>
-#include <xen/livepatch.h>
+#include <crux/errno.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/livepatch_elf.h>
+#include <crux/livepatch.h>
 
 #include <asm/page.h>
 #include <asm/livepatch.h>
@@ -21,7 +21,7 @@ void arch_livepatch_apply(const struct livepatch_func *func,
     BUILD_BUG_ON(ARCH_PATCH_INSN_SIZE > sizeof(state->insn_buffer));
     BUILD_BUG_ON(ARCH_PATCH_INSN_SIZE != sizeof(insn));
 
-    ASSERT(vmap_of_xen_text);
+    ASSERT(vmap_of_crux_text);
 
     len = livepatch_insn_len(func, state);
     if ( !len )
@@ -57,7 +57,7 @@ void arch_livepatch_apply(const struct livepatch_func *func,
     else
         insn = 0xe1a00000; /* mov r0, r0 */
 
-    new_ptr = func->old_addr - (void *)_start + vmap_of_xen_text;
+    new_ptr = func->old_addr - (void *)_start + vmap_of_crux_text;
     len = len / sizeof(uint32_t);
 
     /* PATCH! */
@@ -85,14 +85,14 @@ int arch_livepatch_verify_elf(const struct livepatch_elf *elf)
     if ( hdr->e_machine != EM_ARM ||
          hdr->e_ident[EI_CLASS] != ELFCLASS32 )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Unsupported ELF Machine type\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Unsupported ELF Machine type\n",
                elf->name);
         return -EOPNOTSUPP;
     }
 
     if ( (hdr->e_flags & EF_ARM_EABI_MASK) != EF_ARM_EABI_VER5 )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Unsupported ELF EABI(%x)\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Unsupported ELF EABI(%x)\n",
                elf->name, hdr->e_flags);
         return -EOPNOTSUPP;
     }
@@ -104,7 +104,7 @@ bool arch_livepatch_symbol_deny(const struct livepatch_elf *elf,
                                 const struct livepatch_elf_sym *sym)
 {
     /*
-     * xen does not use Thumb instructions - and we should not see any of
+     * Xen does not use Thumb instructions - and we should not see any of
      * them. If we do, abort.
      */
     if ( sym->name && sym->name[0] == '$' && sym->name[1] == 't' )
@@ -258,25 +258,25 @@ int arch_livepatch_perform(struct livepatch_elf *elf,
 
         if ( symndx == STN_UNDEF )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Encountered STN_UNDEF\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Encountered STN_UNDEF\n",
                    elf->name);
             return -EOPNOTSUPP;
         }
         else if ( symndx >= elf->nsym )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Relative symbol wants symbol@%u which is past end\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Relative symbol wants symbol@%u which is past end\n",
                    elf->name, symndx);
             return -EINVAL;
         }
         else if ( !elf->sym[symndx].sym )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: No relative symbol@%u\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: No relative symbol@%u\n",
                    elf->name, symndx);
             return -EINVAL;
         }
         else if ( elf->sym[symndx].ignored )
         {
-            printk(XENLOG_ERR LIVEPATCH
+            printk(CRUXLOG_ERR LIVEPATCH
                    "%s: Relocation against ignored symbol %s cannot be resolved\n",
                    elf->name, elf->sym[symndx].name);
             return -EINVAL;
@@ -288,12 +288,12 @@ int arch_livepatch_perform(struct livepatch_elf *elf,
         switch ( rc )
         {
         case -EOVERFLOW:
-            printk(XENLOG_ERR LIVEPATCH "%s: Overflow in relocation %u in %s for %s\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Overflow in relocation %u in %s for %s\n",
                    elf->name, i, rela->name, base->name);
             break;
 
         case -EOPNOTSUPP:
-            printk(XENLOG_ERR LIVEPATCH "%s: Unhandled relocation #%x\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Unhandled relocation #%x\n",
                    elf->name, type);
             break;
         }

@@ -47,10 +47,10 @@
 #define ACPI_USE_SYSTEM_CLIBRARY
 #define ACPI_USE_DO_WHILE_0
 
-#include <xen/string.h>
-#include <xen/kernel.h>
-#include <xen/ctype.h>
-#include <xen/spinlock.h>
+#include <crux/string.h>
+#include <crux/kernel.h>
+#include <crux/ctype.h>
+#include <crux/spinlock.h>
 #include <asm/system.h>
 #include <asm/atomic.h>
 #include <asm/div64.h>

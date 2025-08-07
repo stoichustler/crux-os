@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/irq.c
+ * crux/arch/arm/irq.c
  *
  * ARM Interrupt support
  *
@@ -8,13 +8,13 @@
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/cpu.h>
-#include <xen/lib.h>
-#include <xen/spinlock.h>
-#include <xen/irq.h>
-#include <xen/init.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
+#include <crux/cpu.h>
+#include <crux/lib.h>
+#include <crux/spinlock.h>
+#include <crux/irq.h>
+#include <crux/init.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
 
 #include <asm/gic.h>
 #include <asm/vgic.h>
@@ -124,7 +124,7 @@ static int cpu_callback(struct notifier_block *nfb, unsigned long action,
     case CPU_UP_PREPARE:
         rc = init_local_irq_data(cpu);
         if ( rc )
-            printk(XENLOG_ERR "Unable to allocate local IRQ for CPU%u\n",
+            printk(CRUXLOG_ERR "Unable to allocate local IRQ for CPU%u\n",
                    cpu);
         break;
     }
@@ -307,7 +307,7 @@ void release_irq(unsigned int irq, const void *dev_id)
         action = *action_ptr;
         if ( !action )
         {
-            printk(XENLOG_WARNING "Trying to free already-free IRQ %u\n", irq);
+            printk(CRUXLOG_WARNING "Trying to free already-free IRQ %u\n", irq);
             spin_unlock_irqrestore(&desc->lock, flags);
             return;
         }
@@ -380,7 +380,7 @@ int setup_irq(unsigned int irq, unsigned int irqflags, struct irqaction *new)
         struct domain *d = irq_get_domain(desc);
 
         spin_unlock_irqrestore(&desc->lock, flags);
-        printk(XENLOG_ERR "ERROR: IRQ %u is already in use by the domain %u\n",
+        printk(CRUXLOG_ERR "ERROR: IRQ %u is already in use by the domain %u\n",
                irq, d->domain_id);
         return -EBUSY;
     }
@@ -394,7 +394,7 @@ int setup_irq(unsigned int irq, unsigned int irqflags, struct irqaction *new)
     /* First time the IRQ is setup */
     if ( disabled )
     {
-        gic_route_irq_to_xen(desc, GIC_PRI_IRQ);
+        gic_route_irq_to_crux(desc, GIC_PRI_IRQ);
         /* It's fine to use smp_processor_id() because:
          * For SGI and PPI: irq_desc is banked
          * For SPI: we don't care for now which CPU will receive the
@@ -444,7 +444,7 @@ int route_irq_to_guest(struct domain *d, unsigned int virq,
 
     if ( virq >= vgic_num_irqs(d) )
     {
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "the vIRQ number %u is too high for domain %u (max = %u)\n",
                irq, d->domain_id, vgic_num_irqs(d));
         return -EINVAL;
@@ -453,13 +453,13 @@ int route_irq_to_guest(struct domain *d, unsigned int virq,
     /* Only routing to virtual SPIs is supported */
     if ( virq < NR_LOCAL_IRQS )
     {
-        printk(XENLOG_G_ERR "IRQ can only be routed to an SPI\n");
+        printk(CRUXLOG_G_ERR "IRQ can only be routed to an SPI\n");
         return -EINVAL;
     }
 
     if ( !is_assignable_irq(irq) )
     {
-        printk(XENLOG_G_ERR "the IRQ%u is not routable\n", irq);
+        printk(CRUXLOG_G_ERR "the IRQ%u is not routable\n", irq);
         return -EINVAL;
     }
     desc = irq_to_desc(irq);
@@ -486,18 +486,18 @@ int route_irq_to_guest(struct domain *d, unsigned int virq,
 
     if ( !irq_type_set_by_domain(d) && desc->arch.type == IRQ_TYPE_INVALID )
     {
-        printk(XENLOG_G_ERR "IRQ %u has not been configured\n", irq);
+        printk(CRUXLOG_G_ERR "IRQ %u has not been configured\n", irq);
         retval = -EIO;
         goto out;
     }
 
     /*
      * If the IRQ is already used by someone
-     *  - If it's the same domain -> xen doesn't need to update the IRQ desc.
+     *  - If it's the same domain -> Xen doesn't need to update the IRQ desc.
      *  For safety check if we are not trying to assign the IRQ to a
      *  different vIRQ.
      *  - Otherwise -> For now, don't allow the IRQ to be shared between
-     *  xen and domains.
+     *  Xen and domains.
      */
     if ( desc->action != NULL )
     {
@@ -507,13 +507,13 @@ int route_irq_to_guest(struct domain *d, unsigned int virq,
 
             if ( d != ad )
             {
-                printk(XENLOG_G_ERR "IRQ %u is already used by domain %u\n",
+                printk(CRUXLOG_G_ERR "IRQ %u is already used by domain %u\n",
                        irq, ad->domain_id);
                 retval = -EBUSY;
             }
             else if ( irq_get_guest_info(desc)->virq != virq )
             {
-                printk(XENLOG_G_ERR
+                printk(CRUXLOG_G_ERR
                        "d%u: IRQ %u is already assigned to vIRQ %u\n",
                        d->domain_id, irq, irq_get_guest_info(desc)->virq);
                 retval = -EBUSY;
@@ -521,7 +521,7 @@ int route_irq_to_guest(struct domain *d, unsigned int virq,
         }
         else
         {
-            printk(XENLOG_G_ERR "IRQ %u is already used by xen\n", irq);
+            printk(CRUXLOG_G_ERR "IRQ %u is already used by Xen\n", irq);
             retval = -EBUSY;
         }
         goto out;
@@ -593,35 +593,6 @@ unlock:
     spin_unlock_irqrestore(&desc->lock, flags);
 
     return ret;
-}
-
-/*
- * pirq event channels. We don't use these on ARM, instead we use the
- * features of the GIC to inject virtualised normal interrupts.
- */
-struct pirq *alloc_pirq_struct(struct domain *d)
-{
-    return NULL;
-}
-
-/*
- * These are all unreachable given an alloc_pirq_struct
- * which returns NULL, all callers try to lookup struct pirq first
- * which will fail.
- */
-int pirq_guest_bind(struct vcpu *v, struct pirq *pirq, int will_share)
-{
-    BUG();
-}
-
-void pirq_guest_unbind(struct domain *d, struct pirq *pirq)
-{
-    BUG();
-}
-
-void pirq_set_affinity(struct domain *d, int pirq, const cpumask_t *mask)
-{
-    BUG();
 }
 
 static bool irq_validate_new_type(unsigned int curr, unsigned int new)

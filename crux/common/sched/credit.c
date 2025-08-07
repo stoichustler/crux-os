@@ -1,5 +1,5 @@
 /****************************************************************************
- * (C) 2005-2006 - Emmanuel Ackaouy - xenSource Inc.
+ * (C) 2005-2006 - Emmanuel Ackaouy - XenSource Inc.
  ****************************************************************************
  *
  *        File: common/csched_credit.c
@@ -8,22 +8,22 @@
  * Description: Credit-based SMP CPU scheduler
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/domain.h>
-#include <xen/delay.h>
-#include <xen/event.h>
-#include <xen/time.h>
-#include <xen/softirq.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/domain.h>
+#include <crux/delay.h>
+#include <crux/event.h>
+#include <crux/time.h>
+#include <crux/softirq.h>
 #include <asm/atomic.h>
 #include <asm/div64.h>
-#include <xen/errno.h>
-#include <xen/keyhandler.h>
-#include <xen/trace.h>
-#include <xen/err.h>
+#include <crux/errno.h>
+#include <crux/keyhandler.h>
+#include <crux/trace.h>
+#include <crux/err.h>
 
 #include "private.h"
 
@@ -57,7 +57,7 @@
 #define CSCHED_MAX_LOAD_BALANCE_RATELIMIT_US     1000000
 #define CSCHED_CREDITS_PER_MSEC     10
 /* Never set a timer shorter than this value. */
-#define CSCHED_MIN_TIMER            XEN_SYSCTL_SCHED_RATELIMIT_MIN
+#define CSCHED_MIN_TIMER            CRUX_SYSCTL_SCHED_RATELIMIT_MIN
 
 
 /*
@@ -100,7 +100,7 @@
  * Manage very basic per-unit counters and stats.
  *
  * Useful for debugging live systems. The stats are displayed
- * with runq dumps ('r' on the xen console).
+ * with runq dumps ('r' on the Xen console).
  */
 #ifdef SCHED_STATS
 
@@ -1187,7 +1187,7 @@ static int cf_check
 csched_dom_cntl(
     const struct scheduler *ops,
     struct domain *d,
-    struct xen_domctl_scheduler_op *op)
+    struct crux_domctl_scheduler_op *op)
 {
     struct csched_dom * const sdom = CSCHED_DOM(d);
     struct csched_private *prv = CSCHED_PRIV(ops);
@@ -1200,11 +1200,11 @@ csched_dom_cntl(
 
     switch ( op->cmd )
     {
-    case XEN_DOMCTL_SCHEDOP_getinfo:
+    case CRUX_DOMCTL_SCHEDOP_getinfo:
         op->u.credit.weight = sdom->weight;
         op->u.credit.cap = sdom->cap;
         break;
-    case XEN_DOMCTL_SCHEDOP_putinfo:
+    case CRUX_DOMCTL_SCHEDOP_putinfo:
         if ( op->u.credit.weight != 0 )
         {
             if ( !list_empty(&sdom->active_sdom_elem) )
@@ -1259,37 +1259,37 @@ __csched_set_tslice(struct csched_private *prv, unsigned int timeslice_ms)
 #ifdef CONFIG_SYSCTL
 static int cf_check
 csched_sys_cntl(const struct scheduler *ops,
-                        struct xen_sysctl_scheduler_op *sc)
+                        struct crux_sysctl_scheduler_op *sc)
 {
     int rc = -EINVAL;
-    struct xen_sysctl_credit_schedule *params = &sc->u.sched_credit;
+    struct crux_sysctl_credit_schedule *params = &sc->u.sched_credit;
     struct csched_private *prv = CSCHED_PRIV(ops);
     unsigned long flags;
 
     switch ( sc->cmd )
     {
-    case XEN_SYSCTL_SCHEDOP_putinfo:
-        if ( params->tslice_ms > XEN_SYSCTL_CSCHED_TSLICE_MAX
-             || params->tslice_ms < XEN_SYSCTL_CSCHED_TSLICE_MIN
+    case CRUX_SYSCTL_SCHEDOP_putinfo:
+        if ( params->tslice_ms > CRUX_SYSCTL_CSCHED_TSLICE_MAX
+             || params->tslice_ms < CRUX_SYSCTL_CSCHED_TSLICE_MIN
              || (params->ratelimit_us
-                 && (params->ratelimit_us > XEN_SYSCTL_SCHED_RATELIMIT_MAX
-                     || params->ratelimit_us < XEN_SYSCTL_SCHED_RATELIMIT_MIN))
+                 && (params->ratelimit_us > CRUX_SYSCTL_SCHED_RATELIMIT_MAX
+                     || params->ratelimit_us < CRUX_SYSCTL_SCHED_RATELIMIT_MIN))
              || MICROSECS(params->ratelimit_us) > MILLISECS(params->tslice_ms)
-             || params->vcpu_migr_delay_us > XEN_SYSCTL_CSCHED_MGR_DLY_MAX_US )
+             || params->vcpu_migr_delay_us > CRUX_SYSCTL_CSCHED_MGR_DLY_MAX_US )
                 goto out;
 
         spin_lock_irqsave(&prv->lock, flags);
         __csched_set_tslice(prv, params->tslice_ms);
         if ( !prv->ratelimit && params->ratelimit_us )
-            printk(XENLOG_INFO "Enabling context switch rate limiting\n");
+            printk(CRUXLOG_INFO "Enabling context switch rate limiting\n");
         else if ( prv->ratelimit && !params->ratelimit_us )
-            printk(XENLOG_INFO "Disabling context switch rate limiting\n");
+            printk(CRUXLOG_INFO "Disabling context switch rate limiting\n");
         prv->ratelimit = MICROSECS(params->ratelimit_us);
         prv->unit_migr_delay = MICROSECS(params->vcpu_migr_delay_us);
         spin_unlock_irqrestore(&prv->lock, flags);
 
         /* FALLTHRU */
-    case XEN_SYSCTL_SCHEDOP_getinfo:
+    case CRUX_SYSCTL_SCHEDOP_getinfo:
         params->tslice_ms = prv->tslice / MILLISECS(1);
         params->ratelimit_us = prv->ratelimit / MICROSECS(1);
         params->vcpu_migr_delay_us = prv->unit_migr_delay / MICROSECS(1);
@@ -2178,13 +2178,13 @@ csched_dump(const struct scheduler *ops)
 static int __init cf_check
 csched_global_init(void)
 {
-    if ( sched_credit_tslice_ms > XEN_SYSCTL_CSCHED_TSLICE_MAX ||
-         sched_credit_tslice_ms < XEN_SYSCTL_CSCHED_TSLICE_MIN )
+    if ( sched_credit_tslice_ms > CRUX_SYSCTL_CSCHED_TSLICE_MAX ||
+         sched_credit_tslice_ms < CRUX_SYSCTL_CSCHED_TSLICE_MIN )
     {
         printk("WARNING: sched_credit_tslice_ms outside of valid range [%d,%d].\n"
                " Resetting to default %u\n",
-               XEN_SYSCTL_CSCHED_TSLICE_MIN,
-               XEN_SYSCTL_CSCHED_TSLICE_MAX,
+               CRUX_SYSCTL_CSCHED_TSLICE_MIN,
+               CRUX_SYSCTL_CSCHED_TSLICE_MAX,
                CSCHED_DEFAULT_TSLICE_MS);
         sched_credit_tslice_ms = CSCHED_DEFAULT_TSLICE_MS;
     }
@@ -2194,12 +2194,12 @@ csched_global_init(void)
                "sched_credit_tslice_ms is undefined\n"
                "Setting ratelimit to tslice\n");
 
-    if ( vcpu_migration_delay_us > XEN_SYSCTL_CSCHED_MGR_DLY_MAX_US )
+    if ( vcpu_migration_delay_us > CRUX_SYSCTL_CSCHED_MGR_DLY_MAX_US )
     {
         vcpu_migration_delay_us = 0;
         printk("WARNING: vcpu_migration_delay outside of valid range [0,%d]us.\n"
                "Resetting to default: %u\n",
-               XEN_SYSCTL_CSCHED_MGR_DLY_MAX_US, vcpu_migration_delay_us);
+               CRUX_SYSCTL_CSCHED_MGR_DLY_MAX_US, vcpu_migration_delay_us);
     }
 
     if ( load_balance_ratelimit_us > CSCHED_MAX_LOAD_BALANCE_RATELIMIT_US )
@@ -2276,7 +2276,7 @@ csched_deinit(struct scheduler *ops)
 static const struct scheduler sched_credit_def = {
     .name           = "SMP Credit Scheduler",
     .opt_name       = "credit",
-    .sched_id       = XEN_SCHEDULER_CREDIT,
+    .sched_id       = CRUX_SCHEDULER_CREDIT,
     .sched_data     = NULL,
 
     .global_init    = csched_global_init,

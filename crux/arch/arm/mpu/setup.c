@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootfdt.h>
-#include <xen/bug.h>
-#include <xen/init.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/types.h>
-#include <xen/sizes.h>
+#include <crux/bootfdt.h>
+#include <crux/bug.h>
+#include <crux/init.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/types.h>
+#include <crux/sizes.h>
 #include <asm/setup.h>
 
 static paddr_t __initdata mapped_fdt_base = INVALID_PADDR;
@@ -38,7 +38,7 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
         return NULL;
 
     /*
-     * DTB at this address has already been mapped.`start_xen` calls this twice,
+     * DTB at this address has already been mapped.`start_crux` calls this twice,
      * before and after `setup_page_tables`, which is a no-op on MPU.
      */
     if ( mapped_fdt_base == fdt_paddr )
@@ -48,7 +48,7 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
 
     nr_mfns = (limit - base) >> PAGE_SHIFT;
 
-    rc = map_pages_to_xen(base, maddr_to_mfn(base), nr_mfns, flags);
+    rc = map_pages_to_crux(base, maddr_to_mfn(base), nr_mfns, flags);
     if ( rc )
         panic("Unable to map the device-tree\n");
 
@@ -67,13 +67,13 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
     /* If the mapped range is not enough, map the rest of the DTB. */
     if ( limit > mapped_fdt_limit )
     {
-        rc = destroy_xen_mappings(base, mapped_fdt_limit);
+        rc = destroy_crux_mappings(base, mapped_fdt_limit);
         if ( rc )
             panic("Unable to unmap the device-tree header\n");
 
         nr_mfns = (limit - base) >> PAGE_SHIFT;
 
-        rc = map_pages_to_xen(base, maddr_to_mfn(base), nr_mfns, flags);
+        rc = map_pages_to_crux(base, maddr_to_mfn(base), nr_mfns, flags);
         if ( rc )
             panic("Unable to map the device-tree\n");
 
@@ -96,7 +96,7 @@ void __init copy_from_paddr(void *dst, paddr_t paddr, unsigned long len)
 
 void __init remove_early_mappings(void)
 {
-    int rc = destroy_xen_mappings(round_pgdown(mapped_fdt_base),
+    int rc = destroy_crux_mappings(round_pgdown(mapped_fdt_base),
                                   mapped_fdt_limit);
 
     if ( rc )

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ static void send_iommu_command(struct amd_iommu *iommu,
                            IOMMU_CMD_BUFFER_HEAD_OFFSET) &
                      IOMMU_RING_BUFFER_PTR_MASK) )
     {
-        printk_once(XENLOG_ERR "AMD IOMMU %pp: no cmd slot available\n",
+        printk_once(CRUXLOG_ERR "AMD IOMMU %pp: no cmd slot available\n",
                     &iommu->sbdf);
         cpu_relax();
     }
@@ -83,7 +83,7 @@ static void flush_command_buffer(struct amd_iommu *iommu,
         if ( timeout && NOW() > timeout )
         {
             threshold |= threshold << 1;
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "AMD IOMMU %pp: %scompletion wait taking too long\n",
                    &iommu->sbdf,
                    timeout_base ? "iotlb " : "");
@@ -93,7 +93,7 @@ static void flush_command_buffer(struct amd_iommu *iommu,
     }
 
     if ( !timeout )
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "AMD IOMMU %pp: %scompletion wait took %lums\n",
                &iommu->sbdf,
                timeout_base ? "iotlb " : "",
@@ -345,11 +345,11 @@ static void _amd_iommu_flush_pages(struct domain *d,
         amd_iommu_flush_all_iotlbs(d, daddr, order);
 
         /*
-         * Hidden devices are associated with DomXEN but usable by the
+         * Hidden devices are associated with DomCRUX but usable by the
          * hardware domain. Hence they need dealing with here as well.
          */
         if ( is_hardware_domain(d) )
-            amd_iommu_flush_all_iotlbs(dom_xen, daddr, order);
+            amd_iommu_flush_all_iotlbs(dom_crux, daddr, order);
     }
 }
 

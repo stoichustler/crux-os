@@ -10,16 +10,16 @@
  * Based on an earlier verson by Emmanuel Ackaouy.
  */
 
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/perfc.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/softirq.h>
-#include <xen/time.h>
-#include <xen/trace.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/perfc.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/softirq.h>
+#include <crux/time.h>
+#include <crux/trace.h>
 
 #include <asm/div64.h>
 
@@ -869,7 +869,7 @@ cpu_runqueue_match(const struct csched2_runqueue_data *rqd, unsigned int cpu)
 {
     unsigned int peer_cpu = rqd->pick_bias;
 
-    BUG_ON(cpu_to_socket(peer_cpu) == XEN_INVALID_SOCKET_ID);
+    BUG_ON(cpu_to_socket(peer_cpu) == CRUX_INVALID_SOCKET_ID);
 
     /* OPT_RUNQUEUE_CPU will never find an existing runqueue. */
     return opt_runqueue == OPT_RUNQUEUE_ALL ||
@@ -2403,7 +2403,7 @@ csched2_res_pick(const struct scheduler *ops, const struct sched_unit *unit)
     {
         if ( unlikely(svc->migrate_rqd->id < 0) )
         {
-            printk(XENLOG_WARNING "%s: target runqueue disappeared!\n",
+            printk(CRUXLOG_WARNING "%s: target runqueue disappeared!\n",
                    __func__);
         }
         else if ( cpumask_intersects(cpumask_scratch_cpu(cpu),
@@ -2913,7 +2913,7 @@ static int cf_check
 csched2_dom_cntl(
     const struct scheduler *ops,
     struct domain *d,
-    struct xen_domctl_scheduler_op *op)
+    struct crux_domctl_scheduler_op *op)
 {
     struct csched2_dom * const sdom = csched2_dom(d);
     struct csched2_private *prv = csched2_priv(ops);
@@ -2934,13 +2934,13 @@ csched2_dom_cntl(
      */
     switch ( op->cmd )
     {
-    case XEN_DOMCTL_SCHEDOP_getinfo:
+    case CRUX_DOMCTL_SCHEDOP_getinfo:
         read_lock_irqsave(&prv->lock, flags);
         op->u.credit2.weight = sdom->weight;
         op->u.credit2.cap = sdom->cap;
         read_unlock_irqrestore(&prv->lock, flags);
         break;
-    case XEN_DOMCTL_SCHEDOP_putinfo:
+    case CRUX_DOMCTL_SCHEDOP_putinfo:
         write_lock_irqsave(&prv->lock, flags);
         /* Weight */
         if ( op->u.credit2.weight != 0 )
@@ -3133,30 +3133,30 @@ csched2_aff_cntl(const struct scheduler *ops, struct sched_unit *unit,
 
 #ifdef CONFIG_SYSCTL
 static int cf_check csched2_sys_cntl(
-    const struct scheduler *ops, struct xen_sysctl_scheduler_op *sc)
+    const struct scheduler *ops, struct crux_sysctl_scheduler_op *sc)
 {
-    struct xen_sysctl_credit2_schedule *params = &sc->u.sched_credit2;
+    struct crux_sysctl_credit2_schedule *params = &sc->u.sched_credit2;
     struct csched2_private *prv = csched2_priv(ops);
     unsigned long flags;
 
     switch (sc->cmd )
     {
-    case XEN_SYSCTL_SCHEDOP_putinfo:
+    case CRUX_SYSCTL_SCHEDOP_putinfo:
         if ( params->ratelimit_us &&
-             (params->ratelimit_us > XEN_SYSCTL_SCHED_RATELIMIT_MAX ||
-              params->ratelimit_us < XEN_SYSCTL_SCHED_RATELIMIT_MIN ))
+             (params->ratelimit_us > CRUX_SYSCTL_SCHED_RATELIMIT_MAX ||
+              params->ratelimit_us < CRUX_SYSCTL_SCHED_RATELIMIT_MIN ))
             return -EINVAL;
 
         write_lock_irqsave(&prv->lock, flags);
         if ( !prv->ratelimit_us && params->ratelimit_us )
-            printk(XENLOG_INFO "Enabling context switch rate limiting\n");
+            printk(CRUXLOG_INFO "Enabling context switch rate limiting\n");
         else if ( prv->ratelimit_us && !params->ratelimit_us )
-            printk(XENLOG_INFO "Disabling context switch rate limiting\n");
+            printk(CRUXLOG_INFO "Disabling context switch rate limiting\n");
         prv->ratelimit_us = params->ratelimit_us;
         write_unlock_irqrestore(&prv->lock, flags);
         fallthrough;
 
-    case XEN_SYSCTL_SCHEDOP_getinfo:
+    case CRUX_SYSCTL_SCHEDOP_getinfo:
         params->ratelimit_us = prv->ratelimit_us;
         break;
     }
@@ -3870,7 +3870,7 @@ csched2_dump(const struct scheduler *ops)
                CPUMASK_PR(&rqd->smt_idle));
     }
 
-    printk("domain info:\n");
+    printk("Domain info:\n");
     loop = 0;
     list_for_each( iter_sdom, &prv->sdom )
     {
@@ -3935,7 +3935,7 @@ csched2_alloc_pdata(const struct scheduler *ops, int cpu)
     struct csched2_pcpu *spc;
     struct csched2_runqueue_data *rqd;
 
-    BUG_ON(cpu_to_socket(cpu) == XEN_INVALID_SOCKET_ID);
+    BUG_ON(cpu_to_socket(cpu) == CRUX_INVALID_SOCKET_ID);
 
     spc = xzalloc(struct csched2_pcpu);
     if ( spc == NULL )
@@ -3965,10 +3965,10 @@ init_cpu_runqueue(struct csched2_private *prv, struct csched2_pcpu *spc,
 
     ASSERT(rqd && !cpumask_test_cpu(cpu, &spc->rqd->active));
 
-    printk(XENLOG_INFO "Adding cpu %d to runqueue %d\n", cpu, rqd->id);
+    printk(CRUXLOG_INFO "Adding cpu %d to runqueue %d\n", cpu, rqd->id);
     if ( !rqd->nr_cpus )
     {
-        printk(XENLOG_INFO " First cpu on runqueue, activating\n");
+        printk(CRUXLOG_INFO " First cpu on runqueue, activating\n");
 
         BUG_ON(!cpumask_empty(&rqd->active));
         rqd->max_weight = 1;
@@ -4085,7 +4085,7 @@ csched2_deinit_pdata(const struct scheduler *ops, void *pcpu, int cpu)
     /* No need to save IRQs here, they're already disabled */
     spin_lock(&rqd->lock);
 
-    printk(XENLOG_INFO "Removing cpu %d from runqueue %d\n", cpu, rqd->id);
+    printk(CRUXLOG_INFO "Removing cpu %d from runqueue %d\n", cpu, rqd->id);
 
     __cpumask_clear_cpu(cpu, &rqd->idle);
     __cpumask_clear_cpu(cpu, &rqd->smt_idle);
@@ -4100,7 +4100,7 @@ csched2_deinit_pdata(const struct scheduler *ops, void *pcpu, int cpu)
 
     if ( rqd->nr_cpus == 0 )
     {
-        printk(XENLOG_INFO " No cpus left on runqueue, disabling\n");
+        printk(CRUXLOG_INFO " No cpus left on runqueue, disabling\n");
 
         BUG_ON(!cpumask_empty(&rqd->active));
         prv->active_queues--;
@@ -4178,14 +4178,14 @@ csched2_init(struct scheduler *ops)
 {
     struct csched2_private *prv;
 
-    printk("kicking Credit2 scheduler\n");
+    printk("Initializing Credit2 scheduler\n");
 
-    printk(XENLOG_INFO " load_precision_shift: %d\n"
-           XENLOG_INFO " load_window_shift: %d\n"
-           XENLOG_INFO " underload_balance_tolerance: %d\n"
-           XENLOG_INFO " overload_balance_tolerance: %d\n"
-           XENLOG_INFO " runqueues arrangement: %s\n"
-           XENLOG_INFO " cap enforcement granularity: %dms\n",
+    printk(CRUXLOG_INFO " load_precision_shift: %d\n"
+           CRUXLOG_INFO " load_window_shift: %d\n"
+           CRUXLOG_INFO " underload_balance_tolerance: %d\n"
+           CRUXLOG_INFO " overload_balance_tolerance: %d\n"
+           CRUXLOG_INFO " runqueues arrangement: %s\n"
+           CRUXLOG_INFO " cap enforcement granularity: %dms\n",
            opt_load_precision_shift,
            opt_load_window_shift,
            opt_underload_balance_tolerance,
@@ -4193,7 +4193,7 @@ csched2_init(struct scheduler *ops)
            opt_runqueue_str[opt_runqueue],
            opt_cap_period);
 
-    printk(XENLOG_INFO "load tracking window length %llu ns\n",
+    printk(CRUXLOG_INFO "load tracking window length %llu ns\n",
            1ULL << opt_load_window_shift);
 
     /*
@@ -4234,7 +4234,7 @@ csched2_deinit(struct scheduler *ops)
 static const struct scheduler sched_credit2_def = {
     .name           = "SMP Credit Scheduler rev2",
     .opt_name       = "credit2",
-    .sched_id       = XEN_SCHEDULER_CREDIT2,
+    .sched_id       = CRUX_SCHEDULER_CREDIT2,
     .sched_data     = NULL,
 
     .global_init    = csched2_global_init,

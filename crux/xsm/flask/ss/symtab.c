@@ -4,12 +4,12 @@
  * Author : Stephen Smalley, <sds@epoch.ncsc.mil>
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/lib.h>
-#include <xen/xmalloc.h>
-#include <xen/string.h>
-#include <xen/errno.h>
+#include <crux/lib.h>
+#include <crux/xmalloc.h>
+#include <crux/string.h>
+#include <crux/errno.h>
 #include "symtab.h"
 
 static unsigned int cf_check symhash(struct hashtab *h, const void *key)

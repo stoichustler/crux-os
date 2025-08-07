@@ -1,10 +1,10 @@
 /*
- * xen/drivers/passthrough/arm/iommu_helpers.c
+ * crux/drivers/passthrough/arm/iommu_helpers.c
  *
  * Contains various helpers to be used by IOMMU drivers.
  *
- * Based on xen's SMMU driver:
- *    xen/drivers/passthrough/arm/smmu.c
+ * Based on Xen's SMMU driver:
+ *    crux/drivers/passthrough/arm/smmu.c
  *
  * Copyright (C) 2014 Linaro Limited.
  *
@@ -23,9 +23,9 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/iommu.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/iommu.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 
 #include <asm/device.h>
 
@@ -39,7 +39,7 @@ int __must_check arm_iommu_map_page(struct domain *d, dfn_t dfn, mfn_t mfn,
     /*
      * Grant mappings can be used for DMA requests. The dev_bus_addr
      * returned by the hypercall is the MFN (not the IPA). For device
-     * protected by an IOMMU, xen needs to add a 1:1 mapping in the domain
+     * protected by an IOMMU, Xen needs to add a 1:1 mapping in the domain
      * p2m to allow DMA request to work.
      * This is only valid when the domain is directed mapped. Hence this
      * function should only be used by gnttab code with gfn == mfn == dfn.

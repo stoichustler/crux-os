@@ -15,11 +15,11 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/device_tree.h>
-#include <xen/guest_access.h>
-#include <xen/iommu.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/device_tree.h>
+#include <crux/guest_access.h>
+#include <crux/iommu.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 #include <xsm/xsm.h>
 
 #include <asm/iommu_fwspec.h>
@@ -124,7 +124,7 @@ int iommu_release_dt_devices(struct domain *d)
         rc = iommu_deassign_dt_device(d, dev);
         if ( rc )
         {
-            dprintk(XENLOG_ERR, "Failed to deassign %s in domain %u\n",
+            dprintk(CRUXLOG_ERR, "Failed to deassign %s in domain %u\n",
                     dt_node_full_name(dev), d->domain_id);
             read_unlock(&dt_host_lock);
 
@@ -318,8 +318,8 @@ int iommu_add_dt_device(struct dt_device_node *np)
     return rc;
 }
 
-int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
-                       XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+int iommu_do_dt_domctl(struct crux_domctl *domctl, struct domain *d,
+                       CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     int ret;
     struct dt_device_node *dev;
@@ -328,12 +328,12 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
 
     switch ( domctl->cmd )
     {
-    case XEN_DOMCTL_assign_device:
+    case CRUX_DOMCTL_assign_device:
         ASSERT(d);
         /* fall through */
-    case XEN_DOMCTL_test_assign_device:
+    case CRUX_DOMCTL_test_assign_device:
         ret = -ENODEV;
-        if ( domctl->u.assign_device.dev != XEN_DOMCTL_DEV_DT )
+        if ( domctl->u.assign_device.dev != CRUX_DOMCTL_DEV_DT )
             break;
 
         ret = -EINVAL;
@@ -350,13 +350,13 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
         if ( ret )
             break;
 
-        if ( domctl->cmd == XEN_DOMCTL_test_assign_device )
+        if ( domctl->cmd == CRUX_DOMCTL_test_assign_device )
         {
             spin_lock(&dtdevs_lock);
 
             if ( iommu_dt_device_is_assigned_locked(dev) )
             {
-                printk(XENLOG_G_ERR "%s already assigned.\n",
+                printk(CRUXLOG_G_ERR "%s already assigned.\n",
                        dt_node_full_name(dev));
                 ret = -EINVAL;
             }
@@ -374,7 +374,7 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
         ret = iommu_add_dt_device(dev);
         if ( ret < 0 )
         {
-            printk(XENLOG_G_ERR "Failed to add %s to the IOMMU\n",
+            printk(CRUXLOG_G_ERR "Failed to add %s to the IOMMU\n",
                    dt_node_full_name(dev));
             break;
         }
@@ -382,14 +382,14 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
         ret = iommu_assign_dt_device(d, dev);
 
         if ( ret )
-            printk(XENLOG_G_ERR "XEN_DOMCTL_assign_dt_device: assign \"%s\""
+            printk(CRUXLOG_G_ERR "CRUX_DOMCTL_assign_dt_device: assign \"%s\""
                    " to dom%u failed (%d)\n",
                    dt_node_full_name(dev), d->domain_id, ret);
         break;
 
-    case XEN_DOMCTL_deassign_device:
+    case CRUX_DOMCTL_deassign_device:
         ret = -ENODEV;
-        if ( domctl->u.assign_device.dev != XEN_DOMCTL_DEV_DT )
+        if ( domctl->u.assign_device.dev != CRUX_DOMCTL_DEV_DT )
             break;
 
         ret = -EINVAL;
@@ -415,7 +415,7 @@ int iommu_do_dt_domctl(struct xen_domctl *domctl, struct domain *d,
         ret = iommu_deassign_dt_device(d, dev);
 
         if ( ret )
-            printk(XENLOG_G_ERR "XEN_DOMCTL_assign_dt_device: assign \"%s\""
+            printk(CRUXLOG_G_ERR "CRUX_DOMCTL_assign_dt_device: assign \"%s\""
                    " to dom%u failed (%d)\n",
                    dt_node_full_name(dev), d->domain_id, ret);
         break;

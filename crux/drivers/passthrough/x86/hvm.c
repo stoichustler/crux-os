@@ -18,10 +18,10 @@
  * Copyright (C) Xiaohui Xin <xiaohui.xin@intel.com>
  */
 
-#include <xen/event.h>
-#include <xen/iommu.h>
-#include <xen/cpu.h>
-#include <xen/irq.h>
+#include <crux/event.h>
+#include <crux/iommu.h>
+#include <crux/cpu.h>
+#include <crux/irq.h>
 #include <asm/hvm/irq.h>
 #include <asm/io_apic.h>
 
@@ -218,7 +218,7 @@ static struct vcpu *vector_hashing_dest(const struct domain *d,
 }
 
 int pt_irq_create_bind(
-    struct domain *d, const struct xen_domctl_bind_pt_irq *pt_irq_bind)
+    struct domain *d, const struct crux_domctl_bind_pt_irq *pt_irq_bind)
 {
     struct hvm_irq_dpci *hvm_irq_dpci;
     struct hvm_pirq_dpci *pirq_dpci;
@@ -286,7 +286,7 @@ int pt_irq_create_bind(
         int dest_vcpu_id;
         const struct vcpu *vcpu;
         uint32_t gflags = pt_irq_bind->u.msi.gflags &
-                          ~XEN_DOMCTL_VMSI_X86_UNMASKED;
+                          ~CRUX_DOMCTL_VMSI_X86_UNMASKED;
 
         if ( !(pirq_dpci->flags & HVM_IRQ_DPCI_MAPPED) )
         {
@@ -357,10 +357,10 @@ int pt_irq_create_bind(
         }
         /* Calculate dest_vcpu_id for MSI-type pirq migration. */
         dest = MASK_EXTR(pirq_dpci->gmsi.gflags,
-                         XEN_DOMCTL_VMSI_X86_DEST_ID_MASK);
-        dest_mode = pirq_dpci->gmsi.gflags & XEN_DOMCTL_VMSI_X86_DM_MASK;
+                         CRUX_DOMCTL_VMSI_X86_DEST_ID_MASK);
+        dest_mode = pirq_dpci->gmsi.gflags & CRUX_DOMCTL_VMSI_X86_DM_MASK;
         delivery_mode = MASK_EXTR(pirq_dpci->gmsi.gflags,
-                                  XEN_DOMCTL_VMSI_X86_DELIV_MASK);
+                                  CRUX_DOMCTL_VMSI_X86_DELIV_MASK);
 
         dest_vcpu_id = hvm_girq_dest_2_vcpu_id(d, dest, dest_mode);
         pirq_dpci->gmsi.dest_vcpu_id = dest_vcpu_id;
@@ -391,7 +391,7 @@ int pt_irq_create_bind(
             }
         }
 
-        if ( pt_irq_bind->u.msi.gflags & XEN_DOMCTL_VMSI_X86_UNMASKED )
+        if ( pt_irq_bind->u.msi.gflags & CRUX_DOMCTL_VMSI_X86_UNMASKED )
         {
             unsigned long flags;
             struct irq_desc *desc = pirq_spin_lock_irq_desc(info, &flags);
@@ -555,7 +555,7 @@ int pt_irq_create_bind(
                          digl->bus, PCI_SLOT(digl->device),
                          PCI_FUNC(digl->device), digl->intx);
 
-            printk(XENLOG_G_INFO "d%d: bind: m_gsi=%u g_gsi=%u%s\n",
+            printk(CRUXLOG_G_INFO "d%d: bind: m_gsi=%u g_gsi=%u%s\n",
                    d->domain_id, pirq, guest_gsi, buf);
         }
         break;
@@ -570,7 +570,7 @@ int pt_irq_create_bind(
 }
 
 int pt_irq_destroy_bind(
-    struct domain *d, const struct xen_domctl_bind_pt_irq *pt_irq_bind)
+    struct domain *d, const struct crux_domctl_bind_pt_irq *pt_irq_bind)
 {
     struct hvm_irq_dpci *hvm_irq_dpci;
     struct hvm_pirq_dpci *pirq_dpci;
@@ -587,7 +587,7 @@ int pt_irq_destroy_bind(
             unsigned int device = pt_irq_bind->u.pci.device;
             unsigned int intx = pt_irq_bind->u.pci.intx;
 
-            printk(XENLOG_G_INFO
+            printk(CRUXLOG_G_INFO
                    "d%d: unbind: m_gsi=%u g_gsi=%u dev=%02x:%02x.%u intx=%u\n",
                    d->domain_id, machine_gsi, hvm_pci_intx_gsi(device, intx),
                    pt_irq_bind->u.pci.bus,
@@ -708,7 +708,7 @@ int pt_irq_destroy_bind(
                      pt_irq_bind->u.pci.bus, PCI_SLOT(device),
                      PCI_FUNC(device), pt_irq_bind->u.pci.intx);
 
-        printk(XENLOG_G_INFO "d%d %s unmap: m_irq=%u%s\n",
+        printk(CRUXLOG_G_INFO "d%d %s unmap: m_irq=%u%s\n",
                d->domain_id, what, machine_gsi, buf);
     }
 
@@ -805,8 +805,8 @@ static int cf_check _hvm_dpci_msi_eoi(
          (pirq_dpci->gmsi.gvec == vector) )
     {
         unsigned int dest = MASK_EXTR(pirq_dpci->gmsi.gflags,
-                                      XEN_DOMCTL_VMSI_X86_DEST_ID_MASK);
-        bool dest_mode = pirq_dpci->gmsi.gflags & XEN_DOMCTL_VMSI_X86_DM_MASK;
+                                      CRUX_DOMCTL_VMSI_X86_DEST_ID_MASK);
+        bool dest_mode = pirq_dpci->gmsi.gflags & CRUX_DOMCTL_VMSI_X86_DM_MASK;
 
         if ( vlapic_match_dest(vcpu_vlapic(current), NULL, 0, dest,
                                dest_mode) )

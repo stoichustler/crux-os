@@ -9,10 +9,10 @@
 
 #include "event_channel.h"
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
 
 #include <asm/guest_atomics.h>
 

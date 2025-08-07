@@ -7,8 +7,8 @@
 # Classes marked as userspace are classes
 # for userspace object managers
 
-class xen
-class xen2
+class crux
+class crux2
 class domain
 class domain2
 class hvm

@@ -2,8 +2,8 @@
 #define __ASM_SMP_H
 
 #ifndef __ASSEMBLY__
-#include <xen/percpu.h>
-#include <xen/cpumask.h>
+#include <crux/percpu.h>
+#include <crux/cpumask.h>
 #include <asm/current.h>
 #endif
 

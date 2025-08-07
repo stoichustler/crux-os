@@ -4,67 +4,67 @@
  *
  * Memory reservation and information.
  *
- * Copyright (c) 2005, Keir Fraser <keir@xensource.com>
+ * Copyright (c) 2005, Keir Fraser <keir@cruxsource.com>
  */
 
-#ifndef __XEN_PUBLIC_MEMORY_H__
-#define __XEN_PUBLIC_MEMORY_H__
+#ifndef __CRUX_PUBLIC_MEMORY_H__
+#define __CRUX_PUBLIC_MEMORY_H__
 
-#include "xen.h"
+#include "crux.h"
 #include "physdev.h"
 
 /*
  * Increase or decrease the specified domain's memory reservation. Returns the
  * number of extents successfully allocated or freed.
- * arg == addr of struct xen_memory_reservation.
+ * arg == addr of struct crux_memory_reservation.
  */
-#define XENMEM_increase_reservation 0
-#define XENMEM_decrease_reservation 1
-#define XENMEM_populate_physmap     6
+#define CRUXMEM_increase_reservation 0
+#define CRUXMEM_decrease_reservation 1
+#define CRUXMEM_populate_physmap     6
 
-#if __XEN_INTERFACE_VERSION__ >= 0x00030209
+#if __CRUX_INTERFACE_VERSION__ >= 0x00030209
 /*
  * Maximum # bits addressable by the user of the allocated region (e.g., I/O
  * devices often have a 32-bit limitation even in 64-bit systems). If zero
  * then the user has no addressing restriction. This field is not used by
- * XENMEM_decrease_reservation.
+ * CRUXMEM_decrease_reservation.
  */
-#define XENMEMF_address_bits(x)     (x)
-#define XENMEMF_get_address_bits(x) ((x) & 0xffu)
+#define CRUXMEMF_address_bits(x)     (x)
+#define CRUXMEMF_get_address_bits(x) ((x) & 0xffu)
 /* NUMA node to allocate from. */
-#define XENMEMF_node(x)     (((x) + 1) << 8)
-#define XENMEMF_get_node(x) ((((x) >> 8) - 1) & 0xffu)
+#define CRUXMEMF_node(x)     (((x) + 1) << 8)
+#define CRUXMEMF_get_node(x) ((((x) >> 8) - 1) & 0xffu)
 /* Flag to populate physmap with populate-on-demand entries */
-#define XENMEMF_populate_on_demand (1<<16)
+#define CRUXMEMF_populate_on_demand (1<<16)
 /* Flag to request allocation only from the node specified */
-#define XENMEMF_exact_node_request  (1<<17)
-#define XENMEMF_exact_node(n) (XENMEMF_node(n) | XENMEMF_exact_node_request)
+#define CRUXMEMF_exact_node_request  (1<<17)
+#define CRUXMEMF_exact_node(n) (CRUXMEMF_node(n) | CRUXMEMF_exact_node_request)
 /* Flag to indicate the node specified is virtual node */
-#define XENMEMF_vnode  (1<<18)
+#define CRUXMEMF_vnode  (1<<18)
 #endif
 
-struct xen_memory_reservation {
+struct crux_memory_reservation {
 
     /*
-     * XENMEM_increase_reservation:
+     * CRUXMEM_increase_reservation:
      *   OUT: MFN (*not* GMFN) bases of extents that were allocated
-     * XENMEM_decrease_reservation:
+     * CRUXMEM_decrease_reservation:
      *   IN:  GMFN bases of extents to free
-     * XENMEM_populate_physmap:
+     * CRUXMEM_populate_physmap:
      *   IN:  GPFN bases of extents to populate with memory
      *   OUT: GMFN bases of extents that were allocated
      *   (NB. This command also updates the mach_to_phys translation table)
-     * XENMEM_claim_pages:
+     * CRUXMEM_claim_pages:
      *   IN: must be zero
      */
-    XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
+    CRUX_GUEST_HANDLE(crux_pfn_t) extent_start;
 
     /* Number of extents, and size/alignment of each (2^extent_order pages). */
-    xen_ulong_t    nr_extents;
+    crux_ulong_t    nr_extents;
     unsigned int   extent_order;
 
-#if __XEN_INTERFACE_VERSION__ >= 0x00030209
-    /* XENMEMF flags. */
+#if __CRUX_INTERFACE_VERSION__ >= 0x00030209
+    /* CRUXMEMF flags. */
     unsigned int   mem_flags;
 #else
     unsigned int   address_bits;
@@ -76,8 +76,8 @@ struct xen_memory_reservation {
      */
     domid_t        domid;
 };
-typedef struct xen_memory_reservation xen_memory_reservation_t;
-DEFINE_XEN_GUEST_HANDLE(xen_memory_reservation_t);
+typedef struct crux_memory_reservation crux_memory_reservation_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_memory_reservation_t);
 
 /*
  * An atomic exchange of memory pages. If return code is zero then
@@ -88,13 +88,13 @@ DEFINE_XEN_GUEST_HANDLE(xen_memory_reservation_t);
  *
  * Note that only PV guests can use this operation.
  */
-#define XENMEM_exchange             11
-struct xen_memory_exchange {
+#define CRUXMEM_exchange             11
+struct crux_memory_exchange {
     /*
      * [IN] Details of memory extents to be exchanged (GMFN bases).
      * Note that @in.address_bits is ignored and unused.
      */
-    struct xen_memory_reservation in;
+    struct crux_memory_reservation in;
 
     /*
      * [IN/OUT] Details of new memory extents.
@@ -106,7 +106,7 @@ struct xen_memory_exchange {
      *  4. @out.extent_start lists GPFN bases to be populated
      *  5. @out.extent_start is overwritten with allocated GMFN bases
      */
-    struct xen_memory_reservation out;
+    struct crux_memory_reservation out;
 
     /*
      * [OUT] Number of input extents that were successfully exchanged:
@@ -115,23 +115,23 @@ struct xen_memory_exchange {
      *  2. The corresponding first entries in the output extent list correctly
      *     indicate the GMFNs that were successfully exchanged.
      *  3. All other input and output extents are untouched.
-     *  4. If not all input exents are exchanged then the return code of this
+     *  4. If not all input ecruxts are exchanged then the return code of this
      *     command will be non-zero.
      *  5. THIS FIELD MUST BE INITIALISED TO ZERO BY THE CALLER!
      */
-    xen_ulong_t nr_exchanged;
+    crux_ulong_t nr_exchanged;
 };
-typedef struct xen_memory_exchange xen_memory_exchange_t;
-DEFINE_XEN_GUEST_HANDLE(xen_memory_exchange_t);
+typedef struct crux_memory_exchange crux_memory_exchange_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_memory_exchange_t);
 
 /*
  * Returns the maximum machine frame number of mapped RAM in this system.
  * This command always succeeds (it never returns an error code).
  * arg == NULL.
  */
-#define XENMEM_maximum_ram_page     2
+#define CRUXMEM_maximum_ram_page     2
 
-struct xen_memory_domain {
+struct crux_memory_domain {
     /* [IN] Domain information is being queried for. */
     domid_t domid;
 };
@@ -139,26 +139,26 @@ struct xen_memory_domain {
 /*
  * Returns the current or maximum memory reservation, in pages, of the
  * specified domain (may be DOMID_SELF). Returns -ve errcode on failure.
- * arg == addr of struct xen_memory_domain.
+ * arg == addr of struct crux_memory_domain.
  */
-#define XENMEM_current_reservation  3
-#define XENMEM_maximum_reservation  4
+#define CRUXMEM_current_reservation  3
+#define CRUXMEM_maximum_reservation  4
 
 /*
  * Returns the maximum GFN in use by the specified domain (may be DOMID_SELF).
  * Returns -ve errcode on failure.
- * arg == addr of struct xen_memory_domain.
+ * arg == addr of struct crux_memory_domain.
  */
-#define XENMEM_maximum_gpfn         14
+#define CRUXMEM_maximum_gpfn         14
 
 /*
  * Returns a list of MFN bases of 2MB extents comprising the machine_to_phys
  * mapping table. Architectures which do not have a m2p table do not implement
  * this command.
- * arg == addr of xen_machphys_mfn_list_t.
+ * arg == addr of crux_machphys_mfn_list_t.
  */
-#define XENMEM_machphys_mfn_list    5
-struct xen_machphys_mfn_list {
+#define CRUXMEM_machphys_mfn_list    5
+struct crux_machphys_mfn_list {
     /*
      * Size of the 'extent_start' array. Fewer entries will be filled if the
      * machphys table is smaller than max_extents * 2MB.
@@ -170,7 +170,7 @@ struct xen_machphys_mfn_list {
      * any large discontiguities in the machine address space, 2MB gaps in
      * the machphys table will be represented by an MFN base of zero.
      */
-    XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
+    CRUX_GUEST_HANDLE(crux_pfn_t) extent_start;
 
     /*
      * Number of extents written to the above array. This will be smaller
@@ -178,41 +178,41 @@ struct xen_machphys_mfn_list {
      */
     unsigned int nr_extents;
 };
-typedef struct xen_machphys_mfn_list xen_machphys_mfn_list_t;
-DEFINE_XEN_GUEST_HANDLE(xen_machphys_mfn_list_t);
+typedef struct crux_machphys_mfn_list crux_machphys_mfn_list_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_machphys_mfn_list_t);
 
 /*
- * For a compat caller, this is identical to XENMEM_machphys_mfn_list.
+ * For a compat caller, this is identical to CRUXMEM_machphys_mfn_list.
  *
  * For a non compat caller, this functions similarly to
- * XENMEM_machphys_mfn_list, but returns the mfns making up the compatibility
+ * CRUXMEM_machphys_mfn_list, but returns the mfns making up the compatibility
  * m2p table.
  */
-#define XENMEM_machphys_compat_mfn_list     25
+#define CRUXMEM_machphys_compat_mfn_list     25
 
 /*
  * Returns the location in virtual address space of the machine_to_phys
  * mapping table. Architectures which do not have a m2p table, or which do not
  * map it by default into guest address space, do not implement this command.
- * arg == addr of xen_machphys_mapping_t.
+ * arg == addr of crux_machphys_mapping_t.
  */
-#define XENMEM_machphys_mapping     12
-struct xen_machphys_mapping {
-    xen_ulong_t v_start, v_end; /* Start and end virtual addresses.   */
-    xen_ulong_t max_mfn;        /* Maximum MFN that can be looked up. */
+#define CRUXMEM_machphys_mapping     12
+struct crux_machphys_mapping {
+    crux_ulong_t v_start, v_end; /* Start and end virtual addresses.   */
+    crux_ulong_t max_mfn;        /* Maximum MFN that can be looked up. */
 };
-typedef struct xen_machphys_mapping xen_machphys_mapping_t;
-DEFINE_XEN_GUEST_HANDLE(xen_machphys_mapping_t);
+typedef struct crux_machphys_mapping crux_machphys_mapping_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_machphys_mapping_t);
 
 /* Source mapping space. */
 /* ` enum phys_map_space { */
-#define XENMAPSPACE_shared_info  0 /* shared info page */
-#define XENMAPSPACE_grant_table  1 /* grant table page */
-#define XENMAPSPACE_gmfn         2 /* GMFN */
-#define XENMAPSPACE_gmfn_range   3 /* GMFN range, XENMEM_add_to_physmap only. */
-#define XENMAPSPACE_gmfn_foreign 4 /* GMFN from another dom,
-                                    * XENMEM_add_to_physmap_batch only. */
-#define XENMAPSPACE_dev_mmio     5 /* device mmio region
+#define CRUXMAPSPACE_shared_info  0 /* shared info page */
+#define CRUXMAPSPACE_grant_table  1 /* grant table page */
+#define CRUXMAPSPACE_gmfn         2 /* GMFN */
+#define CRUXMAPSPACE_gmfn_range   3 /* GMFN range, CRUXMEM_add_to_physmap only. */
+#define CRUXMAPSPACE_gmfn_foreign 4 /* GMFN from another dom,
+                                    * CRUXMEM_add_to_physmap_batch only. */
+#define CRUXMAPSPACE_dev_mmio     5 /* device mmio region
                                       ARM only; the region is mapped in
                                       Stage-2 using the Normal Memory
                                       Inner/Outer Write-Back Cacheable
@@ -222,10 +222,10 @@ DEFINE_XEN_GUEST_HANDLE(xen_machphys_mapping_t);
 /*
  * Sets the GPFN at which a particular page appears in the specified guest's
  * physical address space (translated guests only).
- * arg == addr of xen_add_to_physmap_t.
+ * arg == addr of crux_add_to_physmap_t.
  */
-#define XENMEM_add_to_physmap      7
-struct xen_add_to_physmap {
+#define CRUXMEM_add_to_physmap      7
+struct crux_add_to_physmap {
     /* Which domain to change the mapping for. */
     domid_t domid;
 
@@ -234,20 +234,20 @@ struct xen_add_to_physmap {
 
     unsigned int space; /* => enum phys_map_space */
 
-#define XENMAPIDX_grant_table_status 0x80000000U
+#define CRUXMAPIDX_grant_table_status 0x80000000U
 
     /* Index into space being mapped. */
-    xen_ulong_t idx;
+    crux_ulong_t idx;
 
     /* GPFN in domid where the source mapping page should appear. */
-    xen_pfn_t     gpfn;
+    crux_pfn_t     gpfn;
 };
-typedef struct xen_add_to_physmap xen_add_to_physmap_t;
-DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
+typedef struct crux_add_to_physmap crux_add_to_physmap_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_add_to_physmap_t);
 
 /* A batched version of add_to_physmap. */
-#define XENMEM_add_to_physmap_batch 23
-struct xen_add_to_physmap_batch {
+#define CRUXMEM_add_to_physmap_batch 23
+struct crux_add_to_physmap_batch {
     /* IN */
     /* Which domain to change the mapping for. */
     domid_t domid;
@@ -256,62 +256,62 @@ struct xen_add_to_physmap_batch {
     /* Number of pages to go through */
     uint16_t size;
 
-#if __XEN_INTERFACE_VERSION__ < 0x00040700
+#if __CRUX_INTERFACE_VERSION__ < 0x00040700
     domid_t foreign_domid; /* IFF gmfn_foreign. Should be 0 for other spaces. */
 #else
-    union xen_add_to_physmap_batch_extra {
+    union crux_add_to_physmap_batch_extra {
         domid_t foreign_domid; /* gmfn_foreign */
         uint16_t res0;  /* All the other spaces. Should be 0 */
     } u;
 #endif
 
     /* Indexes into space being mapped. */
-    XEN_GUEST_HANDLE(xen_ulong_t) idxs;
+    CRUX_GUEST_HANDLE(crux_ulong_t) idxs;
 
     /* GPFN in domid where the source mapping page should appear. */
-    XEN_GUEST_HANDLE(xen_pfn_t) gpfns;
+    CRUX_GUEST_HANDLE(crux_pfn_t) gpfns;
 
     /* OUT */
 
     /* Per index error code. */
-    XEN_GUEST_HANDLE(int) errs;
+    CRUX_GUEST_HANDLE(int) errs;
 };
-typedef struct xen_add_to_physmap_batch xen_add_to_physmap_batch_t;
-DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_batch_t);
+typedef struct crux_add_to_physmap_batch crux_add_to_physmap_batch_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_add_to_physmap_batch_t);
 
-#if __XEN_INTERFACE_VERSION__ < 0x00040400
-#define XENMEM_add_to_physmap_range XENMEM_add_to_physmap_batch
-#define xen_add_to_physmap_range xen_add_to_physmap_batch
-typedef struct xen_add_to_physmap_batch xen_add_to_physmap_range_t;
-DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_range_t);
+#if __CRUX_INTERFACE_VERSION__ < 0x00040400
+#define CRUXMEM_add_to_physmap_range CRUXMEM_add_to_physmap_batch
+#define crux_add_to_physmap_range crux_add_to_physmap_batch
+typedef struct crux_add_to_physmap_batch crux_add_to_physmap_range_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_add_to_physmap_range_t);
 #endif
 
 /*
  * Unmaps the page appearing at a particular GPFN from the specified guest's
  * physical address space (translated guests only).
- * arg == addr of xen_remove_from_physmap_t.
+ * arg == addr of crux_remove_from_physmap_t.
  */
-#define XENMEM_remove_from_physmap      15
-struct xen_remove_from_physmap {
+#define CRUXMEM_remove_from_physmap      15
+struct crux_remove_from_physmap {
     /* Which domain to change the mapping for. */
     domid_t domid;
 
     /* GPFN of the current mapping of the page. */
-    xen_pfn_t     gpfn;
+    crux_pfn_t     gpfn;
 };
-typedef struct xen_remove_from_physmap xen_remove_from_physmap_t;
-DEFINE_XEN_GUEST_HANDLE(xen_remove_from_physmap_t);
+typedef struct crux_remove_from_physmap crux_remove_from_physmap_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_remove_from_physmap_t);
 
 /*** REMOVED ***/
-/*#define XENMEM_translate_gpfn_list  8*/
+/*#define CRUXMEM_translate_gpfn_list  8*/
 
 /*
  * Returns the pseudo-physical memory map as it was when the domain
- * was started (specified by XENMEM_set_memory_map).
- * arg == addr of xen_memory_map_t.
+ * was started (specified by CRUXMEM_set_memory_map).
+ * arg == addr of crux_memory_map_t.
  */
-#define XENMEM_memory_map           9
-struct xen_memory_map {
+#define CRUXMEM_memory_map           9
+struct crux_memory_map {
     /*
      * On call the number of entries which can be stored in buffer. On
      * return the number of entries which have been stored in
@@ -323,36 +323,36 @@ struct xen_memory_map {
      * Entries in the buffer are in the same format as returned by the
      * BIOS INT 0x15 EAX=0xE820 call.
      */
-    XEN_GUEST_HANDLE(void) buffer;
+    CRUX_GUEST_HANDLE(void) buffer;
 };
-typedef struct xen_memory_map xen_memory_map_t;
-DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
+typedef struct crux_memory_map crux_memory_map_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_memory_map_t);
 
 /*
  * Returns the real physical memory map. Passes the same structure as
- * XENMEM_memory_map.
+ * CRUXMEM_memory_map.
  * Specifying buffer as NULL will return the number of entries required
  * to store the complete memory map.
- * arg == addr of xen_memory_map_t.
+ * arg == addr of crux_memory_map_t.
  */
-#define XENMEM_machine_memory_map   10
+#define CRUXMEM_machine_memory_map   10
 
 /*
  * Set the pseudo-physical memory map of a domain, as returned by
- * XENMEM_memory_map.
- * arg == addr of xen_foreign_memory_map_t.
+ * CRUXMEM_memory_map.
+ * arg == addr of crux_foreign_memory_map_t.
  */
-#define XENMEM_set_memory_map       13
-struct xen_foreign_memory_map {
+#define CRUXMEM_set_memory_map       13
+struct crux_foreign_memory_map {
     domid_t domid;
-    struct xen_memory_map map;
+    struct crux_memory_map map;
 };
-typedef struct xen_foreign_memory_map xen_foreign_memory_map_t;
-DEFINE_XEN_GUEST_HANDLE(xen_foreign_memory_map_t);
+typedef struct crux_foreign_memory_map crux_foreign_memory_map_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_foreign_memory_map_t);
 
-#define XENMEM_set_pod_target       16
-#define XENMEM_get_pod_target       17
-struct xen_pod_target {
+#define CRUXMEM_set_pod_target       16
+#define CRUXMEM_get_pod_target       17
+struct crux_pod_target {
     /* IN */
     uint64_t target_pages;
     /* OUT */
@@ -362,9 +362,9 @@ struct xen_pod_target {
     /* IN */
     domid_t domid;
 };
-typedef struct xen_pod_target xen_pod_target_t;
+typedef struct crux_pod_target crux_pod_target_t;
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
 #ifndef uint64_aligned_t
 #define uint64_aligned_t uint64_t
@@ -374,80 +374,80 @@ typedef struct xen_pod_target xen_pod_target_t;
  * Get the number of MFNs saved through memory sharing.
  * The call never fails.
  */
-#define XENMEM_get_sharing_freed_pages    18
-#define XENMEM_get_sharing_shared_pages   19
+#define CRUXMEM_get_sharing_freed_pages    18
+#define CRUXMEM_get_sharing_shared_pages   19
 
-#define XENMEM_paging_op                    20
-#define XENMEM_paging_op_nominate           0
-#define XENMEM_paging_op_evict              1
-#define XENMEM_paging_op_prep               2
+#define CRUXMEM_paging_op                    20
+#define CRUXMEM_paging_op_nominate           0
+#define CRUXMEM_paging_op_evict              1
+#define CRUXMEM_paging_op_prep               2
 
-struct xen_mem_paging_op {
-    uint8_t     op;         /* XENMEM_paging_op_* */
+struct crux_mem_paging_op {
+    uint8_t     op;         /* CRUXMEM_paging_op_* */
     domid_t     domain;
 
-    /* IN: (XENMEM_paging_op_prep) buffer to immediately fill page from */
-    XEN_GUEST_HANDLE_64(const_uint8) buffer;
+    /* IN: (CRUXMEM_paging_op_prep) buffer to immediately fill page from */
+    CRUX_GUEST_HANDLE_64(const_uint8) buffer;
     /* IN:  gfn of page being operated on */
     uint64_aligned_t    gfn;
 };
-typedef struct xen_mem_paging_op xen_mem_paging_op_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mem_paging_op_t);
+typedef struct crux_mem_paging_op crux_mem_paging_op_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mem_paging_op_t);
 
-#define XENMEM_access_op                    21
-#define XENMEM_access_op_set_access         0
-#define XENMEM_access_op_get_access         1
+#define CRUXMEM_access_op                    21
+#define CRUXMEM_access_op_set_access         0
+#define CRUXMEM_access_op_get_access         1
 /*
- * XENMEM_access_op_enable_emulate and XENMEM_access_op_disable_emulate are
+ * CRUXMEM_access_op_enable_emulate and CRUXMEM_access_op_disable_emulate are
  * currently unused, but since they have been in use please do not reuse them.
  *
- * #define XENMEM_access_op_enable_emulate     2
- * #define XENMEM_access_op_disable_emulate    3
+ * #define CRUXMEM_access_op_enable_emulate     2
+ * #define CRUXMEM_access_op_disable_emulate    3
  */
-#define XENMEM_access_op_set_access_multi   4
+#define CRUXMEM_access_op_set_access_multi   4
 
 typedef enum {
-    XENMEM_access_n,
-    XENMEM_access_r,
-    XENMEM_access_w,
-    XENMEM_access_rw,
-    XENMEM_access_x,
-    XENMEM_access_rx,
-    XENMEM_access_wx,
-    XENMEM_access_rwx,
+    CRUXMEM_access_n,
+    CRUXMEM_access_r,
+    CRUXMEM_access_w,
+    CRUXMEM_access_rw,
+    CRUXMEM_access_x,
+    CRUXMEM_access_rx,
+    CRUXMEM_access_wx,
+    CRUXMEM_access_rwx,
     /*
      * Page starts off as r-x, but automatically
      * change to r-w on a write
      */
-    XENMEM_access_rx2rw,
+    CRUXMEM_access_rx2rw,
     /*
      * Log access: starts off as n, automatically
      * goes to rwx, generating an event without
      * pausing the vcpu
      */
-    XENMEM_access_n2rwx,
+    CRUXMEM_access_n2rwx,
 
     /*
-     * Same as XENMEM_access_r, but on processors with
+     * Same as CRUXMEM_access_r, but on processors with
      * the TERTIARY_EXEC_EPT_PAGING_WRITE support,
      * CPU-initiated page-table walks can still
      * write to it (e.g., update A/D bits)
      */
-    XENMEM_access_r_pw,
+    CRUXMEM_access_r_pw,
 
     /* Take the domain default */
-    XENMEM_access_default
-} xenmem_access_t;
+    CRUXMEM_access_default
+} cruxmem_access_t;
 
-struct xen_mem_access_op {
-    /* XENMEM_access_op_* */
+struct crux_mem_access_op {
+    /* CRUXMEM_access_op_* */
     uint8_t op;
-    /* xenmem_access_t */
+    /* cruxmem_access_t */
     uint8_t access;
     domid_t domid;
     /*
      * Number of pages for set op (or size of pfn_list for
-     * XENMEM_access_op_set_access_multi)
+     * CRUXMEM_access_op_set_access_multi)
      * Ignored on setting default access and other ops
      */
     uint32_t nr;
@@ -459,49 +459,49 @@ struct xen_mem_access_op {
     uint64_aligned_t pfn;
     /*
      * List of pfns to set access for
-     * Used only with XENMEM_access_op_set_access_multi
+     * Used only with CRUXMEM_access_op_set_access_multi
      */
-    XEN_GUEST_HANDLE(const_uint64) pfn_list;
+    CRUX_GUEST_HANDLE(const_uint64) pfn_list;
     /*
      * Corresponding list of access settings for pfn_list
-     * Used only with XENMEM_access_op_set_access_multi
+     * Used only with CRUXMEM_access_op_set_access_multi
      */
-    XEN_GUEST_HANDLE(const_uint8) access_list;
+    CRUX_GUEST_HANDLE(const_uint8) access_list;
 };
-typedef struct xen_mem_access_op xen_mem_access_op_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mem_access_op_t);
+typedef struct crux_mem_access_op crux_mem_access_op_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mem_access_op_t);
 
-#define XENMEM_sharing_op                   22
-#define XENMEM_sharing_op_nominate_gfn      0
-#define XENMEM_sharing_op_nominate_gref     1
-#define XENMEM_sharing_op_share             2
-#define XENMEM_sharing_op_debug_gfn         3
-#define XENMEM_sharing_op_debug_mfn         4
-#define XENMEM_sharing_op_debug_gref        5
-#define XENMEM_sharing_op_add_physmap       6
-#define XENMEM_sharing_op_audit             7
-#define XENMEM_sharing_op_range_share       8
-#define XENMEM_sharing_op_fork              9
-#define XENMEM_sharing_op_fork_reset        10
+#define CRUXMEM_sharing_op                   22
+#define CRUXMEM_sharing_op_nominate_gfn      0
+#define CRUXMEM_sharing_op_nominate_gref     1
+#define CRUXMEM_sharing_op_share             2
+#define CRUXMEM_sharing_op_debug_gfn         3
+#define CRUXMEM_sharing_op_debug_mfn         4
+#define CRUXMEM_sharing_op_debug_gref        5
+#define CRUXMEM_sharing_op_add_physmap       6
+#define CRUXMEM_sharing_op_audit             7
+#define CRUXMEM_sharing_op_range_share       8
+#define CRUXMEM_sharing_op_fork              9
+#define CRUXMEM_sharing_op_fork_reset        10
 
-#define XENMEM_SHARING_OP_S_HANDLE_INVALID  (-10)
-#define XENMEM_SHARING_OP_C_HANDLE_INVALID  (-9)
+#define CRUXMEM_SHARING_OP_S_HANDLE_INVALID  (-10)
+#define CRUXMEM_SHARING_OP_C_HANDLE_INVALID  (-9)
 
 /* The following allows sharing of grant refs. This is useful
  * for sharing utilities sitting as "filters" in IO backends
  * (e.g. memshr + blktap(2)). The IO backend is only exposed
  * to grant references, and this allows sharing of the grefs */
-#define XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG   (xen_mk_ullong(1) << 62)
+#define CRUXMEM_SHARING_OP_FIELD_IS_GREF_FLAG   (crux_mk_ullong(1) << 62)
 
-#define XENMEM_SHARING_OP_FIELD_MAKE_GREF(field, val)  \
-    (field) = (XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG | (val))
-#define XENMEM_SHARING_OP_FIELD_IS_GREF(field)         \
-    ((field) & XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG)
-#define XENMEM_SHARING_OP_FIELD_GET_GREF(field)        \
-    ((field) & (~XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG))
+#define CRUXMEM_SHARING_OP_FIELD_MAKE_GREF(field, val)  \
+    (field) = (CRUXMEM_SHARING_OP_FIELD_IS_GREF_FLAG | (val))
+#define CRUXMEM_SHARING_OP_FIELD_IS_GREF(field)         \
+    ((field) & CRUXMEM_SHARING_OP_FIELD_IS_GREF_FLAG)
+#define CRUXMEM_SHARING_OP_FIELD_GET_GREF(field)        \
+    ((field) & (~CRUXMEM_SHARING_OP_FIELD_IS_GREF_FLAG))
 
-struct xen_mem_sharing_op {
-    uint8_t     op;     /* XENMEM_sharing_op_* */
+struct crux_mem_sharing_op {
+    uint8_t     op;     /* CRUXMEM_sharing_op_* */
     domid_t     domain;
 
     union {
@@ -536,18 +536,18 @@ struct xen_mem_sharing_op {
         struct mem_sharing_op_fork {      /* OP_FORK{,_RESET} */
             domid_t parent_domain;        /* IN: parent's domain id */
 /* Only makes sense for short-lived forks */
-#define XENMEM_FORK_WITH_IOMMU_ALLOWED (1u << 0)
+#define CRUXMEM_FORK_WITH_IOMMU_ALLOWED (1u << 0)
 /* Only makes sense for short-lived forks */
-#define XENMEM_FORK_BLOCK_INTERRUPTS   (1u << 1)
-#define XENMEM_FORK_RESET_STATE        (1u << 2)
-#define XENMEM_FORK_RESET_MEMORY       (1u << 3)
+#define CRUXMEM_FORK_BLOCK_INTERRUPTS   (1u << 1)
+#define CRUXMEM_FORK_RESET_STATE        (1u << 2)
+#define CRUXMEM_FORK_RESET_MEMORY       (1u << 3)
             uint16_t flags;               /* IN: optional settings */
             uint32_t pad;                 /* Must be set to 0 */
         } fork;
     } u;
 };
-typedef struct xen_mem_sharing_op xen_mem_sharing_op_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
+typedef struct crux_mem_sharing_op crux_mem_sharing_op_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mem_sharing_op_t);
 
 /*
  * Attempt to stake a claim for a domain on a quantity of pages
@@ -570,10 +570,10 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
  *
  * Caller must be privileged or the hypercall fails.
  */
-#define XENMEM_claim_pages                  24
+#define CRUXMEM_claim_pages                  24
 
 /*
- * XENMEM_claim_pages flags - the are no flags at this time.
+ * CRUXMEM_claim_pages flags - the are no flags at this time.
  * The zero value is appropriate.
  */
 
@@ -582,16 +582,16 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
  * be used for other purposes, e.g. to map guest RAM.  This hypercall
  * enumerates those regions so the toolstack can avoid using them.
  */
-#define XENMEM_reserved_device_memory_map   27
-struct xen_reserved_device_memory {
-    xen_pfn_t start_pfn;
-    xen_ulong_t nr_pages;
+#define CRUXMEM_reserved_device_memory_map   27
+struct crux_reserved_device_memory {
+    crux_pfn_t start_pfn;
+    crux_ulong_t nr_pages;
 };
-typedef struct xen_reserved_device_memory xen_reserved_device_memory_t;
-DEFINE_XEN_GUEST_HANDLE(xen_reserved_device_memory_t);
+typedef struct crux_reserved_device_memory crux_reserved_device_memory_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_reserved_device_memory_t);
 
-struct xen_reserved_device_memory_map {
-#define XENMEM_RDM_ALL 1 /* Request all regions (ignore dev union). */
+struct crux_reserved_device_memory_map {
+#define CRUXMEM_RDM_ALL 1 /* Request all regions (ignore dev union). */
     /* IN */
     uint32_t flags;
     /*
@@ -602,43 +602,43 @@ struct xen_reserved_device_memory_map {
      */
     unsigned int nr_entries;
     /* OUT */
-    XEN_GUEST_HANDLE(xen_reserved_device_memory_t) buffer;
+    CRUX_GUEST_HANDLE(crux_reserved_device_memory_t) buffer;
     /* IN */
     union {
         physdev_pci_device_t pci;
     } dev;
 };
-typedef struct xen_reserved_device_memory_map xen_reserved_device_memory_map_t;
-DEFINE_XEN_GUEST_HANDLE(xen_reserved_device_memory_map_t);
+typedef struct crux_reserved_device_memory_map crux_reserved_device_memory_map_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_reserved_device_memory_map_t);
 
-#endif /* defined(__XEN__) || defined(__XEN_TOOLS__) */
+#endif /* defined(__CRUX__) || defined(__CRUX_TOOLS__) */
 
 /*
  * Get the pages for a particular guest resource, so that they can be
  * mapped directly by a tools domain.
  */
-#define XENMEM_acquire_resource 28
-struct xen_mem_acquire_resource {
+#define CRUXMEM_acquire_resource 28
+struct crux_mem_acquire_resource {
     /* IN - The domain whose resource is to be mapped */
     domid_t domid;
     /* IN - the type of resource */
     uint16_t type;
 
-#define XENMEM_resource_ioreq_server 0
-#define XENMEM_resource_grant_table 1
-#define XENMEM_resource_vmtrace_buf 2
+#define CRUXMEM_resource_ioreq_server 0
+#define CRUXMEM_resource_grant_table 1
+#define CRUXMEM_resource_vmtrace_buf 2
 
     /*
      * IN - a type-specific resource identifier, which must be zero
      *      unless stated otherwise.
      *
-     * type == XENMEM_resource_ioreq_server -> id == ioreq server id
-     * type == XENMEM_resource_grant_table -> id defined below
+     * type == CRUXMEM_resource_ioreq_server -> id == ioreq server id
+     * type == CRUXMEM_resource_grant_table -> id defined below
      */
     uint32_t id;
 
-#define XENMEM_resource_grant_table_id_shared 0
-#define XENMEM_resource_grant_table_id_status 1
+#define CRUXMEM_resource_grant_table_id_shared 0
+#define CRUXMEM_resource_grant_table_id_status 1
 
     /*
      * IN/OUT
@@ -659,7 +659,7 @@ struct xen_mem_acquire_resource {
     /*
      * Padding field, must be zero on input.
      * In a previous version this was an output field with the lowest bit
-     * named XENMEM_rsrc_acq_caller_owned. Future versions of this interface
+     * named CRUXMEM_rsrc_acq_caller_owned. Future versions of this interface
      * will not reuse this bit as an output with the field being zero on
      * input.
      */
@@ -671,8 +671,8 @@ struct xen_mem_acquire_resource {
      */
     uint64_t frame;
 
-#define XENMEM_resource_ioreq_server_frame_bufioreq 0
-#define XENMEM_resource_ioreq_server_frame_ioreq(n) (1 + (n))
+#define CRUXMEM_resource_ioreq_server_frame_bufioreq 0
+#define CRUXMEM_resource_ioreq_server_frame_ioreq(n) (1 + (n))
 
     /*
      * IN/OUT - If the tools domain is PV then, upon return, frame_list
@@ -686,36 +686,36 @@ struct xen_mem_acquire_resource {
      *          This parameter may be NULL if nr_frames is 0.  This
      *          value may be updated over the course of the operation.
      */
-    XEN_GUEST_HANDLE(xen_pfn_t) frame_list;
+    CRUX_GUEST_HANDLE(crux_pfn_t) frame_list;
 };
-typedef struct xen_mem_acquire_resource xen_mem_acquire_resource_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mem_acquire_resource_t);
+typedef struct crux_mem_acquire_resource crux_mem_acquire_resource_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mem_acquire_resource_t);
 
 /*
- * XENMEM_get_vnumainfo used by guest to get
+ * CRUXMEM_get_vnumainfo used by guest to get
  * vNUMA topology from hypervisor.
  */
-#define XENMEM_get_vnumainfo                26
+#define CRUXMEM_get_vnumainfo                26
 
 /* vNUMA node memory ranges */
-struct xen_vmemrange {
+struct crux_vmemrange {
     uint64_t start, end;
     unsigned int flags;
     unsigned int nid;
 };
-typedef struct xen_vmemrange xen_vmemrange_t;
-DEFINE_XEN_GUEST_HANDLE(xen_vmemrange_t);
+typedef struct crux_vmemrange crux_vmemrange_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_vmemrange_t);
 
 /*
  * vNUMA topology specifies vNUMA node number, distance table,
  * memory ranges and vcpu mapping provided for guests.
- * XENMEM_get_vnumainfo hypercall expects to see from guest
+ * CRUXMEM_get_vnumainfo hypercall expects to see from guest
  * nr_vnodes, nr_vmemranges and nr_vcpus to indicate available memory.
  * After filling guests structures, nr_vnodes, nr_vmemranges and nr_vcpus
  * copied back to guest. Domain returns expected values of nr_vnodes,
  * nr_vmemranges and nr_vcpus to guest if the values where incorrect.
  */
-struct xen_vnuma_topology_info {
+struct crux_vnuma_topology_info {
     /* IN */
     domid_t domid;
     uint16_t pad;
@@ -725,24 +725,24 @@ struct xen_vnuma_topology_info {
     unsigned int nr_vmemranges;
     /* OUT */
     union {
-        XEN_GUEST_HANDLE(uint) h;
+        CRUX_GUEST_HANDLE(uint) h;
         uint64_t pad;
     } vdistance;
     union {
-        XEN_GUEST_HANDLE(uint) h;
+        CRUX_GUEST_HANDLE(uint) h;
         uint64_t pad;
     } vcpu_to_vnode;
     union {
-        XEN_GUEST_HANDLE(xen_vmemrange_t) h;
+        CRUX_GUEST_HANDLE(crux_vmemrange_t) h;
         uint64_t pad;
     } vmemrange;
 };
-typedef struct xen_vnuma_topology_info xen_vnuma_topology_info_t;
-DEFINE_XEN_GUEST_HANDLE(xen_vnuma_topology_info_t);
+typedef struct crux_vnuma_topology_info crux_vnuma_topology_info_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_vnuma_topology_info_t);
 
 /* Next available subop number is 29 */
 
-#endif /* __XEN_PUBLIC_MEMORY_H__ */
+#endif /* __CRUX_PUBLIC_MEMORY_H__ */
 
 /*
  * Local variables:

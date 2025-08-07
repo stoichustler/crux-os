@@ -7,9 +7,9 @@
 #ifndef ARM_EFI_BOOT_H
 #define ARM_EFI_BOOT_H
 
-#include <xen/device_tree.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/unaligned.h>
+#include <crux/device_tree.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/unaligned.h>
 #include <asm/setup.h>
 #include <asm/smp.h>
 
@@ -22,7 +22,7 @@ typedef struct {
 
 /*
  * Binaries will be translated into boot_modules, the maximum number for them is
- * MAX_MODULES where we should remove a unit for xen and one for xen DTB
+ * MAX_MODULES where we should remove a unit for Xen and one for Xen DTB
  */
 #define MAX_UEFI_MODULES (MAX_MODULES - 2)
 static struct file __initdata module_binary;
@@ -44,7 +44,7 @@ static unsigned int __initdata modules_idx;
 #define ERROR_DT_CHOSEN_NODE        (-2)
 #define ERROR_DT_MODULE_DOM0        (-3)
 
-void noreturn efi_xen_start(void *fdt_ptr, uint32_t fdt_size);
+void noreturn efi_crux_start(void *fdt_ptr, uint32_t fdt_size);
 void __flush_dcache_area(const void *vaddr, unsigned long size);
 
 static int get_module_file_index(const char *name, unsigned int name_len);
@@ -65,7 +65,7 @@ static int __init setup_chosen_node(void *fdt, int *addr_cells, int *size_cells)
     if ( !fdt || !addr_cells || !size_cells )
         return -1;
 
-    /* locate chosen node, which is where we add xen module info. */
+    /* locate chosen node, which is where we add Xen module info. */
     node = fdt_subnode_offset(fdt, 0, "chosen");
     if ( node < 0 )
     {
@@ -344,7 +344,7 @@ static void __init *fdt_increase_size(struct file *fdtfile, int add_size)
         /*
          * Create an empty FDT if not provided one, which is the expected case
          * when booted from the UEFI shell on an ACPI only system.  We will use
-         * the FDT to pass the EFI information to xen, as well as nodes for
+         * the FDT to pass the EFI information to Xen, as well as nodes for
          * any modules the stub loads.  The ACPI tables are part of the UEFI
          * system table that is passed in the FDT.
          */
@@ -399,7 +399,7 @@ static void __init efi_arch_pre_exit_boot(void)
 
 static void __init noreturn efi_arch_post_exit_boot(void)
 {
-    efi_xen_start(fdt_efi, fdt_totalsize(fdt_efi));
+    efi_crux_start(fdt_efi, fdt_totalsize(fdt_efi));
 }
 
 static void __init efi_arch_cfg_file_early(const EFI_LOADED_IMAGE *image,
@@ -467,7 +467,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
     int prop_len = 0;
     int chosen;
 
-    /* locate chosen node, which is where we add xen module info. */
+    /* locate chosen node, which is where we add Xen module info. */
     chosen = fdt_subnode_offset(fdt_efi, 0, "chosen");
     if ( chosen < 0 )
         blexit(L"Unable to find chosen node");
@@ -478,7 +478,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
 
     if ( cfgfile_options )
     {
-        PrintStr(L"using bootargs from xen configuration file.\r\n");
+        PrintStr(L"Using bootargs from Xen configuration file.\r\n");
         prop_len += snprintf(buf + prop_len,
                                EFI_PAGE_SIZE - prop_len, " %s", cfgfile_options);
         if ( prop_len >= EFI_PAGE_SIZE )
@@ -486,12 +486,12 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
     }
     else
     {
-        /* Get xen,xen-bootargs in /chosen if it is specified */
+        /* Get crux,crux-bootargs in /chosen if it is specified */
         const char *dt_bootargs_prop = fdt_getprop(fdt_efi, chosen,
-                                                   "xen,xen-bootargs", NULL);
+                                                   "crux,crux-bootargs", NULL);
         if ( dt_bootargs_prop )
         {
-            PrintStr(L"using bootargs from device tree.\r\n");
+            PrintStr(L"Using bootargs from device tree.\r\n");
             prop_len += snprintf(buf + prop_len, EFI_PAGE_SIZE - prop_len,
                                  " %s", dt_bootargs_prop);
             if ( prop_len >= EFI_PAGE_SIZE )
@@ -515,8 +515,8 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
             blexit(L"FDT string overflow");
     }
 
-    if ( fdt_setprop_string(fdt_efi, chosen, "xen,xen-bootargs", buf) < 0 )
-        blexit(L"Unable to set xen,xen-bootargs property.");
+    if ( fdt_setprop_string(fdt_efi, chosen, "crux,crux-bootargs", buf) < 0 )
+        blexit(L"Unable to set crux,crux-bootargs property.");
 
     efi_bs->FreePool(buf);
 }
@@ -552,7 +552,7 @@ static void __init efi_arch_handle_module(const struct file *file,
     }
     else if ( file == &xsm )
     {
-        static const char __initconst xsm_compat[] = "xen,xsm-policy\0"
+        static const char __initconst xsm_compat[] = "crux,xsm-policy\0"
                                                      "multiboot,module";
 
         node = fdt_add_subnode(fdt_efi, chosen, "xsm");
@@ -684,7 +684,7 @@ static int __init allocate_module_file(const EFI_LOADED_IMAGE *loaded_image,
 }
 
 /*
- * This function checks for the presence of the xen,uefi-binary property in the
+ * This function checks for the presence of the crux,uefi-binary property in the
  * module, if found it loads the binary as module and sets the right address
  * for the reg property into the module DT node.
  * Returns 1 if module is multiboot,module, 0 if not, < 0 on error
@@ -712,8 +712,8 @@ static int __init handle_module_node(const EFI_LOADED_IMAGE *loaded_image,
         /* Module is not a multiboot,module */
         return 0;
 
-    /* Read xen,uefi-binary property to get the file name. */
-    uefi_name_prop = fdt_getprop(fdt_efi, module_node_offset, "xen,uefi-binary",
+    /* Read crux,uefi-binary property to get the file name. */
+    uefi_name_prop = fdt_getprop(fdt_efi, module_node_offset, "crux,uefi-binary",
                                  &uefi_name_len);
 
     if ( !uefi_name_prop )
@@ -775,7 +775,7 @@ static int __init handle_module_node(const EFI_LOADED_IMAGE *loaded_image,
         }
         else if ( xsm.addr &&
                   (fdt_node_check_compatible(fdt_efi, module_node_offset,
-                                             "xen,xsm-policy") == 0) )
+                                             "crux,xsm-policy") == 0) )
         {
             PrintStr(L"XSM policy already found in cfg file.\r\n");
             return ERROR_XSM_ALREADY_FOUND;
@@ -836,7 +836,7 @@ static int __init handle_dom0less_domain_node(const EFI_LOADED_IMAGE *loaded_ima
 #endif
 
 /*
- * This function checks for xen domain nodes under the /chosen node for possible
+ * This function checks for crux domain nodes under the /chosen node for possible
  * dom0 and domU guests to be loaded.
  * Returns the number of multiboot modules found or a negative number for error.
  */
@@ -854,7 +854,7 @@ static int __init efi_check_dt_boot(const EFI_LOADED_IMAGE *loaded_image)
         return ERROR_DT_CHOSEN_NODE;
     }
 
-    /* Check for nodes compatible with xen,domain under the chosen node */
+    /* Check for nodes compatible with crux,domain under the chosen node */
     for ( node = fdt_first_subnode(fdt_efi, chosen);
           node > 0;
           node = fdt_next_subnode(fdt_efi, node) )
@@ -862,9 +862,9 @@ static int __init efi_check_dt_boot(const EFI_LOADED_IMAGE *loaded_image)
         int ret;
 
 #ifdef CONFIG_DOM0LESS_BOOT
-        if ( !fdt_node_check_compatible(fdt_efi, node, "xen,domain") )
+        if ( !fdt_node_check_compatible(fdt_efi, node, "crux,domain") )
         {
-            /* Found a node with compatible xen,domain; handle this node. */
+            /* Found a node with compatible crux,domain; handle this node. */
             ret = handle_dom0less_domain_node(loaded_image, &dir_handle, node);
             if ( ret < 0 )
                 return ERROR_DT_MODULE_DOMU;
@@ -925,7 +925,7 @@ static void noreturn __init efi_arch_halt(void)
 static void __init efi_arch_load_addr_check(const EFI_LOADED_IMAGE *loaded_image)
 {
     if ( (unsigned long)loaded_image->ImageBase & ((1 << 12) - 1) )
-        blexit(L"xen must be loaded at a 4 KByte boundary.");
+        blexit(L"Xen must be loaded at a 4 KByte boundary.");
 }
 
 static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
@@ -934,8 +934,8 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
     /*
      * For arm, we may get a device tree from GRUB (or other bootloader)
      * that contains modules that have already been loaded into memory.  In
-     * this case, we search for the property xen,uefi-cfg-load in the /chosen
-     * node to decide whether to skip the UEFI xen configuration file or not.
+     * this case, we search for the property crux,uefi-cfg-load in the /chosen
+     * node to decide whether to skip the UEFI Xen configuration file or not.
      */
 
     fdt_efi = lookup_fdt_config_table(SystemTable);
@@ -952,8 +952,8 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
 
         if ( node > 0 )
         {
-            /* Check if xen,uefi-cfg-load property exists */
-            cfg_load_prop = fdt_getprop(fdt_efi, node, "xen,uefi-cfg-load",
+            /* Check if crux,uefi-cfg-load property exists */
+            cfg_load_prop = fdt_getprop(fdt_efi, node, "crux,uefi-cfg-load",
                                         &cfg_load_len);
             if ( !cfg_load_prop )
                 load_cfg_file = false;
@@ -964,11 +964,11 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
     {
         /*
          * We either have no FDT, or one without modules, so we must have a
-         * xen EFI configuration file to specify modules.
+         * Xen EFI configuration file to specify modules.
          */
         return true;
     }
-    PrintStr(L"using modules provided by bootloader in FDT\r\n");
+    PrintStr(L"Using modules provided by bootloader in FDT\r\n");
     /* We have modules already defined in fdt, just add space. */
     fdt_efi = fdt_increase_size(&dtbfile, EFI_PAGE_SIZE);
 

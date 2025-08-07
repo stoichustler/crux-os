@@ -1,5 +1,5 @@
 /*
- *  This file contains the XSM hook definitions for xen.
+ *  This file contains the XSM hook definitions for Xen.
  *
  *  This work is based on the LSM implementation in Linux 2.6.13.4.
  *
@@ -15,8 +15,8 @@
 #ifndef __XSM_H__
 #define __XSM_H__
 
-#include <xen/alternative-call.h>
-#include <xen/sched.h>
+#include <crux/alternative-call.h>
+#include <crux/sched.h>
 
 /* policy magic number (defined by XSM_MAGIC) */
 typedef uint32_t xsm_magic_t;
@@ -36,7 +36,7 @@ enum xsm_default {
     XSM_DM_PRIV,  /* Device model can perform on its target domain */
     XSM_TARGET,   /* Can perform on self or your target domain */
     XSM_PRIV,     /* Privileged - normally restricted to dom0 */
-    XSM_XS_PRIV,  /* xenstore domain - can do some privileged operations */
+    XSM_XS_PRIV,  /* Xenstore domain - can do some privileged operations */
     XSM_OTHER     /* Something more complex */
 };
 typedef enum xsm_default xsm_default_t;
@@ -53,7 +53,7 @@ typedef enum xsm_default xsm_default_t;
 struct xsm_ops {
     int (*set_system_active)(void);
     void (*security_domaininfo)(struct domain *d,
-                                struct xen_domctl_getdomaininfo *info);
+                                struct crux_domctl_getdomaininfo *info);
     int (*domain_create)(struct domain *d, uint32_t ssidref);
     int (*getdomaininfo)(struct domain *d);
     int (*domctl_scheduler_op)(struct domain *d, int op);
@@ -111,8 +111,8 @@ struct xsm_ops {
     int (*map_domain_irq)(struct domain *d, int irq, const void *data);
     int (*unmap_domain_pirq)(struct domain *d);
     int (*unmap_domain_irq)(struct domain *d, int irq, const void *data);
-    int (*bind_pt_irq)(struct domain *d, struct xen_domctl_bind_pt_irq *bind);
-    int (*unbind_pt_irq)(struct domain *d, struct xen_domctl_bind_pt_irq *bind);
+    int (*bind_pt_irq)(struct domain *d, struct crux_domctl_bind_pt_irq *bind);
+    int (*unbind_pt_irq)(struct domain *d, struct crux_domctl_bind_pt_irq *bind);
     int (*irq_permission)(struct domain *d, int pirq, uint8_t allow);
     int (*iomem_permission)(struct domain *d, uint64_t s, uint64_t e,
                             uint8_t allow);
@@ -145,9 +145,9 @@ struct xsm_ops {
 #endif
     int (*hypfs_op)(void);
 
-    long (*do_xsm_op)(XEN_GUEST_HANDLE_PARAM(void) op);
+    long (*do_xsm_op)(CRUX_GUEST_HANDLE_PARAM(void) op);
 #ifdef CONFIG_COMPAT
-    int (*do_compat_op)(XEN_GUEST_HANDLE_PARAM(void) op);
+    int (*do_compat_op)(CRUX_GUEST_HANDLE_PARAM(void) op);
 #endif
 
     int (*hvm_param)(struct domain *d, unsigned long op);
@@ -195,7 +195,7 @@ struct xsm_ops {
     int (*pmu_op)(struct domain *d, unsigned int op);
 #endif
     int (*dm_op)(struct domain *d);
-    int (*xen_version)(uint32_t cmd);
+    int (*crux_version)(uint32_t cmd);
     int (*domain_resource_map)(struct domain *d);
 #ifdef CONFIG_ARGO
     int (*argo_enable)(const struct domain *d);
@@ -219,7 +219,7 @@ static inline int xsm_set_system_active(void)
 }
 
 static inline void xsm_security_domaininfo(
-    struct domain *d, struct xen_domctl_getdomaininfo *info)
+    struct domain *d, struct crux_domctl_getdomaininfo *info)
 {
     alternative_vcall(xsm_ops.security_domaininfo, d, info);
 }
@@ -494,13 +494,13 @@ static inline int xsm_unmap_domain_irq(
 }
 
 static inline int xsm_bind_pt_irq(
-    xsm_default_t def, struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    xsm_default_t def, struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     return alternative_call(xsm_ops.bind_pt_irq, d, bind);
 }
 
 static inline int xsm_unbind_pt_irq(
-    xsm_default_t def, struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    xsm_default_t def, struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     return alternative_call(xsm_ops.unbind_pt_irq, d, bind);
 }
@@ -615,13 +615,13 @@ static inline int xsm_hypfs_op(xsm_default_t def)
     return alternative_call(xsm_ops.hypfs_op);
 }
 
-static inline long xsm_do_xsm_op(XEN_GUEST_HANDLE_PARAM(void) op)
+static inline long xsm_do_xsm_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return alternative_call(xsm_ops.do_xsm_op, op);
 }
 
 #ifdef CONFIG_COMPAT
-static inline int xsm_do_compat_op(XEN_GUEST_HANDLE_PARAM(void) op)
+static inline int xsm_do_compat_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return alternative_call(xsm_ops.do_compat_op, op);
 }
@@ -764,9 +764,9 @@ static inline int xsm_dm_op(xsm_default_t def, struct domain *d)
     return alternative_call(xsm_ops.dm_op, d);
 }
 
-static inline int xsm_xen_version(xsm_default_t def, uint32_t op)
+static inline int xsm_crux_version(xsm_default_t def, uint32_t op)
 {
-    return alternative_call(xsm_ops.xen_version, op);
+    return alternative_call(xsm_ops.crux_version, op);
 }
 
 static inline int xsm_domain_resource_map(xsm_default_t def, struct domain *d)

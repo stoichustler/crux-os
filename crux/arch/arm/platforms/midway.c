@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/midway.c
+ * crux/arch/arm/platforms/midway.c
  *
  * Calxeda Midway specific settings
  *
@@ -17,8 +17,8 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/platforms/midway.h>
 #include <asm/platform.h>
 #include <asm/io.h>
@@ -33,7 +33,7 @@ static void midway_reset(void)
     pmu = ioremap_nocache(MW_SREG_PWR_REQ & PAGE_MASK, PAGE_SIZE);
     if ( !pmu )
     {
-        dprintk(XENLOG_ERR, "Unable to map PMU\n");
+        dprintk(CRUXLOG_ERR, "Unable to map PMU\n");
         return;
     }
 

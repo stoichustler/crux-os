@@ -5,20 +5,20 @@
  * Virtual PL011 UART
  */
 
-#define XEN_WANT_FLEX_CONSOLE_RING 1
+#define CRUX_WANT_FLEX_CONSOLE_RING 1
 
 /* We assume the PL011 default of "1/2 way" for the FIFO trigger level. */
 #define SBSA_UART_FIFO_LEVEL (SBSA_UART_FIFO_SIZE / 2)
 
-#include <xen/errno.h>
-#include <xen/event.h>
-#include <xen/guest_access.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/console.h>
-#include <xen/serial.h>
+#include <crux/errno.h>
+#include <crux/event.h>
+#include <crux/guest_access.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/console.h>
+#include <crux/serial.h>
 #include <public/domctl.h>
 #include <public/io/console.h>
 #include <asm/pl011-uart.h>
@@ -70,14 +70,14 @@ static void vpl011_update_interrupt_status(struct domain *d)
 }
 
 /*
- * vpl011_write_data_xen writes chars from the vpl011 out buffer to the
- * console. Only to be used when the backend is xen.
+ * vpl011_write_data_crux writes chars from the vpl011 out buffer to the
+ * console. Only to be used when the backend is Xen.
  */
-static void vpl011_write_data_xen(struct domain *d, uint8_t data)
+static void vpl011_write_data_crux(struct domain *d, uint8_t data)
 {
     unsigned long flags;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct vpl011_xen_backend *intf = vpl011->backend.xen;
+    struct vpl011_crux_backend *intf = vpl011->backend.crux;
     struct domain *input = console_get_domain();
 
     VPL011_LOCK(d, flags);
@@ -113,7 +113,7 @@ static void vpl011_write_data_xen(struct domain *d, uint8_t data)
     }
 
     /*
-     * When backend is in xen, we tell guest we are always ready for new data
+     * When backend is in Xen, we tell guest we are always ready for new data
      * to be written. This is fulfilled by having:
      * - TXI/TXFE -> always set,
      * - TXFF/BUSY -> never set.
@@ -128,16 +128,16 @@ static void vpl011_write_data_xen(struct domain *d, uint8_t data)
 }
 
 /*
- * vpl011_read_data_xen reads data when the backend is xen. Characters
- * are added to the vpl011 receive buffer by vpl011_rx_char_xen.
+ * vpl011_read_data_crux reads data when the backend is crux. Characters
+ * are added to the vpl011 receive buffer by vpl011_rx_char_crux.
  */
-static uint8_t vpl011_read_data_xen(struct domain *d)
+static uint8_t vpl011_read_data_crux(struct domain *d)
 {
     unsigned long flags;
     uint8_t data = 0;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct vpl011_xen_backend *intf = vpl011->backend.xen;
-    XENCONS_RING_IDX in_cons, in_prod;
+    struct vpl011_crux_backend *intf = vpl011->backend.crux;
+    CRUXCONS_RING_IDX in_cons, in_prod;
 
     VPL011_LOCK(d, flags);
 
@@ -152,16 +152,16 @@ static uint8_t vpl011_read_data_xen(struct domain *d)
      * only if the RXFE flag is not set.
      * If the guest still does read when RXFE bit is set then 0 will be returned.
      */
-    if ( xencons_queued(in_prod, in_cons, sizeof(intf->in)) > 0 )
+    if ( cruxcons_queued(in_prod, in_cons, sizeof(intf->in)) > 0 )
     {
         unsigned int fifo_level;
 
-        data = intf->in[xencons_mask(in_cons, sizeof(intf->in))];
+        data = intf->in[cruxcons_mask(in_cons, sizeof(intf->in))];
         in_cons += 1;
         smp_mb();
         intf->in_cons = in_cons;
 
-        fifo_level = xencons_queued(in_prod, in_cons, sizeof(intf->in));
+        fifo_level = cruxcons_queued(in_prod, in_cons, sizeof(intf->in));
 
         /* If the FIFO is now empty, we clear the receive timeout interrupt. */
         if ( fifo_level == 0 )
@@ -177,7 +177,7 @@ static uint8_t vpl011_read_data_xen(struct domain *d)
         vpl011_update_interrupt_status(d);
     }
     else
-        gprintk(XENLOG_ERR, "vpl011: Unexpected IN ring buffer empty\n");
+        gprintk(CRUXLOG_ERR, "vpl011: Unexpected IN ring buffer empty\n");
 
     /*
      * We have consumed a character or the FIFO was empty, so clear the
@@ -195,8 +195,8 @@ static uint8_t vpl011_read_data(struct domain *d)
     unsigned long flags;
     uint8_t data = 0;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct xencons_interface *intf = vpl011->backend.dom.ring_buf;
-    XENCONS_RING_IDX in_cons, in_prod;
+    struct cruxcons_interface *intf = vpl011->backend.dom.ring_buf;
+    CRUXCONS_RING_IDX in_cons, in_prod;
 
     VPL011_LOCK(d, flags);
 
@@ -211,16 +211,16 @@ static uint8_t vpl011_read_data(struct domain *d)
      * only if the RXFE flag is not set.
      * If the guest still does read when RXFE bit is set then 0 will be returned.
      */
-    if ( xencons_queued(in_prod, in_cons, sizeof(intf->in)) > 0 )
+    if ( cruxcons_queued(in_prod, in_cons, sizeof(intf->in)) > 0 )
     {
         unsigned int fifo_level;
 
-        data = intf->in[xencons_mask(in_cons, sizeof(intf->in))];
+        data = intf->in[cruxcons_mask(in_cons, sizeof(intf->in))];
         in_cons += 1;
         smp_mb();
         intf->in_cons = in_cons;
 
-        fifo_level = xencons_queued(in_prod, in_cons, sizeof(intf->in));
+        fifo_level = cruxcons_queued(in_prod, in_cons, sizeof(intf->in));
 
         /* If the FIFO is now empty, we clear the receive timeout interrupt. */
         if ( fifo_level == 0 )
@@ -236,7 +236,7 @@ static uint8_t vpl011_read_data(struct domain *d)
         vpl011_update_interrupt_status(d);
     }
     else
-        gprintk(XENLOG_ERR, "vpl011: Unexpected IN ring buffer empty\n");
+        gprintk(CRUXLOG_ERR, "vpl011: Unexpected IN ring buffer empty\n");
 
     /*
      * We have consumed a character or the FIFO was empty, so clear the
@@ -250,7 +250,7 @@ static uint8_t vpl011_read_data(struct domain *d)
      * Send an event to console backend to indicate that data has been
      * read from the IN ring buffer.
      */
-    notify_via_xen_event_channel(d, vpl011->evtchn);
+    notify_via_crux_event_channel(d, vpl011->evtchn);
 
     return data;
 }
@@ -258,10 +258,10 @@ static uint8_t vpl011_read_data(struct domain *d)
 static void vpl011_update_tx_fifo_status(struct vpl011 *vpl011,
                                          unsigned int fifo_level)
 {
-    struct xencons_interface *intf = vpl011->backend.dom.ring_buf;
+    struct cruxcons_interface *intf = vpl011->backend.dom.ring_buf;
     unsigned int fifo_threshold = sizeof(intf->out) - SBSA_UART_FIFO_LEVEL;
 
-    /* No TX FIFO handling when backend is in xen */
+    /* No TX FIFO handling when backend is in Xen */
     ASSERT(vpl011->backend_in_domain);
 
     BUILD_BUG_ON(sizeof(intf->out) < SBSA_UART_FIFO_SIZE);
@@ -280,8 +280,8 @@ static void vpl011_write_data(struct domain *d, uint8_t data)
 {
     unsigned long flags;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct xencons_interface *intf = vpl011->backend.dom.ring_buf;
-    XENCONS_RING_IDX out_cons, out_prod;
+    struct cruxcons_interface *intf = vpl011->backend.dom.ring_buf;
+    CRUXCONS_RING_IDX out_cons, out_prod;
 
     VPL011_LOCK(d, flags);
 
@@ -297,17 +297,17 @@ static void vpl011_write_data(struct domain *d, uint8_t data)
      * In case the guest does write even when the TXFF flag is set then the
      * data will be silently dropped.
      */
-    if ( xencons_queued(out_prod, out_cons, sizeof(intf->out)) !=
+    if ( cruxcons_queued(out_prod, out_cons, sizeof(intf->out)) !=
          sizeof (intf->out) )
     {
         unsigned int fifo_level;
 
-        intf->out[xencons_mask(out_prod, sizeof(intf->out))] = data;
+        intf->out[cruxcons_mask(out_prod, sizeof(intf->out))] = data;
         out_prod += 1;
         smp_wmb();
         intf->out_prod = out_prod;
 
-        fifo_level = xencons_queued(out_prod, out_cons, sizeof(intf->out));
+        fifo_level = cruxcons_queued(out_prod, out_cons, sizeof(intf->out));
 
         if ( fifo_level == sizeof(intf->out) )
         {
@@ -327,7 +327,7 @@ static void vpl011_write_data(struct domain *d, uint8_t data)
         vpl011_update_interrupt_status(d);
     }
     else
-        gprintk(XENLOG_ERR, "vpl011: Unexpected OUT ring buffer full\n");
+        gprintk(CRUXLOG_ERR, "vpl011: Unexpected OUT ring buffer full\n");
 
     vpl011->uartfr &= ~TXFE;
 
@@ -337,7 +337,7 @@ static void vpl011_write_data(struct domain *d, uint8_t data)
      * Send an event to console backend to indicate that there is
      * data in the OUT ring buffer.
      */
-    notify_via_xen_event_channel(d, vpl011->evtchn);
+    notify_via_crux_event_channel(d, vpl011->evtchn);
 }
 
 static int vpl011_mmio_read(struct vcpu *v,
@@ -360,7 +360,7 @@ static int vpl011_mmio_read(struct vcpu *v,
         if ( vpl011->backend_in_domain )
             *r = vreg_reg32_extract(vpl011_read_data(d), info);
         else
-            *r = vreg_reg32_extract(vpl011_read_data_xen(d), info);
+            *r = vreg_reg32_extract(vpl011_read_data_crux(d), info);
         return 1;
 
     case RSR:
@@ -375,14 +375,6 @@ static int vpl011_mmio_read(struct vcpu *v,
 
         VPL011_LOCK(d, flags);
         *r = vreg_reg32_extract(vpl011->uartfr, info);
-        VPL011_UNLOCK(d, flags);
-        return 1;
-
-    case CR:
-        if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
-
-        VPL011_LOCK(d, flags);
-        *r = vreg_reg32_extract(vpl011->uartcr, info);
         VPL011_UNLOCK(d, flags);
         return 1;
 
@@ -418,7 +410,7 @@ static int vpl011_mmio_read(struct vcpu *v,
         return 0;
 
     default:
-        gprintk(XENLOG_ERR, "vpl011: unhandled read r%d offset %#08x\n",
+        gprintk(CRUXLOG_ERR, "vpl011: unhandled read r%d offset %#08x\n",
                 dabt.reg, vpl011_reg);
         goto read_as_zero;
     }
@@ -431,7 +423,7 @@ read_as_zero:
     return 1;
 
 bad_width:
-    gprintk(XENLOG_ERR, "vpl011: bad read width %d r%d offset %#08x\n",
+    gprintk(CRUXLOG_ERR, "vpl011: bad read width %d r%d offset %#08x\n",
             dabt.size, dabt.reg, vpl011_reg);
     return 0;
 
@@ -462,7 +454,7 @@ static int vpl011_mmio_write(struct vcpu *v,
         if ( vpl011->backend_in_domain )
             vpl011_write_data(v->domain, data);
         else
-            vpl011_write_data_xen(v->domain, data);
+            vpl011_write_data_crux(v->domain, data);
         return 1;
     }
 
@@ -475,15 +467,6 @@ static int vpl011_mmio_write(struct vcpu *v,
     case RIS:
     case MIS:
         goto write_ignore;
-
-    case CR:
-        if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
-
-        VPL011_LOCK(d, flags);
-        vreg_reg32_update(&vpl011->uartcr, r, info);
-        vpl011_update_interrupt_status(d);
-        VPL011_UNLOCK(d, flags);
-        return 1;
 
     case IMSC:
         if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
@@ -504,7 +487,7 @@ static int vpl011_mmio_write(struct vcpu *v,
         return 1;
 
     default:
-        gprintk(XENLOG_ERR, "vpl011: unhandled write r%d offset %#08x\n",
+        gprintk(CRUXLOG_ERR, "vpl011: unhandled write r%d offset %#08x\n",
                 dabt.reg, vpl011_reg);
         goto write_ignore;
     }
@@ -513,7 +496,7 @@ write_ignore:
     return 1;
 
 bad_width:
-    gprintk(XENLOG_ERR, "vpl011: bad write width %d r%d offset %#08x\n",
+    gprintk(CRUXLOG_ERR, "vpl011: bad write width %d r%d offset %#08x\n",
             dabt.size, dabt.reg, vpl011_reg);
     return 0;
 
@@ -525,10 +508,10 @@ static const struct mmio_handler_ops vpl011_mmio_handler = {
 };
 
 static void vpl011_data_avail(struct domain *d,
-                              XENCONS_RING_IDX in_fifo_level,
-                              XENCONS_RING_IDX in_size,
-                              XENCONS_RING_IDX out_fifo_level,
-                              XENCONS_RING_IDX out_size)
+                              CRUXCONS_RING_IDX in_fifo_level,
+                              CRUXCONS_RING_IDX in_size,
+                              CRUXCONS_RING_IDX out_fifo_level,
+                              CRUXCONS_RING_IDX out_size)
 {
     struct vpl011 *vpl011 = &d->arch.vpl011;
 
@@ -538,7 +521,7 @@ static void vpl011_data_avail(struct domain *d,
     if ( in_fifo_level > 0 )
         vpl011->uartfr &= ~RXFE;
 
-    /* Set the FIFO_FULL bit if the xen buffer is full. */
+    /* Set the FIFO_FULL bit if the Xen buffer is full. */
     if ( in_fifo_level == in_size )
         vpl011->uartfr |= RXFF;
 
@@ -568,7 +551,7 @@ static void vpl011_data_avail(struct domain *d,
         vpl011->uartfr &= ~BUSY;
 
         /*
-         * When backend is in xen, we are always ready for new data to be
+         * When backend is in Xen, we are always ready for new data to be
          * written (i.e. no TX FIFO handling), therefore we do not want
          * to change the TX FIFO status in such case.
          */
@@ -583,16 +566,16 @@ static void vpl011_data_avail(struct domain *d,
 }
 
 /*
- * vpl011_rx_char_xen adds a char to a domain's vpl011 receive buffer.
+ * vpl011_rx_char_crux adds a char to a domain's vpl011 receive buffer.
  */
-int vpl011_rx_char_xen(struct domain *d, char c)
+int vpl011_rx_char_crux(struct domain *d, char c)
 {
     unsigned long flags;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct vpl011_xen_backend *intf = vpl011->backend.xen;
-    XENCONS_RING_IDX in_cons, in_prod, in_fifo_level;
+    struct vpl011_crux_backend *intf = vpl011->backend.crux;
+    CRUXCONS_RING_IDX in_cons, in_prod, in_fifo_level;
 
-    /* Forward input iff the vpl011 backend is in xen. */
+    /* Forward input iff the vpl011 backend is in Xen. */
     if ( vpl011->backend_in_domain )
         return -ENODEV;
 
@@ -603,16 +586,16 @@ int vpl011_rx_char_xen(struct domain *d, char c)
 
     in_cons = intf->in_cons;
     in_prod = intf->in_prod;
-    if ( xencons_queued(in_prod, in_cons, sizeof(intf->in)) == sizeof(intf->in) )
+    if ( cruxcons_queued(in_prod, in_cons, sizeof(intf->in)) == sizeof(intf->in) )
     {
         VPL011_UNLOCK(d, flags);
         return -ENOSPC;
     }
 
-    intf->in[xencons_mask(in_prod, sizeof(intf->in))] = c;
+    intf->in[cruxcons_mask(in_prod, sizeof(intf->in))] = c;
     intf->in_prod = ++in_prod;
 
-    in_fifo_level = xencons_queued(in_prod,
+    in_fifo_level = cruxcons_queued(in_prod,
                                    in_cons,
                                    sizeof(intf->in));
 
@@ -627,9 +610,9 @@ static void vpl011_notification(struct vcpu *v, unsigned int port)
     unsigned long flags;
     struct domain *d = v->domain;
     struct vpl011 *vpl011 = &d->arch.vpl011;
-    struct xencons_interface *intf = vpl011->backend.dom.ring_buf;
-    XENCONS_RING_IDX in_cons, in_prod, out_cons, out_prod;
-    XENCONS_RING_IDX in_fifo_level, out_fifo_level;
+    struct cruxcons_interface *intf = vpl011->backend.dom.ring_buf;
+    CRUXCONS_RING_IDX in_cons, in_prod, out_cons, out_prod;
+    CRUXCONS_RING_IDX in_fifo_level, out_fifo_level;
 
     VPL011_LOCK(d, flags);
 
@@ -640,11 +623,11 @@ static void vpl011_notification(struct vcpu *v, unsigned int port)
 
     smp_rmb();
 
-    in_fifo_level = xencons_queued(in_prod,
+    in_fifo_level = cruxcons_queued(in_prod,
                                    in_cons,
                                    sizeof(intf->in));
 
-    out_fifo_level = xencons_queued(out_prod,
+    out_fifo_level = cruxcons_queued(out_prod,
                                     out_cons,
                                     sizeof(intf->out));
 
@@ -680,8 +663,8 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
         }
         else
         {
-            printk(XENLOG_ERR
-                   "vpl011: Unable to re-use the xen UART information.\n");
+            printk(CRUXLOG_ERR
+                   "vpl011: Unable to re-use the Xen UART information.\n");
             return -EINVAL;
         }
 
@@ -694,8 +677,8 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
          */
         if ( uart->size < GUEST_PL011_SIZE )
         {
-            printk(XENLOG_ERR
-                   "vpl011: Can't re-use the xen UART MMIO region as it is too small.\n");
+            printk(CRUXLOG_ERR
+                   "vpl011: Can't re-use the Xen UART MMIO region as it is too small.\n");
             return -EINVAL;
         }
     }
@@ -706,14 +689,14 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
     }
 
     /*
-     * info is NULL when the backend is in xen.
+     * info is NULL when the backend is in Xen.
      * info is != NULL when the backend is in a domain.
      */
     if ( info != NULL )
     {
         vpl011->backend_in_domain = true;
 
-        /* Map the guest PFN to xen address space. */
+        /* Map the guest PFN to Xen address space. */
         rc =  prepare_ring_for_helper(d,
                                       gfn_x(info->gfn),
                                       &vpl011->backend.dom.ring_page,
@@ -721,7 +704,7 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
         if ( rc < 0 )
             goto out;
 
-        rc = alloc_unbound_xen_event_channel(d, 0, info->console_domid,
+        rc = alloc_unbound_crux_event_channel(d, 0, info->console_domid,
                                              vpl011_notification);
         if ( rc < 0 )
             goto out1;
@@ -733,8 +716,8 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
         d->console.input_allowed = true;
         vpl011->backend_in_domain = false;
 
-        vpl011->backend.xen = xzalloc(struct vpl011_xen_backend);
-        if ( vpl011->backend.xen == NULL )
+        vpl011->backend.crux = xzalloc(struct vpl011_crux_backend);
+        if ( vpl011->backend.crux == NULL )
         {
             rc = -ENOMEM;
             goto out;
@@ -787,7 +770,7 @@ void domain_vpl011_deinit(struct domain *d)
 
         if ( vpl011->evtchn )
         {
-            free_xen_event_channel(d, vpl011->evtchn);
+            free_crux_event_channel(d, vpl011->evtchn);
 
             /*
              * Set to invalid event channel port to prevent extra free and to
@@ -798,7 +781,7 @@ void domain_vpl011_deinit(struct domain *d)
         }
     }
     else
-        XFREE(vpl011->backend.xen);
+        XFREE(vpl011->backend.crux);
 }
 
 /*

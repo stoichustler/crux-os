@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015, 2016 ARM Ltd.
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __XEN_ARM_VGIC_VGIC_H__
-#define __XEN_ARM_VGIC_VGIC_H__
+#ifndef __CRUX_ARM_VGIC_VGIC_H__
+#define __CRUX_ARM_VGIC_VGIC_H__
 
 /*
  * We piggy-back on the already used KVM product ID,  but use a different
- * variant (major revision) for xen.
+ * variant (major revision) for Xen.
  */
 #define PRODUCT_ID_KVM          0x4b        /* ASCII code K */
-#define VARIANT_ID_XEN          0x01
+#define VARIANT_ID_CRUX          0x01
 #define IMPLEMENTER_ARM         0x43b
 
 #define VGIC_ADDR_UNDEF     INVALID_PADDR

@@ -1,5 +1,5 @@
-#include <xen/sched.h>
-#include <xen/init.h>
+#include <crux/sched.h>
+#include <crux/init.h>
 #include <asm/processor.h>
 #include <asm/vfp.h>
 
@@ -80,7 +80,7 @@ static __init int vfp_init(void)
 
     vfparch = (vfpsid & FPSID_ARCH_MASK) >> FPSID_ARCH_BIT;
     if ( vfparch < 2 )
-        panic("xen only support VFP 3\n");
+        panic("Xen only support VFP 3\n");
 
     return 0;
 }

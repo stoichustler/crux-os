@@ -2,7 +2,7 @@
 #ifndef ASM__RISCV__MONITOR_H
 #define ASM__RISCV__MONITOR_H
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 #include <asm-generic/monitor.h>
 

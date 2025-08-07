@@ -17,9 +17,9 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/sched.h>
-#include <xen/vpci.h>
-#include <xen/vmap.h>
+#include <crux/sched.h>
+#include <crux/vpci.h>
+#include <crux/vmap.h>
 
 /* Internal struct to store the emulated PCI registers. */
 struct vpci_register {
@@ -35,7 +35,7 @@ struct vpci_register {
     uint32_t rsvdz_mask;
 };
 
-#ifdef __XEN__
+#ifdef __CRUX__
 extern const vpci_capability_t __start_vpci_array[];
 extern const vpci_capability_t __end_vpci_array[];
 #define NUM_VPCI_INIT (__end_vpci_array - __start_vpci_array)
@@ -57,7 +57,7 @@ static int assign_virtual_sbdf(struct pci_dev *pdev)
      */
     if ( pdev->sbdf.fn )
     {
-        gdprintk(XENLOG_ERR, "%pp: only function 0 passthrough supported\n",
+        gdprintk(CRUXLOG_ERR, "%pp: only function 0 passthrough supported\n",
                  &pdev->sbdf);
         return -EOPNOTSUPP;
     }
@@ -274,7 +274,7 @@ static int vpci_init_capabilities(struct pci_dev *pdev)
         {
             const char *type = is_ext ? "extended" : "legacy";
 
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "%pd %pp: init %s cap %u fail rc=%d, mask it\n",
                    pdev->domain, &pdev->sbdf, type, cap, rc);
 
@@ -283,7 +283,7 @@ static int vpci_init_capabilities(struct pci_dev *pdev)
                 rc = capability->cleanup(pdev);
                 if ( rc )
                 {
-                    printk(XENLOG_ERR "%pd %pp: clean %s cap %u fail rc=%d\n",
+                    printk(CRUXLOG_ERR "%pd %pp: clean %s cap %u fail rc=%d\n",
                            pdev->domain, &pdev->sbdf, type, cap, rc);
                     if ( !is_hardware_domain(pdev->domain) )
                         return rc;
@@ -296,7 +296,7 @@ static int vpci_init_capabilities(struct pci_dev *pdev)
                 rc = vpci_ext_capability_hide(pdev, cap);
             if ( rc )
             {
-                printk(XENLOG_ERR "%pd %pp: hide %s cap %u fail rc=%d\n",
+                printk(CRUXLOG_ERR "%pd %pp: hide %s cap %u fail rc=%d\n",
                        pdev->domain, &pdev->sbdf, type, cap, rc);
                 return rc;
             }
@@ -393,7 +393,7 @@ int vpci_assign_device(struct pci_dev *pdev)
 
     return rc;
 }
-#endif /* __XEN__ */
+#endif /* __CRUX__ */
 
 /*
  * Find the physical device which is mapped to the virtual device
@@ -704,8 +704,8 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
 
     /*
      * Find the PCI dev matching the address, which for hwdom also requires
-     * consulting DomXEN.  Passthrough everything that's not trapped.
-     * If this is hwdom and the device is assigned to DomXEN, acquiring hwdom's
+     * consulting DomCRUX.  Passthrough everything that's not trapped.
+     * If this is hwdom and the device is assigned to DomCRUX, acquiring hwdom's
      * pci_lock is sufficient.
      */
     read_lock(&d->pci_lock);
@@ -713,7 +713,7 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
     {
         pdev = pci_get_pdev(d, sbdf);
         if ( !pdev )
-            pdev = pci_get_pdev(dom_xen, sbdf);
+            pdev = pci_get_pdev(dom_crux, sbdf);
     }
     else
         pdev = translate_virtual_device(d, &sbdf);
@@ -825,8 +825,8 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
 
     /*
      * Find the PCI dev matching the address, which for hwdom also requires
-     * consulting DomXEN.  Passthrough everything that's not trapped.
-     * If this is hwdom and the device is assigned to DomXEN, acquiring hwdom's
+     * consulting DomCRUX.  Passthrough everything that's not trapped.
+     * If this is hwdom and the device is assigned to DomCRUX, acquiring hwdom's
      * pci_lock is sufficient.
      *
      * TODO: We need to take pci_locks in exclusive mode only if we
@@ -837,7 +837,7 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
     {
         pdev = pci_get_pdev(d, sbdf);
         if ( !pdev )
-            pdev = pci_get_pdev(dom_xen, sbdf);
+            pdev = pci_get_pdev(dom_crux, sbdf);
     }
     else
         pdev = translate_virtual_device(d, &sbdf);
@@ -950,7 +950,7 @@ bool vpci_ecam_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int len,
      *    should take care not to cause the generation of such accesses
      *    when accessing a RCRB unless the Root Complex will support the
      *    access.
-     *  xen however supports 8byte accesses by splitting them into two
+     *  Xen however supports 8byte accesses by splitting them into two
      *  4byte accesses.
      */
     *data = vpci_read(sbdf, reg, min(4u, len));

@@ -7,8 +7,8 @@
  * Copyright (c) 2016 Tamas K Lengyel (tamas.lengyel@zentific.com)
  */
 
-#include <xen/sched.h>
-#include <xen/vm_event.h>
+#include <crux/sched.h>
+#include <crux/vm_event.h>
 
 void vm_event_fill_regs(vm_event_request_t *req)
 {

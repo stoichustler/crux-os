@@ -104,8 +104,8 @@
 #define ITS_DOORBELL_OFFSET             0x10040
 #define GICV3_ITS_SIZE                  SZ_128K
 
-#include <xen/device_tree.h>
-#include <xen/rbtree.h>
+#include <crux/device_tree.h>
+#include <crux/rbtree.h>
 
 #define HOST_ITS_FLUSH_CMD_QUEUE        (1U << 0)
 #define HOST_ITS_USES_PTA               (1U << 1)

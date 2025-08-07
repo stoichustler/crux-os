@@ -13,5 +13,5 @@ obj-$(CONFIG_HAS_IMX_LPUART) += imx-lpuart.o
 obj-$(CONFIG_HAS_LINFLEX) += linflex-uart.o
 obj-$(CONFIG_GENERIC_UART_INIT) += uart-init.o
 obj-y += serial.o
-obj-$(CONFIG_XEN_GUEST) += xen_pv_console.o
+obj-$(CONFIG_CRUX_GUEST) += crux_pv_console.o
 obj-$(CONFIG_PV_SHIM) += consoled.o

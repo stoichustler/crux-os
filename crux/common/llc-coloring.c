@@ -5,15 +5,15 @@
  * Copyright (C) 2024, Advanced Micro Devices, Inc.
  * Copyright (C) 2024, Minerva Systems SRL
  */
-#include <xen/guest_access.h>
-#include <xen/keyhandler.h>
-#include <xen/llc-coloring.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/guest_access.h>
+#include <crux/keyhandler.h>
+#include <crux/llc-coloring.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 
 #define NR_LLC_COLORS          (1U << CONFIG_LLC_COLORS_ORDER)
-#define XEN_DEFAULT_NUM_COLORS 1
+#define CRUX_DEFAULT_NUM_COLORS 1
 
 /*
  * -1: not specified (disabled unless llc-size and llc-nr-ways present)
@@ -37,8 +37,8 @@ static unsigned int __ro_after_init default_colors[NR_LLC_COLORS];
 static unsigned int __initdata dom0_colors[NR_LLC_COLORS];
 static unsigned int __initdata dom0_num_colors;
 
-static unsigned int __ro_after_init xen_colors[NR_LLC_COLORS];
-static unsigned int __ro_after_init xen_num_colors;
+static unsigned int __ro_after_init crux_colors[NR_LLC_COLORS];
+static unsigned int __ro_after_init crux_num_colors;
 
 #define mfn_color_mask              (max_nr_colors - 1)
 #define mfn_to_color(mfn)           (mfn_x(mfn) & mfn_color_mask)
@@ -100,12 +100,12 @@ static int __init parse_dom0_colors(const char *s)
 }
 custom_param("dom0-llc-colors", parse_dom0_colors);
 
-static int __init parse_xen_colors(const char *s)
+static int __init parse_crux_colors(const char *s)
 {
-    return parse_color_config(s, xen_colors, ARRAY_SIZE(xen_colors),
-                              &xen_num_colors);
+    return parse_color_config(s, crux_colors, ARRAY_SIZE(crux_colors),
+                              &crux_num_colors);
 }
-custom_param("xen-llc-colors", parse_xen_colors);
+custom_param("crux-llc-colors", parse_crux_colors);
 
 static void print_colors(const unsigned int colors[], unsigned int num_colors)
 {
@@ -138,7 +138,7 @@ static bool check_colors(const unsigned int colors[], unsigned int num_colors)
     {
         if ( colors[i] >= max_nr_colors )
         {
-            printk(XENLOG_ERR "LLC color %u >= %u (max allowed)\n", colors[i],
+            printk(CRUXLOG_ERR "LLC color %u >= %u (max allowed)\n", colors[i],
                    max_nr_colors);
             return false;
         }
@@ -180,7 +180,7 @@ void __init llc_coloring_init(void)
 
     if ( max_nr_colors > NR_LLC_COLORS )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "Number of LLC colors (%u) too big. Using configured max %u\n",
                max_nr_colors, NR_LLC_COLORS);
         max_nr_colors = NR_LLC_COLORS;
@@ -191,21 +191,21 @@ void __init llc_coloring_init(void)
     for ( i = 0; i < max_nr_colors; i++ )
         default_colors[i] = i;
 
-    if ( !xen_num_colors )
+    if ( !crux_num_colors )
     {
         unsigned int i;
 
-        xen_num_colors = MIN(XEN_DEFAULT_NUM_COLORS, max_nr_colors);
+        crux_num_colors = MIN(CRUX_DEFAULT_NUM_COLORS, max_nr_colors);
 
-        printk(XENLOG_WARNING
-               "xen LLC color config not found. Using first %u colors\n",
-               xen_num_colors);
-        for ( i = 0; i < xen_num_colors; i++ )
-            xen_colors[i] = i;
+        printk(CRUXLOG_WARNING
+               "Xen LLC color config not found. Using first %u colors\n",
+               crux_num_colors);
+        for ( i = 0; i < crux_num_colors; i++ )
+            crux_colors[i] = i;
     }
-    else if ( xen_num_colors > max_nr_colors ||
-              !check_colors(xen_colors, xen_num_colors) )
-        panic("Bad LLC color config for xen\n");
+    else if ( crux_num_colors > max_nr_colors ||
+              !check_colors(crux_colors, crux_num_colors) )
+        panic("Bad LLC color config for Xen\n");
 
     arch_llc_coloring_init();
 }
@@ -217,8 +217,8 @@ void dump_llc_coloring_info(void)
 
     printk("LLC coloring info:\n");
     printk("    Number of LLC colors supported: %u\n", max_nr_colors);
-    printk("    xen LLC colors (%u): ", xen_num_colors);
-    print_colors(xen_colors, xen_num_colors);
+    printk("    Xen LLC colors (%u): ", crux_num_colors);
+    print_colors(crux_colors, crux_num_colors);
 }
 
 void domain_dump_llc_colors(const struct domain *d)
@@ -240,7 +240,7 @@ int __init dom0_set_llc_colors(struct domain *d)
     if ( (dom0_num_colors > max_nr_colors) ||
          !check_colors(dom0_colors, dom0_num_colors) )
     {
-        printk(XENLOG_ERR "%pd:  bad LLC color config\n", d);
+        printk(CRUXLOG_ERR "%pd:  bad LLC color config\n", d);
         return -EINVAL;
     }
 
@@ -256,7 +256,7 @@ int __init dom0_set_llc_colors(struct domain *d)
 }
 
 int domain_set_llc_colors(struct domain *d,
-                          const struct xen_domctl_set_llc_colors *config)
+                          const struct crux_domctl_set_llc_colors *config)
 {
     unsigned int *colors;
 
@@ -281,7 +281,7 @@ int domain_set_llc_colors(struct domain *d,
 
     if ( !check_colors(colors, config->num_llc_colors) )
     {
-        printk(XENLOG_ERR "%pd: bad LLC color config\n", d);
+        printk(CRUXLOG_ERR "%pd: bad LLC color config\n", d);
         xfree(colors);
         return -EINVAL;
     }
@@ -328,14 +328,14 @@ int __init domain_set_llc_colors_from_str(struct domain *d, const char *str)
     err = parse_color_config(str, colors, max_nr_colors, &num_colors);
     if ( err )
     {
-        printk(XENLOG_ERR "Error parsing LLC color configuration");
+        printk(CRUXLOG_ERR "Error parsing LLC color configuration");
         xfree(colors);
         return err;
     }
 
     if ( !check_colors(colors, num_colors) )
     {
-        printk(XENLOG_ERR "%pd: bad LLC color config\n", d);
+        printk(CRUXLOG_ERR "%pd: bad LLC color config\n", d);
         xfree(colors);
         return -EINVAL;
     }
@@ -360,20 +360,20 @@ unsigned int get_max_nr_llc_colors(void)
     return max_nr_colors;
 }
 
-mfn_t __init xen_colored_mfn(mfn_t mfn)
+mfn_t __init crux_colored_mfn(mfn_t mfn)
 {
     unsigned int i, color = mfn_to_color(mfn);
 
-    for ( i = 0; i < xen_num_colors; i++ )
+    for ( i = 0; i < crux_num_colors; i++ )
     {
-        if ( color == xen_colors[i] )
+        if ( color == crux_colors[i] )
             return mfn;
-        if ( color < xen_colors[i] )
-            return get_mfn_with_color(mfn, xen_colors[i]);
+        if ( color < crux_colors[i] )
+            return get_mfn_with_color(mfn, crux_colors[i]);
     }
 
     /* Jump to next color space (max_nr_colors mfns) and use the first color */
-    return get_mfn_with_color(mfn_add(mfn, max_nr_colors), xen_colors[0]);
+    return get_mfn_with_color(mfn_add(mfn, max_nr_colors), crux_colors[0]);
 }
 
 /*

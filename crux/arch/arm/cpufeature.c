@@ -5,11 +5,11 @@
  * Copyright (C) 2015 ARM Ltd.
  */
 
-#include <xen/bug.h>
-#include <xen/types.h>
-#include <xen/init.h>
-#include <xen/smp.h>
-#include <xen/stop_machine.h>
+#include <crux/bug.h>
+#include <crux/types.h>
+#include <crux/init.h>
+#include <crux/smp.h>
+#include <crux/stop_machine.h>
 #include <asm/arm64/sve.h>
 #include <asm/cpufeature.h>
 
@@ -46,7 +46,7 @@ void update_cpu_capabilities(const struct arm_cpu_capabilities *caps,
             continue;
 
         if ( !cpus_have_cap(caps[i].capability) && caps[i].desc )
-            printk(XENLOG_INFO "%s: %s\n", info, caps[i].desc);
+            printk(CRUXLOG_INFO "%s: %s\n", info, caps[i].desc);
         cpus_set_cap(caps[i].capability);
     }
 }
@@ -200,7 +200,7 @@ static int __init create_domain_cpuinfo(void)
     domain_cpuinfo = system_cpuinfo;
 
 #ifdef CONFIG_ARM_64
-    /* Hide MPAM support as xen does not support it */
+    /* Hide MPAM support as crux does not support it */
     domain_cpuinfo.pfr64.mpam = 0;
     domain_cpuinfo.pfr64.mpam_frac = 0;
 
@@ -208,13 +208,13 @@ static int __init create_domain_cpuinfo(void)
     domain_cpuinfo.pfr64.sve = 0;
     domain_cpuinfo.zfr64.bits[0] = 0;
 
-    /* Hide SMT support as xen does not support it */
+    /* Hide SMT support as Xen does not support it */
     domain_cpuinfo.pfr64.sme = 0;
 
-    /* Hide MTE support as xen does not support it */
+    /* Hide MTE support as Xen does not support it */
     domain_cpuinfo.pfr64.mte = 0;
 
-    /* Hide PAC support as xen does not support it */
+    /* Hide PAC support as Xen does not support it */
     domain_cpuinfo.isa64.apa = 0;
     domain_cpuinfo.isa64.api = 0;
     domain_cpuinfo.isa64.gpa = 0;
@@ -227,7 +227,7 @@ static int __init create_domain_cpuinfo(void)
 #endif
     domain_cpuinfo.pfr32.amu = 0;
 
-    /* Hide RAS support as xen does not support it */
+    /* Hide RAS support as Xen does not support it */
 #ifdef CONFIG_ARM_64
     domain_cpuinfo.pfr64.ras = 0;
     domain_cpuinfo.pfr64.ras_frac = 0;

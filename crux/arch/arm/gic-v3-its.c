@@ -1,21 +1,21 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/gic-v3-its.c
+ * crux/arch/arm/gic-v3-its.c
  *
  * ARM GICv3 Interrupt Translation Service (ITS) support
  *
  * Copyright (C) 2016,2017 - ARM Ltd
  */
 
-#include <xen/acpi.h>
-#include <xen/lib.h>
-#include <xen/delay.h>
-#include <xen/iocap.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/rbtree.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/acpi.h>
+#include <crux/lib.h>
+#include <crux/delay.h>
+#include <crux/iocap.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/rbtree.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 #include <asm/gic.h>
 #include <asm/gic_v3_defs.h>
 #include <asm/gic_v3_its.h>
@@ -201,7 +201,7 @@ static int its_send_command(struct host_its *hw_its, const void *its_cmd)
     {
         spin_unlock(&hw_its->cmd_lock);
         if ( printk_ratelimit() )
-            printk(XENLOG_WARNING "host ITS: command queue full.\n");
+            printk(CRUXLOG_WARNING "host ITS: command queue full.\n");
         return ret;
     }
 
@@ -396,7 +396,7 @@ static void *its_map_cbaser(struct host_its *its)
     reg |= gicv3_its_get_cacheability() << GITS_BASER_INNER_CACHEABILITY_SHIFT;
 
     order = get_order_from_bytes(max(ITS_CMD_QUEUE_SZ, SZ_64K));
-    buffer = alloc_xenheap_pages(order, gicv3_its_get_memflags());
+    buffer = alloc_cruxheap_pages(order, gicv3_its_get_memflags());
     if ( !buffer )
         return NULL;
 
@@ -404,7 +404,7 @@ static void *its_map_cbaser(struct host_its *its)
 
     if ( virt_to_maddr(buffer) & ~GENMASK(51, 12) )
     {
-        free_xenheap_pages(buffer, order);
+        free_cruxheap_pages(buffer, order);
         return NULL;
     }
 
@@ -427,7 +427,7 @@ static void *its_map_cbaser(struct host_its *its)
     if ( !(reg & GITS_BASER_INNER_CACHEABILITY_MASK) )
     {
         its->flags |= HOST_ITS_FLUSH_CMD_QUEUE;
-        printk(XENLOG_WARNING "using non-cacheable ITS command queue\n");
+        printk(CRUXLOG_WARNING "using non-cacheable ITS command queue\n");
     }
 
     return buffer;
@@ -462,7 +462,7 @@ retry:
     table_size = min(table_size, 256U << BASER_PAGE_BITS(pagesz));
 
     order = get_order_from_bytes(max(table_size, BIT(BASER_PAGE_BITS(pagesz), U)));
-    buffer = alloc_xenheap_pages(order, gicv3_its_get_memflags());
+    buffer = alloc_cruxheap_pages(order, gicv3_its_get_memflags());
     if ( !buffer )
         return -ENOMEM;
 
@@ -470,7 +470,7 @@ retry:
 
     if ( !check_baser_phys_addr(buffer, BASER_PAGE_BITS(pagesz)) )
     {
-        free_xenheap_pages(buffer, order);
+        free_cruxheap_pages(buffer, order);
         return -ERANGE;
     }
 
@@ -503,7 +503,7 @@ retry:
     if ( ((regc >> GITS_BASER_PAGE_SIZE_SHIFT) & 0x3UL) == pagesz )
         return 0;
 
-    free_xenheap_pages(buffer, order);
+    free_cruxheap_pages(buffer, order);
 
     if ( pagesz-- > 0 )
         goto retry;
@@ -542,7 +542,7 @@ static int gicv3_disable_its(struct host_its *hw_its)
         udelay(1);
     } while ( NOW() <= deadline );
 
-    printk(XENLOG_ERR "ITS@%lx not quiescent.\n", hw_its->addr);
+    printk(CRUXLOG_ERR "ITS@%lx not quiescent.\n", hw_its->addr);
 
     return -ETIMEDOUT;
 }
@@ -636,10 +636,10 @@ static int remove_mapped_guest_device(struct its_device *dev)
 
     /* This should never happen, but just in case ... */
     if ( ret && printk_ratelimit() )
-        printk(XENLOG_WARNING "Can't unmap host ITS device 0x%x\n",
+        printk(CRUXLOG_WARNING "Can't unmap host ITS device 0x%x\n",
                dev->host_devid);
 
-    free_xenheap_pages(dev->itt_addr, dev->itt_order);
+    free_cruxheap_pages(dev->itt_addr, dev->itt_order);
     xfree(dev->pend_irqs);
     xfree(dev->host_lpi_blocks);
     xfree(dev);
@@ -771,7 +771,7 @@ int gicv3_its_map_guest_device(struct domain *d,
 
             if ( valid )
             {
-                printk(XENLOG_G_WARNING "d%d tried to remap guest ITS device 0x%x to host device 0x%x\n",
+                printk(CRUXLOG_G_WARNING "d%d tried to remap guest ITS device 0x%x to host device 0x%x\n",
                         d->domain_id, guest_devid, host_devid);
                 return -EBUSY;
             }
@@ -792,7 +792,7 @@ int gicv3_its_map_guest_device(struct domain *d,
 
     /* An Interrupt Translation Table needs to be 256-byte aligned. */
     order = get_order_from_bytes(max(nr_events * hw_its->itte_size, 256UL));
-    itt_addr = alloc_xenheap_pages(order, gicv3_its_get_memflags());
+    itt_addr = alloc_cruxheap_pages(order, gicv3_its_get_memflags());
     if ( !itt_addr )
         goto out_unlock;
 
@@ -815,7 +815,7 @@ int gicv3_its_map_guest_device(struct domain *d,
      * So we compromise here by pre-allocating memory for each possible event
      * up to the max specified by MAPD.
      * See the mailing list discussion for some background:
-     * https://lists.xen.org/archives/html/xen-devel/2017-03/msg03645.html
+     * https://lists.crux.org/archives/html/crux-devel/2017-03/msg03645.html
      */
     dev->pend_irqs = xzalloc_array(struct pending_irq, nr_events);
     if ( !dev->pend_irqs )
@@ -890,7 +890,7 @@ out:
         xfree(dev->host_lpi_blocks);
     }
     if ( itt_addr )
-        free_xenheap_pages(itt_addr, order);
+        free_cruxheap_pages(itt_addr, order);
     xfree(dev);
 
     return ret;
@@ -1042,8 +1042,8 @@ int gicv3_its_make_hwdom_dt_nodes(const struct domain *d,
     prop = dt_get_property(gic, "ranges", &len);
     if ( !prop )
     {
-        printk(XENLOG_ERR "Can't find ranges property for the gic node\n");
-        return -FDT_ERR_XEN(ENOENT);
+        printk(CRUXLOG_ERR "Can't find ranges property for the gic node\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     res = fdt_property(fdt, "ranges", prop, len);
@@ -1081,8 +1081,8 @@ int gicv3_its_make_hwdom_dt_nodes(const struct domain *d,
         prop = dt_get_property(its, "reg", &len);
         if ( !prop )
         {
-            printk(XENLOG_ERR "GICv3: Can't find ITS reg property.\n");
-            res = -FDT_ERR_XEN(ENOENT);
+            printk(CRUXLOG_ERR "GICv3: Can't find ITS reg property.\n");
+            res = -FDT_ERR_CRUX(ENOENT);
             return res;
         }
 

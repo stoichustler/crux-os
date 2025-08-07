@@ -1,8 +1,8 @@
 #ifndef __ARM_CURRENT_H__
 #define __ARM_CURRENT_H__
 
-#include <xen/page-size.h>
-#include <xen/percpu.h>
+#include <crux/page-size.h>
+#include <crux/percpu.h>
 
 #include <asm/processor.h>
 #include <asm/sysregs.h>

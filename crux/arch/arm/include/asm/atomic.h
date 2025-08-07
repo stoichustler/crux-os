@@ -1,8 +1,8 @@
 #ifndef __ARCH_ARM_ATOMIC__
 #define __ARCH_ARM_ATOMIC__
 
-#include <xen/atomic.h>
-#include <xen/prefetch.h>
+#include <crux/atomic.h>
+#include <crux/prefetch.h>
 #include <asm/system.h>
 
 #define build_atomic_read(name, size, width, type) \

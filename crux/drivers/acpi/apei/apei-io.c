@@ -18,17 +18,17 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/kernel.h>
-#include <xen/errno.h>
-#include <xen/delay.h>
-#include <xen/init.h>
-#include <xen/string.h>
-#include <xen/xmalloc.h>
-#include <xen/types.h>
-#include <xen/spinlock.h>
-#include <xen/list.h>
-#include <xen/cper.h>
-#include <xen/prefetch.h>
+#include <crux/kernel.h>
+#include <crux/errno.h>
+#include <crux/delay.h>
+#include <crux/init.h>
+#include <crux/string.h>
+#include <crux/xmalloc.h>
+#include <crux/types.h>
+#include <crux/spinlock.h>
+#include <crux/list.h>
+#include <crux/cper.h>
+#include <crux/prefetch.h>
 #include <asm/fixmap.h>
 #include <asm/io.h>
 #include <acpi/acpi.h>

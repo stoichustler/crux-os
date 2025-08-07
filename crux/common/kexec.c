@@ -1,36 +1,36 @@
 /******************************************************************************
- * kexec.c - Achitecture independent kexec code for xen
+ * kexec.c - Achitecture independent kexec code for Xen
  *
- * xen port written by:
+ * Xen port written by:
  * - Simon 'Horms' Horman <horms@verge.net.au>
  * - Magnus Damm <magnus@valinux.co.jp>
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/acpi.h>
-#include <xen/ctype.h>
-#include <xen/elfcore.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/param.h>
-#include <xen/watchdog.h>
-#include <xen/sched.h>
-#include <xen/types.h>
-#include <xen/hypercall.h>
-#include <xen/kexec.h>
-#include <xen/keyhandler.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/acpi.h>
+#include <crux/ctype.h>
+#include <crux/elfcore.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/param.h>
+#include <crux/watchdog.h>
+#include <crux/sched.h>
+#include <crux/types.h>
+#include <crux/hypercall.h>
+#include <crux/kexec.h>
+#include <crux/keyhandler.h>
 #include <public/kexec.h>
-#include <xen/cpumask.h>
+#include <crux/cpumask.h>
 #include <asm/atomic.h>
-#include <xen/spinlock.h>
-#include <xen/version.h>
-#include <xen/console.h>
-#include <xen/kexec.h>
-#include <xen/kimage.h>
+#include <crux/spinlock.h>
+#include <crux/version.h>
+#include <crux/console.h>
+#include <crux/kexec.h>
+#include <crux/kimage.h>
 #include <public/elfnote.h>
 #include <xsm/xsm.h>
-#include <xen/cpu.h>
+#include <crux/cpu.h>
 #ifdef CONFIG_COMPAT
 #include <compat/kexec.h>
 #endif
@@ -46,7 +46,7 @@ static crash_note_range_t * crash_notes;
  * crash note buffers in lower memory. */
 static DEFINE_SPINLOCK(crash_notes_lock);
 
-static Elf_Note *xen_crash_note;
+static Elf_Note *crux_crash_note;
 
 static cpumask_t crash_saved_cpus;
 
@@ -62,7 +62,7 @@ static unsigned long kexec_flags = 0; /* the lowest bits are for KEXEC_IMAGE... 
 static unsigned char vmcoreinfo_data[VMCOREINFO_BYTES];
 static size_t vmcoreinfo_size = 0;
 
-xen_kexec_reserve_t kexec_crash_area;
+crux_kexec_reserve_t kexec_crash_area;
 paddr_t __initdata kexec_crash_area_limit = ~(paddr_t)0;
 static struct {
     u64 start, end;
@@ -76,7 +76,7 @@ enum low_crashinfo low_crashinfo_mode = LOW_CRASHINFO_INVALID;
 /* This value is only considered if low_crash_mode is set to MIN or ALL, so
  * setting a default here is safe. Default to 4GB.  This is because the current
  * KEXEC_CMD_get_range compat hypercall trucates 64bit pointers to 32 bits. The
- * typical usecase for crashinfo_maxaddr will be for 64bit xen with 32bit dom0
+ * typical usecase for crashinfo_maxaddr will be for 64bit Xen with 32bit dom0
  * and 32bit crash kernel. */
 static paddr_t __initdata crashinfo_maxaddr = 4ULL << 30;
 
@@ -116,7 +116,7 @@ static int __init cf_check parse_crashkernel(const char *str)
         do {
             if ( idx >= ARRAY_SIZE(ranges) )
             {
-                printk(XENLOG_WARNING "crashkernel: too many ranges\n");
+                printk(CRUXLOG_WARNING "crashkernel: too many ranges\n");
                 cur = NULL;
                 str = strpbrk(str, "@,<");
                 rc = -EINVAL;
@@ -129,7 +129,7 @@ static int __init cf_check parse_crashkernel(const char *str)
 
             if ( *str != '-' )
             {
-                printk(XENLOG_WARNING "crashkernel: '-' expected\n");
+                printk(CRUXLOG_WARNING "crashkernel: '-' expected\n");
                 rc = -EINVAL;
                 break;
             }
@@ -141,7 +141,7 @@ static int __init cf_check parse_crashkernel(const char *str)
                     break;
                 if ( ranges[idx].end <= ranges[idx].start )
                 {
-                    printk(XENLOG_WARNING "crashkernel: end <= start\n");
+                    printk(CRUXLOG_WARNING "crashkernel: end <= start\n");
                     rc = -EINVAL;
                     break;
                 }
@@ -151,7 +151,7 @@ static int __init cf_check parse_crashkernel(const char *str)
 
             if ( *str != ':' )
             {
-                printk(XENLOG_WARNING "crashkernel: ':' expected\n");
+                printk(CRUXLOG_WARNING "crashkernel: ':' expected\n");
                 rc = -EINVAL;
                 break;
             }
@@ -177,13 +177,13 @@ static int __init cf_check parse_crashkernel(const char *str)
             kexec_crash_area_limit = parse_size_and_unit(cur = str + 7, &str);
         else if ( *str )
         {
-            printk(XENLOG_WARNING "crashkernel: '%s' ignored\n", str);
+            printk(CRUXLOG_WARNING "crashkernel: '%s' ignored\n", str);
             rc = -EINVAL;
         }
     }
     if ( cur && cur == str )
     {
-        printk(XENLOG_WARNING "crashkernel: memory value expected\n");
+        printk(CRUXLOG_WARNING "crashkernel: memory value expected\n");
         rc = -EINVAL;
     }
 
@@ -263,7 +263,7 @@ void __init set_kexec_crash_area_size(u64 system_ram)
 
         if ( ranges[idx].size >= system_ram )
         {
-            printk(XENLOG_WARNING "crashkernel: invalid size\n");
+            printk(CRUXLOG_WARNING "crashkernel: invalid size\n");
             continue;
         }
 
@@ -315,7 +315,7 @@ void kexec_crash_save_cpu(void)
     int cpu = smp_processor_id();
     Elf_Note *note;
     ELF_Prstatus *prstatus;
-    crash_xen_core_t *xencore;
+    crash_crux_core_t *cruxcore;
 
     BUG_ON ( ! crash_notes );
 
@@ -327,28 +327,28 @@ void kexec_crash_save_cpu(void)
     prstatus = (ELF_Prstatus *)ELFNOTE_DESC(note);
 
     note = ELFNOTE_NEXT(note);
-    xencore = (crash_xen_core_t *)ELFNOTE_DESC(note);
+    cruxcore = (crash_crux_core_t *)ELFNOTE_DESC(note);
 
-    elf_core_save_regs(&prstatus->pr_reg, xencore);
+    elf_core_save_regs(&prstatus->pr_reg, cruxcore);
 }
 
-/* Set up the single xen-specific-info crash note. */
-crash_xen_info_t *kexec_crash_save_info(void)
+/* Set up the single Xen-specific-info crash note. */
+crash_crux_info_t *kexec_crash_save_info(void)
 {
     int cpu = smp_processor_id();
-    crash_xen_info_t info;
-    crash_xen_info_t *out = (crash_xen_info_t *)ELFNOTE_DESC(xen_crash_note);
+    crash_crux_info_t info;
+    crash_crux_info_t *out = (crash_crux_info_t *)ELFNOTE_DESC(crux_crash_note);
 
     BUG_ON(!cpumask_test_and_set_cpu(cpu, &crash_saved_cpus));
 
     memset(&info, 0, sizeof(info));
-    info.xen_major_version = xen_major_version();
-    info.xen_minor_version = xen_minor_version();
-    info.xen_extra_version = __pa(xen_extra_version());
-    info.xen_changeset = __pa(xen_changeset());
-    info.xen_compiler = __pa(xen_compiler());
-    info.xen_compile_date = __pa(xen_compile_date());
-    info.xen_compile_time = __pa(xen_compile_time());
+    info.crux_major_version = crux_major_version();
+    info.crux_minor_version = crux_minor_version();
+    info.crux_extra_version = __pa(crux_extra_version());
+    info.crux_changeset = __pa(crux_changeset());
+    info.crux_compiler = __pa(crux_compiler());
+    info.crux_compile_date = __pa(crux_compile_date());
+    info.crux_compile_time = __pa(crux_compile_time());
     info.tainted = tainted;
 
     /* Copy from guaranteed-aligned local copy to possibly-unaligned dest. */
@@ -433,15 +433,15 @@ static size_t sizeof_note(const char *name, int descsz)
 
 static size_t sizeof_cpu_notes(const unsigned long cpu)
 {
-    /* All CPUs present a PRSTATUS and crash_xen_core note. */
+    /* All CPUs present a PRSTATUS and crash_crux_core note. */
     size_t bytes =
         + sizeof_note("CORE", sizeof(ELF_Prstatus)) +
-        + sizeof_note("xen", sizeof(crash_xen_core_t));
+        + sizeof_note("Xen", sizeof(crash_crux_core_t));
 
-    /* CPU0 also presents the crash_xen_info note. */
+    /* CPU0 also presents the crash_crux_info note. */
     if ( ! cpu )
         bytes = bytes +
-            sizeof_note("xen", sizeof(crash_xen_info_t));
+            sizeof_note("Xen", sizeof(crash_crux_info_t));
 
     return bytes;
 }
@@ -514,16 +514,16 @@ static int kexec_init_cpu_notes(const unsigned long cpu)
             setup_note(note, "CORE", NT_PRSTATUS, sizeof(ELF_Prstatus));
             note = ELFNOTE_NEXT(note);
 
-            /* Set up xen CORE note. */
-            setup_note(note, "xen", XEN_ELFNOTE_CRASH_REGS,
-                       sizeof(crash_xen_core_t));
+            /* Set up Xen CORE note. */
+            setup_note(note, "Xen", CRUX_ELFNOTE_CRASH_REGS,
+                       sizeof(crash_crux_core_t));
 
             if ( ! cpu )
             {
-                /* Set up xen Crash Info note. */
-                xen_crash_note = note = ELFNOTE_NEXT(note);
-                setup_note(note, "xen", XEN_ELFNOTE_CRASH_INFO,
-                           sizeof(crash_xen_info_t));
+                /* Set up Xen Crash Info note. */
+                crux_crash_note = note = ELFNOTE_NEXT(note);
+                setup_note(note, "Xen", CRUX_ELFNOTE_CRASH_INFO,
+                           sizeof(crash_crux_info_t));
             }
         }
     }
@@ -588,7 +588,7 @@ static int __init cf_check kexec_init(void)
             sizeof_cpu_notes(1) * (nr_cpu_ids - 1);
         crash_heap_size = PAGE_ALIGN(crash_heap_size);
 
-        crash_heap_current = alloc_xenheap_pages(
+        crash_heap_current = alloc_cruxheap_pages(
             get_order_from_bytes(crash_heap_size),
             MEMF_bits(crashinfo_maxaddr_bits) );
 
@@ -600,7 +600,7 @@ static int __init cf_check kexec_init(void)
         crash_heap_end = crash_heap_current + crash_heap_size;
     }
 
-    /* crash_notes may be allocated anywhere xen can reach in memory.
+    /* crash_notes may be allocated anywhere Xen can reach in memory.
        Only the individual CPU crash notes themselves must be allocated
        in lower memory if requested. */
     crash_notes = xzalloc_array(crash_note_range_t, nr_cpu_ids);
@@ -618,7 +618,7 @@ static int __init cf_check kexec_init(void)
  * brought up. */
 presmp_initcall(kexec_init);
 
-static int kexec_get_reserve(xen_kexec_range_t *range)
+static int kexec_get_reserve(crux_kexec_range_t *range)
 {
     if ( kexec_crash_area.size > 0 && kexec_crash_area.start > 0) {
         range->start = kexec_crash_area.start;
@@ -629,7 +629,7 @@ static int kexec_get_reserve(xen_kexec_range_t *range)
     return 0;
 }
 
-static int kexec_get_cpu(xen_kexec_range_t *range)
+static int kexec_get_cpu(crux_kexec_range_t *range)
 {
     int nr = range->nr;
 
@@ -658,14 +658,14 @@ static int kexec_get_cpu(xen_kexec_range_t *range)
     return 0;
 }
 
-static int kexec_get_vmcoreinfo(xen_kexec_range_t *range)
+static int kexec_get_vmcoreinfo(crux_kexec_range_t *range)
 {
     range->start = __pa((unsigned long)vmcoreinfo_data);
     range->size = VMCOREINFO_BYTES;
     return 0;
 }
 
-static int kexec_get_range_internal(xen_kexec_range_t *range)
+static int kexec_get_range_internal(crux_kexec_range_t *range)
 {
     int ret = -EINVAL;
 
@@ -688,9 +688,9 @@ static int kexec_get_range_internal(xen_kexec_range_t *range)
     return ret;
 }
 
-static int kexec_get_range(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_get_range(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_range_t range;
+    crux_kexec_range_t range;
     int ret = -EINVAL;
 
     if ( unlikely(copy_from_guest(&range, uarg, 1)) )
@@ -704,10 +704,10 @@ static int kexec_get_range(XEN_GUEST_HANDLE_PARAM(void) uarg)
     return ret;
 }
 
-static int kexec_get_range_compat(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_get_range_compat(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
 #ifdef CONFIG_COMPAT
-    xen_kexec_range_t range;
+    crux_kexec_range_t range;
     compat_kexec_range_t compat_range;
     int ret = -EINVAL;
 
@@ -817,9 +817,9 @@ static void kexec_unload_image(struct kexec_image *image)
     kimage_free(image);
 }
 
-static int kexec_exec(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_exec(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_exec_t exec;
+    crux_kexec_exec_t exec;
     struct kexec_image *image;
     int base, bit, pos, ret = -EINVAL;
 
@@ -910,7 +910,7 @@ static uint16_t kexec_load_v1_arch(void)
 }
 
 static int kexec_segments_add_segment(unsigned int *nr_segments,
-                                      xen_kexec_segment_t *segments,
+                                      crux_kexec_segment_t *segments,
                                       mfn_t mfn)
 {
     paddr_t maddr = mfn_to_maddr(mfn);
@@ -925,7 +925,7 @@ static int kexec_segments_add_segment(unsigned int *nr_segments,
             return -EINVAL;
         *nr_segments = n;
 
-        set_xen_guest_handle(segments[n-1].buf.h, NULL);
+        set_crux_guest_handle(segments[n-1].buf.h, NULL);
         segments[n-1].buf_size = 0;
         segments[n-1].dest_maddr = maddr;
         segments[n-1].dest_size = 0;
@@ -936,7 +936,7 @@ static int kexec_segments_add_segment(unsigned int *nr_segments,
 
 static int kexec_segments_from_ind_page(mfn_t mfn,
                                         unsigned int *nr_segments,
-                                        xen_kexec_segment_t *segments,
+                                        crux_kexec_segment_t *segments,
                                         bool compat)
 {
     void *page;
@@ -988,10 +988,10 @@ done:
     return ret;
 }
 
-static int kexec_do_load_v1(xen_kexec_load_v1_t *load, int compat)
+static int kexec_do_load_v1(crux_kexec_load_v1_t *load, int compat)
 {
     struct kexec_image *kimage = NULL;
-    xen_kexec_segment_t *segments;
+    crux_kexec_segment_t *segments;
     uint16_t arch;
     unsigned int nr_segments = 0;
     mfn_t ind_mfn = maddr_to_mfn(load->image.indirection_page);
@@ -1001,7 +1001,7 @@ static int kexec_do_load_v1(xen_kexec_load_v1_t *load, int compat)
     if ( arch == EM_NONE )
         return -ENOSYS;
 
-    segments = xmalloc_array(xen_kexec_segment_t, KEXEC_SEGMENT_MAX);
+    segments = xmalloc_array(crux_kexec_segment_t, KEXEC_SEGMENT_MAX);
     if ( segments == NULL )
         return -ENOMEM;
 
@@ -1065,9 +1065,9 @@ error:
     return ret;
 }
 
-static int kexec_load_v1(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_load_v1(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_load_v1_t load;
+    crux_kexec_load_v1_t load;
 
     if ( unlikely(copy_from_guest(&load, uarg, 1)) )
         return -EFAULT;
@@ -1075,11 +1075,11 @@ static int kexec_load_v1(XEN_GUEST_HANDLE_PARAM(void) uarg)
     return kexec_do_load_v1(&load, 0);
 }
 
-static int kexec_load_v1_compat(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_load_v1_compat(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
 #ifdef CONFIG_COMPAT
     compat_kexec_load_v1_t compat_load;
-    xen_kexec_load_v1_t load;
+    crux_kexec_load_v1_t load;
 
     if ( unlikely(copy_from_guest(&compat_load, uarg, 1)) )
         return -EFAULT;
@@ -1100,10 +1100,10 @@ static int kexec_load_v1_compat(XEN_GUEST_HANDLE_PARAM(void) uarg)
 #endif
 }
 
-static int kexec_load(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_load(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_load_t load;
-    xen_kexec_segment_t *segments;
+    crux_kexec_load_t load;
+    crux_kexec_segment_t *segments;
     struct kexec_image *kimage = NULL;
     int ret;
 
@@ -1113,7 +1113,7 @@ static int kexec_load(XEN_GUEST_HANDLE_PARAM(void) uarg)
     if ( load.nr_segments >= KEXEC_SEGMENT_MAX )
         return -EINVAL;
 
-    segments = xmalloc_array(xen_kexec_segment_t, load.nr_segments);
+    segments = xmalloc_array(crux_kexec_segment_t, load.nr_segments);
     if ( segments == NULL )
         return -ENOMEM;
 
@@ -1145,7 +1145,7 @@ error:
     return ret;
 }
 
-static int kexec_do_unload(xen_kexec_unload_t *unload)
+static int kexec_do_unload(crux_kexec_unload_t *unload)
 {
     struct kexec_image *old_kimage;
     int ret;
@@ -1159,10 +1159,10 @@ static int kexec_do_unload(xen_kexec_unload_t *unload)
     return 0;
 }
 
-static int kexec_unload_v1(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_unload_v1(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_load_v1_t load;
-    xen_kexec_unload_t unload;
+    crux_kexec_load_v1_t load;
+    crux_kexec_unload_t unload;
 
     if ( copy_from_guest(&load, uarg, 1) )
         return -EFAULT;
@@ -1171,11 +1171,11 @@ static int kexec_unload_v1(XEN_GUEST_HANDLE_PARAM(void) uarg)
     return kexec_do_unload(&unload);
 }
 
-static int kexec_unload_v1_compat(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_unload_v1_compat(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
 #ifdef CONFIG_COMPAT
     compat_kexec_load_v1_t compat_load;
-    xen_kexec_unload_t unload;
+    crux_kexec_unload_t unload;
 
     if ( copy_from_guest(&compat_load, uarg, 1) )
         return -EFAULT;
@@ -1187,9 +1187,9 @@ static int kexec_unload_v1_compat(XEN_GUEST_HANDLE_PARAM(void) uarg)
 #endif
 }
 
-static int kexec_unload(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_unload(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_unload_t unload;
+    crux_kexec_unload_t unload;
 
     if ( unlikely(copy_from_guest(&unload, uarg, 1)) )
         return -EFAULT;
@@ -1197,9 +1197,9 @@ static int kexec_unload(XEN_GUEST_HANDLE_PARAM(void) uarg)
     return kexec_do_unload(&unload);
 }
 
-static int kexec_status(XEN_GUEST_HANDLE_PARAM(void) uarg)
+static int kexec_status(CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
-    xen_kexec_status_t status;
+    crux_kexec_status_t status;
     int base, bit;
 
     if ( unlikely(copy_from_guest(&status, uarg, 1)) )
@@ -1214,7 +1214,7 @@ static int kexec_status(XEN_GUEST_HANDLE_PARAM(void) uarg)
 }
 
 static int do_kexec_op_internal(unsigned long op,
-                                XEN_GUEST_HANDLE_PARAM(void) uarg,
+                                CRUX_GUEST_HANDLE_PARAM(void) uarg,
                                 bool compat)
 {
     int ret = -EINVAL;
@@ -1265,13 +1265,13 @@ static int do_kexec_op_internal(unsigned long op,
     return ret;
 }
 
-long do_kexec_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) uarg)
+long do_kexec_op(unsigned long op, CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
     return do_kexec_op_internal(op, uarg, 0);
 }
 
 #ifdef CONFIG_COMPAT
-int compat_kexec_op(unsigned int op, XEN_GUEST_HANDLE_PARAM(void) uarg)
+int compat_kexec_op(unsigned int op, CRUX_GUEST_HANDLE_PARAM(void) uarg)
 {
     return do_kexec_op_internal(op, uarg, 1);
 }

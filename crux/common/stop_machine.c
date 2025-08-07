@@ -19,14 +19,14 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/sched.h>
-#include <xen/spinlock.h>
-#include <xen/tasklet.h>
-#include <xen/stop_machine.h>
-#include <xen/errno.h>
-#include <xen/smp.h>
-#include <xen/cpu.h>
+#include <crux/init.h>
+#include <crux/sched.h>
+#include <crux/spinlock.h>
+#include <crux/tasklet.h>
+#include <crux/stop_machine.h>
+#include <crux/errno.h>
+#include <crux/smp.h>
+#include <crux/cpu.h>
 #include <asm/current.h>
 #include <asm/processor.h>
 

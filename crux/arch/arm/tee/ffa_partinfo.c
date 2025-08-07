@@ -3,9 +3,9 @@
  * Copyright (C) 2024  Linaro Limited
  */
 
-#include <xen/const.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
+#include <crux/const.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
 
 #include <asm/smccc.h>
 #include <asm/regs.h>
@@ -272,7 +272,7 @@ static bool init_subscribers(uint16_t count, uint32_t fpi_size)
 
     if ( fpi_size < sizeof(struct ffa_partition_info_1_1) )
     {
-        printk(XENLOG_ERR "ffa: partition info size invalid: %u\n", fpi_size);
+        printk(CRUXLOG_ERR "ffa: partition info size invalid: %u\n", fpi_size);
         return false;
     }
 
@@ -290,7 +290,7 @@ static bool init_subscribers(uint16_t count, uint32_t fpi_size)
          */
         if ( !FFA_ID_IS_SECURE(fpi->id) )
         {
-            printk(XENLOG_ERR "ffa: Firmware is not using bit 15 convention for IDs !!\n"
+            printk(CRUXLOG_ERR "ffa: Firmware is not using bit 15 convention for IDs !!\n"
                               "ffa: Secure partition with id 0x%04x cannot be used\n",
                               fpi->id);
         }
@@ -311,7 +311,7 @@ static bool init_subscribers(uint16_t count, uint32_t fpi_size)
     if ( (subscr_vm_created_count && !subscr_vm_created) ||
          (subscr_vm_destroyed_count && !subscr_vm_destroyed) )
     {
-        printk(XENLOG_ERR "ffa: Failed to allocate subscription lists\n");
+        printk(CRUXLOG_ERR "ffa: Failed to allocate subscription lists\n");
         uninit_subscribers();
         return false;
     }
@@ -349,13 +349,13 @@ bool ffa_partinfo_init(void)
     e = ffa_partition_info_get(NULL, 0, &count, &fpi_size);
     if ( e )
     {
-        printk(XENLOG_ERR "ffa: Failed to get list of SPs: %d\n", e);
+        printk(CRUXLOG_ERR "ffa: Failed to get list of SPs: %d\n", e);
         goto out;
     }
 
     if ( count >= UINT16_MAX )
     {
-        printk(XENLOG_ERR "ffa: Impossible number of SPs: %u\n", count);
+        printk(CRUXLOG_ERR "ffa: Impossible number of SPs: %u\n", count);
         goto out;
     }
 
@@ -421,7 +421,7 @@ int ffa_partinfo_domain_init(struct domain *d)
                                      FFA_MSG_SEND_VM_CREATED);
         if ( res )
         {
-            printk(XENLOG_ERR "ffa: Failed to report creation of vm_id %u to  %u: res %d\n",
+            printk(CRUXLOG_ERR "ffa: Failed to report creation of vm_id %u to  %u: res %d\n",
                    ffa_get_vm_id(d), subscr_vm_created[n], res);
             break;
         }
@@ -453,7 +453,7 @@ bool ffa_partinfo_domain_destroy(struct domain *d)
 
         if ( res )
         {
-            printk(XENLOG_ERR "%pd: ffa: Failed to report destruction of vm_id %u to %u: res %d\n",
+            printk(CRUXLOG_ERR "%pd: ffa: Failed to report destruction of vm_id %u to %u: res %d\n",
                    d, ffa_get_vm_id(d), subscr_vm_destroyed[n], res);
         }
 

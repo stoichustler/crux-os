@@ -1,9 +1,9 @@
--include $(XEN_ROOT)/config/Paths.mk
+-include $(CRUX_ROOT)/config/Paths.mk
 
 CONFIG_WERROR       := @werror@
 CONFIG_RUMP         := @CONFIG_RUMP@
 ifeq ($(CONFIG_RUMP),y)
-XEN_OS              := NetBSDRump
+CRUX_OS              := NetBSDRump
 endif
 
 # Tools path
@@ -33,17 +33,17 @@ PTHREAD_LIBS        := @PTHREAD_LIBS@
 
 LIBNL3_LIBS         := @LIBNL3_LIBS@
 LIBNL3_CFLAGS       := @LIBNL3_CFLAGS@
-XEN_TOOLS_RPATH     := @rpath@
+CRUX_TOOLS_RPATH     := @rpath@
 
 # Optional components
-XENSTAT_XENTOP      := @monitors@
+CRUXSTAT_CRUXTOP      := @monitors@
 OCAML_TOOLS         := @ocamltools@
 FLASK_POLICY        := @xsmpolicy@
 CONFIG_OVMF         := @ovmf@
 CONFIG_ROMBIOS      := @rombios@
 CONFIG_SEABIOS      := @seabios@
 CONFIG_IPXE         := @ipxe@
-CONFIG_QEMU_XEN     := @qemu_xen@
+CONFIG_QEMU_CRUX     := @qemu_crux@
 CONFIG_QEMUU_EXTRA_ARGS:= @EXTRA_QEMUU_CONFIGURE_ARGS@
 CONFIG_LIBNL        := @libnl@
 CONFIG_GOLANG       := @golang@
@@ -51,8 +51,8 @@ CONFIG_PYGRUB       := @pygrub@
 CONFIG_LIBFSIMAGE   := @libfsimage@
 
 CONFIG_SYSTEMD      := @systemd@
-XEN_SYSTEMD_DIR     := @SYSTEMD_DIR@
-XEN_SYSTEMD_MODULES_LOAD := @SYSTEMD_MODULES_LOAD@
+CRUX_SYSTEMD_DIR     := @SYSTEMD_DIR@
+CRUX_SYSTEMD_MODULES_LOAD := @SYSTEMD_MODULES_LOAD@
 CONFIG_9PFS         := @ninepfs@
 
 LINUX_BACKEND_MODULES := @LINUX_BACKEND_MODULES@

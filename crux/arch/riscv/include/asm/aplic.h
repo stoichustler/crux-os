@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /*
- * xen/arch/riscv/asm/include/aplic.h
+ * crux/arch/riscv/asm/include/aplic.h
  *
  * RISC-V Advanced Platform-Level Interrupt Controller support
  *
@@ -11,7 +11,7 @@
 #ifndef ASM_RISCV_APLIC_H
 #define ASM_RISCV_APLIC_H
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 #include <asm/imsic.h>
 

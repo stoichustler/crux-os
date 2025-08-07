@@ -2,7 +2,7 @@ choice
 	prompt "Platform Support" if MMU
 	default ALL_PLAT
 	help
-	  Choose which hardware platform to enable in xen.
+	  Choose which hardware platform to enable in crux.
 
 	  If unsure, choose ALL_PLAT.
 

@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/cpu.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/numa.h>
-#include <xen/percpu.h>
-#include <xen/rcupdate.h>
-#include <xen/sections.h>
+#include <crux/cpu.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/numa.h>
+#include <crux/percpu.h>
+#include <crux/rcupdate.h>
+#include <crux/sections.h>
 
 #ifndef INVALID_PERCPU_AREA
 #define INVALID_PERCPU_AREA (-(long)__per_cpu_start)
@@ -37,7 +37,7 @@ static int init_percpu_area(unsigned int cpu)
                ? 0
                : -EBUSY;
 
-    if ( (p = alloc_xenheap_pages(PERCPU_ORDER, memflags)) == NULL )
+    if ( (p = alloc_cruxheap_pages(PERCPU_ORDER, memflags)) == NULL )
         return -ENOMEM;
 
     memset(p, 0, __per_cpu_data_end - __per_cpu_start);
@@ -58,7 +58,7 @@ static void cf_check _free_percpu_area(struct rcu_head *head)
     unsigned int cpu = info->cpu;
     char *p = __per_cpu_start + __per_cpu_offset[cpu];
 
-    free_xenheap_pages(p, PERCPU_ORDER);
+    free_cruxheap_pages(p, PERCPU_ORDER);
     __per_cpu_offset[cpu] = INVALID_PERCPU_AREA;
 }
 

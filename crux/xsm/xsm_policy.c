@@ -14,7 +14,7 @@
  *  as published by the Free Software Foundation.
  *
  *
- *  This file contains the XSM policy init functions for xen.
+ *  This file contains the XSM policy init functions for Xen.
  *
  */
 
@@ -23,10 +23,10 @@
 #include <asm/bootinfo.h>
 #include <asm/setup.h>
 #endif
-#include <xen/bitops.h>
+#include <crux/bitops.h>
 #ifdef CONFIG_HAS_DEVICE_TREE_DISCOVERY
 # include <asm/setup.h>
-# include <xen/device_tree.h>
+# include <crux/device_tree.h>
 #endif
 
 #ifdef CONFIG_MULTIBOOT
@@ -79,7 +79,7 @@ int __init xsm_dt_policy_init(void **policy_buffer, size_t *policy_size)
 
     if ( !has_xsm_magic(paddr) )
     {
-        printk(XENLOG_ERR "xsm: Invalid magic for XSM blob\n");
+        printk(CRUXLOG_ERR "xsm: Invalid magic for XSM blob\n");
         return -EINVAL;
     }
 

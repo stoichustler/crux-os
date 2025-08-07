@@ -1,7 +1,7 @@
 #ifndef __ASM_ARM_ARM64_SYSREGS_H
 #define __ASM_ARM_ARM64_SYSREGS_H
 
-#include <xen/stringify.h>
+#include <crux/stringify.h>
 
 /*
  * GIC System register assembly aliases picked from kernel

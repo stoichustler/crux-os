@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/mmu/pt.c
+ * crux/arch/arm/mmu/pt.c
  *
  * MMU system page table related functions.
  */
 
-#include <xen/domain_page.h>
-#include <xen/init.h>
-#include <xen/pfn.h>
-#include <xen/sizes.h>
-#include <xen/vmap.h>
+#include <crux/domain_page.h>
+#include <crux/init.h>
+#include <crux/pfn.h>
+#include <crux/sizes.h>
+#include <crux/vmap.h>
 
 #include <asm/current.h>
 #include <asm/fixmap.h>
@@ -22,7 +22,7 @@ mm_printk(const char *fmt, ...) {}
 #define mm_printk(fmt, args...)             \
     do                                      \
     {                                       \
-        dprintk(XENLOG_ERR, fmt, ## args);  \
+        dprintk(CRUXLOG_ERR, fmt, ## args);  \
         WARN();                             \
     } while (0)
 #endif
@@ -33,7 +33,7 @@ mm_printk(const char *fmt, ...) {}
 #define HYP_PT_ROOT_LEVEL 1
 #endif
 
-static lpae_t *xen_map_table(mfn_t mfn)
+static lpae_t *crux_map_table(mfn_t mfn)
 {
     /*
      * During early boot, map_domain_page() may be unusable. Use the
@@ -45,10 +45,10 @@ static lpae_t *xen_map_table(mfn_t mfn)
     return map_domain_page(mfn);
 }
 
-static void xen_unmap_table(const lpae_t *table)
+static void crux_unmap_table(const lpae_t *table)
 {
     /*
-     * During early boot, xen_map_table() will not use map_domain_page()
+     * During early boot, crux_map_table() will not use map_domain_page()
      * but the PMAP.
      */
     if ( system_state == SYS_STATE_early_boot )
@@ -81,7 +81,7 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
          */
         BUG_ON(root_level == 0);
         root_table = offsets[root_level - 1];
-        printk("using concatenated root table %u\n", root_table);
+        printk("Using concatenated root table %u\n", root_table);
         if ( root_table >= nr_root_tables )
         {
             printk("Invalid root table offset\n");
@@ -91,11 +91,11 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
     else
         root_table = 0;
 
-    mapping = xen_map_table(mfn_add(root_mfn, root_table));
+    mapping = crux_map_table(mfn_add(root_mfn, root_table));
 
     for ( level = root_level; ; level++ )
     {
-        if ( offsets[level] > XEN_PT_LPAE_ENTRIES )
+        if ( offsets[level] > CRUX_PT_LPAE_ENTRIES )
             break;
 
         pte = mapping[offsets[level]];
@@ -107,11 +107,11 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
             break;
 
         /* For next iteration */
-        xen_unmap_table(mapping);
-        mapping = xen_map_table(lpae_get_mfn(pte));
+        crux_unmap_table(mapping);
+        mapping = crux_map_table(lpae_get_mfn(pte));
     }
 
-    xen_unmap_table(mapping);
+    crux_unmap_table(mapping);
 }
 
 void dump_hyp_walk(vaddr_t addr)
@@ -125,7 +125,7 @@ void dump_hyp_walk(vaddr_t addr)
     dump_pt_walk(ttbr, addr, HYP_PT_ROOT_LEVEL, 1);
 }
 
-lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr)
+lpae_t mfn_to_crux_entry(mfn_t mfn, unsigned int attr)
 {
     lpae_t e = (lpae_t) {
         .pt = {
@@ -177,7 +177,7 @@ lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr)
         e.pt.sh = LPAE_SH_OUTER;
         break;
     default:
-        e.pt.sh = LPAE_SH_INNER;  /* xen mappings are SMP coherent */
+        e.pt.sh = LPAE_SH_INNER;  /* Xen mappings are SMP coherent */
         break;
     }
 
@@ -193,7 +193,7 @@ void set_fixmap(unsigned int map, mfn_t mfn, unsigned int flags)
 {
     int res;
 
-    res = map_pages_to_xen(FIXMAP_ADDR(map), mfn, 1, flags);
+    res = map_pages_to_crux(FIXMAP_ADDR(map), mfn, 1, flags);
     BUG_ON(res != 0);
 }
 
@@ -202,7 +202,7 @@ void clear_fixmap(unsigned int map)
 {
     int res;
 
-    res = destroy_xen_mappings(FIXMAP_ADDR(map), FIXMAP_ADDR(map) + PAGE_SIZE);
+    res = destroy_crux_mappings(FIXMAP_ADDR(map), FIXMAP_ADDR(map) + PAGE_SIZE);
     BUG_ON(res != 0);
 }
 
@@ -223,7 +223,7 @@ void *ioremap_attr(paddr_t start, size_t len, unsigned int attributes)
     return ptr + offs;
 }
 
-static int create_xen_table(lpae_t *entry)
+static int create_crux_table(lpae_t *entry)
 {
     mfn_t mfn;
     void *p;
@@ -241,15 +241,15 @@ static int create_xen_table(lpae_t *entry)
     else
         mfn = alloc_boot_pages(1, 1);
 
-    p = xen_map_table(mfn);
+    p = crux_map_table(mfn);
     clear_page(p);
-    xen_unmap_table(p);
+    crux_unmap_table(p);
 
-    pte = mfn_to_xen_entry(mfn, MT_NORMAL);
+    pte = mfn_to_crux_entry(mfn, MT_NORMAL);
     pte.pt.table = 1;
     write_pte(entry, pte);
     /*
-     * No ISB here. It is deferred to xen_pt_update() as the new table
+     * No ISB here. It is deferred to crux_pt_update() as the new table
      * will not be used for hardware translation table access as part of
      * the mapping update.
      */
@@ -257,9 +257,9 @@ static int create_xen_table(lpae_t *entry)
     return 0;
 }
 
-#define XEN_TABLE_MAP_FAILED 0
-#define XEN_TABLE_SUPER_PAGE 1
-#define XEN_TABLE_NORMAL_PAGE 2
+#define CRUX_TABLE_MAP_FAILED 0
+#define CRUX_TABLE_SUPER_PAGE 1
+#define CRUX_TABLE_NORMAL_PAGE 2
 
 /*
  * Take the currently mapped table, find the corresponding entry,
@@ -269,12 +269,12 @@ static int create_xen_table(lpae_t *entry)
  * be allocated when not present.
  *
  * Return values:
- *  XEN_TABLE_MAP_FAILED: Either read_only was set and the entry
+ *  CRUX_TABLE_MAP_FAILED: Either read_only was set and the entry
  *  was empty, or allocating a new page failed.
- *  XEN_TABLE_NORMAL_PAGE: next level mapped normally
- *  XEN_TABLE_SUPER_PAGE: The next entry points to a superpage.
+ *  CRUX_TABLE_NORMAL_PAGE: next level mapped normally
+ *  CRUX_TABLE_SUPER_PAGE: The next entry points to a superpage.
  */
-static int xen_pt_next_level(bool read_only, unsigned int level,
+static int crux_pt_next_level(bool read_only, unsigned int level,
                              lpae_t **table, unsigned int offset)
 {
     lpae_t *entry;
@@ -286,27 +286,27 @@ static int xen_pt_next_level(bool read_only, unsigned int level,
     if ( !lpae_is_valid(*entry) )
     {
         if ( read_only )
-            return XEN_TABLE_MAP_FAILED;
+            return CRUX_TABLE_MAP_FAILED;
 
-        ret = create_xen_table(entry);
+        ret = create_crux_table(entry);
         if ( ret )
-            return XEN_TABLE_MAP_FAILED;
+            return CRUX_TABLE_MAP_FAILED;
     }
 
-    /* The function xen_pt_next_level is never called at the 3rd level */
+    /* The function crux_pt_next_level is never called at the 3rd level */
     if ( lpae_is_mapping(*entry, level) )
-        return XEN_TABLE_SUPER_PAGE;
+        return CRUX_TABLE_SUPER_PAGE;
 
     mfn = lpae_get_mfn(*entry);
 
-    xen_unmap_table(*table);
-    *table = xen_map_table(mfn);
+    crux_unmap_table(*table);
+    *table = crux_map_table(mfn);
 
-    return XEN_TABLE_NORMAL_PAGE;
+    return CRUX_TABLE_NORMAL_PAGE;
 }
 
 /* Sanity check of the entry */
-static bool xen_pt_check_entry(lpae_t entry, mfn_t mfn, unsigned int level,
+static bool crux_pt_check_entry(lpae_t entry, mfn_t mfn, unsigned int level,
                                unsigned int flags)
 {
     /* Sanity check when modifying an entry. */
@@ -350,7 +350,7 @@ static bool xen_pt_check_entry(lpae_t entry, mfn_t mfn, unsigned int level,
         /*
          * We don't allow replacing any valid entry.
          *
-         * Note that the function xen_pt_update() relies on this
+         * Note that the function crux_pt_update() relies on this
          * assumption and will skip the TLB flush. The function will need
          * to be updated if the check is relaxed.
          */
@@ -396,7 +396,7 @@ static bool xen_pt_check_entry(lpae_t entry, mfn_t mfn, unsigned int level,
 }
 
 /* Update an entry at the level @target. */
-static int xen_pt_update_entry(mfn_t root, unsigned long virt,
+static int crux_pt_update_entry(mfn_t root, unsigned long virt,
                                mfn_t mfn, unsigned int target,
                                unsigned int flags)
 {
@@ -417,14 +417,14 @@ static int xen_pt_update_entry(mfn_t root, unsigned long virt,
     /* _PAGE_POPULATE and _PAGE_PRESENT should never be set together. */
     ASSERT((flags & (_PAGE_POPULATE|_PAGE_PRESENT)) != (_PAGE_POPULATE|_PAGE_PRESENT));
 
-    table = xen_map_table(root);
+    table = crux_map_table(root);
     for ( level = HYP_PT_ROOT_LEVEL; level < target; level++ )
     {
-        rc = xen_pt_next_level(read_only, level, &table, offsets[level]);
-        if ( rc == XEN_TABLE_MAP_FAILED )
+        rc = crux_pt_next_level(read_only, level, &table, offsets[level]);
+        if ( rc == CRUX_TABLE_MAP_FAILED )
         {
             /*
-             * We are here because xen_pt_next_level has failed to map
+             * We are here because crux_pt_next_level has failed to map
              * the intermediate page table (e.g the table does not exist
              * and the pt is read-only). It is a valid case when
              * removing a mapping as it may not exist in the page table.
@@ -442,7 +442,7 @@ static int xen_pt_update_entry(mfn_t root, unsigned long virt,
                 goto out;
             }
         }
-        else if ( rc != XEN_TABLE_NORMAL_PAGE )
+        else if ( rc != CRUX_TABLE_NORMAL_PAGE )
             break;
     }
 
@@ -456,7 +456,7 @@ static int xen_pt_update_entry(mfn_t root, unsigned long virt,
     entry = table + offsets[level];
 
     rc = -EINVAL;
-    if ( !xen_pt_check_entry(*entry, mfn, level, flags) )
+    if ( !crux_pt_check_entry(*entry, mfn, level, flags) )
         goto out;
 
     /* If we are only populating page-table, then we are done. */
@@ -472,7 +472,7 @@ static int xen_pt_update_entry(mfn_t root, unsigned long virt,
         /* We are inserting a mapping => Create new pte. */
         if ( !mfn_eq(mfn, INVALID_MFN) )
         {
-            pte = mfn_to_xen_entry(mfn, PAGE_AI_MASK(flags));
+            pte = mfn_to_crux_entry(mfn, PAGE_AI_MASK(flags));
 
             /*
              * First and second level pages set pte.pt.table = 0, but
@@ -492,20 +492,20 @@ static int xen_pt_update_entry(mfn_t root, unsigned long virt,
 
     write_pte(entry, pte);
     /*
-     * No ISB or TLB flush here. They are deferred to xen_pt_update()
+     * No ISB or TLB flush here. They are deferred to crux_pt_update()
      * as the entry will not be used as part of the mapping update.
      */
 
     rc = 0;
 
 out:
-    xen_unmap_table(table);
+    crux_unmap_table(table);
 
     return rc;
 }
 
 /* Return the level where mapping should be done */
-static int xen_pt_mapping_level(unsigned long vfn, mfn_t mfn, unsigned long nr,
+static int crux_pt_mapping_level(unsigned long vfn, mfn_t mfn, unsigned long nr,
                                 unsigned int flags)
 {
     unsigned int level;
@@ -544,13 +544,13 @@ static int xen_pt_mapping_level(unsigned long vfn, mfn_t mfn, unsigned long nr,
      return level;
 }
 
-#define XEN_PT_4K_NR_CONTIG 16
+#define CRUX_PT_4K_NR_CONTIG 16
 
 /*
  * Check whether the contiguous bit can be set. Return the number of
  * contiguous entry allowed. If not allowed, return 1.
  */
-static unsigned int xen_pt_check_contig(unsigned long vfn, mfn_t mfn,
+static unsigned int crux_pt_check_contig(unsigned long vfn, mfn_t mfn,
                                         unsigned int level, unsigned long left,
                                         unsigned int flags)
 {
@@ -581,17 +581,17 @@ static unsigned int xen_pt_check_contig(unsigned long vfn, mfn_t mfn,
      * to map left and both the virtual and physical address should be
      * aligned to the size of 16 translation tables entries.
      */
-    nr_contig = BIT(XEN_PT_LEVEL_ORDER(level), UL) * XEN_PT_4K_NR_CONTIG;
+    nr_contig = BIT(CRUX_PT_LEVEL_ORDER(level), UL) * CRUX_PT_4K_NR_CONTIG;
 
     if ( (left < nr_contig) || ((mfn_x(mfn) | vfn) & (nr_contig - 1)) )
         return 1;
 
-    return XEN_PT_4K_NR_CONTIG;
+    return CRUX_PT_4K_NR_CONTIG;
 }
 
-static DEFINE_SPINLOCK(xen_pt_lock);
+static DEFINE_SPINLOCK(crux_pt_lock);
 
-static int xen_pt_update(unsigned long virt,
+static int crux_pt_update(unsigned long virt,
                          mfn_t mfn,
                          /* const on purpose as it is used for TLB flush */
                          const unsigned long nr_mfns,
@@ -628,14 +628,14 @@ static int xen_pt_update(unsigned long virt,
         return -EINVAL;
     }
 
-    spin_lock(&xen_pt_lock);
+    spin_lock(&crux_pt_lock);
 
     while ( left )
     {
         unsigned int order, level, nr_contig, new_flags;
 
-        level = xen_pt_mapping_level(vfn, mfn, left, flags);
-        order = XEN_PT_LEVEL_ORDER(level);
+        level = crux_pt_mapping_level(vfn, mfn, left, flags);
+        order = CRUX_PT_LEVEL_ORDER(level);
 
         ASSERT(left >= BIT(order, UL));
 
@@ -643,12 +643,12 @@ static int xen_pt_update(unsigned long virt,
          * Check if we can set the contiguous mapping and update the
          * flags accordingly.
          */
-        nr_contig = xen_pt_check_contig(vfn, mfn, level, left, flags);
+        nr_contig = crux_pt_check_contig(vfn, mfn, level, left, flags);
         new_flags = flags | ((nr_contig > 1) ? _PAGE_CONTIG : 0);
 
         for ( ; nr_contig > 0; nr_contig-- )
         {
-            rc = xen_pt_update_entry(root, vfn << PAGE_SHIFT, mfn, level,
+            rc = crux_pt_update_entry(root, vfn << PAGE_SHIFT, mfn, level,
                                      new_flags);
             if ( rc )
                 break;
@@ -666,7 +666,7 @@ static int xen_pt_update(unsigned long virt,
 
     /*
      * The TLBs flush can be safely skipped when a mapping is inserted
-     * as we don't allow mapping replacement (see xen_pt_check_entry()).
+     * as we don't allow mapping replacement (see crux_pt_check_entry()).
      * Although we still need an ISB to ensure any DSB in
      * write_pte() will complete because the mapping may be used soon
      * after.
@@ -677,42 +677,42 @@ static int xen_pt_update(unsigned long virt,
      * behavior afterwards.
      */
     if ( !((flags & _PAGE_PRESENT) && !mfn_eq(mfn, INVALID_MFN)) )
-        flush_xen_tlb_range_va(virt, PAGE_SIZE * nr_mfns);
+        flush_crux_tlb_range_va(virt, PAGE_SIZE * nr_mfns);
     else
         isb();
 
-    spin_unlock(&xen_pt_lock);
+    spin_unlock(&crux_pt_lock);
 
     return rc;
 }
 
-int map_pages_to_xen(unsigned long virt,
+int map_pages_to_crux(unsigned long virt,
                      mfn_t mfn,
                      unsigned long nr_mfns,
                      pte_attr_t flags)
 {
-    return xen_pt_update(virt, mfn, nr_mfns, flags);
+    return crux_pt_update(virt, mfn, nr_mfns, flags);
 }
 
 int __init populate_pt_range(unsigned long virt, unsigned long nr_mfns)
 {
-    return xen_pt_update(virt, INVALID_MFN, nr_mfns, _PAGE_POPULATE);
+    return crux_pt_update(virt, INVALID_MFN, nr_mfns, _PAGE_POPULATE);
 }
 
-int destroy_xen_mappings(unsigned long s, unsigned long e)
+int destroy_crux_mappings(unsigned long s, unsigned long e)
 {
     ASSERT(IS_ALIGNED(s, PAGE_SIZE));
     ASSERT(IS_ALIGNED(e, PAGE_SIZE));
     ASSERT(s <= e);
-    return xen_pt_update(s, INVALID_MFN, (e - s) >> PAGE_SHIFT, 0);
+    return crux_pt_update(s, INVALID_MFN, (e - s) >> PAGE_SHIFT, 0);
 }
 
-int modify_xen_mappings(unsigned long s, unsigned long e, pte_attr_t nf)
+int modify_crux_mappings(unsigned long s, unsigned long e, pte_attr_t nf)
 {
     ASSERT(IS_ALIGNED(s, PAGE_SIZE));
     ASSERT(IS_ALIGNED(e, PAGE_SIZE));
     ASSERT(s <= e);
-    return xen_pt_update(s, INVALID_MFN, (e - s) >> PAGE_SHIFT, nf);
+    return crux_pt_update(s, INVALID_MFN, (e - s) >> PAGE_SHIFT, nf);
 }
 
 /*

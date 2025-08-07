@@ -1,5 +1,5 @@
-#include <xen/pci.h>
-#include <xen/acpi.h>
+#include <crux/pci.h>
+#include <crux/acpi.h>
 #include <acpi/acpi.h>
 
 void acpi_reboot(void)

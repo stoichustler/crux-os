@@ -2,9 +2,9 @@
  * xlat.c
  */
 
-#include <xen/compat.h>
-#include <xen/lib.h>
-#include <compat/xen.h>
+#include <crux/compat.h>
+#include <crux/lib.h>
+#include <compat/crux.h>
 #include <compat/event_channel.h>
 #include <compat/vcpu.h>
 
@@ -26,57 +26,57 @@ void xlat_vcpu_runstate_info(struct vcpu_runstate_info *native)
     XLAT_vcpu_runstate_info(compat, native);
 }
 
-#define xen_dom0_vga_console_info dom0_vga_console_info
+#define crux_dom0_vga_console_info dom0_vga_console_info
 CHECK_dom0_vga_console_info;
 #undef dom0_vga_console_info
 
-#define xen_evtchn_alloc_unbound evtchn_alloc_unbound
-#define xen_evtchn_bind_interdomain evtchn_bind_interdomain
-#define xen_evtchn_bind_ipi evtchn_bind_ipi
-#define xen_evtchn_bind_pirq evtchn_bind_pirq
-#define xen_evtchn_bind_vcpu evtchn_bind_vcpu
-#define xen_evtchn_bind_virq evtchn_bind_virq
-#define xen_evtchn_close evtchn_close
-#define xen_evtchn_op evtchn_op
-#define xen_evtchn_send evtchn_send
-#define xen_evtchn_status evtchn_status
-#define xen_evtchn_unmask evtchn_unmask
+#define crux_evtchn_alloc_unbound evtchn_alloc_unbound
+#define crux_evtchn_bind_interdomain evtchn_bind_interdomain
+#define crux_evtchn_bind_ipi evtchn_bind_ipi
+#define crux_evtchn_bind_pirq evtchn_bind_pirq
+#define crux_evtchn_bind_vcpu evtchn_bind_vcpu
+#define crux_evtchn_bind_virq evtchn_bind_virq
+#define crux_evtchn_close evtchn_close
+#define crux_evtchn_op evtchn_op
+#define crux_evtchn_send evtchn_send
+#define crux_evtchn_status evtchn_status
+#define crux_evtchn_unmask evtchn_unmask
 CHECK_evtchn_op;
-#undef xen_evtchn_alloc_unbound
-#undef xen_evtchn_bind_interdomain
-#undef xen_evtchn_bind_ipi
-#undef xen_evtchn_bind_pirq
-#undef xen_evtchn_bind_vcpu
-#undef xen_evtchn_bind_virq
-#undef xen_evtchn_close
-#undef xen_evtchn_op
-#undef xen_evtchn_send
-#undef xen_evtchn_status
-#undef xen_evtchn_unmask
+#undef crux_evtchn_alloc_unbound
+#undef crux_evtchn_bind_interdomain
+#undef crux_evtchn_bind_ipi
+#undef crux_evtchn_bind_pirq
+#undef crux_evtchn_bind_vcpu
+#undef crux_evtchn_bind_virq
+#undef crux_evtchn_close
+#undef crux_evtchn_op
+#undef crux_evtchn_send
+#undef crux_evtchn_status
+#undef crux_evtchn_unmask
 
-#define xen_evtchn_expand_array evtchn_expand_array
+#define crux_evtchn_expand_array evtchn_expand_array
 CHECK_evtchn_expand_array;
-#undef xen_evtchn_expand_array
+#undef crux_evtchn_expand_array
 
-#define xen_evtchn_init_control evtchn_init_control
+#define crux_evtchn_init_control evtchn_init_control
 CHECK_evtchn_init_control;
-#undef xen_evtchn_init_control
+#undef crux_evtchn_init_control
 
-#define xen_evtchn_reset evtchn_reset
+#define crux_evtchn_reset evtchn_reset
 CHECK_evtchn_reset;
-#undef xen_evtchn_reset
+#undef crux_evtchn_reset
 
-#define xen_evtchn_set_priority evtchn_set_priority
+#define crux_evtchn_set_priority evtchn_set_priority
 CHECK_evtchn_set_priority;
-#undef xen_evtchn_set_priority
+#undef crux_evtchn_set_priority
 
-#define xen_mmu_update mmu_update
+#define crux_mmu_update mmu_update
 CHECK_mmu_update;
-#undef xen_mmu_update
+#undef crux_mmu_update
 
-#define xen_vcpu_time_info vcpu_time_info
+#define crux_vcpu_time_info vcpu_time_info
 CHECK_vcpu_time_info;
-#undef xen_vcpu_time_info
+#undef crux_vcpu_time_info
 
 /*
  * Local variables:

@@ -7,8 +7,8 @@
  * Copyright(c) FUJITSU Limited 2008.
  */
 
-#ifndef __XEN__PUBLIC_IO_SCSI_H__
-#define __XEN__PUBLIC_IO_SCSI_H__
+#ifndef __CRUX__PUBLIC_IO_SCSI_H__
+#define __CRUX__PUBLIC_IO_SCSI_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -16,19 +16,19 @@
 /*
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a xen pvSCSI driver utilize nodes within the xenStore to
+ * The two halves of a Xen pvSCSI driver utilize nodes within the XenStore to
  * communicate capabilities and to negotiate operating parameters.  This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the xenStore, following the xenBus convention.
+ * backend portions of the XenStore, following the XenBus convention.
  *
- * Any specified default value is in effect if the corresponding xenBus node
- * is not present in the xenStore.
+ * Any specified default value is in effect if the corresponding XenBus node
+ * is not present in the XenStore.
  *
- * xenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose xenBus tree contains them.
+ * XenStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose XenBus tree contains them.
  *
  *****************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -62,7 +62,7 @@
  *      SG elements specified directly in the request.
  *
  *****************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -70,30 +70,30 @@
  * event-channel
  *      Values:         unsigned
  *
- *      The identifier of the xen event channel used to signal activity
+ *      The identifier of the Xen event channel used to signal activity
  *      in the ring buffer.
  *
  * ring-ref
  *      Values:         unsigned
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer.
  *
  * protocol
- *      Values:         string (XEN_IO_PROTO_ABI_*)
- *      Default Value:  XEN_IO_PROTO_ABI_NATIVE
+ *      Values:         string (CRUX_IO_PROTO_ABI_*)
+ *      Default Value:  CRUX_IO_PROTO_ABI_NATIVE
  *
  *      The machine ABI rules governing the format of all ring request and
  *      response structures.
  */
 
 /*
- * xenstore format in practice
+ * Xenstore format in practice
  * ===========================
  *
  * The backend driver uses a single_host:many_devices notation to manage domU
  * devices. Everything is stored in /local/domain/<backend_domid>/backend/vscsi/.
- * The xenstore layout looks like this (dom0 is assumed to be the backend_domid):
+ * The cruxstore layout looks like this (dom0 is assumed to be the backend_domid):
  *
  *     <domid>/<vhost>/feature-host = "0"
  *     <domid>/<vhost>/frontend = "/local/domain/<domid>/device/vscsi/0"
@@ -176,10 +176,10 @@
  * seg[] array and the number of valid scsiif_request_segment elements is to be
  * set in nr_segments.
  *
- * If "feature-sg-grant" in the xenstore is set it is possible to specify more
+ * If "feature-sg-grant" in the Xenstore is set it is possible to specify more
  * than VSCSIIF_SG_TABLESIZE scsiif_request_segment elements via indirection.
  * The maximum number of allowed scsiif_request_segment elements is the value
- * of the "feature-sg-grant" entry from xenstore. When using indirection the
+ * of the "feature-sg-grant" entry from Xenstore. When using indirection the
  * seg[] array doesn't contain specifications of the data buffers, but
  * references to scsiif_request_segment arrays, which in turn reference the
  * data buffers. While nr_segments holds the number of populated seg[] entries
@@ -299,60 +299,60 @@ struct vscsiif_response {
 typedef struct vscsiif_response vscsiif_response_t;
 
 /* SCSI I/O status from vscsiif_response->rslt */
-#define XEN_VSCSIIF_RSLT_STATUS(x)  ((x) & 0x00ff)
+#define CRUX_VSCSIIF_RSLT_STATUS(x)  ((x) & 0x00ff)
 
 /* Host I/O status from vscsiif_response->rslt */
-#define XEN_VSCSIIF_RSLT_HOST(x)    (((x) & 0x00ff0000) >> 16)
-#define XEN_VSCSIIF_RSLT_HOST_OK                   0
+#define CRUX_VSCSIIF_RSLT_HOST(x)    (((x) & 0x00ff0000) >> 16)
+#define CRUX_VSCSIIF_RSLT_HOST_OK                   0
 /* Couldn't connect before timeout */
-#define XEN_VSCSIIF_RSLT_HOST_NO_CONNECT           1
+#define CRUX_VSCSIIF_RSLT_HOST_NO_CONNECT           1
 /* Bus busy through timeout */
-#define XEN_VSCSIIF_RSLT_HOST_BUS_BUSY             2
+#define CRUX_VSCSIIF_RSLT_HOST_BUS_BUSY             2
 /* Timed out for other reason */
-#define XEN_VSCSIIF_RSLT_HOST_TIME_OUT             3
+#define CRUX_VSCSIIF_RSLT_HOST_TIME_OUT             3
 /* Bad target */
-#define XEN_VSCSIIF_RSLT_HOST_BAD_TARGET           4
+#define CRUX_VSCSIIF_RSLT_HOST_BAD_TARGET           4
 /* Abort for some other reason */
-#define XEN_VSCSIIF_RSLT_HOST_ABORT                5
+#define CRUX_VSCSIIF_RSLT_HOST_ABORT                5
 /* Parity error */
-#define XEN_VSCSIIF_RSLT_HOST_PARITY               6
+#define CRUX_VSCSIIF_RSLT_HOST_PARITY               6
 /* Internal error */
-#define XEN_VSCSIIF_RSLT_HOST_ERROR                7
+#define CRUX_VSCSIIF_RSLT_HOST_ERROR                7
 /* Reset by somebody */
-#define XEN_VSCSIIF_RSLT_HOST_RESET                8
+#define CRUX_VSCSIIF_RSLT_HOST_RESET                8
 /* Unexpected interrupt */
-#define XEN_VSCSIIF_RSLT_HOST_BAD_INTR             9
+#define CRUX_VSCSIIF_RSLT_HOST_BAD_INTR             9
 /* Force command past mid-layer */
-#define XEN_VSCSIIF_RSLT_HOST_PASSTHROUGH         10
+#define CRUX_VSCSIIF_RSLT_HOST_PASSTHROUGH         10
 /* Retry requested */
-#define XEN_VSCSIIF_RSLT_HOST_SOFT_ERROR          11
+#define CRUX_VSCSIIF_RSLT_HOST_SOFT_ERROR          11
 /* Hidden retry requested */
-#define XEN_VSCSIIF_RSLT_HOST_IMM_RETRY           12
+#define CRUX_VSCSIIF_RSLT_HOST_IMM_RETRY           12
 /* Requeue command requested */
-#define XEN_VSCSIIF_RSLT_HOST_REQUEUE             13
+#define CRUX_VSCSIIF_RSLT_HOST_REQUEUE             13
 /* Transport error disrupted I/O */
-#define XEN_VSCSIIF_RSLT_HOST_TRANSPORT_DISRUPTED 14
+#define CRUX_VSCSIIF_RSLT_HOST_TRANSPORT_DISRUPTED 14
 /* Transport class fastfailed */
-#define XEN_VSCSIIF_RSLT_HOST_TRANSPORT_FAILFAST  15
+#define CRUX_VSCSIIF_RSLT_HOST_TRANSPORT_FAILFAST  15
 /* Permanent target failure */
-#define XEN_VSCSIIF_RSLT_HOST_TARGET_FAILURE      16
+#define CRUX_VSCSIIF_RSLT_HOST_TARGET_FAILURE      16
 /* Permanent nexus failure on path */
-#define XEN_VSCSIIF_RSLT_HOST_NEXUS_FAILURE       17
+#define CRUX_VSCSIIF_RSLT_HOST_NEXUS_FAILURE       17
 /* Space allocation on device failed */
-#define XEN_VSCSIIF_RSLT_HOST_ALLOC_FAILURE       18
+#define CRUX_VSCSIIF_RSLT_HOST_ALLOC_FAILURE       18
 /* Medium error */
-#define XEN_VSCSIIF_RSLT_HOST_MEDIUM_ERROR        19
+#define CRUX_VSCSIIF_RSLT_HOST_MEDIUM_ERROR        19
 /* Transport marginal errors */
-#define XEN_VSCSIIF_RSLT_HOST_TRANSPORT_MARGINAL  20
+#define CRUX_VSCSIIF_RSLT_HOST_TRANSPORT_MARGINAL  20
 
 /* Result values of reset operations */
-#define XEN_VSCSIIF_RSLT_RESET_SUCCESS  0x2002
-#define XEN_VSCSIIF_RSLT_RESET_FAILED   0x2003
+#define CRUX_VSCSIIF_RSLT_RESET_SUCCESS  0x2002
+#define CRUX_VSCSIIF_RSLT_RESET_FAILED   0x2003
 
 DEFINE_RING_TYPES(vscsiif, struct vscsiif_request, struct vscsiif_response);
 
 
-#endif  /*__XEN__PUBLIC_IO_SCSI_H__*/
+#endif  /*__CRUX__PUBLIC_IO_SCSI_H__*/
 /*
  * Local variables:
  * mode: C

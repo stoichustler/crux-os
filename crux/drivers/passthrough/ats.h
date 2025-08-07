@@ -15,7 +15,7 @@
 #ifndef DRIVERS__PASSTHROUGH__ATS_H
 #define DRIVERS__PASSTHROUGH__ATS_H
 
-#include <xen/pci_regs.h>
+#include <crux/pci_regs.h>
 
 #define ATS_REG_CAP    4
 #define ATS_REG_CTL    6

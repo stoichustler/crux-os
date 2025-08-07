@@ -7,7 +7,7 @@
 #define ASM__RISCV__ASM_H
 
 #ifdef __ASSEMBLY__
-#include <xen/linkage.h>
+#include <crux/linkage.h>
 #define __ASM_STR(x)	x
 #else
 #define __ASM_STR(x)	#x

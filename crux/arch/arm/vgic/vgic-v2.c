@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015, 2016 ARM Ltd.
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -17,9 +17,9 @@
 
 #include <asm/new_vgic.h>
 #include <asm/gic.h>
-#include <xen/bug.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/bug.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 
 #include "vgic.h"
 
@@ -44,7 +44,7 @@ void vgic_v2_setup_hw(paddr_t dbase, paddr_t cbase, paddr_t csize,
     gic_v2_hw_data.vbase = vbase;
     gic_v2_hw_data.aliased_offset = aliased_offset;
 
-    printk("using the new VGIC implementation.\n");
+    printk("Using the new VGIC implementation.\n");
 }
 
 /*
@@ -317,7 +317,7 @@ int vgic_v2_map_resources(struct domain *d)
     ret = vgic_register_dist_iodev(d, gaddr_to_gfn(dist->dbase), VGIC_V2);
     if ( ret )
     {
-        gdprintk(XENLOG_ERR, "Unable to register VGIC MMIO regions\n");
+        gdprintk(CRUXLOG_ERR, "Unable to register VGIC MMIO regions\n");
         return ret;
     }
 

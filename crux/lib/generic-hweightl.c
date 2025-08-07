@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/self-tests.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/self-tests.h>
 
 /* Value @b broadcast to every byte in a long */
 #if BITS_PER_LONG == 32

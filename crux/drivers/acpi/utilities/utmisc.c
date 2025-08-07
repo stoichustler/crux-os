@@ -41,7 +41,7 @@
  * POSSIBILITY OF SUCH DAMAGES.
  */
 
-#include <xen/init.h>
+#include <crux/init.h>
 #include <acpi/acpi.h>
 
 #define _COMPONENT          ACPI_UTILITIES

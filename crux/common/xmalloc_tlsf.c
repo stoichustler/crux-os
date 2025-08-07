@@ -20,12 +20,12 @@
  * Adapted for Linux by Nitin Gupta (nitingupta910@gmail.com)
  * (http://code.google.com/p/compcache/source/browse/trunk/sub-projects
  *  /allocators/tlsf-kmod r229 dated Aug 27, 2008
- * Adapted for xen by Dan Magenheimer (dan.magenheimer@oracle.com)
+ * Adapted for Xen by Dan Magenheimer (dan.magenheimer@oracle.com)
  */
 
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
 #include <asm/time.h>
 #include <asm/page.h>
 
@@ -254,7 +254,7 @@ static inline void EXTRACT_BLOCK(struct bhdr *b, struct xmem_pool *p, int fl,
          memchr_inv(b->ptr.buffer + MIN_BLOCK_SIZE, POISON_BYTE,
                     (b->size & BLOCK_SIZE_MASK) - MIN_BLOCK_SIZE) )
     {
-        printk(XENLOG_ERR "XMEM Pool corruption found");
+        printk(CRUXLOG_ERR "XMEM Pool corruption found");
         BUG();
     }
 }
@@ -320,7 +320,7 @@ struct xmem_pool *xmem_pool_create(
     pool_bytes = ROUNDUP_SIZE(sizeof(*pool));
     pool_order = get_order_from_bytes(pool_bytes);
 
-    pool = (void *)alloc_xenheap_pages(pool_order, 0);
+    pool = (void *)alloc_cruxheap_pages(pool_order, 0);
     if ( pool == NULL )
         return NULL;
     memset(pool, 0, pool_bytes);
@@ -379,7 +379,7 @@ void xmem_pool_destroy(struct xmem_pool *pool)
 
     pool_bytes = ROUNDUP_SIZE(sizeof(*pool));
     pool_order = get_order_from_bytes(pool_bytes);
-    free_xenheap_pages(pool,pool_order);
+    free_cruxheap_pages(pool,pool_order);
 }
 
 void *xmem_pool_alloc(unsigned long size, struct xmem_pool *pool)
@@ -524,17 +524,17 @@ int xmem_pool_maxalloc(struct xmem_pool *pool)
  * Glue for xmalloc().
  */
 
-static struct xmem_pool *xenpool;
+static struct xmem_pool *cruxpool;
 
 static void *cf_check xmalloc_pool_get(unsigned long size)
 {
     ASSERT(size == PAGE_SIZE);
-    return alloc_xenheap_page();
+    return alloc_cruxheap_page();
 }
 
 static void cf_check xmalloc_pool_put(void *p)
 {
-    free_xenheap_page(p);
+    free_cruxheap_page(p);
 }
 
 static void *xmalloc_whole_pages(unsigned long size, unsigned long align)
@@ -544,14 +544,14 @@ static void *xmalloc_whole_pages(unsigned long size, unsigned long align)
 
     order = get_order_from_bytes(max(align, size));
 
-    res = alloc_xenheap_pages(order, 0);
+    res = alloc_cruxheap_pages(order, 0);
     if ( res == NULL )
         return NULL;
 
     for ( p = res + PAGE_ALIGN(size), i = 0; i < order; ++i )
         if ( (unsigned long)p & (PAGE_SIZE << i) )
         {
-            free_xenheap_pages(p, i);
+            free_cruxheap_pages(p, i);
             p += PAGE_SIZE << i;
         }
 
@@ -564,9 +564,9 @@ static void *xmalloc_whole_pages(unsigned long size, unsigned long align)
 
 static void tlsf_init(void)
 {
-    xenpool = xmem_pool_create("xmalloc", xmalloc_pool_get,
+    cruxpool = xmem_pool_create("xmalloc", xmalloc_pool_get,
                                xmalloc_pool_put, 0, PAGE_SIZE);
-    BUG_ON(!xenpool);
+    BUG_ON(!cruxpool);
 }
 
 /*
@@ -622,11 +622,11 @@ void *_xmalloc(unsigned long size, unsigned long align)
     if ( size < align - MEM_ALIGN )
         return NULL;
 
-    if ( !xenpool )
+    if ( !cruxpool )
         tlsf_init();
 
     if ( size < PAGE_SIZE )
-        p = xmem_pool_alloc(size, xenpool);
+        p = xmem_pool_alloc(size, cruxpool);
     if ( p == NULL )
         return xmalloc_whole_pages(size - align + MEM_ALIGN, align);
 
@@ -728,7 +728,7 @@ void xfree(void *p)
             if ( !(size & (1 << i)) )
                 continue;
             size -= 1 << i;
-            free_xenheap_pages(p + (size << PAGE_SHIFT), i);
+            free_cruxheap_pages(p + (size << PAGE_SHIFT), i);
             if ( i + 1 >= order )
                 return;
         }
@@ -737,5 +737,5 @@ void xfree(void *p)
     /* Strip alignment padding. */
     p = strip_padding(p);
 
-    xmem_pool_free(p, xenpool);
+    xmem_pool_free(p, cruxpool);
 }

@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/include/asm/imx-lpuart.h
+ * crux/arch/arm/include/asm/imx-lpuart.h
  *
  * Common constant definition between early printk and the LPUART driver
  *

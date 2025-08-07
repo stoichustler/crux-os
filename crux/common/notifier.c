@@ -7,8 +7,8 @@
  * Original code from Linux kernel 2.6.27 (Alan Cox <Alan.Cox@linux.org>)
  */
 
-#include <xen/init.h>
-#include <xen/notifier.h>
+#include <crux/init.h>
+#include <crux/notifier.h>
 
 /**
  * notifier_chain_register - Add notifier to a raw notifier chain

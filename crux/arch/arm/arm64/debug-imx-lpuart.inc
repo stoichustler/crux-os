@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/debug-imx-lpuart.inc
+ * crux/arch/arm/arm64/debug-imx-lpuart.inc
  *
  * i.MX8QM specific debug code
  *

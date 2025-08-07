@@ -22,17 +22,17 @@
  */
 
 #include "efi.h"
-#include <xen/sched.h>
-#include <xen/pfn.h>
-#include <xen/libfdt/libfdt.h>
+#include <crux/sched.h>
+#include <crux/pfn.h>
+#include <crux/libfdt/libfdt.h>
 #include <asm/setup.h>
 #include <asm/acpi.h>
 #include "../../../common/decompress.h"
 #define XZ_EXTERN static
 #include "../../../common/xz/crc32.c"
 
-/* Constant to indicate "xen" in unicode u16 format */
-static const CHAR16 xen_efi_fw_vendor[] = {0x0058, 0x0065, 0x006E, 0x0000};
+/* Constant to indicate "Xen" in unicode u16 format */
+static const CHAR16 crux_efi_fw_vendor[] = {0x0058, 0x0065, 0x006E, 0x0000};
 
 size_t __init estimate_efi_size(unsigned int mem_nr_banks)
 {
@@ -40,7 +40,7 @@ size_t __init estimate_efi_size(unsigned int mem_nr_banks)
     size_t est_size = sizeof(EFI_SYSTEM_TABLE);
     size_t ect_size = sizeof(EFI_CONFIGURATION_TABLE);
     size_t emd_size = sizeof(EFI_MEMORY_DESCRIPTOR);
-    size_t fw_vendor_size = sizeof(xen_efi_fw_vendor);
+    size_t fw_vendor_size = sizeof(crux_efi_fw_vendor);
     unsigned int acpi_mem_nr_banks = 0;
 
     if ( !acpi_disabled )
@@ -64,7 +64,7 @@ void __init acpi_create_efi_system_table(struct domain *d,
     table_addr = d->arch.efi_acpi_gpa
                  + acpi_get_table_offset(tbl_add, TBL_EFIT);
     table_size = sizeof(EFI_SYSTEM_TABLE) + sizeof(EFI_CONFIGURATION_TABLE)
-                 + sizeof(xen_efi_fw_vendor);
+                 + sizeof(crux_efi_fw_vendor);
     base_ptr = d->arch.efi_acpi_table
                + acpi_get_table_offset(tbl_add, TBL_EFIT);
     efi_sys_tbl = (EFI_SYSTEM_TABLE *)base_ptr;
@@ -77,10 +77,10 @@ void __init acpi_create_efi_system_table(struct domain *d,
     efi_sys_tbl->FirmwareRevision = 1;
     efi_sys_tbl->NumberOfTableEntries = 1;
     offset += sizeof(EFI_SYSTEM_TABLE);
-    memcpy(base_ptr + offset, xen_efi_fw_vendor, sizeof(xen_efi_fw_vendor));
+    memcpy(base_ptr + offset, crux_efi_fw_vendor, sizeof(crux_efi_fw_vendor));
     efi_sys_tbl->FirmwareVendor = (CHAR16 *)(table_addr + offset);
 
-    offset += sizeof(xen_efi_fw_vendor);
+    offset += sizeof(crux_efi_fw_vendor);
     efi_conf_tbl = (EFI_CONFIGURATION_TABLE *)(base_ptr + offset);
     efi_conf_tbl->VendorGuid = (EFI_GUID)ACPI_20_TABLE_GUID;
     efi_conf_tbl->VendorTable = (VOID *)tbl_add[TBL_RSDP].start;
@@ -146,27 +146,27 @@ int __init acpi_make_efi_nodes(void *fdt, struct membank tbl_add[])
     if ( res )
         return res;
 
-    res = fdt_property_u64(fdt, "xen,uefi-system-table",
+    res = fdt_property_u64(fdt, "crux,uefi-system-table",
                            tbl_add[TBL_EFIT].start);
     if ( res )
         return res;
 
-    res = fdt_property_u64(fdt, "xen,uefi-mmap-start",
+    res = fdt_property_u64(fdt, "crux,uefi-mmap-start",
                            tbl_add[TBL_MMAP].start);
     if ( res )
         return res;
 
-    res = fdt_property_u32(fdt, "xen,uefi-mmap-size",
+    res = fdt_property_u32(fdt, "crux,uefi-mmap-size",
                            tbl_add[TBL_MMAP].size);
     if ( res )
         return res;
 
-    res = fdt_property_u32(fdt, "xen,uefi-mmap-desc-size",
+    res = fdt_property_u32(fdt, "crux,uefi-mmap-desc-size",
                            sizeof(EFI_MEMORY_DESCRIPTOR));
     if ( res )
         return res;
 
-    res = fdt_property_u32(fdt, "xen,uefi-mmap-desc-ver", 1);
+    res = fdt_property_u32(fdt, "crux,uefi-mmap-desc-ver", 1);
     if ( res )
         return res;
 

@@ -1,8 +1,8 @@
 #ifndef __ASM_ARM_GUEST_ACCESS_H__
 #define __ASM_ARM_GUEST_ACCESS_H__
 
-#include <xen/errno.h>
-#include <xen/sched.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
 
 unsigned long raw_copy_to_guest(void *to, const void *from, unsigned int len);
 unsigned long raw_copy_to_guest_flush_dcache(void *to, const void *from,

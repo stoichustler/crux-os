@@ -17,13 +17,13 @@
  * Copyright (C) Xiaohui Xin <xiaohui.xin@intel.com>
  */
 
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/iommu.h>
-#include <xen/time.h>
-#include <xen/list.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/iommu.h>
+#include <crux/time.h>
+#include <crux/list.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include "iommu.h"
 #include "dmar.h"
 #include "vtd.h"
@@ -101,7 +101,7 @@ static u16 apicid_to_bdf(int apic_id)
         if ( acpi_ioapic_unit->apic_id == apic_id )
             return acpi_ioapic_unit->ioapic.info;
 
-    dprintk(XENLOG_ERR VTDPREFIX, "Didn't find the bdf for the apic_id!\n");
+    dprintk(CRUXLOG_ERR VTDPREFIX, "Didn't find the bdf for the apic_id!\n");
     return 0;
 }
 
@@ -114,7 +114,7 @@ static u16 hpetid_to_bdf(unsigned int hpet_id)
         if ( acpi_hpet_unit->id == hpet_id )
             return acpi_hpet_unit->bdf;
 
-    dprintk(XENLOG_ERR VTDPREFIX, "Didn't find the bdf for HPET %u!\n", hpet_id);
+    dprintk(CRUXLOG_ERR VTDPREFIX, "Didn't find the bdf for HPET %u!\n", hpet_id);
     return 0;
 }
 
@@ -152,7 +152,7 @@ bool __init cf_check intel_iommu_supports_eim(void)
 
     if ( unlikely(!cpu_has_cx16) )
     {
-        printk(XENLOG_ERR VTDPREFIX "no CMPXCHG16B support, disabling IOMMU\n");
+        printk(CRUXLOG_ERR VTDPREFIX "no CMPXCHG16B support, disabling IOMMU\n");
         /*
          * Disable IOMMU support at once: there's no reason to check for CX16
          * yet again when attempting to initialize IOMMU DMA remapping
@@ -167,7 +167,7 @@ bool __init cf_check intel_iommu_supports_eim(void)
     for ( apic = 0; apic < nr_ioapics; apic++ )
         if ( !ioapic_to_drhd(IO_APIC_ID(apic)) )
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     "There is not a DRHD for IOAPIC %#x (id: %#x)!\n",
                     apic, IO_APIC_ID(apic));
             return false;
@@ -276,7 +276,7 @@ static int remap_entry_to_ioapic_rte(
 
     if ( index < 0 || index > IREMAP_ENTRY_NR - 1 )
     {
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "IO-APIC index (%d) for remap table is invalid\n",
                 index);
         return -EFAULT;
@@ -289,7 +289,7 @@ static int remap_entry_to_ioapic_rte(
 
     if ( iremap_entry->val == 0 )
     {
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "IO-APIC index (%d) has an empty entry\n",
                 index);
         unmap_vtd_domain_page(iremap_entries);
@@ -341,7 +341,7 @@ static int ioapic_rte_to_remap_entry(struct vtd_iommu *iommu,
 
     if ( index > IREMAP_ENTRY_NR - 1 )
     {
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "IO-APIC intremap index (%d) larger than maximum index (%d)\n",
                 index, IREMAP_ENTRY_NR - 1);
         spin_unlock_irqrestore(&iommu->intremap.lock, flags);
@@ -484,7 +484,7 @@ static int set_msi_source_id(const struct pci_dev *pdev,
         }
         else
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     "%pd: no upstream bridge for %pp\n",
                     pdev->domain, &pdev->sbdf);
             return -ENXIO;
@@ -492,7 +492,7 @@ static int set_msi_source_id(const struct pci_dev *pdev,
         break;
 
     default:
-        dprintk(XENLOG_WARNING VTDPREFIX, "%pd: %pp unknown device type %d\n",
+        dprintk(CRUXLOG_WARNING VTDPREFIX, "%pd: %pp unknown device type %d\n",
                 pdev->domain, &pdev->sbdf, pdev->type);
         return -EOPNOTSUPP;
     }
@@ -550,7 +550,7 @@ static int msi_msg_to_remap_entry(
 
     if ( index > IREMAP_ENTRY_NR - 1 )
     {
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "MSI intremap index (%d) larger than maximum index (%d)!\n",
                 index, IREMAP_ENTRY_NR - 1);
         for ( i = 0; i < nr; ++i )
@@ -639,7 +639,7 @@ int __init cf_check intel_setup_hpet_msi(struct msi_desc *msi_desc)
     msi_desc->remap_index = alloc_remap_entry(iommu, 1);
     if ( msi_desc->remap_index >= IREMAP_ENTRY_NR )
     {
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "HPET intremap index (%d) larger than maximum index (%d)!\n",
                 msi_desc->remap_index, IREMAP_ENTRY_NR - 1);
         msi_desc->remap_index = -1;
@@ -659,27 +659,27 @@ int enable_intremap(struct vtd_iommu *iommu, int eim)
 
     if ( !platform_supports_intremap() )
     {
-        printk(XENLOG_ERR VTDPREFIX
+        printk(CRUXLOG_ERR VTDPREFIX
                " Platform firmware does not support interrupt remapping\n");
         return -EINVAL;
     }
 
     sts = dmar_readl(iommu->reg, DMAR_GSTS_REG);
 
-    /* Return if already enabled by xen */
+    /* Return if already enabled by Xen */
     if ( (sts & DMA_GSTS_IRES) && iommu->intremap.maddr )
         return 0;
 
     if ( !(sts & DMA_GSTS_QIES) )
     {
-        printk(XENLOG_ERR VTDPREFIX
+        printk(CRUXLOG_ERR VTDPREFIX
                " Queued invalidation is not enabled on IOMMU #%u:"
                " Should not enable interrupt remapping\n", iommu->index);
         return -EINVAL;
     }
 
     if ( !eim && (sts & DMA_GSTS_CFIS) )
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " Compatibility Format Interrupts permitted on IOMMU #%u:"
                " Device pass-through will be insecure\n", iommu->index);
 
@@ -689,7 +689,7 @@ int enable_intremap(struct vtd_iommu *iommu, int eim)
                                                     iommu->node);
         if ( iommu->intremap.maddr == 0 )
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     "Cannot allocate memory for ir_ctrl->iremap_maddr\n");
             return -ENOMEM;
         }
@@ -806,7 +806,7 @@ int cf_check intel_iommu_enable_eim(void)
         iommu = drhd->iommu;
         if ( enable_qinval(iommu) != 0 )
         {
-            dprintk(XENLOG_INFO VTDPREFIX,
+            dprintk(CRUXLOG_INFO VTDPREFIX,
                     "Failed to enable Queued Invalidation!\n");
             return -EIO;
         }
@@ -818,7 +818,7 @@ int cf_check intel_iommu_enable_eim(void)
         iommu = drhd->iommu;
         if ( enable_intremap(iommu, 1) )
         {
-            dprintk(XENLOG_INFO VTDPREFIX,
+            dprintk(CRUXLOG_INFO VTDPREFIX,
                     "Failed to enable Interrupt Remapping!\n");
             return -EIO;
         }

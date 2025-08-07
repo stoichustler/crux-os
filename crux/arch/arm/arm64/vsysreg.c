@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/sysreg.c
+ * crux/arch/arm/arm64/sysreg.c
  *
  * Emulate system registers trapped.
  *
@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 
 #include <asm/arm64/cpufeature.h>
 #include <asm/arm64/sve.h>
@@ -171,7 +171,7 @@ void do_sysreg(struct cpu_user_regs *regs,
         return handle_raz_wi(regs, regidx, hsr.sysreg.read, hsr, 1);
 
     /*
-     * xen doesn't expose a real (or emulated) Debug Communications Channel
+     * Xen doesn't expose a real (or emulated) Debug Communications Channel
      * (DCC) to a domain. Yet the Arm ARM implies this is not an optional
      * feature. So some domains may start to probe it. For instance, the
      * HVC_DCC driver in Linux (since f377775dc083 and at least up to v6.7),
@@ -429,7 +429,7 @@ void do_sysreg(struct cpu_user_regs *regs,
     return;
 
  fail:
-    gdprintk(XENLOG_ERR,
+    gdprintk(CRUXLOG_ERR,
              "%s %d, %d, c%d, c%d, %d %s x%d @ 0x%"PRIregister"\n",
              sysreg.read ? "mrs" : "msr",
              sysreg.op0, sysreg.op1,
@@ -437,7 +437,7 @@ void do_sysreg(struct cpu_user_regs *regs,
              sysreg.op2,
              sysreg.read ? "=>" : "<=",
              sysreg.reg, regs->pc);
-    gdprintk(XENLOG_ERR,
+    gdprintk(CRUXLOG_ERR,
              "unhandled 64-bit sysreg access %#"PRIregister"\n",
              hsr.bits & HSR_SYSREG_REGS_MASK);
     inject_undef_exception(regs);

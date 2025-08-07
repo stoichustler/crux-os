@@ -1,14 +1,14 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/vsmc.c
+ * crux/arch/arm/vsmc.c
  *
  * Generic handler for SMC and HVC calls according to
  * ARM SMC calling convention
  */
 
 
-#include <xen/lib.h>
-#include <xen/types.h>
+#include <crux/lib.h>
+#include <crux/types.h>
 #include <public/arch-arm/smccc.h>
 #include <asm/cpuerrata.h>
 #include <asm/cpufeature.h>
@@ -23,12 +23,12 @@
 #include <asm/firmware/scmi-smc.h>
 
 /* Number of functions currently supported by Hypervisor Service. */
-#define XEN_SMCCC_FUNCTION_COUNT 3
+#define CRUX_SMCCC_FUNCTION_COUNT 3
 
 /* Number of functions currently supported by Standard Service Service Calls. */
 #define SSSC_SMCCC_FUNCTION_COUNT (3 + VPSCI_NR_FUNCS + FFA_NR_FUNCS)
 
-static bool fill_uid(struct cpu_user_regs *regs, xen_uuid_t uuid)
+static bool fill_uid(struct cpu_user_regs *regs, crux_uuid_t uuid)
 {
     int n;
 
@@ -170,12 +170,12 @@ static bool handle_hypervisor(struct cpu_user_regs *regs)
     switch ( fid )
     {
     case ARM_SMCCC_CALL_COUNT_FID(HYPERVISOR):
-        return fill_function_call_count(regs, XEN_SMCCC_FUNCTION_COUNT);
+        return fill_function_call_count(regs, CRUX_SMCCC_FUNCTION_COUNT);
     case ARM_SMCCC_CALL_UID_FID(HYPERVISOR):
-        return fill_uid(regs, XEN_SMCCC_UID);
+        return fill_uid(regs, CRUX_SMCCC_UID);
     case ARM_SMCCC_REVISION_FID(HYPERVISOR):
-        return fill_revision(regs, XEN_SMCCC_MAJOR_REVISION,
-                             XEN_SMCCC_MINOR_REVISION);
+        return fill_revision(regs, CRUX_SMCCC_MAJOR_REVISION,
+                             CRUX_SMCCC_MINOR_REVISION);
     default:
         return false;
     }
@@ -310,7 +310,7 @@ static bool vsmccc_handle_call(struct cpu_user_regs *regs)
 
     if ( !handled )
     {
-        gprintk(XENLOG_INFO, "Unhandled SMC/HVC: %#x\n", funcid);
+        gprintk(CRUXLOG_INFO, "Unhandled SMC/HVC: %#x\n", funcid);
 
         /* Inform caller that function is not supported. */
         set_user_reg(regs, 0, ARM_SMCCC_ERR_UNKNOWN_FUNCTION);

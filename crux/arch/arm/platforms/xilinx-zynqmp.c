@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/xilinx-zynqmp.c
+ * crux/arch/arm/platforms/xilinx-zynqmp.c
  *
  * Xilinx ZynqMP setup
  *
@@ -35,7 +35,7 @@ static bool zynqmp_smc(struct cpu_user_regs *regs)
      */
     if ( !cpus_have_const_cap(ARM_SMCCC_1_1) )
     {
-        printk_once(XENLOG_WARNING
+        printk_once(CRUXLOG_WARNING
                     "ZynqMP firmware Error: no SMCCC 1.1 support. Disabling firmware calls\n");
 
         return false;

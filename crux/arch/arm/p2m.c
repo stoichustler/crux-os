@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/iocap.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
+#include <crux/iocap.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
 
 #include <asm/event.h>
 #include <asm/flushtlb.h>
@@ -196,7 +196,7 @@ int map_dev_mmio_page(struct domain *d, gfn_t gfn, mfn_t mfn)
     res = p2m_insert_mapping(d, gfn, 1, mfn, p2m_mmio_direct_c);
     if ( res < 0 )
     {
-        printk(XENLOG_G_ERR "Unable to map MFN %#"PRI_mfn" in %pd\n",
+        printk(CRUXLOG_G_ERR "Unable to map MFN %#"PRI_mfn" in %pd\n",
                mfn_x(mfn), d);
         return res;
     }
@@ -283,7 +283,7 @@ int p2m_alloc_vmid(struct domain *d)
     if ( nr == MAX_VMID )
     {
         rc = -EBUSY;
-        printk(XENLOG_ERR "p2m.c: dom%d: VMID pool exhausted\n", d->domain_id);
+        printk(CRUXLOG_ERR "p2m.c: dom%d: VMID pool exhausted\n", d->domain_id);
         goto out;
     }
 
@@ -357,7 +357,7 @@ int p2m_cache_flush_range(struct domain *d, gfn_t *pstart, gfn_t end)
         /*
          * We want to flush page by page as:
          *  - it may not be possible to map the full block (can be up to 1GB)
-         *    in xen memory
+         *    in Xen memory
          *  - we may want to do fine grain preemption as flushing multiple
          *    page in one go may take a long time
          *
@@ -435,7 +435,7 @@ void p2m_set_way_flush(struct vcpu *v, struct cpu_user_regs *regs)
 
     if ( iommu_use_hap_pt(current->domain) )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "The cache should be flushed by VA rather than by set/way.\n");
         inject_undef_exception(regs);
         return;
@@ -535,7 +535,7 @@ struct page_info *get_page_from_gva(struct vcpu *v, vaddr_t va,
          */
         if ( !guest_walk_tables(v, va, &ipa, &s1_perms) )
         {
-            dprintk(XENLOG_G_DEBUG,
+            dprintk(CRUXLOG_G_DEBUG,
                     "%pv: Failed to walk page-table va %#"PRIvaddr"\n", v, va);
             return NULL;
         }
@@ -565,7 +565,7 @@ struct page_info *get_page_from_gva(struct vcpu *v, vaddr_t va,
 
     if ( !mfn_valid(mfn) )
     {
-        dprintk(XENLOG_G_DEBUG, "%pv: Invalid MFN %#"PRI_mfn"\n",
+        dprintk(CRUXLOG_G_DEBUG, "%pv: Invalid MFN %#"PRI_mfn"\n",
                 v, mfn_x(mfn));
         return NULL;
     }
@@ -575,7 +575,7 @@ struct page_info *get_page_from_gva(struct vcpu *v, vaddr_t va,
 
     if ( unlikely(!get_page(page, d)) )
     {
-        dprintk(XENLOG_G_DEBUG, "%pv: Failing to acquire the MFN %#"PRI_mfn"\n",
+        dprintk(CRUXLOG_G_DEBUG, "%pv: Failing to acquire the MFN %#"PRI_mfn"\n",
                 v, mfn_x(maddr_to_mfn(maddr)));
         return NULL;
     }

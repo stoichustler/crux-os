@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/acpi.h>
-#include <xen/bug.h>
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/spinlock.h>
+#include <crux/acpi.h>
+#include <crux/bug.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/spinlock.h>
 
 #include <asm/intc.h>
 
@@ -55,7 +55,7 @@ void intc_handle_external_irqs(struct cpu_user_regs *regs)
     intc_hw_ops->handle_interrupt(regs);
 }
 
-void intc_route_irq_to_xen(struct irq_desc *desc, unsigned int priority)
+void intc_route_irq_to_crux(struct irq_desc *desc, unsigned int priority)
 {
     ASSERT(desc->status & IRQ_DISABLED);
     ASSERT(spin_is_locked(&desc->lock));

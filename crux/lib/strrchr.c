@@ -2,7 +2,7 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/string.h>
+#include <crux/string.h>
 
 /**
  * strrchr - Find the last occurrence of a character in a string

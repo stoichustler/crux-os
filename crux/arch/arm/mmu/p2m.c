@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/cpu.h>
-#include <xen/domain_page.h>
-#include <xen/ioreq.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
+#include <crux/cpu.h>
+#include <crux/domain_page.h>
+#include <crux/ioreq.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
 
 #include <asm/alternative.h>
 #include <asm/event.h>
@@ -34,7 +34,7 @@ static struct page_info *p2m_alloc_page(struct domain *d)
     {
         pg = alloc_domheap_page(d, MEMF_no_owner);
         if ( pg == NULL )
-            printk(XENLOG_G_ERR "Failed to allocate P2M pages for hwdom.\n");
+            printk(CRUXLOG_G_ERR "Failed to allocate P2M pages for hwdom.\n");
     }
     else
     {
@@ -84,7 +84,7 @@ int p2m_set_allocation(struct domain *d, unsigned long pages, bool *preempted)
             pg = alloc_domheap_page(d, MEMF_no_owner);
             if ( pg == NULL )
             {
-                printk(XENLOG_ERR "Failed to allocate P2M pages.\n");
+                printk(CRUXLOG_ERR "Failed to allocate P2M pages.\n");
                 return -ENOMEM;
             }
             ACCESS_ONCE(d->arch.paging.p2m_total_pages) =
@@ -103,7 +103,7 @@ int p2m_set_allocation(struct domain *d, unsigned long pages, bool *preempted)
             }
             else
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "Failed to free P2M pages, P2M freelist is empty.\n");
                 return -ENOMEM;
             }
@@ -316,8 +316,8 @@ static lpae_t *p2m_get_root_pointer(struct p2m_domain *p2m,
      * we can't use (P2M_ROOT_LEVEL - 1) because the root level might be
      * 0. Yet we still want to check if all the unused bits are zeroed.
      */
-    root_table = gfn_x(gfn) >> (XEN_PT_LEVEL_ORDER(P2M_ROOT_LEVEL) +
-                                XEN_PT_LPAE_SHIFT);
+    root_table = gfn_x(gfn) >> (CRUX_PT_LEVEL_ORDER(P2M_ROOT_LEVEL) +
+                                CRUX_PT_LPAE_SHIFT);
     if ( root_table >= P2M_ROOT_PAGES )
         return NULL;
 
@@ -463,7 +463,7 @@ mfn_t p2m_get_entry(struct p2m_domain *p2m, gfn_t gfn,
     if ( gfn_x(gfn) > gfn_x(p2m->max_mapped_gfn) )
     {
         for ( level = P2M_ROOT_LEVEL; level < 3; level++ )
-            if ( (gfn_x(gfn) & (XEN_PT_LEVEL_MASK(level) >> PAGE_SHIFT)) >
+            if ( (gfn_x(gfn) & (CRUX_PT_LEVEL_MASK(level) >> PAGE_SHIFT)) >
                  gfn_x(p2m->max_mapped_gfn) )
                 break;
 
@@ -507,7 +507,7 @@ mfn_t p2m_get_entry(struct p2m_domain *p2m, gfn_t gfn,
          * to the GFN.
          */
         mfn = mfn_add(mfn,
-                      gfn_x(gfn) & ((1UL << XEN_PT_LEVEL_ORDER(level)) - 1));
+                      gfn_x(gfn) & ((1UL << CRUX_PT_LEVEL_ORDER(level)) - 1));
 
         if ( valid )
             *valid = lpae_is_valid(entry);
@@ -518,7 +518,7 @@ out_unmap:
 
 out:
     if ( page_order )
-        *page_order = XEN_PT_LEVEL_ORDER(level);
+        *page_order = CRUX_PT_LEVEL_ORDER(level);
 
     return mfn;
 }
@@ -761,9 +761,9 @@ static void p2m_put_l3_page(mfn_t mfn, p2m_type_t type)
         ASSERT(mfn_valid(mfn));
         p2m_put_foreign_page(mfn_to_page(mfn));
     }
-    /* Detect the xenheap page and mark the stored GFN as invalid. */
-    else if ( p2m_is_ram(type) && is_xen_heap_mfn(mfn) )
-        page_set_xenheap_gfn(mfn_to_page(mfn), INVALID_GFN);
+    /* Detect the cruxheap page and mark the stored GFN as invalid. */
+    else if ( p2m_is_ram(type) && is_crux_heap_mfn(mfn) )
+        page_set_cruxheap_gfn(mfn_to_page(mfn), INVALID_GFN);
 }
 
 /* Put any references on the superpage referenced by mfn. */
@@ -784,7 +784,7 @@ static void p2m_put_l2_superpage(mfn_t mfn, p2m_type_t type)
 
     pg = mfn_to_page(mfn);
 
-    for ( i = 0; i < XEN_PT_LPAE_ENTRIES; i++, pg++ )
+    for ( i = 0; i < CRUX_PT_LPAE_ENTRIES; i++, pg++ )
         p2m_put_foreign_page(pg);
 }
 
@@ -796,9 +796,9 @@ static void p2m_put_page(const lpae_t pte, unsigned int level)
     ASSERT(p2m_is_valid(pte));
 
     /*
-     * TODO: Currently we don't handle level 1 super-page, xen is not
+     * TODO: Currently we don't handle level 1 super-page, Xen is not
      * preemptible and therefore some work is needed to handle such
-     * superpages, for which at some point xen might end up freeing memory
+     * superpages, for which at some point Xen might end up freeing memory
      * and therefore for such a big mapping it could end up in a very long
      * operation.
      */
@@ -843,7 +843,7 @@ static void p2m_free_entry(struct p2m_domain *p2m,
     }
 
     table = map_domain_page(lpae_get_mfn(entry));
-    for ( i = 0; i < XEN_PT_LPAE_ENTRIES; i++ )
+    for ( i = 0; i < CRUX_PT_LPAE_ENTRIES; i++ )
         p2m_free_entry(p2m, *(table + i), level + 1);
 
     unmap_domain_page(table);
@@ -877,7 +877,7 @@ static bool p2m_split_superpage(struct p2m_domain *p2m, lpae_t *entry,
     /* Convenience aliases */
     mfn_t mfn = lpae_get_mfn(*entry);
     unsigned int next_level = level + 1;
-    unsigned int level_order = XEN_PT_LEVEL_ORDER(next_level);
+    unsigned int level_order = CRUX_PT_LEVEL_ORDER(next_level);
 
     /*
      * This should only be called with target != level and the entry is
@@ -897,7 +897,7 @@ static bool p2m_split_superpage(struct p2m_domain *p2m, lpae_t *entry,
      * We are either splitting a first level 1G page into 512 second level
      * 2M pages, or a second level 2M page into 512 third level 4K pages.
      */
-    for ( i = 0; i < XEN_PT_LPAE_ENTRIES; i++ )
+    for ( i = 0; i < CRUX_PT_LPAE_ENTRIES; i++ )
     {
         lpae_t *new_entry = table + i;
 
@@ -920,7 +920,7 @@ static bool p2m_split_superpage(struct p2m_domain *p2m, lpae_t *entry,
     /* Update stats */
     p2m->stats.shattered[level]++;
     p2m->stats.mappings[level]--;
-    p2m->stats.mappings[next_level] += XEN_PT_LPAE_ENTRIES;
+    p2m->stats.mappings[next_level] += CRUX_PT_LPAE_ENTRIES;
 
     /*
      * Shatter superpage in the page to the level we want to make the
@@ -958,7 +958,7 @@ static int __p2m_set_entry(struct p2m_domain *p2m,
                            p2m_access_t a)
 {
     unsigned int level = 0;
-    unsigned int target = 3 - (page_order / XEN_PT_LPAE_SHIFT);
+    unsigned int target = 3 - (page_order / CRUX_PT_LPAE_SHIFT);
     lpae_t *entry, *table, orig_pte;
     int rc;
     /* A mapping is removed if the MFN is invalid. */
@@ -1221,7 +1221,7 @@ static void p2m_invalidate_table(struct p2m_domain *p2m, mfn_t mfn)
 
     table = map_domain_page(mfn);
 
-    for ( i = 0; i < XEN_PT_LPAE_ENTRIES; i++ )
+    for ( i = 0; i < CRUX_PT_LPAE_ENTRIES; i++ )
     {
         lpae_t pte = table[i];
 
@@ -1522,7 +1522,7 @@ int p2m_init(struct domain *d)
 
     /*
      * Some IOMMUs don't support coherent PT walk. When the p2m is
-     * shared with the CPU, xen has to make sure that the PT changes have
+     * shared with the CPU, Xen has to make sure that the PT changes have
      * reached the memory
      */
     p2m->clean_pte = is_iommu_enabled(d) &&
@@ -1589,7 +1589,7 @@ int relinquish_p2m_mapping(struct domain *d)
          * foreign mapping.
          */
         if ( (!(count % 512) ||
-              (p2m_is_foreign(t) && (order > XEN_PT_LEVEL_ORDER(2)))) &&
+              (p2m_is_foreign(t) && (order > CRUX_PT_LEVEL_ORDER(2)))) &&
              hypercall_preempt_check() )
         {
             rc = -ERESTART;
@@ -1610,7 +1610,7 @@ int relinquish_p2m_mapping(struct domain *d)
                                  p2m_invalid, p2m_access_rwx);
             if ( unlikely(rc) )
             {
-                printk(XENLOG_G_ERR "Unable to remove mapping gfn=%#"PRI_gfn" order=%u from the p2m of domain %d\n", gfn_x(start), order, d->domain_id);
+                printk(CRUXLOG_G_ERR "Unable to remove mapping gfn=%#"PRI_gfn" order=%u from the p2m of domain %d\n", gfn_x(start), order, d->domain_id);
                 break;
             }
         }
@@ -1651,7 +1651,7 @@ void p2m_flush_vm(struct vcpu *v)
     } while ( rc == -ERESTART );
 
     if ( rc != 0 )
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "P2M has not been correctly cleaned (rc = %d)\n",
                 rc);
 
@@ -1850,7 +1850,7 @@ static int __init cpu_virt_paging_init(void)
  * non-boot CPUs after the initial virtual paging for all CPUs is already setup,
  * i.e. when a non-boot CPU is hotplugged after the system has booted. In other
  * words, the notifier should be registered after the virtual paging is
- * initially setup (setup_virt_paging() is called from start_xen()). This is
+ * initially setup (setup_virt_paging() is called from start_crux()). This is
  * required because vtcr config value has to be set before a notifier can fire.
  */
 __initcall(cpu_virt_paging_init);

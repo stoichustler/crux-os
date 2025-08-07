@@ -1,28 +1,28 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/time.c
+ * crux/arch/arm/time.c
  *
  * Time and timer support, using the ARM Generic Timer interfaces
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/console.h>
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/softirq.h>
-#include <xen/sched.h>
-#include <xen/time.h>
-#include <xen/delay.h>
-#include <xen/sched.h>
-#include <xen/event.h>
-#include <xen/acpi.h>
-#include <xen/cpu.h>
-#include <xen/notifier.h>
+#include <crux/console.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/softirq.h>
+#include <crux/sched.h>
+#include <crux/time.h>
+#include <crux/delay.h>
+#include <crux/sched.h>
+#include <crux/event.h>
+#include <crux/acpi.h>
+#include <crux/cpu.h>
+#include <crux/notifier.h>
 #include <asm/system.h>
 #include <asm/time.h>
 #include <asm/vgic.h>
@@ -89,12 +89,12 @@ static int __init arch_timer_acpi_init(struct acpi_table_header *header)
     return 0;
 }
 
-static void __init preinit_acpi_xen_time(void)
+static void __init preinit_acpi_crux_time(void)
 {
     acpi_table_parse(ACPI_SIG_GTDT, arch_timer_acpi_init);
 }
 #else
-static void __init preinit_acpi_xen_time(void) { }
+static void __init preinit_acpi_crux_time(void) { }
 #endif
 
 static void __init validate_timer_frequency(void)
@@ -109,7 +109,7 @@ static void __init validate_timer_frequency(void)
 }
 
 /* Set up the timer on the boot CPU (early init function) */
-static void __init preinit_dt_xen_time(void)
+static void __init preinit_dt_crux_time(void)
 {
     static const struct dt_device_match timer_ids[] __initconst =
     {
@@ -123,7 +123,7 @@ static void __init preinit_dt_xen_time(void)
     if ( !timer )
         panic("Unable to find a compatible timer in the device tree\n");
 
-    dt_device_set_used_by(timer, DOMID_XEN);
+    dt_device_set_used_by(timer, DOMID_CRUX);
 
     res = dt_property_read_u32(timer, "clock-frequency", &rate);
     if ( res )
@@ -134,15 +134,15 @@ static void __init preinit_dt_xen_time(void)
     }
 }
 
-void __init preinit_xen_time(void)
+void __init preinit_crux_time(void)
 {
     int res;
 
     /* Initialize all the generic timers presented in GTDT */
     if ( acpi_disabled )
-        preinit_dt_xen_time();
+        preinit_dt_crux_time();
     else
-        preinit_acpi_xen_time();
+        preinit_acpi_crux_time();
 
     if ( !cpu_khz )
     {
@@ -157,7 +157,7 @@ void __init preinit_xen_time(void)
     boot_count = get_cycles();
 }
 
-static void __init init_dt_xen_time(void)
+static void __init init_dt_crux_time(void)
 {
     int res;
     unsigned int i;
@@ -192,10 +192,10 @@ static void __init init_dt_xen_time(void)
 }
 
 /* Set up the timer on the boot CPU (late init function) */
-int __init init_xen_time(void)
+int __init init_crux_time(void)
 {
     if ( acpi_disabled )
-        init_dt_xen_time();
+        init_dt_crux_time();
 
     /* Check that this CPU supports the Generic Timer interface */
     if ( !cpu_has_gentimer )
@@ -218,7 +218,7 @@ s_time_t get_s_time(void)
 }
 
 /* Set the timer to wake us up at a particular time.
- * Timeout is a xen system time (nanoseconds since boot); 0 disables the timer.
+ * Timeout is a Xen system time (nanoseconds since boot); 0 disables the timer.
  * Returns 1 on success; 0 if the timeout is too soon or is in the past. */
 int reprogram_timer(s_time_t timeout)
 {
@@ -262,7 +262,7 @@ static void vtimer_interrupt(int irq, void *dev_id)
      * if the timer output signal is masked in the context switch, the
      * GIC will keep track that of any interrupts raised while IRQS are
      * disabled. As soon as IRQs are re-enabled, the virtual interrupt
-     * will be injected to xen.
+     * will be injected to Xen.
      *
      * If an IDLE vCPU was scheduled next then we should ignore the
      * interrupt.
@@ -299,7 +299,7 @@ static void check_timer_irq_cfg(unsigned int irq, const char *which)
     if ( desc->arch.type & IRQ_TYPE_LEVEL_MASK )
         return;
 
-    printk(XENLOG_WARNING
+    printk(CRUXLOG_WARNING
            "WARNING: %s-timer IRQ%u is not level triggered.\n", which, irq);
 }
 

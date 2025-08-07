@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/rcar2.c
+ * crux/arch/arm/platforms/rcar2.c
  *
  * Renesas R-Car Gen2 specific settings
  *
@@ -16,8 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/platform.h>
 #include <asm/io.h>
 
@@ -33,7 +33,7 @@ static int __init rcar2_smp_init(void)
     pram = ioremap_nocache(RCAR2_RAM_ADDR, RCAR2_RAM_SIZE);
     if( !pram )
     {
-        dprintk( XENLOG_ERR, "Unable to map RCAR2 ICRAM\n");
+        dprintk( CRUXLOG_ERR, "Unable to map RCAR2 ICRAM\n");
         return -ENOMEM;
     }
 

@@ -2,7 +2,7 @@
 /******************************************************************************
  * displif.h
  *
- * Unified display device I/O interface for xen guest OSes.
+ * Unified display device I/O interface for Xen guest OSes.
  *
  * Copyright (C) 2016-2017 EPAM Systems Inc.
  *
@@ -10,8 +10,8 @@
  *          Oleksandr Grytsov <oleksandr_grytsov@epam.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_DISPLIF_H__
-#define __XEN_PUBLIC_IO_DISPLIF_H__
+#ifndef __CRUX_PUBLIC_IO_DISPLIF_H__
+#define __CRUX_PUBLIC_IO_DISPLIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -21,8 +21,8 @@
  *                           Protocol version
  ******************************************************************************
  */
-#define XENDISPL_PROTOCOL_VERSION     "2"
-#define XENDISPL_PROTOCOL_VERSION_INT  2
+#define CRUXDISPL_PROTOCOL_VERSION     "2"
+#define CRUXDISPL_PROTOCOL_VERSION_INT  2
 
 /*
  ******************************************************************************
@@ -39,7 +39,7 @@
  * Note: existing fbif can be used together with displif running at the
  * same time, e.g. on Linux one provides framebuffer and another DRM/KMS
  *
- * Note: display resolution (xenStore's "resolution" property) defines
+ * Note: display resolution (XenStore's "resolution" property) defines
  * visible area of the virtual display. At the same time resolution of
  * the display and frame buffers may differ: buffers can be smaller, equal
  * or bigger than the visible area. This is to enable use-cases, where backend
@@ -61,21 +61,21 @@
  ******************************************************************************
  *
  * Front->back notifications: when enqueuing a new request, sending a
- * notification can be made conditional on xendispl_req (i.e., the generic
+ * notification can be made conditional on cruxdispl_req (i.e., the generic
  * hold-off mechanism provided by the ring macros). Backends must set
- * xendispl_req appropriately (e.g., using RING_FINAL_CHECK_FOR_REQUESTS()).
+ * cruxdispl_req appropriately (e.g., using RING_FINAL_CHECK_FOR_REQUESTS()).
  *
  * Back->front notifications: when enqueuing a new response, sending a
- * notification can be made conditional on xendispl_resp (i.e., the generic
+ * notification can be made conditional on cruxdispl_resp (i.e., the generic
  * hold-off mechanism provided by the ring macros). Frontends must set
- * xendispl_resp appropriately (e.g., using RING_FINAL_CHECK_FOR_RESPONSES()).
+ * cruxdispl_resp appropriately (e.g., using RING_FINAL_CHECK_FOR_RESPONSES()).
  *
  * The two halves of a para-virtual display driver utilize nodes within
- * xenStore to communicate capabilities and to negotiate operating parameters.
+ * XenStore to communicate capabilities and to negotiate operating parameters.
  * This section enumerates these nodes which reside in the respective front and
- * backend portions of xenStore, following the xenBus convention.
+ * backend portions of XenStore, following the XenBus convention.
  *
- * All data in xenStore is stored as strings. Nodes specifying numeric
+ * All data in XenStore is stored as strings. Nodes specifying numeric
  * values are encoded in decimal. Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formated node string, without loss of information.
@@ -121,7 +121,7 @@
  * /local/domain/1/device/vdispl/0/1/evt-event-channel = "18"
  *
  ******************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  ******************************************************************************
  *
  *----------------------------- Protocol version ------------------------------
@@ -129,11 +129,11 @@
  * versions
  *      Values:         <string>
  *
- *      List of XENDISPL_LIST_SEPARATOR separated protocol versions supported
+ *      List of CRUXDISPL_LIST_SEPARATOR separated protocol versions supported
  *      by the backend. For example "1,2,3".
  *
  ******************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  ******************************************************************************
  *
  *-------------------------------- Addressing ---------------------------------
@@ -167,7 +167,7 @@
  *      Values:         "0", "1"
  *
  *      If value is set to "1", then backend can be a buffer provider/allocator
- *      for this domain during XENDISPL_OP_DBUF_CREATE operation (see below
+ *      for this domain during CRUXDISPL_OP_DBUF_CREATE operation (see below
  *      for negotiation).
  *      If value is not "1" or omitted frontend must allocate buffers itself.
  *
@@ -184,10 +184,10 @@
  *      Values:         <width, uint32_t>x<height, uint32_t>
  *
  *      Width and height of the connector in pixels separated by
- *      XENDISPL_RESOLUTION_SEPARATOR. This defines visible area of the
+ *      CRUXDISPL_RESOLUTION_SEPARATOR. This defines visible area of the
  *      display.
  *      If backend provides extended display identification data (EDID) with
- *      XENDISPL_OP_GET_EDID request then EDID values must take precedence
+ *      CRUXDISPL_OP_GET_EDID request then EDID values must take precedence
  *      over the resolutions defined here.
  *
  *------------------ Connector Request Transport Parameters -------------------
@@ -199,13 +199,13 @@
  * req-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the xen connector's control event channel
+ *      The identifier of the Xen connector's control event channel
  *      used to signal activity in the ring buffer.
  *
  * req-ring-ref
  *      Values:         <uint32_t>
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      a sole page of connector's control ring buffer.
  *
  *------------------- Connector Event Transport Parameters --------------------
@@ -216,13 +216,13 @@
  * evt-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the xen connector's event channel
+ *      The identifier of the Xen connector's event channel
  *      used to signal activity in the ring buffer.
  *
  * evt-ring-ref
  *      Values:         <uint32_t>
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      a sole page of connector's event ring buffer.
  */
 
@@ -232,7 +232,7 @@
  ******************************************************************************
  *
  * Tool stack creates front and back state nodes with initial state
- * xenbusStateInitialising.
+ * XenbusStateInitialising.
  * Tool stack creates and sets up frontend display configuration
  * nodes per domain.
  *
@@ -240,14 +240,14 @@
  *
  * Front                                Back
  * =================================    =====================================
- * xenbusStateInitialising              xenbusStateInitialising
+ * XenbusStateInitialising              XenbusStateInitialising
  *                                       o Query backend device identification
  *                                         data.
  *                                       o Open and validate backend device.
  *                                                |
  *                                                |
  *                                                V
- *                                      xenbusStateInitWait
+ *                                      XenbusStateInitWait
  *
  * o Query frontend configuration
  * o Allocate and initialize
@@ -259,14 +259,14 @@
  *              |
  *              |
  *              V
- * xenbusStateInitialised
+ * XenbusStateInitialised
  *
  *                                       o Query frontend transport parameters.
  *                                       o Connect to the event channels.
  *                                                |
  *                                                |
  *                                                V
- *                                      xenbusStateConnected
+ *                                      XenbusStateConnected
  *
  *  o Create and initialize OS
  *    virtual display connectors
@@ -274,48 +274,48 @@
  *              |
  *              |
  *              V
- * xenbusStateConnected
+ * XenbusStateConnected
  *
- *                                      xenbusStateUnknown
- *                                      xenbusStateClosed
- *                                      xenbusStateClosing
+ *                                      XenbusStateUnknown
+ *                                      XenbusStateClosed
+ *                                      XenbusStateClosing
  * o Remove virtual display device
  * o Remove event channels
  *              |
  *              |
  *              V
- * xenbusStateClosed
+ * XenbusStateClosed
  *
  *------------------------------- Recovery flow -------------------------------
  *
  * In case of frontend unrecoverable errors backend handles that as
- * if frontend goes into the xenbusStateClosed state.
+ * if frontend goes into the XenbusStateClosed state.
  *
  * In case of backend unrecoverable errors frontend tries removing
  * the virtualized device. If this is possible at the moment of error,
- * then frontend goes into the xenbusStateInitialising state and is ready for
+ * then frontend goes into the XenbusStateInitialising state and is ready for
  * new connection with backend. If the virtualized device is still in use and
- * cannot be removed, then frontend goes into the xenbusStateReconfiguring state
+ * cannot be removed, then frontend goes into the XenbusStateReconfiguring state
  * until either the virtualized device is removed or backend initiates a new
  * connection. On the virtualized device removal frontend goes into the
- * xenbusStateInitialising state.
+ * XenbusStateInitialising state.
  *
- * Note on xenbusStateReconfiguring state of the frontend: if backend has
+ * Note on XenbusStateReconfiguring state of the frontend: if backend has
  * unrecoverable errors then frontend cannot send requests to the backend
  * and thus cannot provide functionality of the virtualized device anymore.
  * After backend is back to normal the virtualized device may still hold some
  * state: configuration in use, allocated buffers, client application state etc.
  * In most cases, this will require frontend to implement complex recovery
- * reconnect logic. Instead, by going into xenbusStateReconfiguring state,
+ * reconnect logic. Instead, by going into XenbusStateReconfiguring state,
  * frontend will make sure no new clients of the virtualized device are
  * accepted, allow existing client(s) to exit gracefully by signaling error
  * state etc.
  * Once all the clients are gone frontend can reinitialize the virtualized
- * device and get into xenbusStateInitialising state again signaling the
+ * device and get into XenbusStateInitialising state again signaling the
  * backend that a new connection can be made.
  *
  * There are multiple conditions possible under which frontend will go from
- * xenbusStateReconfiguring into xenbusStateInitialising, some of them are OS
+ * XenbusStateReconfiguring into XenbusStateInitialising, some of them are OS
  * specific. For example:
  * 1. The underlying OS framework may provide callbacks to signal that the last
  *    client of the virtualized device has gone and the device can be removed
@@ -330,52 +330,52 @@
  * Request codes [0; 15] are reserved and must not be used
  */
 
-#define XENDISPL_OP_DBUF_CREATE       0x10
-#define XENDISPL_OP_DBUF_DESTROY      0x11
-#define XENDISPL_OP_FB_ATTACH         0x12
-#define XENDISPL_OP_FB_DETACH         0x13
-#define XENDISPL_OP_SET_CONFIG        0x14
-#define XENDISPL_OP_PG_FLIP           0x15
+#define CRUXDISPL_OP_DBUF_CREATE       0x10
+#define CRUXDISPL_OP_DBUF_DESTROY      0x11
+#define CRUXDISPL_OP_FB_ATTACH         0x12
+#define CRUXDISPL_OP_FB_DETACH         0x13
+#define CRUXDISPL_OP_SET_CONFIG        0x14
+#define CRUXDISPL_OP_PG_FLIP           0x15
 /* The below command is available in protocol version 2 and above. */
-#define XENDISPL_OP_GET_EDID          0x16
+#define CRUXDISPL_OP_GET_EDID          0x16
 
 /*
  ******************************************************************************
  *                                 EVENT CODES
  ******************************************************************************
  */
-#define XENDISPL_EVT_PG_FLIP          0x00
+#define CRUXDISPL_EVT_PG_FLIP          0x00
 
 /*
  ******************************************************************************
- *               XENSTORE FIELD AND PATH NAME STRINGS, HELPERS
+ *               CRUXSTORE FIELD AND PATH NAME STRINGS, HELPERS
  ******************************************************************************
  */
-#define XENDISPL_DRIVER_NAME          "vdispl"
+#define CRUXDISPL_DRIVER_NAME          "vdispl"
 
-#define XENDISPL_LIST_SEPARATOR       ","
-#define XENDISPL_RESOLUTION_SEPARATOR "x"
+#define CRUXDISPL_LIST_SEPARATOR       ","
+#define CRUXDISPL_RESOLUTION_SEPARATOR "x"
 
-#define XENDISPL_FIELD_BE_VERSIONS    "versions"
-#define XENDISPL_FIELD_FE_VERSION     "version"
-#define XENDISPL_FIELD_REQ_RING_REF   "req-ring-ref"
-#define XENDISPL_FIELD_REQ_CHANNEL    "req-event-channel"
-#define XENDISPL_FIELD_EVT_RING_REF   "evt-ring-ref"
-#define XENDISPL_FIELD_EVT_CHANNEL    "evt-event-channel"
-#define XENDISPL_FIELD_RESOLUTION     "resolution"
-#define XENDISPL_FIELD_BE_ALLOC       "be-alloc"
-#define XENDISPL_FIELD_UNIQUE_ID      "unique-id"
+#define CRUXDISPL_FIELD_BE_VERSIONS    "versions"
+#define CRUXDISPL_FIELD_FE_VERSION     "version"
+#define CRUXDISPL_FIELD_REQ_RING_REF   "req-ring-ref"
+#define CRUXDISPL_FIELD_REQ_CHANNEL    "req-event-channel"
+#define CRUXDISPL_FIELD_EVT_RING_REF   "evt-ring-ref"
+#define CRUXDISPL_FIELD_EVT_CHANNEL    "evt-event-channel"
+#define CRUXDISPL_FIELD_RESOLUTION     "resolution"
+#define CRUXDISPL_FIELD_BE_ALLOC       "be-alloc"
+#define CRUXDISPL_FIELD_UNIQUE_ID      "unique-id"
 
-#define XENDISPL_EDID_BLOCK_SIZE      128
-#define XENDISPL_EDID_BLOCK_COUNT     256
-#define XENDISPL_EDID_MAX_SIZE        (XENDISPL_EDID_BLOCK_SIZE * XENDISPL_EDID_BLOCK_COUNT)
+#define CRUXDISPL_EDID_BLOCK_SIZE      128
+#define CRUXDISPL_EDID_BLOCK_COUNT     256
+#define CRUXDISPL_EDID_MAX_SIZE        (CRUXDISPL_EDID_BLOCK_SIZE * CRUXDISPL_EDID_BLOCK_COUNT)
 
 /*
  ******************************************************************************
  *                          STATUS RETURN CODES
  ******************************************************************************
  *
- * Status return code is zero on success and -XEN_EXX on failure.
+ * Status return code is zero on success and -CRUX_EXX on failure.
  *
  ******************************************************************************
  *                              Assumptions
@@ -384,7 +384,7 @@
  *   grant reference 0 is valid, but never exposed to a PV driver,
  *   because of the fact it is already in use/reserved by the PV console.
  * o all references in this document to page sizes must be treated
- *   as pages of size XEN_PAGE_SIZE unless otherwise noted.
+ *   as pages of size CRUX_PAGE_SIZE unless otherwise noted.
  *
  ******************************************************************************
  *       Description of the protocol between frontend and backend driver
@@ -419,7 +419,7 @@
  * |                             reserved                              | 8
  * +----------------+----------------+----------------+----------------+
  *   id - uint16_t, private guest value, echoed in response
- *   operation - uint8_t, operation code, XENDISPL_OP_???
+ *   operation - uint8_t, operation code, CRUXDISPL_OP_???
  *
  * Request dbuf creation - request creation of a display buffer.
  *         0                1                 2               3        octet
@@ -471,7 +471,7 @@
  * bpp - uint32_t, bits per pixel
  * buffer_sz - uint32_t, buffer size to be allocated, octets
  * flags - uint32_t, flags of the operation
- *   o XENDISPL_DBUF_FLG_REQ_ALLOC - if set, then backend is requested
+ *   o CRUXDISPL_DBUF_FLG_REQ_ALLOC - if set, then backend is requested
  *     to allocate the buffer with the parameters provided in this request.
  *     Page directory is handled as follows:
  *       Frontend on request:
@@ -483,7 +483,7 @@
  *         o grants permissions for the pages of the buffer allocated to
  *           the frontend
  *         o fills in page directory with grant references
- *           (gref[] in struct xendispl_page_directory)
+ *           (gref[] in struct cruxdispl_page_directory)
  * gref_directory - grant_ref_t, a reference to the first shared page
  *   describing shared buffer references. At least one page exists. If shared
  *   buffer size (buffer_sz) exceeds what can be addressed by this single page,
@@ -492,9 +492,9 @@
  * data_ofs - uint32_t, offset of the data in the buffer, octets
  */
 
-#define XENDISPL_DBUF_FLG_REQ_ALLOC       (1 << 0)
+#define CRUXDISPL_DBUF_FLG_REQ_ALLOC       (1 << 0)
 
-struct xendispl_dbuf_create_req {
+struct cruxdispl_dbuf_create_req {
     uint64_t dbuf_cookie;
     uint32_t width;
     uint32_t height;
@@ -506,7 +506,7 @@ struct xendispl_dbuf_create_req {
 };
 
 /*
- * Shared page for XENDISPL_OP_DBUF_CREATE buffer descriptor (gref_directory in
+ * Shared page for CRUXDISPL_OP_DBUF_CREATE buffer descriptor (gref_directory in
  * the request) employs a list of pages, describing all pages of the shared
  * data buffer:
  *         0                1                 2               3        octet
@@ -527,17 +527,17 @@ struct xendispl_dbuf_create_req {
  * gref_dir_next_page - grant_ref_t, reference to the next page describing
  *   page directory. Must be 0 if there are no more pages in the list.
  * gref[i] - grant_ref_t, reference to a shared page of the buffer
- *   allocated at XENDISPL_OP_DBUF_CREATE
+ *   allocated at CRUXDISPL_OP_DBUF_CREATE
  *
  * Number of grant_ref_t entries in the whole page directory is not
  * passed, but instead can be calculated as:
- *   num_grefs_total = (XENDISPL_OP_DBUF_CREATE.buffer_sz + XEN_PAGE_SIZE - 1) /
- *       XEN_PAGE_SIZE
+ *   num_grefs_total = (CRUXDISPL_OP_DBUF_CREATE.buffer_sz + CRUX_PAGE_SIZE - 1) /
+ *       CRUX_PAGE_SIZE
  */
 
-struct xendispl_page_directory {
+struct cruxdispl_page_directory {
     grant_ref_t gref_dir_next_page;
-    grant_ref_t gref[XENPV_FLEX_ARRAY_DIM];
+    grant_ref_t gref[CRUXPV_FLEX_ARRAY_DIM];
 };
 
 /*
@@ -564,7 +564,7 @@ struct xendispl_page_directory {
  *   /local/domain/<dom-id>/device/vdispl/<dev-id>/0/req-ring-ref
  */
 
-struct xendispl_dbuf_destroy_req {
+struct cruxdispl_dbuf_destroy_req {
     uint64_t dbuf_cookie;
 };
 
@@ -613,7 +613,7 @@ struct xendispl_dbuf_destroy_req {
  * pixel_format - uint32_t, pixel format of the framebuffer, FOURCC code
  */
 
-struct xendispl_fb_attach_req {
+struct cruxdispl_fb_attach_req {
     uint64_t dbuf_cookie;
     uint64_t fb_cookie;
     uint32_t width;
@@ -646,7 +646,7 @@ struct xendispl_fb_attach_req {
  *   /local/domain/<dom-id>/device/vdispl/<dev-id>/0/req-ring-ref
  */
 
-struct xendispl_fb_detach_req {
+struct cruxdispl_fb_detach_req {
     uint64_t fb_cookie;
 };
 
@@ -694,7 +694,7 @@ struct xendispl_fb_detach_req {
  * bpp - uint32_t, bits per pixel
  */
 
-struct xendispl_set_config_req {
+struct cruxdispl_set_config_req {
     uint64_t fb_cookie;
     uint32_t x;
     uint32_t y;
@@ -724,7 +724,7 @@ struct xendispl_set_config_req {
  * +----------------+----------------+----------------+----------------+
  */
 
-struct xendispl_page_flip_req {
+struct cruxdispl_page_flip_req {
     uint64_t fb_cookie;
 };
 
@@ -749,19 +749,19 @@ struct xendispl_page_flip_req {
  *   - This command is not available in protocol version 1 and should be
  *     ignored.
  *   - This request is optional and if not supported then visible area
- *     is defined by the relevant xenStore's "resolution" property.
+ *     is defined by the relevant XenStore's "resolution" property.
  *   - Shared buffer, allocated for EDID storage, must not be less then
- *     XENDISPL_EDID_MAX_SIZE octets.
+ *     CRUXDISPL_EDID_MAX_SIZE octets.
  *
  * buffer_sz - uint32_t, buffer size to be allocated, octets
  * gref_directory - grant_ref_t, a reference to the first shared page
- *   describing EDID buffer references. See XENDISPL_OP_DBUF_CREATE for
- *   grant page directory structure (struct xendispl_page_directory).
+ *   describing EDID buffer references. See CRUXDISPL_OP_DBUF_CREATE for
+ *   grant page directory structure (struct cruxdispl_page_directory).
  *
  * See response format for this request.
  */
 
-struct xendispl_get_edid_req {
+struct cruxdispl_get_edid_req {
     uint32_t buffer_sz;
     grant_ref_t gref_directory;
 };
@@ -786,10 +786,10 @@ struct xendispl_get_edid_req {
  * +----------------+----------------+----------------+----------------+
  *
  * id - uint16_t, private guest value, echoed from request
- * status - int32_t, response status, zero on success and -XEN_EXX on failure
+ * status - int32_t, response status, zero on success and -CRUX_EXX on failure
  *
  *
- * Get EDID response - response for XENDISPL_OP_GET_EDID:
+ * Get EDID response - response for CRUXDISPL_OP_GET_EDID:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |               id                |    operation   |    reserved    | 4
@@ -812,7 +812,7 @@ struct xendispl_get_edid_req {
  * edid_sz - uint32_t, size of the EDID, octets
  */
 
-struct xendispl_get_edid_resp {
+struct cruxdispl_get_edid_resp {
     uint32_t edid_sz;
 };
 
@@ -820,7 +820,7 @@ struct xendispl_get_edid_resp {
  *----------------------------------- Events ----------------------------------
  *
  * Events are sent via a shared page allocated by the front and propagated by
- *   evt-event-channel/evt-ring-ref xenStore entries
+ *   evt-event-channel/evt-ring-ref XenStore entries
  * All event packets have the same length (64 octets)
  * All event packets have common header:
  *         0                1                 2               3        octet
@@ -853,48 +853,48 @@ struct xendispl_get_edid_resp {
  * +----------------+----------------+----------------+----------------+
  */
 
-struct xendispl_pg_flip_evt {
+struct cruxdispl_pg_flip_evt {
     uint64_t fb_cookie;
 };
 
-struct xendispl_req {
+struct cruxdispl_req {
     uint16_t id;
     uint8_t operation;
     uint8_t reserved[5];
     union {
-        struct xendispl_dbuf_create_req dbuf_create;
-        struct xendispl_dbuf_destroy_req dbuf_destroy;
-        struct xendispl_fb_attach_req fb_attach;
-        struct xendispl_fb_detach_req fb_detach;
-        struct xendispl_set_config_req set_config;
-        struct xendispl_page_flip_req pg_flip;
-        struct xendispl_get_edid_req get_edid;
+        struct cruxdispl_dbuf_create_req dbuf_create;
+        struct cruxdispl_dbuf_destroy_req dbuf_destroy;
+        struct cruxdispl_fb_attach_req fb_attach;
+        struct cruxdispl_fb_detach_req fb_detach;
+        struct cruxdispl_set_config_req set_config;
+        struct cruxdispl_page_flip_req pg_flip;
+        struct cruxdispl_get_edid_req get_edid;
         uint8_t reserved[56];
     } op;
 };
 
-struct xendispl_resp {
+struct cruxdispl_resp {
     uint16_t id;
     uint8_t operation;
     uint8_t reserved;
     int32_t status;
     union {
-        struct xendispl_get_edid_resp get_edid;
+        struct cruxdispl_get_edid_resp get_edid;
         uint8_t reserved1[56];
     } op;
 };
 
-struct xendispl_evt {
+struct cruxdispl_evt {
     uint16_t id;
     uint8_t type;
     uint8_t reserved[5];
     union {
-        struct xendispl_pg_flip_evt pg_flip;
+        struct cruxdispl_pg_flip_evt pg_flip;
         uint8_t reserved[56];
     } op;
 };
 
-DEFINE_RING_TYPES(xen_displif, struct xendispl_req, struct xendispl_resp);
+DEFINE_RING_TYPES(crux_displif, struct cruxdispl_req, struct cruxdispl_resp);
 
 /*
  ******************************************************************************
@@ -902,7 +902,7 @@ DEFINE_RING_TYPES(xen_displif, struct xendispl_req, struct xendispl_resp);
  ******************************************************************************
  * In order to deliver asynchronous events from back to front a shared page is
  * allocated by front and its granted reference propagated to back via
- * xenStore entries (evt-ring-ref/evt-event-channel).
+ * XenStore entries (evt-ring-ref/evt-event-channel).
  * This page has a common header used by both front and back to synchronize
  * access and control event's ring buffer, while back being a producer of the
  * events and front being a consumer. The rest of the page after the header
@@ -912,22 +912,22 @@ DEFINE_RING_TYPES(xen_displif, struct xendispl_req, struct xendispl_resp);
  * for either each event, group of events or none.
  */
 
-struct xendispl_event_page {
+struct cruxdispl_event_page {
     uint32_t in_cons;
     uint32_t in_prod;
     uint8_t reserved[56];
 };
 
-#define XENDISPL_EVENT_PAGE_SIZE 4096
-#define XENDISPL_IN_RING_OFFS (sizeof(struct xendispl_event_page))
-#define XENDISPL_IN_RING_SIZE (XENDISPL_EVENT_PAGE_SIZE - XENDISPL_IN_RING_OFFS)
-#define XENDISPL_IN_RING_LEN (XENDISPL_IN_RING_SIZE / sizeof(struct xendispl_evt))
-#define XENDISPL_IN_RING(page) \
-	((struct xendispl_evt *)((char *)(page) + XENDISPL_IN_RING_OFFS))
-#define XENDISPL_IN_RING_REF(page, idx) \
-	(XENDISPL_IN_RING((page))[(idx) % XENDISPL_IN_RING_LEN])
+#define CRUXDISPL_EVENT_PAGE_SIZE 4096
+#define CRUXDISPL_IN_RING_OFFS (sizeof(struct cruxdispl_event_page))
+#define CRUXDISPL_IN_RING_SIZE (CRUXDISPL_EVENT_PAGE_SIZE - CRUXDISPL_IN_RING_OFFS)
+#define CRUXDISPL_IN_RING_LEN (CRUXDISPL_IN_RING_SIZE / sizeof(struct cruxdispl_evt))
+#define CRUXDISPL_IN_RING(page) \
+	((struct cruxdispl_evt *)((char *)(page) + CRUXDISPL_IN_RING_OFFS))
+#define CRUXDISPL_IN_RING_REF(page, idx) \
+	(CRUXDISPL_IN_RING((page))[(idx) % CRUXDISPL_IN_RING_LEN])
 
-#endif /* __XEN_PUBLIC_IO_DISPLIF_H__ */
+#endif /* __CRUX_PUBLIC_IO_DISPLIF_H__ */
 
 /*
  * Local variables:

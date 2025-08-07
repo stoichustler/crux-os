@@ -1,7 +1,7 @@
 /******************************************************************************
  * drivers/char/consoled.c
  *
- * A backend driver for xen's PV console.
+ * A backend driver for Xen's PV console.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,22 +19,22 @@
  * Copyright (c) 2017 Citrix Systems Ltd.
  */
 
-#include <xen/lib.h>
-#include <xen/event.h>
-#include <xen/pv_console.h>
-#include <xen/consoled.h>
+#include <crux/lib.h>
+#include <crux/event.h>
+#include <crux/pv_console.h>
+#include <crux/consoled.h>
 
 #include <asm/guest.h>
 
-static struct xencons_interface *cons_ring;
+static struct cruxcons_interface *cons_ring;
 static DEFINE_SPINLOCK(rx_lock);
 
-void consoled_set_ring_addr(struct xencons_interface *ring)
+void consoled_set_ring_addr(struct cruxcons_interface *ring)
 {
     cons_ring = ring;
 }
 
-struct xencons_interface *consoled_get_ring_addr(void)
+struct cruxcons_interface *consoled_get_ring_addr(void)
 {
     return cons_ring;
 }
@@ -46,7 +46,7 @@ static char buf[BUF_SZ + 1];
 int consoled_guest_rx(void)
 {
     size_t idx = 0;
-    XENCONS_RING_IDX cons, prod;
+    CRUXCONS_RING_IDX cons, prod;
 
     if ( !cons_ring )
         return -ENODEV;
@@ -70,7 +70,7 @@ int consoled_guest_rx(void)
 
     while ( cons != prod )
     {
-        char c = cons_ring->out[MASK_XENCONS_IDX(cons++, cons_ring->out)];
+        char c = cons_ring->out[MASK_CRUXCONS_IDX(cons++, cons_ring->out)];
 
         buf[idx++] = c;
 
@@ -98,7 +98,7 @@ int consoled_guest_rx(void)
 /* Sends a character into a domain's PV console */
 int consoled_guest_tx(char c)
 {
-    XENCONS_RING_IDX cons, prod;
+    CRUXCONS_RING_IDX cons, prod;
 
     if ( !cons_ring )
         return -ENODEV;
@@ -118,7 +118,7 @@ int consoled_guest_tx(char c)
     if ( sizeof(cons_ring->in) - (prod - cons) == 0 )
         goto notify;
 
-    cons_ring->in[MASK_XENCONS_IDX(prod++, cons_ring->in)] = c;
+    cons_ring->in[MASK_CRUXCONS_IDX(prod++, cons_ring->in)] = c;
 
     /* Write to the ring before updating the pointer */
     smp_wmb();

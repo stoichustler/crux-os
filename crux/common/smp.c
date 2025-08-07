@@ -1,5 +1,5 @@
 /*
- * xen/common/smp.c
+ * crux/common/smp.c
  *
  * Generic SMP function
  *
@@ -18,8 +18,8 @@
 
 #include <asm/hardirq.h>
 #include <asm/processor.h>
-#include <xen/spinlock.h>
-#include <xen/smp.h>
+#include <crux/spinlock.h>
+#include <crux/smp.h>
 
 /*
  * Structure and data for smp_call_function()/on_selected_cpus().

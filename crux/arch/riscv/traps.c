@@ -5,11 +5,11 @@
  * RISC-V Trap handlers
  */
 
-#include <xen/bug.h>
-#include <xen/compiler.h>
-#include <xen/lib.h>
-#include <xen/nospec.h>
-#include <xen/sched.h>
+#include <crux/bug.h>
+#include <crux/compiler.h>
+#include <crux/lib.h>
+#include <crux/nospec.h>
+#include <crux/sched.h>
 
 #include <asm/intc.h>
 #include <asm/processor.h>

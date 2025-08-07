@@ -2,8 +2,8 @@
 # the calls of the handlers inside a switch() statement.
 
 BEGIN {
-    printf("#ifndef XEN_HYPERCALL_DEFS_H\n");
-    printf("#define XEN_HYPERCALL_DEFS_H\n\n");
+    printf("#ifndef CRUX_HYPERCALL_DEFS_H\n");
+    printf("#define CRUX_HYPERCALL_DEFS_H\n\n");
     printf("/* Generated file, do not edit! */\n\n");
     e = 0;
     n = 0;
@@ -24,7 +24,7 @@ function do_call(f, p,    i) {
         if (i > 1)
             printf(", ");
         if (ptr[f, i])
-            printf("(XEN_GUEST_HANDLE_PARAM(%s)){ _p(a%d) }", typ[f, i], i);
+            printf("(CRUX_GUEST_HANDLE_PARAM(%s)){ _p(a%d) }", typ[f, i], i);
         else
             printf("(%s)(a%d)", typ[f, i], i);
     }
@@ -95,10 +95,10 @@ $1 == "defhandle:" {
         do_err("\"defhandle:\" requires at least one parameter");
     e++;
     if (NF == 2) {
-        emit[e] = sprintf("DEFINE_XEN_GUEST_HANDLE(%s);", $2);
+        emit[e] = sprintf("DEFINE_CRUX_GUEST_HANDLE(%s);", $2);
     } else {
         val = rest_of_line(3);
-        emit[e] = sprintf("__DEFINE_XEN_GUEST_HANDLE(%s, %s);", $2, val);
+        emit[e] = sprintf("__DEFINE_CRUX_GUEST_HANDLE(%s, %s);", $2, val);
         xlate[val] = $2;
     }
     next;
@@ -236,7 +236,7 @@ END {
                     if (j > 1)
                         printf(", ");
                     if (ptr[i, j])
-                        printf("XEN_GUEST_HANDLE_PARAM(%s)", typ[i, j]);
+                        printf("CRUX_GUEST_HANDLE_PARAM(%s)", typ[i, j]);
                     else
                         printf("%s", typ[i, j]);
                     printf(" %s", arg[i, j]);
@@ -313,5 +313,5 @@ END {
                 printf("[__HYPERVISOR_%s] = %d, \\\n", fn[call_fn[i]], n_args[call_fn[i]]);
         printf("}\n");
     }
-    printf("\n#endif /* XEN_HYPERCALL_DEFS_H */\n");
+    printf("\n#endif /* CRUX_HYPERCALL_DEFS_H */\n");
 }

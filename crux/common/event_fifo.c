@@ -9,13 +9,13 @@
 
 #include "event_channel.h"
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/paging.h>
-#include <xen/mm.h>
-#include <xen/domain_page.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/paging.h>
+#include <crux/mm.h>
+#include <crux/domain_page.h>
 
 #include <asm/guest_atomics.h>
 
@@ -90,7 +90,7 @@ static void cf_check evtchn_fifo_init(struct domain *d, struct evtchn *evtchn)
      */
     word = evtchn_fifo_word_from_port(d, evtchn->port);
     if ( word && guest_test_bit(d, EVTCHN_FIFO_LINKED, word) )
-        gdprintk(XENLOG_WARNING, "domain %d, port %d already on a queue\n",
+        gdprintk(CRUXLOG_WARNING, "domain %d, port %d already on a queue\n",
                  d->domain_id, evtchn->port);
 }
 
@@ -152,7 +152,7 @@ static bool evtchn_fifo_set_link(struct domain *d, event_word_t *word,
             return ret;
         }
     }
-    gdprintk(XENLOG_WARNING, "domain %d, port %d not linked\n",
+    gdprintk(CRUXLOG_WARNING, "domain %d, port %d not linked\n",
              d->domain_id, link);
     guest_clear_bit(d, EVTCHN_FIFO_BUSY, word);
     return 1;
@@ -229,7 +229,7 @@ static void cf_check evtchn_fifo_set_pending(
     /* If we didn't get the lock bail out. */
     if ( try == 3 )
     {
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "%pd port %u lost event (too many queue changes)\n",
                 d, evtchn->port);
         goto done;
@@ -242,7 +242,7 @@ static void cf_check evtchn_fifo_set_pending(
      */
     if ( unlikely(!v->evtchn_fifo->control_block) )
     {
-        printk(XENLOG_G_WARNING
+        printk(CRUXLOG_G_WARNING
                "%pv has no FIFO event channel control block\n", v);
         goto unlock;
     }

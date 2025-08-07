@@ -11,8 +11,8 @@
 #ifndef COMMON_LZ4_DEFS_H
 #define COMMON_LZ4_DEFS_H
 
-#ifdef __XEN__
-#include <xen/unaligned.h>
+#ifdef __CRUX__
+#include <crux/unaligned.h>
 #else
 
 static inline uint16_t get_unaligned_le16(const void *p)

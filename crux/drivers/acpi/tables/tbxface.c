@@ -42,7 +42,7 @@
  * POSSIBILITY OF SUCH DAMAGES.
  */
 
-#include <xen/init.h>
+#include <crux/init.h>
 #include <acpi/acpi.h>
 #include <acpi/actables.h>
 

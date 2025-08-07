@@ -5,23 +5,23 @@
  * Copyright (c) 2002-2005 K A Fraser
  */
 
-#include <xen/init.h>
-#include <xen/types.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/sections.h>
-#include <xen/smp.h>
-#include <xen/perfc.h>
-#include <xen/time.h>
-#include <xen/softirq.h>
-#include <xen/timer.h>
-#include <xen/keyhandler.h>
-#include <xen/percpu.h>
-#include <xen/cpu.h>
-#include <xen/rcupdate.h>
-#include <xen/symbols.h>
+#include <crux/init.h>
+#include <crux/types.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/sections.h>
+#include <crux/smp.h>
+#include <crux/perfc.h>
+#include <crux/time.h>
+#include <crux/softirq.h>
+#include <crux/timer.h>
+#include <crux/keyhandler.h>
+#include <crux/percpu.h>
+#include <crux/cpu.h>
+#include <crux/rcupdate.h>
+#include <crux/symbols.h>
 #include <asm/system.h>
 #include <asm/atomic.h>
 
@@ -480,7 +480,7 @@ static void cf_check timer_softirq_action(void)
              new_limit + 1 )
             newheap = xmalloc_array(struct timer *, new_limit + 1);
         else
-            printk_once(XENLOG_WARNING "CPU%u: timer heap limit reached\n",
+            printk_once(CRUXLOG_WARNING "CPU%u: timer heap limit reached\n",
                         smp_processor_id());
         if ( newheap != NULL )
         {

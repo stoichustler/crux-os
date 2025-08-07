@@ -16,21 +16,21 @@
 
 #include "event_channel.h"
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/irq.h>
-#include <xen/iocap.h>
-#include <xen/compat.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/keyhandler.h>
-#include <xen/sections.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/irq.h>
+#include <crux/iocap.h>
+#include <crux/compat.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/keyhandler.h>
+#include <crux/sections.h>
 
 #include <asm/current.h>
 
-#include <public/xen.h>
+#include <public/crux.h>
 #include <public/event_channel.h>
 #include <xsm/xsm.h>
 
@@ -38,7 +38,7 @@
 #include <asm/guest.h>
 #endif
 
-#define consumer_is_xen(e) (!!(e)->xen_consumer)
+#define consumer_is_crux(e) (!!(e)->crux_consumer)
 
 /*
  * Lock an event channel exclusively. This is allowed only when the channel is
@@ -75,50 +75,50 @@ static inline void evtchn_write_unlock(struct evtchn *evtchn)
 }
 
 /*
- * The function alloc_unbound_xen_event_channel() allows an arbitrary
+ * The function alloc_unbound_crux_event_channel() allows an arbitrary
  * notifier function to be specified. However, very few unique functions
  * are specified in practice, so to prevent bloating the evtchn structure
  * with a pointer, we stash them dynamically in a small lookup array which
  * can be indexed by a small integer.
  */
-static xen_event_channel_notification_t __read_mostly
-    xen_consumers[NR_XEN_CONSUMERS];
+static crux_event_channel_notification_t __read_mostly
+    crux_consumers[NR_CRUX_CONSUMERS];
 
-/* Default notification action: wake up from wait_on_xen_event_channel(). */
-static void cf_check default_xen_notification_fn(
+/* Default notification action: wake up from wait_on_crux_event_channel(). */
+static void cf_check default_crux_notification_fn(
     struct vcpu *v, unsigned int port)
 {
     /* Consumer needs notification only if blocked. */
-    if ( test_and_clear_bit(_VPF_blocked_in_xen, &v->pause_flags) )
+    if ( test_and_clear_bit(_VPF_blocked_in_crux, &v->pause_flags) )
         vcpu_wake(v);
 }
 
 /*
  * Given a notification function, return the value to stash in
- * the evtchn->xen_consumer field.
+ * the evtchn->crux_consumer field.
  */
-static uint8_t get_xen_consumer(xen_event_channel_notification_t fn)
+static uint8_t get_crux_consumer(crux_event_channel_notification_t fn)
 {
     unsigned int i;
 
     if ( fn == NULL )
-        fn = default_xen_notification_fn;
+        fn = default_crux_notification_fn;
 
-    for ( i = 0; i < ARRAY_SIZE(xen_consumers); i++ )
+    for ( i = 0; i < ARRAY_SIZE(crux_consumers); i++ )
     {
         /* Use cmpxchgptr() in lieu of a global lock. */
-        if ( xen_consumers[i] == NULL )
-            cmpxchgptr(&xen_consumers[i], NULL, fn);
-        if ( xen_consumers[i] == fn )
+        if ( crux_consumers[i] == NULL )
+            cmpxchgptr(&crux_consumers[i], NULL, fn);
+        if ( crux_consumers[i] == fn )
             break;
     }
 
-    BUG_ON(i >= ARRAY_SIZE(xen_consumers));
+    BUG_ON(i >= ARRAY_SIZE(crux_consumers));
     return i+1;
 }
 
-/* Get the notification function for a given xen-bound event channel. */
-#define xen_notification_fn(e) (xen_consumers[(e)->xen_consumer-1])
+/* Get the notification function for a given Xen-bound event channel. */
+#define crux_notification_fn(e) (crux_consumers[(e)->crux_consumer-1])
 
 static struct domain *__read_mostly global_virq_handlers[NR_VIRQS];
 
@@ -133,8 +133,8 @@ static enum virq_type get_virq_type(unsigned int virq)
     {
     case VIRQ_TIMER:
     case VIRQ_DEBUG:
-    case VIRQ_XENOPROF:
-    case VIRQ_XENPMU:
+    case VIRQ_CRUXOPROF:
+    case VIRQ_CRUXPMU:
         return VIRQ_VCPU;
 
     case VIRQ_ARGO:
@@ -284,10 +284,10 @@ void evtchn_free(struct domain *d, struct evtchn *chn)
     /* Clear pending event to avoid unexpected behavior on re-bind. */
     evtchn_port_clear_pending(d, chn);
 
-    if ( consumer_is_xen(chn) )
+    if ( consumer_is_crux(chn) )
     {
-        write_atomic(&d->xen_evtchns, d->xen_evtchns - 1);
-        /* Decrement ->xen_evtchns /before/ ->active_evtchns. */
+        write_atomic(&d->crux_evtchns, d->crux_evtchns - 1);
+        /* Decrement ->crux_evtchns /before/ ->active_evtchns. */
         smp_wmb();
     }
     write_atomic(&d->active_evtchns, d->active_evtchns - 1);
@@ -295,7 +295,7 @@ void evtchn_free(struct domain *d, struct evtchn *chn)
     /* Reset binding to vcpu0 when the channel is freed. */
     chn->state          = ECS_FREE;
     chn->notify_vcpu_id = 0;
-    chn->xen_consumer   = 0;
+    chn->crux_consumer   = 0;
 
     xsm_evtchn_close_post(chn);
 }
@@ -332,7 +332,7 @@ int evtchn_alloc_unbound(evtchn_alloc_unbound_t *alloc, evtchn_port_t port)
     port = rc = evtchn_get_port(d, port);
     if ( rc < 0 )
     {
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -411,7 +411,7 @@ int evtchn_bind_interdomain(evtchn_bind_interdomain_t *bind, struct domain *ld,
     lport = rc = evtchn_get_port(ld, lport);
     if ( rc < 0 )
     {
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -423,7 +423,7 @@ int evtchn_bind_interdomain(evtchn_bind_interdomain_t *bind, struct domain *ld,
     if ( !rchn )
     {
         rc = -EINVAL;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: %pd, error %d\n", rd, rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: %pd, error %d\n", rd, rc);
         goto out;
     }
 
@@ -431,7 +431,7 @@ int evtchn_bind_interdomain(evtchn_bind_interdomain_t *bind, struct domain *ld,
          (rchn->u.unbound.remote_domid != ld->domain_id) )
     {
         rc = -EINVAL;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: %pd, error %d\n", rd, rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: %pd, error %d\n", rd, rc);
         goto out;
     }
 
@@ -508,7 +508,7 @@ int evtchn_bind_virq(evtchn_bind_virq_t *bind, evtchn_port_t port)
     if ( read_atomic(&v->virq_to_evtchn[virq]) )
     {
         rc = -EEXIST;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -522,7 +522,7 @@ int evtchn_bind_virq(evtchn_bind_virq_t *bind, evtchn_port_t port)
     port = rc = evtchn_get_port(d, port);
     if ( rc < 0 )
     {
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         domain_deinit_states(d);
         goto out;
     }
@@ -572,7 +572,7 @@ static int evtchn_bind_ipi(evtchn_bind_ipi_t *bind)
     if ( (port = get_free_port(d)) < 0 )
     {
         rc = port;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -643,14 +643,14 @@ static int evtchn_bind_pirq(evtchn_bind_pirq_t *bind)
     if ( pirq_to_evtchn(d, pirq) != 0 )
     {
         rc = -EEXIST;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
     if ( (port = get_free_port(d)) < 0 )
     {
         rc = port;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -660,7 +660,7 @@ static int evtchn_bind_pirq(evtchn_bind_pirq_t *bind)
     if ( !info )
     {
         rc = -ENOMEM;
-        gdprintk(XENLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
+        gdprintk(CRUXLOG_WARNING, "EVTCHNOP failure: error %d\n", rc);
         goto out;
     }
 
@@ -712,8 +712,8 @@ int evtchn_close(struct domain *d1, int port1, bool guest)
  again:
     write_lock(&d1->event_lock);
 
-    /* Guest cannot close a xen-attached event channel. */
-    if ( unlikely(consumer_is_xen(chn1)) && guest )
+    /* Guest cannot close a Xen-attached event channel. */
+    if ( unlikely(consumer_is_crux(chn1)) && guest )
     {
         rc = -EINVAL;
         goto out;
@@ -851,8 +851,8 @@ int evtchn_send(struct domain *ld, unsigned int lport)
 
     evtchn_read_lock(lchn);
 
-    /* Guest cannot send via a xen-attached event channel. */
-    if ( unlikely(consumer_is_xen(lchn)) )
+    /* Guest cannot send via a Xen-attached event channel. */
+    if ( unlikely(consumer_is_crux(lchn)) )
     {
         ret = -EINVAL;
         goto out;
@@ -868,10 +868,10 @@ int evtchn_send(struct domain *ld, unsigned int lport)
         rd    = lchn->u.interdomain.remote_dom;
         rport = lchn->u.interdomain.remote_port;
         rchn  = evtchn_from_port(rd, rport);
-        if ( consumer_is_xen(rchn) )
+        if ( consumer_is_crux(rchn) )
         {
             /* Don't keep holding the lock for the call below. */
-            xen_event_channel_notification_t fn = xen_notification_fn(rchn);
+            crux_event_channel_notification_t fn = crux_notification_fn(rchn);
             struct vcpu *rv = rd->vcpu[rchn->notify_vcpu_id];
 
             rcu_lock_domain(rd);
@@ -1200,8 +1200,8 @@ int evtchn_bind_vcpu(evtchn_port_t port, unsigned int vcpu_id)
 
     write_lock(&d->event_lock);
 
-    /* Guest cannot re-bind a xen-attached event channel. */
-    if ( unlikely(consumer_is_xen(chn)) )
+    /* Guest cannot re-bind a Xen-attached event channel. */
+    if ( unlikely(consumer_is_crux(chn)) )
     {
         rc = -EINVAL;
         goto out;
@@ -1263,15 +1263,15 @@ int evtchn_unmask(unsigned int port)
 
 static bool has_active_evtchns(const struct domain *d)
 {
-    unsigned int xen = read_atomic(&d->xen_evtchns);
+    unsigned int crux = read_atomic(&d->crux_evtchns);
 
     /*
-     * Read ->xen_evtchns /before/ active_evtchns, to prevent
+     * Read ->crux_evtchns /before/ active_evtchns, to prevent
      * evtchn_reset() exiting its loop early.
      */
     smp_rmb();
 
-    return read_atomic(&d->active_evtchns) > xen;
+    return read_atomic(&d->active_evtchns) > crux;
 }
 
 int evtchn_reset(struct domain *d, bool resuming)
@@ -1316,7 +1316,7 @@ int evtchn_reset(struct domain *d, bool resuming)
 
     d->next_evtchn = 0;
 
-    if ( d->active_evtchns > d->xen_evtchns )
+    if ( d->active_evtchns > d->crux_evtchns )
         rc = -EAGAIN;
     else if ( d->evtchn_fifo )
     {
@@ -1348,7 +1348,7 @@ static int evtchn_set_priority(const struct evtchn_set_priority *set_priority)
     return ret;
 }
 
-long do_event_channel_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+long do_event_channel_op(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     int rc;
 
@@ -1510,9 +1510,9 @@ long do_event_channel_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
 }
 
 
-int alloc_unbound_xen_event_channel(
+int alloc_unbound_crux_event_channel(
     struct domain *ld, unsigned int lvcpu, domid_t remote_domid,
-    xen_event_channel_notification_t notification_fn)
+    crux_event_channel_notification_t notification_fn)
 {
     struct evtchn *chn;
     int            port, rc;
@@ -1531,17 +1531,17 @@ int alloc_unbound_xen_event_channel(
     evtchn_write_lock(chn);
 
     chn->state = ECS_UNBOUND;
-    chn->xen_consumer = get_xen_consumer(notification_fn);
+    chn->crux_consumer = get_crux_consumer(notification_fn);
     chn->notify_vcpu_id = lvcpu;
     chn->u.unbound.remote_domid = remote_domid;
 
     evtchn_write_unlock(chn);
 
     /*
-     * Increment ->xen_evtchns /after/ ->active_evtchns. No explicit
+     * Increment ->crux_evtchns /after/ ->active_evtchns. No explicit
      * barrier needed due to spin-locked region just above.
      */
-    write_atomic(&ld->xen_evtchns, ld->xen_evtchns + 1);
+    write_atomic(&ld->crux_evtchns, ld->crux_evtchns + 1);
 
  out:
     check_free_port(ld, port);
@@ -1550,7 +1550,7 @@ int alloc_unbound_xen_event_channel(
     return rc < 0 ? rc : port;
 }
 
-void free_xen_event_channel(struct domain *d, int port)
+void free_crux_event_channel(struct domain *d, int port)
 {
     if ( !port_is_valid(d, port) )
     {
@@ -1567,7 +1567,7 @@ void free_xen_event_channel(struct domain *d, int port)
 }
 
 
-void notify_via_xen_event_channel(struct domain *ld, int lport)
+void notify_via_crux_event_channel(struct domain *ld, int lport)
 {
     struct evtchn *lchn = _evtchn_from_port(ld, lport), *rchn;
     struct domain *rd;
@@ -1588,7 +1588,7 @@ void notify_via_xen_event_channel(struct domain *ld, int lport)
 
     if ( likely(lchn->state == ECS_INTERDOMAIN) )
     {
-        ASSERT(consumer_is_xen(lchn));
+        ASSERT(consumer_is_crux(lchn));
         rd    = lchn->u.interdomain.remote_dom;
         rchn  = evtchn_from_port(rd, lchn->u.interdomain.remote_port);
         evtchn_port_set_pending(rd, rchn->notify_vcpu_id, rchn);
@@ -1754,7 +1754,7 @@ static void domain_dump_evtchn_info(struct domain *d)
                evtchn_is_masked(d, chn));
         evtchn_port_print_state(d, chn);
         printk("]: s=%d n=%d x=%d",
-               chn->state, chn->notify_vcpu_id, chn->xen_consumer);
+               chn->state, chn->notify_vcpu_id, chn->crux_consumer);
 
         switch ( chn->state )
         {

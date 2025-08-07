@@ -20,7 +20,7 @@
 #ifndef _ARM_ARM64_IO_H
 #define _ARM_ARM64_IO_H
 
-#include <xen/byteorder.h>
+#include <crux/byteorder.h>
 
 #include <asm/system.h>
 #include <asm/alternative.h>
@@ -142,13 +142,13 @@ static inline u64 __raw_readq(const volatile void __iomem *addr)
  */
 static inline int emulate_read(u64 addr)
 {
-    printk(XENLOG_G_WARNING "Can't access IO %lx\n", addr);
+    printk(CRUXLOG_G_WARNING "Can't access IO %lx\n", addr);
     return 0;
 }
 
 static inline void emulate_write(u64 addr)
 {
-    printk(XENLOG_G_WARNING "Can't access IO %lx\n", addr);
+    printk(CRUXLOG_G_WARNING "Can't access IO %lx\n", addr);
 }
 
 #define inb(c) ( emulate_read(c) )

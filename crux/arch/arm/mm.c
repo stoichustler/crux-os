@@ -1,18 +1,18 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/mm.c
+ * crux/arch/arm/mm.c
  *
  * MMU code for an ARMv7-A with virt extensions.
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/domain_page.h>
-#include <xen/grant_table.h>
-#include <xen/guest_access.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/domain_page.h>
+#include <crux/grant_table.h>
+#include <crux/guest_access.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 
 #include <xsm/xsm.h>
 
@@ -75,8 +75,8 @@ unsigned long domain_get_maximum_gpfn(struct domain *d)
     return gfn_x(d->arch.p2m.max_mapped_gfn);
 }
 
-void share_xen_page_with_guest(struct page_info *page, struct domain *d,
-                               enum XENSHARE_flags flags)
+void share_crux_page_with_guest(struct page_info *page, struct domain *d,
+                               enum CRUXSHARE_flags flags)
 {
     if ( page_get_owner(page) == d )
         return;
@@ -88,7 +88,7 @@ void share_xen_page_with_guest(struct page_info *page, struct domain *d,
      *
      * Please note, the update of type_info field here is not atomic as
      * we use Read-Modify-Write operation on it. But currently it is fine
-     * because the caller of page_set_xenheap_gfn() (which is another place
+     * because the caller of page_set_cruxheap_gfn() (which is another place
      * where type_info is updated) would need to acquire a reference on
      * the page. This is only possible after the count_info is updated *and*
      * there is a barrier between the type_info and count_info. So there is
@@ -101,21 +101,21 @@ void share_xen_page_with_guest(struct page_info *page, struct domain *d,
 
     page_set_owner(page, d);
     smp_wmb(); /* install valid domain ptr before updating refcnt. */
-    ASSERT((page->count_info & ~PGC_xen_heap) == 0);
+    ASSERT((page->count_info & ~PGC_crux_heap) == 0);
 
     /* Only add to the allocation list if the domain isn't dying. */
     if ( !d->is_dying )
     {
         page->count_info |= PGC_allocated | 1;
-        if ( unlikely(d->xenheap_pages++ == 0) )
+        if ( unlikely(d->cruxheap_pages++ == 0) )
             get_knownalive_domain(d);
-        page_list_add_tail(page, &d->xenpage_list);
+        page_list_add_tail(page, &d->cruxpage_list);
     }
 
     nrspin_unlock(&d->page_alloc_lock);
 }
 
-int xenmem_add_to_physmap_one(
+int cruxmem_add_to_physmap_one(
     struct domain *d,
     unsigned int space,
     union add_to_physmap_extra extra,
@@ -129,7 +129,7 @@ int xenmem_add_to_physmap_one(
 
     switch ( space )
     {
-    case XENMAPSPACE_grant_table:
+    case CRUXMAPSPACE_grant_table:
         rc = gnttab_map_frame(d, idx, gfn, &mfn);
         if ( rc )
             return rc;
@@ -139,7 +139,7 @@ int xenmem_add_to_physmap_one(
         t = p2m_ram_rw;
 
         break;
-    case XENMAPSPACE_shared_info:
+    case CRUXMAPSPACE_shared_info:
         if ( idx != 0 )
             return -EINVAL;
 
@@ -147,7 +147,7 @@ int xenmem_add_to_physmap_one(
         t = p2m_ram_rw;
 
         break;
-    case XENMAPSPACE_gmfn_foreign:
+    case CRUXMAPSPACE_gmfn_foreign:
     {
         struct domain *od;
         p2m_type_t p2mt;
@@ -170,7 +170,7 @@ int xenmem_add_to_physmap_one(
         }
 
         /* Take reference to the foreign domain page.
-         * Reference will be released in XENMEM_remove_from_physmap */
+         * Reference will be released in CRUXMEM_remove_from_physmap */
         page = get_page_from_gfn(od, idx, &p2mt, P2M_ALLOC);
         if ( !page )
         {
@@ -192,7 +192,7 @@ int xenmem_add_to_physmap_one(
         put_pg_owner(od);
         break;
     }
-    case XENMAPSPACE_dev_mmio:
+    case CRUXMAPSPACE_dev_mmio:
         rc = map_dev_mmio_page(d, gfn, _mfn(idx));
         return rc;
 
@@ -201,29 +201,29 @@ int xenmem_add_to_physmap_one(
     }
 
     /*
-     * Map at new location. Here we need to map xenheap RAM page differently
+     * Map at new location. Here we need to map cruxheap RAM page differently
      * because we need to store the valid GFN and make sure that nothing was
      * mapped before (the stored GFN is invalid). And these actions need to be
      * performed with the P2M lock held. The guest_physmap_add_entry() is just
      * a wrapper on top of p2m_set_entry().
      */
-    if ( !p2m_is_ram(t) || !is_xen_heap_mfn(mfn) )
+    if ( !p2m_is_ram(t) || !is_crux_heap_mfn(mfn) )
         rc = guest_physmap_add_entry(d, gfn, mfn, 0, t);
     else
     {
         struct p2m_domain *p2m = p2m_get_hostp2m(d);
 
         p2m_write_lock(p2m);
-        if ( gfn_eq(page_get_xenheap_gfn(mfn_to_page(mfn)), INVALID_GFN) )
+        if ( gfn_eq(page_get_cruxheap_gfn(mfn_to_page(mfn)), INVALID_GFN) )
         {
             rc = p2m_set_entry(p2m, gfn, 1, mfn, t, p2m->default_access);
             if ( !rc )
-                page_set_xenheap_gfn(mfn_to_page(mfn), gfn);
+                page_set_cruxheap_gfn(mfn_to_page(mfn), gfn);
         }
         else
             /*
              * Mandate the caller to first unmap the page before mapping it
-             * again. This is to prevent xen creating an unwanted hole in
+             * again. This is to prevent Xen creating an unwanted hole in
              * the P2M. For instance, this could happen if the firmware stole
              * a RAM address for mapping the shared_info page into but forgot
              * to unmap it afterwards.
@@ -233,11 +233,11 @@ int xenmem_add_to_physmap_one(
     }
 
     /*
-     * For XENMAPSPACE_gmfn_foreign if we failed to add the mapping, we need
+     * For CRUXMAPSPACE_gmfn_foreign if we failed to add the mapping, we need
      * to drop the reference we took earlier. In all other cases we need to
      * drop any reference we took earlier (perhaps indirectly).
      */
-    if ( space == XENMAPSPACE_gmfn_foreign ? rc : page != NULL )
+    if ( space == CRUXMAPSPACE_gmfn_foreign ? rc : page != NULL )
     {
         ASSERT(page != NULL);
         put_page(page);
@@ -246,13 +246,13 @@ int xenmem_add_to_physmap_one(
     return rc;
 }
 
-long arch_memory_op(int op, XEN_GUEST_HANDLE_PARAM(void) arg)
+long arch_memory_op(int op, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     switch ( op )
     {
     /* XXX: memsharing not working yet */
-    case XENMEM_get_sharing_shared_pages:
-    case XENMEM_get_sharing_freed_pages:
+    case CRUXMEM_get_sharing_shared_pages:
+    case CRUXMEM_get_sharing_freed_pages:
         return 0;
 
     default:

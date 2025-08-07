@@ -21,9 +21,9 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include <xen/acpi.h>
-#include <xen/init.h>
-#include <xen/mm.h>
+#include <crux/acpi.h>
+#include <crux/init.h>
+#include <crux/mm.h>
 
 #include <asm/fixmap.h>
 

@@ -1,6 +1,6 @@
-#include <xen/byteorder.h>
-#include <xen/macros.h>
-#include <xen/types.h>
+#include <crux/byteorder.h>
+#include <crux/macros.h>
+#include <crux/types.h>
 
 /*
  * A couple of 64 bit operations ported from FreeBSD.

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 #ifndef DRIVERS__PASSTHROUGH__AMD__IOMMU_H
 #define DRIVERS__PASSTHROUGH__AMD__IOMMU_H
 
-#include <xen/init.h>
-#include <xen/types.h>
-#include <xen/list.h>
-#include <xen/spinlock.h>
-#include <xen/tasklet.h>
-#include <xen/sched.h>
-#include <xen/domain_page.h>
+#include <crux/init.h>
+#include <crux/types.h>
+#include <crux/list.h>
+#include <crux/spinlock.h>
+#include <crux/tasklet.h>
+#include <crux/sched.h>
+#include <crux/domain_page.h>
 
 #include <asm/msi.h>
 #include <asm/apicdef.h>
@@ -156,22 +156,22 @@ struct acpi_ivrs_hardware;
 #define DMA_32BIT_MASK  0x00000000ffffffffULL
 
 #define AMD_IOMMU_ERROR(fmt, args...) \
-    printk(XENLOG_ERR "AMD-Vi: Error: " fmt, ## args)
+    printk(CRUXLOG_ERR "AMD-Vi: Error: " fmt, ## args)
 
 #define AMD_IOMMU_WARN(fmt, args...) \
-    printk(XENLOG_WARNING "AMD-Vi: Warning: " fmt, ## args)
+    printk(CRUXLOG_WARNING "AMD-Vi: Warning: " fmt, ## args)
 
 #define AMD_IOMMU_VERBOSE(fmt, args...) \
     do { \
         if ( iommu_verbose ) \
-            printk(XENLOG_INFO "AMD-Vi: " fmt, ## args); \
+            printk(CRUXLOG_INFO "AMD-Vi: " fmt, ## args); \
     } while ( false )
 
 #define AMD_IOMMU_DEBUG(fmt, args...) \
     do  \
     {   \
         if ( iommu_debug )  \
-            printk(XENLOG_INFO "AMD-Vi: " fmt, ## args);    \
+            printk(CRUXLOG_INFO "AMD-Vi: " fmt, ## args);    \
     } while(0)
 
 /* amd-iommu-detect functions */
@@ -335,12 +335,12 @@ static inline int amd_iommu_get_paging_mode(unsigned long max_frames)
 
 static inline void *__alloc_amd_iommu_tables(unsigned int order)
 {
-    return alloc_xenheap_pages(order, 0);
+    return alloc_cruxheap_pages(order, 0);
 }
 
 static inline void __free_amd_iommu_tables(void *table, unsigned int order)
 {
-    free_xenheap_pages(table, order);
+    free_cruxheap_pages(table, order);
 }
 
 static inline bool iommu_has_cap(const struct amd_iommu *iommu, unsigned int bit)

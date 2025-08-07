@@ -7,23 +7,23 @@
  * benh@kernel.crashing.org
  */
 
-#include <xen/bitops.h>
-#include <xen/bootfdt.h>
-#include <xen/types.h>
-#include <xen/init.h>
-#include <xen/guest_access.h>
-#include <xen/device_tree.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/stdarg.h>
-#include <xen/string.h>
-#include <xen/cpumask.h>
-#include <xen/ctype.h>
+#include <crux/bitops.h>
+#include <crux/bootfdt.h>
+#include <crux/types.h>
+#include <crux/init.h>
+#include <crux/guest_access.h>
+#include <crux/device_tree.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/stdarg.h>
+#include <crux/string.h>
+#include <crux/cpumask.h>
+#include <crux/ctype.h>
 #include <asm/setup.h>
-#include <xen/err.h>
-#include <xen/resource.h>
+#include <crux/err.h>
+#include <crux/resource.h>
 
 const void *device_tree_flattened;
 dt_irq_xlate_func dt_irq_xlate;
@@ -371,7 +371,7 @@ struct dt_device_node *dt_find_node_by_path_from(struct dt_device_node *from,
     return np;
 }
 
-int dt_find_node_by_gpath(XEN_GUEST_HANDLE(char) u_path, uint32_t u_plen,
+int dt_find_node_by_gpath(CRUX_GUEST_HANDLE(char) u_path, uint32_t u_plen,
                           struct dt_device_node **node)
 {
     char *path;
@@ -611,7 +611,7 @@ static bool dt_node_is_pci(const struct dt_device_node *np)
     bool is_pci = !strcmp(np->name, "pcie") || !strcmp(np->name, "pci");
 
     if ( is_pci )
-        printk(XENLOG_WARNING "%s: Missing device_type\n", np->full_name);
+        printk(CRUXLOG_WARNING "%s: Missing device_type\n", np->full_name);
 
     return is_pci;
 }
@@ -786,7 +786,7 @@ static int dt_translate_one(const struct dt_device_node *parent,
     ranges = dt_get_property(parent, rprop, &rlen);
     if ( ranges == NULL )
     {
-        printk(XENLOG_ERR "DT: no ranges; cannot translate\n");
+        printk(CRUXLOG_ERR "DT: no ranges; cannot translate\n");
         return 1;
     }
     if ( rlen == 0 )
@@ -856,7 +856,7 @@ static u64 __dt_translate_address(const struct dt_device_node *dev,
     bus->count_cells(dev, &na, &ns);
     if ( !DT_CHECK_COUNTS(na, ns) )
     {
-        printk(XENLOG_ERR "dt_parse: Bad cell count for device %s\n",
+        printk(CRUXLOG_ERR "dt_parse: Bad cell count for device %s\n",
                   dev->full_name);
         goto bail;
     }
@@ -891,7 +891,7 @@ static u64 __dt_translate_address(const struct dt_device_node *dev,
         pbus->count_cells(dev, &pna, &pns);
         if ( !DT_CHECK_COUNTS(pna, pns) )
         {
-            printk(XENLOG_ERR "dt_parse: Bad cell count for parent %s\n",
+            printk(CRUXLOG_ERR "dt_parse: Bad cell count for parent %s\n",
                    dev->full_name);
             break;
         }
@@ -998,7 +998,7 @@ int dt_for_each_range(const struct dt_device_node *dev,
     ranges = dt_get_property(dev, "ranges", &rlen);
     if ( ranges == NULL )
     {
-        printk(XENLOG_ERR "DT: no ranges; cannot enumerate %s\n",
+        printk(CRUXLOG_ERR "DT: no ranges; cannot enumerate %s\n",
                dev->full_name);
         return -EINVAL;
     }
@@ -1008,7 +1008,7 @@ int dt_for_each_range(const struct dt_device_node *dev,
     bus->count_cells(dev, &na, &ns);
     if ( !DT_CHECK_COUNTS(na, ns) )
     {
-        printk(XENLOG_ERR "dt_parse: Bad cell count for device %s\n",
+        printk(CRUXLOG_ERR "dt_parse: Bad cell count for device %s\n",
                   dev->full_name);
         return -EINVAL;
     }
@@ -1023,7 +1023,7 @@ int dt_for_each_range(const struct dt_device_node *dev,
     pbus->count_cells(dev, &pna, &pns);
     if ( !DT_CHECK_COUNTS(pna, pns) )
     {
-        printk(XENLOG_ERR "dt_parse: Bad cell count for parent %s\n",
+        printk(CRUXLOG_ERR "dt_parse: Bad cell count for parent %s\n",
                dev->full_name);
         return -EINVAL;
     }
@@ -1662,7 +1662,7 @@ bool dt_device_is_available(const struct dt_device_node *device)
 
 bool dt_device_for_passthrough(const struct dt_device_node *device)
 {
-    return (dt_find_property(device, "xen,passthrough", NULL) != NULL);
+    return (dt_find_property(device, "crux,passthrough", NULL) != NULL);
 
 }
 
@@ -1711,7 +1711,7 @@ static int __dt_parse_phandle_with_args(const struct dt_device_node *np,
                 node = dt_find_node_by_phandle(phandle);
                 if ( !node )
                 {
-                    printk(XENLOG_ERR "%s: could not find phandle\n",
+                    printk(CRUXLOG_ERR "%s: could not find phandle\n",
                            np->full_name);
                     goto err;
                 }
@@ -1735,7 +1735,7 @@ static int __dt_parse_phandle_with_args(const struct dt_device_node *np,
              */
             if ( list + count > list_end )
             {
-                printk(XENLOG_ERR "%s: arguments longer than property\n",
+                printk(CRUXLOG_ERR "%s: arguments longer than property\n",
                        np->full_name);
                 goto err;
             }
@@ -1847,7 +1847,7 @@ static unsigned long unflatten_dt_node(const void *fdt,
     tag = be32_to_cpu(*(__be32 *)(*p));
     if ( tag != FDT_BEGIN_NODE )
     {
-        printk(XENLOG_WARNING "Weird tag at start of node: %x\n", tag);
+        printk(CRUXLOG_WARNING "Weird tag at start of node: %x\n", tag);
         return mem;
     }
     *p += 4;
@@ -2058,7 +2058,7 @@ static unsigned long unflatten_dt_node(const void *fdt,
     }
     if ( tag != FDT_END_NODE )
     {
-        printk(XENLOG_WARNING "Weird tag at end of node: %x\n", tag);
+        printk(CRUXLOG_WARNING "Weird tag at end of node: %x\n", tag);
         return mem;
     }
 
@@ -2102,7 +2102,7 @@ int unflatten_device_tree(const void *fdt, struct dt_device_node **mynodes)
     unflatten_dt_node(fdt, mem, &start, NULL, &allnextp, 0);
     if ( be32_to_cpu(*(__be32 *)start) != FDT_END )
     {
-        printk(XENLOG_ERR "Weird tag at end of tree: %08x\n",
+        printk(CRUXLOG_ERR "Weird tag at end of tree: %08x\n",
                   *((u32 *)start));
         xfree((void *)mem);
         return -EINVAL;
@@ -2110,7 +2110,7 @@ int unflatten_device_tree(const void *fdt, struct dt_device_node **mynodes)
 
     if ( be32_to_cpu(((__be32 *)mem)[size / 4]) != 0xdeadbeefU )
     {
-        printk(XENLOG_ERR "End of tree marker overwritten: %08x\n",
+        printk(CRUXLOG_ERR "End of tree marker overwritten: %08x\n",
                   be32_to_cpu(((__be32 *)mem)[size / 4]));
         xfree((void *)mem);
         return -EINVAL;
@@ -2248,7 +2248,7 @@ int dt_map_id(const struct dt_device_node *np, uint32_t id,
 
     if ( !map_len || (map_len % (4 * sizeof(*map))) )
     {
-        printk(XENLOG_ERR "%s(): %s: Error: Bad %s length: %u\n", __func__,
+        printk(CRUXLOG_ERR "%s(): %s: Error: Bad %s length: %u\n", __func__,
                np->full_name, map_name, map_len);
         return -EINVAL;
     }
@@ -2274,7 +2274,7 @@ int dt_map_id(const struct dt_device_node *np, uint32_t id,
 
         if ( id_base & ~map_mask )
         {
-            printk(XENLOG_ERR "%s(): %s: Invalid %s translation - %s-mask (0x%"PRIx32") ignores id-base (0x%"PRIx32")\n",
+            printk(CRUXLOG_ERR "%s(): %s: Invalid %s translation - %s-mask (0x%"PRIx32") ignores id-base (0x%"PRIx32")\n",
                    __func__, np->full_name, map_name, map_name, map_mask,
                    id_base);
             return -EFAULT;
@@ -2299,13 +2299,13 @@ int dt_map_id(const struct dt_device_node *np, uint32_t id,
         if ( id_out )
             *id_out = masked_id - id_base + out_base;
 
-        dprintk(XENLOG_DEBUG, "%s: %s, using mask %08"PRIx32", id-base: %08"PRIx32", out-base: %08"PRIx32", length: %08"PRIx32", id: %08"PRIx32" -> %08"PRIx32"\n",
+        dprintk(CRUXLOG_DEBUG, "%s: %s, using mask %08"PRIx32", id-base: %08"PRIx32", out-base: %08"PRIx32", length: %08"PRIx32", id: %08"PRIx32" -> %08"PRIx32"\n",
                np->full_name, map_name, map_mask, id_base, out_base, id_len, id,
                masked_id - id_base + out_base);
         return 0;
     }
 
-    dprintk(XENLOG_DEBUG, "%s: no %s translation for id 0x%"PRIx32" on %s\n",
+    dprintk(CRUXLOG_DEBUG, "%s: no %s translation for id 0x%"PRIx32" on %s\n",
            np->full_name, map_name, id,
            (target && *target) ? (*target)->full_name : NULL);
 

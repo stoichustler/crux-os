@@ -1,5 +1,5 @@
 /*
- * xen/common/sched_null.c
+ * crux/common/sched_null.c
  *
  *  Copyright (c) 2017, Dario Faggioli, Citrix Ltd
  *
@@ -28,9 +28,9 @@
  * if the scheduler is used inside a cpupool.
  */
 
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/trace.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/trace.h>
 
 #include "private.h"
 
@@ -134,9 +134,9 @@ static int cf_check null_init(struct scheduler *ops)
 {
     struct null_private *prv;
 
-    printk("kicking null scheduler\n"
+    printk("Initializing null scheduler\n"
            "WARNING: This is experimental software in development.\n"
-           "use at your own risk.\n");
+           "Use at your own risk.\n");
 
     prv = xzalloc(struct null_private);
     if ( prv == NULL )
@@ -354,7 +354,7 @@ static void unit_assign(struct null_private *prv, struct sched_unit *unit,
     sched_set_res(unit, get_sched_res(cpu));
     cpumask_clear_cpu(cpu, &prv->cpus_free);
 
-    dprintk(XENLOG_G_INFO, "%d <-- %pdv%d\n", cpu, unit->domain, unit->unit_id);
+    dprintk(CRUXLOG_G_INFO, "%d <-- %pdv%d\n", cpu, unit->domain, unit->unit_id);
 
     if ( unlikely(tb_init_done) )
     {
@@ -386,7 +386,7 @@ static bool unit_deassign(struct null_private *prv, const struct sched_unit *uni
     npc->unit = NULL;
     cpumask_set_cpu(cpu, &prv->cpus_free);
 
-    dprintk(XENLOG_G_INFO, "%d <-- NULL (%pdv%d)\n", cpu, unit->domain,
+    dprintk(CRUXLOG_G_INFO, "%d <-- NULL (%pdv%d)\n", cpu, unit->domain,
             unit->unit_id);
 
     if ( unlikely(tb_init_done) )
@@ -514,7 +514,7 @@ static void cf_check null_unit_insert(
          */
         spin_lock(&prv->waitq_lock);
         list_add_tail(&nvc->waitq_elem, &prv->waitq);
-        dprintk(XENLOG_G_WARNING, "WARNING: %pdv%d not assigned to any CPU!\n",
+        dprintk(CRUXLOG_G_WARNING, "WARNING: %pdv%d not assigned to any CPU!\n",
                 unit->domain, unit->unit_id);
         spin_unlock(&prv->waitq_lock);
     }
@@ -636,7 +636,7 @@ static void cf_check null_unit_wake(
                 &prv->cpus_free);
 
     if ( cpumask_empty(cpumask_scratch_cpu(cpu)) )
-        dprintk(XENLOG_G_WARNING, "WARNING: d%dv%d not assigned to any CPU!\n",
+        dprintk(CRUXLOG_G_WARNING, "WARNING: d%dv%d not assigned to any CPU!\n",
                 unit->domain->domain_id, unit->unit_id);
     else
         cpumask_raise_softirq(cpumask_scratch_cpu(cpu), SCHEDULE_SOFTIRQ);
@@ -768,7 +768,7 @@ static void cf_check null_unit_migrate(
         if ( list_empty(&nvc->waitq_elem) )
         {
             list_add_tail(&nvc->waitq_elem, &prv->waitq);
-            dprintk(XENLOG_G_WARNING,
+            dprintk(CRUXLOG_G_WARNING,
                     "WARNING: %pdv%d not assigned to any CPU!\n", unit->domain,
                     unit->unit_id);
         }
@@ -995,7 +995,7 @@ static void cf_check null_dump(const struct scheduler *ops)
 
     printk("\tcpus_free = %*pbl\n", CPUMASK_PR(&prv->cpus_free));
 
-    printk("domain info:\n");
+    printk("Domain info:\n");
     loop = 0;
     list_for_each( iter, &prv->ndom )
     {
@@ -1042,7 +1042,7 @@ static void cf_check null_dump(const struct scheduler *ops)
 static const struct scheduler sched_null_def = {
     .name           = "null Scheduler",
     .opt_name       = "null",
-    .sched_id       = XEN_SCHEDULER_NULL,
+    .sched_id       = CRUX_SCHEDULER_NULL,
     .sched_data     = NULL,
 
     .init           = null_init,

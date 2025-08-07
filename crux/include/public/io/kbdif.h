@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * kbdif.h -- xen virtual keyboard/mouse
+ * kbdif.h -- Xen virtual keyboard/mouse
  *
  * Copyright (C) 2005 Anthony Liguori <aliguori@us.ibm.com>
  * Copyright (C) 2006 Red Hat, Inc., Markus Armbruster <armbru@redhat.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_KBDIF_H__
-#define __XEN_PUBLIC_IO_KBDIF_H__
+#ifndef __CRUX_PUBLIC_IO_KBDIF_H__
+#define __CRUX_PUBLIC_IO_KBDIF_H__
 
 /*
  *****************************************************************************
@@ -15,23 +15,23 @@
  *****************************************************************************
  *
  * The two halves of a para-virtual driver utilize nodes within
- * xenStore to communicate capabilities and to negotiate operating parameters.
+ * XenStore to communicate capabilities and to negotiate operating parameters.
  * This section enumerates these nodes which reside in the respective front and
- * backend portions of xenStore, following xenBus convention.
+ * backend portions of XenStore, following XenBus convention.
  *
- * All data in xenStore is stored as strings.  Nodes specifying numeric
+ * All data in XenStore is stored as strings.  Nodes specifying numeric
  * values are encoded in decimal. Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formated node string, without loss of information.
  *
  *****************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  *****************************************************************************
  *
  *---------------------------- Features supported ----------------------------
  *
  * Capable backend advertises supported features by publishing
- * corresponding entries in xenStore and puts 1 as the value of the entry.
+ * corresponding entries in XenStore and puts 1 as the value of the entry.
  * If a feature is not supported then 0 must be set or feature entry omitted.
  *
  * feature-disable-keyboard
@@ -108,20 +108,20 @@
  *      while reporting input events, pixels, [0; UINT32_MAX].
  *
  *****************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  *****************************************************************************
  *
  *------------------------------ Feature request -----------------------------
  *
  * Capable frontend requests features from backend via setting corresponding
- * entries to 1 in xenStore. Requests for features not advertised as supported
+ * entries to 1 in XenStore. Requests for features not advertised as supported
  * by the backend have no effect.
  *
  * request-abs-pointer
  *      Values:         <uint>
  *
  *      Request backend to report absolute pointer coordinates
- *      (XENKBD_TYPE_POS) instead of relative ones (XENKBD_TYPE_MOTION).
+ *      (CRUXKBD_TYPE_POS) instead of relative ones (CRUXKBD_TYPE_MOTION).
  *
  * request-multi-touch
  *      Values:         <uint>
@@ -140,13 +140,13 @@
  * event-channel
  *      Values:         <uint>
  *
- *      The identifier of the xen event channel used to signal activity
+ *      The identifier of the Xen event channel used to signal activity
  *      in the ring buffer.
  *
  * page-gref
  *      Values:         <uint>
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      a sole page in a single page sized event ring buffer.
  *
  * page-ref
@@ -160,46 +160,46 @@
  * EVENT CODES.
  */
 
-#define XENKBD_TYPE_MOTION             1
-#define XENKBD_TYPE_RESERVED           2
-#define XENKBD_TYPE_KEY                3
-#define XENKBD_TYPE_POS                4
-#define XENKBD_TYPE_MTOUCH             5
+#define CRUXKBD_TYPE_MOTION             1
+#define CRUXKBD_TYPE_RESERVED           2
+#define CRUXKBD_TYPE_KEY                3
+#define CRUXKBD_TYPE_POS                4
+#define CRUXKBD_TYPE_MTOUCH             5
 
 /* Multi-touch event sub-codes */
 
-#define XENKBD_MT_EV_DOWN              0
-#define XENKBD_MT_EV_UP                1
-#define XENKBD_MT_EV_MOTION            2
-#define XENKBD_MT_EV_SYN               3
-#define XENKBD_MT_EV_SHAPE             4
-#define XENKBD_MT_EV_ORIENT            5
+#define CRUXKBD_MT_EV_DOWN              0
+#define CRUXKBD_MT_EV_UP                1
+#define CRUXKBD_MT_EV_MOTION            2
+#define CRUXKBD_MT_EV_SYN               3
+#define CRUXKBD_MT_EV_SHAPE             4
+#define CRUXKBD_MT_EV_ORIENT            5
 
 /*
- * CONSTANTS, XENSTORE FIELD AND PATH NAME STRINGS, HELPERS.
+ * CONSTANTS, CRUXSTORE FIELD AND PATH NAME STRINGS, HELPERS.
  */
 
-#define XENKBD_DRIVER_NAME             "vkbd"
+#define CRUXKBD_DRIVER_NAME             "vkbd"
 
-#define XENKBD_FIELD_FEAT_DSBL_KEYBRD  "feature-disable-keyboard"
-#define XENKBD_FIELD_FEAT_DSBL_POINTER "feature-disable-pointer"
-#define XENKBD_FIELD_FEAT_ABS_POINTER  "feature-abs-pointer"
-#define XENKBD_FIELD_FEAT_RAW_POINTER  "feature-raw-pointer"
-#define XENKBD_FIELD_FEAT_MTOUCH       "feature-multi-touch"
-#define XENKBD_FIELD_REQ_ABS_POINTER   "request-abs-pointer"
-#define XENKBD_FIELD_REQ_RAW_POINTER   "request-raw-pointer"
-#define XENKBD_FIELD_REQ_MTOUCH        "request-multi-touch"
-#define XENKBD_FIELD_RING_GREF         "page-gref"
-#define XENKBD_FIELD_EVT_CHANNEL       "event-channel"
-#define XENKBD_FIELD_WIDTH             "width"
-#define XENKBD_FIELD_HEIGHT            "height"
-#define XENKBD_FIELD_MT_WIDTH          "multi-touch-width"
-#define XENKBD_FIELD_MT_HEIGHT         "multi-touch-height"
-#define XENKBD_FIELD_MT_NUM_CONTACTS   "multi-touch-num-contacts"
-#define XENKBD_FIELD_UNIQUE_ID         "unique-id"
+#define CRUXKBD_FIELD_FEAT_DSBL_KEYBRD  "feature-disable-keyboard"
+#define CRUXKBD_FIELD_FEAT_DSBL_POINTER "feature-disable-pointer"
+#define CRUXKBD_FIELD_FEAT_ABS_POINTER  "feature-abs-pointer"
+#define CRUXKBD_FIELD_FEAT_RAW_POINTER  "feature-raw-pointer"
+#define CRUXKBD_FIELD_FEAT_MTOUCH       "feature-multi-touch"
+#define CRUXKBD_FIELD_REQ_ABS_POINTER   "request-abs-pointer"
+#define CRUXKBD_FIELD_REQ_RAW_POINTER   "request-raw-pointer"
+#define CRUXKBD_FIELD_REQ_MTOUCH        "request-multi-touch"
+#define CRUXKBD_FIELD_RING_GREF         "page-gref"
+#define CRUXKBD_FIELD_EVT_CHANNEL       "event-channel"
+#define CRUXKBD_FIELD_WIDTH             "width"
+#define CRUXKBD_FIELD_HEIGHT            "height"
+#define CRUXKBD_FIELD_MT_WIDTH          "multi-touch-width"
+#define CRUXKBD_FIELD_MT_HEIGHT         "multi-touch-height"
+#define CRUXKBD_FIELD_MT_NUM_CONTACTS   "multi-touch-num-contacts"
+#define CRUXKBD_FIELD_UNIQUE_ID         "unique-id"
 
 /* OBSOLETE, not recommended for use */
-#define XENKBD_FIELD_RING_REF          "page-ref"
+#define CRUXKBD_FIELD_RING_REF          "page-ref"
 
 /*
  *****************************************************************************
@@ -224,7 +224,7 @@
  * +-----------------+
  * |       type      |
  * +-----------------+
- * type - uint8_t, event code, XENKBD_TYPE_???
+ * type - uint8_t, event code, CRUXKBD_TYPE_???
  *
  *
  * Pointer relative movement event
@@ -250,7 +250,7 @@
  * rel_z - int32_t, relative Z motion (wheel)
  */
 
-struct xenkbd_motion
+struct cruxkbd_motion
 {
     uint8_t type;
     int32_t rel_x;
@@ -277,7 +277,7 @@ struct xenkbd_motion
  * keycode - uint32_t, KEY_* from linux/input.h
  */
 
-struct xenkbd_key
+struct cruxkbd_key
 {
     uint8_t type;
     uint8_t pressed;
@@ -308,7 +308,7 @@ struct xenkbd_key
  * rel_z - int32_t, relative Z motion (wheel)
  */
 
-struct xenkbd_position
+struct cruxkbd_position
 {
     uint8_t type;
     int32_t abs_x;
@@ -328,7 +328,7 @@ struct xenkbd_position
  * |                             reserved                              | 8
  * +----------------+----------------+----------------+----------------+
  *
- * event_type - unt8_t, multi-touch event sub-type, XENKBD_MT_EV_???
+ * event_type - unt8_t, multi-touch event sub-type, CRUXKBD_MT_EV_???
  * contact_id - unt8_t, ID of the contact
  *
  * Touch interactions can consist of one or more contacts.
@@ -336,8 +336,8 @@ struct xenkbd_position
  * with a down event, followed by zero or more motion events,
  * and ending with an up event. Events relating to the same
  * contact point can be identified by the ID of the sequence: contact ID.
- * Contact ID may be reused after XENKBD_MT_EV_UP event and
- * is in the [0; XENKBD_FIELD_NUM_CONTACTS - 1] range.
+ * Contact ID may be reused after CRUXKBD_MT_EV_UP event and
+ * is in the [0; CRUXKBD_FIELD_NUM_CONTACTS - 1] range.
  *
  * For further information please refer to documentation on Wayland [1],
  * Linux [2] and Windows [3] multi-touch support.
@@ -420,7 +420,7 @@ struct xenkbd_position
  * Shape is approximated by an ellipse through the major and minor axis
  * lengths: major is the longer diameter of the ellipse and minor is the
  * shorter one. Center of the ellipse is reported via
- * XENKBD_MT_EV_DOWN/XENKBD_MT_EV_MOTION events.
+ * CRUXKBD_MT_EV_DOWN/CRUXKBD_MT_EV_MOTION events.
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |  _TYPE_MTOUCH  |  _MT_EV_SHAPE  |   contact_id   |    reserved    | 4
@@ -462,9 +462,9 @@ struct xenkbd_position
  * orientation - int16_t, clockwise angle of the major axis
  */
 
-struct xenkbd_mtouch {
-    uint8_t type;            /* XENKBD_TYPE_MTOUCH */
-    uint8_t event_type;      /* XENKBD_MT_EV_??? */
+struct cruxkbd_mtouch {
+    uint8_t type;            /* CRUXKBD_TYPE_MTOUCH */
+    uint8_t event_type;      /* CRUXKBD_MT_EV_??? */
     uint8_t contact_id;
     uint8_t reserved[5];     /* reserved for the future use */
     union {
@@ -480,16 +480,16 @@ struct xenkbd_mtouch {
     } u;
 };
 
-#define XENKBD_IN_EVENT_SIZE 40
+#define CRUXKBD_IN_EVENT_SIZE 40
 
-union xenkbd_in_event
+union cruxkbd_in_event
 {
     uint8_t type;
-    struct xenkbd_motion motion;
-    struct xenkbd_key key;
-    struct xenkbd_position pos;
-    struct xenkbd_mtouch mtouch;
-    char pad[XENKBD_IN_EVENT_SIZE];
+    struct cruxkbd_motion motion;
+    struct cruxkbd_key key;
+    struct cruxkbd_position pos;
+    struct cruxkbd_mtouch mtouch;
+    char pad[CRUXKBD_IN_EVENT_SIZE];
 };
 
 /*
@@ -510,12 +510,12 @@ union xenkbd_in_event
  * type - uint8_t, event code
  */
 
-#define XENKBD_OUT_EVENT_SIZE 40
+#define CRUXKBD_OUT_EVENT_SIZE 40
 
-union xenkbd_out_event
+union cruxkbd_out_event
 {
     uint8_t type;
-    char pad[XENKBD_OUT_EVENT_SIZE];
+    char pad[CRUXKBD_OUT_EVENT_SIZE];
 };
 
 /*
@@ -524,29 +524,29 @@ union xenkbd_out_event
  *****************************************************************************
  */
 
-#define XENKBD_IN_RING_SIZE 2048
-#define XENKBD_IN_RING_LEN (XENKBD_IN_RING_SIZE / XENKBD_IN_EVENT_SIZE)
-#define XENKBD_IN_RING_OFFS 1024
-#define XENKBD_IN_RING(page) \
-    ((union xenkbd_in_event *)((char *)(page) + XENKBD_IN_RING_OFFS))
-#define XENKBD_IN_RING_REF(page, idx) \
-    (XENKBD_IN_RING((page))[(idx) % XENKBD_IN_RING_LEN])
+#define CRUXKBD_IN_RING_SIZE 2048
+#define CRUXKBD_IN_RING_LEN (CRUXKBD_IN_RING_SIZE / CRUXKBD_IN_EVENT_SIZE)
+#define CRUXKBD_IN_RING_OFFS 1024
+#define CRUXKBD_IN_RING(page) \
+    ((union cruxkbd_in_event *)((char *)(page) + CRUXKBD_IN_RING_OFFS))
+#define CRUXKBD_IN_RING_REF(page, idx) \
+    (CRUXKBD_IN_RING((page))[(idx) % CRUXKBD_IN_RING_LEN])
 
-#define XENKBD_OUT_RING_SIZE 1024
-#define XENKBD_OUT_RING_LEN (XENKBD_OUT_RING_SIZE / XENKBD_OUT_EVENT_SIZE)
-#define XENKBD_OUT_RING_OFFS (XENKBD_IN_RING_OFFS + XENKBD_IN_RING_SIZE)
-#define XENKBD_OUT_RING(page) \
-    ((union xenkbd_out_event *)((char *)(page) + XENKBD_OUT_RING_OFFS))
-#define XENKBD_OUT_RING_REF(page, idx) \
-    (XENKBD_OUT_RING((page))[(idx) % XENKBD_OUT_RING_LEN])
+#define CRUXKBD_OUT_RING_SIZE 1024
+#define CRUXKBD_OUT_RING_LEN (CRUXKBD_OUT_RING_SIZE / CRUXKBD_OUT_EVENT_SIZE)
+#define CRUXKBD_OUT_RING_OFFS (CRUXKBD_IN_RING_OFFS + CRUXKBD_IN_RING_SIZE)
+#define CRUXKBD_OUT_RING(page) \
+    ((union cruxkbd_out_event *)((char *)(page) + CRUXKBD_OUT_RING_OFFS))
+#define CRUXKBD_OUT_RING_REF(page, idx) \
+    (CRUXKBD_OUT_RING((page))[(idx) % CRUXKBD_OUT_RING_LEN])
 
-struct xenkbd_page
+struct cruxkbd_page
 {
     uint32_t in_cons, in_prod;
     uint32_t out_cons, out_prod;
 };
 
-#endif /* __XEN_PUBLIC_IO_KBDIF_H__ */
+#endif /* __CRUX_PUBLIC_IO_KBDIF_H__ */
 
 /*
  * Local variables:

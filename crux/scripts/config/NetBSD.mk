@@ -1,3 +1,3 @@
-include $(XEN_ROOT)/config/StdGNU.mk
+include $(CRUX_ROOT)/config/StdGNU.mk
 
 WGET = ftp

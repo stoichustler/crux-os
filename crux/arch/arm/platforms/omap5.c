@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/omap5.c
+ * crux/arch/arm/platforms/omap5.c
  *
  * OMAP5 specific settings
  *
@@ -19,8 +19,8 @@
 
 #include <asm/platform.h>
 #include <asm/platforms/omap5.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 
 static uint16_t num_den[8][2] = {
@@ -53,7 +53,7 @@ static int omap5_init_time(void)
     ckgen_prm_base = ioremap_nocache(OMAP5_CKGEN_PRM_BASE, 0x20);
     if ( !ckgen_prm_base )
     {
-        dprintk(XENLOG_ERR, "%s: PRM_BASE ioremap failed\n", __func__);
+        dprintk(CRUXLOG_ERR, "%s: PRM_BASE ioremap failed\n", __func__);
         return -ENOMEM;
     }
 
@@ -65,7 +65,7 @@ static int omap5_init_time(void)
     rt_ct_base = ioremap_nocache(REALTIME_COUNTER_BASE, 0x20);
     if ( !rt_ct_base )
     {
-        dprintk(XENLOG_ERR, "%s: REALTIME_COUNTER_BASE ioremap failed\n", __func__);
+        dprintk(CRUXLOG_ERR, "%s: REALTIME_COUNTER_BASE ioremap failed\n", __func__);
         return -ENOMEM;
     }
 
@@ -122,7 +122,7 @@ static int __init omap5_smp_init(void)
     wugen_base = ioremap_nocache(OMAP5_WKUPGEN_BASE, PAGE_SIZE);
     if ( !wugen_base )
     {
-        dprintk(XENLOG_ERR, "Unable to map omap5 MMIO\n");
+        dprintk(CRUXLOG_ERR, "Unable to map omap5 MMIO\n");
         return -EFAULT;
     }
 

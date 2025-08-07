@@ -18,7 +18,7 @@
 #ifdef CONFIG_HAS_PCI
 
 #include <asm/p2m.h>
-#include <xen/err.h>
+#include <crux/err.h>
 
 #define pci_to_dev(pcidev) (&(pcidev)->arch.dev)
 

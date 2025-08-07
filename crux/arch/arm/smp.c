@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/init.h>
-#include <xen/mm.h>
+#include <crux/init.h>
+#include <crux/mm.h>
 #include <asm/system.h>
 #include <asm/smp.h>
 #include <asm/page.h>

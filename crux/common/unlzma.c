@@ -51,9 +51,9 @@ static long long __init read_int(unsigned char *ptr, int size)
  * Copyright (c) 1999-2005  Igor Pavlov
  */
 
-#ifdef __XEN__
-#include <xen/compiler.h>
-#include <xen/kernel.h>
+#ifdef __CRUX__
+#include <crux/compiler.h>
+#include <crux/kernel.h>
 #endif
 
 #define LZMA_IOBUF_SIZE	0x10000

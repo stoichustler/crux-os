@@ -1,18 +1,18 @@
 /*
  * Generic VM initialization for NUMA setups.
  * Copyright 2002,2003 Andi Kleen, SuSE Labs.
- * Adapted for xen: Ryan Harper <ryanh@us.ibm.com>
+ * Adapted for Xen: Ryan Harper <ryanh@us.ibm.com>
  */
 
-#include <xen/init.h>
-#include <xen/keyhandler.h>
-#include <xen/mm.h>
-#include <xen/nodemask.h>
-#include <xen/numa.h>
-#include <xen/param.h>
-#include <xen/pfn.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
+#include <crux/init.h>
+#include <crux/keyhandler.h>
+#include <crux/mm.h>
+#include <crux/nodemask.h>
+#include <crux/numa.h>
+#include <crux/param.h>
+#include <crux/pfn.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
 
 static nodemask_t __initdata processor_nodes_parsed;
 static nodemask_t __initdata memory_nodes_parsed;

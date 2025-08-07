@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

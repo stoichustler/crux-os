@@ -1,6 +1,6 @@
 /* This file is intended to be included multiple times. */
-/*#ifndef __XEN_PERFC_DEFN_H__*/
-/*#define __XEN_PERFC_DEFN_H__*/
+/*#ifndef __CRUX_PERFC_DEFN_H__*/
+/*#define __CRUX_PERFC_DEFN_H__*/
 
 PERFCOUNTER(invalid_hypercalls, "invalid hypercalls")
 
@@ -76,7 +76,7 @@ PERFCOUNTER(maintenance_irqs, "Maintenance interrupts")
 PERFCOUNTER(atomics_guest,    "atomics: guest access")
 PERFCOUNTER(atomics_guest_paused,   "atomics: guest paused")
 
-/*#endif*/ /* __XEN_PERFC_DEFN_H__ */
+/*#endif*/ /* __CRUX_PERFC_DEFN_H__ */
 
 /*
  * Local variables:

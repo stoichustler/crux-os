@@ -3,25 +3,25 @@
  */
 
 #include <asm/regs.h>
-#include <xen/delay.h>
-#include <xen/keyhandler.h>
-#include <xen/llc-coloring.h>
-#include <xen/param.h>
-#include <xen/sections.h>
-#include <xen/shutdown.h>
-#include <xen/event.h>
-#include <xen/console.h>
-#include <xen/serial.h>
-#include <xen/sched.h>
-#include <xen/tasklet.h>
-#include <xen/domain.h>
-#include <xen/rangeset.h>
-#include <xen/compat.h>
-#include <xen/ctype.h>
-#include <xen/perfc.h>
-#include <xen/mm.h>
-#include <xen/watchdog.h>
-#include <xen/init.h>
+#include <crux/delay.h>
+#include <crux/keyhandler.h>
+#include <crux/llc-coloring.h>
+#include <crux/param.h>
+#include <crux/sections.h>
+#include <crux/shutdown.h>
+#include <crux/event.h>
+#include <crux/console.h>
+#include <crux/serial.h>
+#include <crux/sched.h>
+#include <crux/tasklet.h>
+#include <crux/domain.h>
+#include <crux/rangeset.h>
+#include <crux/compat.h>
+#include <crux/ctype.h>
+#include <crux/perfc.h>
+#include <crux/mm.h>
+#include <crux/watchdog.h>
+#include <crux/init.h>
 #include <asm/div64.h>
 
 static unsigned char keypress_key;
@@ -131,7 +131,6 @@ static void cf_check show_handlers(unsigned char key)
     printk("'%c' pressed -> showing installed handlers\n", key);
 
     print_version();
-    print_build_id();
 
     for ( i = 0; i < ARRAY_SIZE(key_table); i++ )
         if ( key_table[i].fn )
@@ -279,7 +278,7 @@ static void cf_check dump_domains(unsigned char key)
         printk("    refcnt=%d dying=%d pause_count=%d\n",
                atomic_read(&d->refcnt), d->is_dying,
                atomic_read(&d->pause_count));
-        printk("    nr_pages=%u xenheap_pages=%u"
+        printk("    nr_pages=%u cruxheap_pages=%u"
 #ifdef CONFIG_MEM_SHARING
                " shared_pages=%u"
 #endif
@@ -287,7 +286,7 @@ static void cf_check dump_domains(unsigned char key)
                " paged_pages=%u"
 #endif
                " dirty_cpus={%*pbl} max_pages=%u\n",
-               domain_tot_pages(d), d->xenheap_pages,
+               domain_tot_pages(d), d->cruxheap_pages,
 #ifdef CONFIG_MEM_SHARING
                atomic_read(&d->shr_pages),
 #endif
@@ -518,7 +517,7 @@ void __init initialize_keytable(void)
     if ( num_present_cpus() > 16 )
     {
         alt_key_handling = 1;
-        printk(XENLOG_INFO "Defaulting to alternative key handling; "
+        printk(CRUXLOG_INFO "Defaulting to alternative key handling; "
                "send 'A' to switch to normal mode.\n");
     }
 }

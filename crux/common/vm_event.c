@@ -20,11 +20,11 @@
  */
 
 
-#include <xen/sched.h>
-#include <xen/event.h>
-#include <xen/wait.h>
-#include <xen/vm_event.h>
-#include <xen/mem_access.h>
+#include <crux/sched.h>
+#include <crux/event.h>
+#include <crux/wait.h>
+#include <crux/vm_event.h>
+#include <crux/mem_access.h>
 #include <asm/p2m.h>
 #include <asm/monitor.h>
 #include <asm/vm_event.h>
@@ -37,17 +37,17 @@
 #include <public/hvm/params.h>
 
 /* for public/io/ring.h macros */
-#define xen_mb()   smp_mb()
-#define xen_rmb()  smp_rmb()
-#define xen_wmb()  smp_wmb()
+#define crux_mb()   smp_mb()
+#define crux_rmb()  smp_rmb()
+#define crux_wmb()  smp_wmb()
 
 static int vm_event_enable(
     struct domain *d,
-    struct xen_domctl_vm_event_op *vec,
+    struct crux_domctl_vm_event_op *vec,
     struct vm_event_domain **p_ved,
     int pause_flag,
     int param,
-    xen_event_channel_notification_t notification_fn)
+    crux_event_channel_notification_t notification_fn)
 {
     int rc;
     unsigned long ring_gfn = d->arch.hvm.params[param];
@@ -86,12 +86,12 @@ static int vm_event_enable(
                     (vm_event_sring_t *)ved->ring_page,
                     PAGE_SIZE);
 
-    rc = alloc_unbound_xen_event_channel(d, 0, current->domain->domain_id,
+    rc = alloc_unbound_crux_event_channel(d, 0, current->domain->domain_id,
                                          notification_fn);
     if ( rc < 0 )
         goto err;
 
-    ved->xen_port = vec->u.enable.port = rc;
+    ved->crux_port = vec->u.enable.port = rc;
 
     /* Success.  Fill in the domain's appropriate ved. */
     *p_ved = ved;
@@ -198,7 +198,7 @@ static int vm_event_disable(struct domain *d, struct vm_event_domain **p_ved)
         }
 
         /* Free domU's event channel and leave the other one unbound */
-        free_xen_event_channel(d, ved->xen_port);
+        free_crux_event_channel(d, ved->crux_port);
 
         /* Unblock all vCPUs */
         for_each_vcpu ( d, v )
@@ -273,7 +273,7 @@ void vm_event_put_request(struct domain *d,
         req->flags |= VM_EVENT_FLAG_FOREIGN;
 
         if ( !(req->flags & VM_EVENT_FLAG_VCPU_PAUSED) )
-            gdprintk(XENLOG_WARNING, "d%dv%d was not paused.\n",
+            gdprintk(CRUXLOG_WARNING, "d%dv%d was not paused.\n",
                      d->domain_id, req->vcpu_id);
     }
 
@@ -308,7 +308,7 @@ void vm_event_put_request(struct domain *d,
 
     spin_unlock(&ved->lock);
 
-    notify_via_xen_event_channel(d, ved->xen_port);
+    notify_via_crux_event_channel(d, ved->crux_port);
 }
 
 static int vm_event_get_response(struct domain *d, struct vm_event_domain *ved,
@@ -359,7 +359,7 @@ static int vm_event_resume(struct domain *d, struct vm_event_domain *ved)
     vm_event_response_t rsp;
 
     /*
-     * vm_event_resume() runs in either XEN_DOMCTL_VM_EVENT_OP_*, or
+     * vm_event_resume() runs in either CRUX_DOMCTL_VM_EVENT_OP_*, or
      * EVTCHN_send context from the introspection consumer. Both contexts
      * are guaranteed not to be the subject of vm_event responses.
      * While we could ASSERT(v != current) for each VCPU in d in the loop
@@ -378,7 +378,7 @@ static int vm_event_resume(struct domain *d, struct vm_event_domain *ved)
 
         if ( rsp.version != VM_EVENT_INTERFACE_VERSION )
         {
-            printk(XENLOG_G_WARNING "vm_event interface version mismatch\n");
+            printk(CRUXLOG_G_WARNING "vm_event interface version mismatch\n");
             continue;
         }
 
@@ -538,21 +538,21 @@ int __vm_event_claim_slot(struct domain *d, struct vm_event_domain *ved,
 }
 
 #ifdef CONFIG_MEM_PAGING
-/* Registered with xen-bound event channel for incoming notifications. */
+/* Registered with Xen-bound event channel for incoming notifications. */
 static void cf_check mem_paging_notification(struct vcpu *v, unsigned int port)
 {
     vm_event_resume(v->domain, v->domain->vm_event_paging);
 }
 #endif
 
-/* Registered with xen-bound event channel for incoming notifications. */
+/* Registered with Xen-bound event channel for incoming notifications. */
 static void cf_check monitor_notification(struct vcpu *v, unsigned int port)
 {
     vm_event_resume(v->domain, v->domain->vm_event_monitor);
 }
 
 #ifdef CONFIG_MEM_SHARING
-/* Registered with xen-bound event channel for incoming notifications. */
+/* Registered with Xen-bound event channel for incoming notifications. */
 static void cf_check mem_sharing_notification(struct vcpu *v, unsigned int port)
 {
     vm_event_resume(v->domain, v->domain->vm_event_share);
@@ -590,11 +590,11 @@ void vm_event_cleanup(struct domain *d)
 #endif
 }
 
-int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
+int vm_event_domctl(struct domain *d, struct crux_domctl_vm_event_op *vec)
 {
     int rc;
 
-    if ( vec->op == XEN_VM_EVENT_GET_VERSION )
+    if ( vec->op == CRUX_VM_EVENT_GET_VERSION )
     {
         vec->u.version = VM_EVENT_INTERFACE_VERSION;
         return 0;
@@ -610,20 +610,20 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
 
     if ( unlikely(d == current->domain) ) /* no domain_pause() */
     {
-        gdprintk(XENLOG_INFO, "Tried to do a memory event op on itself.\n");
+        gdprintk(CRUXLOG_INFO, "Tried to do a memory event op on itself.\n");
         return -EINVAL;
     }
 
     if ( unlikely(d->is_dying) )
     {
-        gdprintk(XENLOG_INFO, "Ignoring memory event op on dying domain %u\n",
+        gdprintk(CRUXLOG_INFO, "Ignoring memory event op on dying domain %u\n",
                  d->domain_id);
         return 0;
     }
 
     if ( unlikely(d->vcpu == NULL) || unlikely(d->vcpu[0] == NULL) )
     {
-        gdprintk(XENLOG_INFO,
+        gdprintk(CRUXLOG_INFO,
                  "Memory event op on a domain (%u) with no vcpus\n",
                  d->domain_id);
         return -EINVAL;
@@ -634,13 +634,13 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
     switch ( vec->mode )
     {
 #ifdef CONFIG_MEM_PAGING
-    case XEN_DOMCTL_VM_EVENT_OP_PAGING:
+    case CRUX_DOMCTL_VM_EVENT_OP_PAGING:
     {
         rc = -EINVAL;
 
         switch( vec->op )
         {
-        case XEN_VM_EVENT_ENABLE:
+        case CRUX_VM_EVENT_ENABLE:
         {
             rc = -EOPNOTSUPP;
             /* hvm fixme: p2m_is_foreign types need addressing */
@@ -669,7 +669,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
         }
         break;
 
-        case XEN_VM_EVENT_DISABLE:
+        case CRUX_VM_EVENT_DISABLE:
             if ( vm_event_check_ring(d->vm_event_paging) )
             {
                 domain_pause(d);
@@ -678,7 +678,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
             }
             break;
 
-        case XEN_VM_EVENT_RESUME:
+        case CRUX_VM_EVENT_RESUME:
             rc = vm_event_resume(d, d->vm_event_paging);
             break;
 
@@ -690,13 +690,13 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
     break;
 #endif
 
-    case XEN_DOMCTL_VM_EVENT_OP_MONITOR:
+    case CRUX_DOMCTL_VM_EVENT_OP_MONITOR:
     {
         rc = -EINVAL;
 
         switch( vec->op )
         {
-        case XEN_VM_EVENT_ENABLE:
+        case CRUX_VM_EVENT_ENABLE:
             /* domain_pause() not required here, see XSA-99 */
             rc = arch_monitor_init_domain(d);
             if ( rc )
@@ -706,7 +706,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
                                  monitor_notification);
             break;
 
-        case XEN_VM_EVENT_DISABLE:
+        case CRUX_VM_EVENT_DISABLE:
             if ( vm_event_check_ring(d->vm_event_monitor) )
             {
                 domain_pause(d);
@@ -716,7 +716,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
             }
             break;
 
-        case XEN_VM_EVENT_RESUME:
+        case CRUX_VM_EVENT_RESUME:
             rc = vm_event_resume(d, d->vm_event_monitor);
             break;
 
@@ -728,13 +728,13 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
     break;
 
 #ifdef CONFIG_MEM_SHARING
-    case XEN_DOMCTL_VM_EVENT_OP_SHARING:
+    case CRUX_DOMCTL_VM_EVENT_OP_SHARING:
     {
         rc = -EINVAL;
 
         switch( vec->op )
         {
-        case XEN_VM_EVENT_ENABLE:
+        case CRUX_VM_EVENT_ENABLE:
             rc = -EOPNOTSUPP;
             /* hvm fixme: p2m_is_foreign types need addressing */
             if ( is_hvm_domain(hardware_domain) )
@@ -751,7 +751,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
                                  mem_sharing_notification);
             break;
 
-        case XEN_VM_EVENT_DISABLE:
+        case CRUX_VM_EVENT_DISABLE:
             if ( vm_event_check_ring(d->vm_event_share) )
             {
                 domain_pause(d);
@@ -760,7 +760,7 @@ int vm_event_domctl(struct domain *d, struct xen_domctl_vm_event_op *vec)
             }
             break;
 
-        case XEN_VM_EVENT_RESUME:
+        case CRUX_VM_EVENT_RESUME:
             rc = vm_event_resume(d, d->vm_event_share);
             break;
 
@@ -803,7 +803,7 @@ void vm_event_vcpu_unpause(struct vcpu *v)
 
         if ( new < 0 )
         {
-            printk(XENLOG_G_WARNING
+            printk(CRUXLOG_G_WARNING
                    "%pv vm_event: Too many unpause attempts\n", v);
             return;
         }

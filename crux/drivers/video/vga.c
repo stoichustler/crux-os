@@ -4,16 +4,16 @@
  * VGA support routines.
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/vga.h>
-#include <xen/pci.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/vga.h>
+#include <crux/pci.h>
 #include <asm/io.h>
 
 /* Filled in by arch boot code. */
-struct xen_vga_console_info vga_console_info;
+struct crux_vga_console_info vga_console_info;
 
 static int vgacon_keep;
 static unsigned int xpos, ypos;
@@ -43,7 +43,7 @@ void (*video_puts)(const char *s, size_t nr) = vga_noop_puts;
  *      (NB. menu modes are displayed in hex, so mode numbers here must
  *           be prefixed with '0x' (e.g., 'vga=mode-0x0318'))
  * 
- * The option 'keep' causes xen to continue to print to the VGA console even 
+ * The option 'keep' causes Xen to continue to print to the VGA console even 
  * after domain 0 starts to boot. The default behaviour is to relinquish
  * control of the console to domain 0.
  */
@@ -69,7 +69,7 @@ void __init video_init(void)
 
     switch ( vga_console_info.video_type )
     {
-    case XEN_VGATYPE_TEXT_MODE_3:
+    case CRUX_VGATYPE_TEXT_MODE_3:
         if ( page_is_ram_type(paddr_to_pfn(0xB8000), RAM_TYPE_CONVENTIONAL) ||
              ((video = __va(0xB8000)) == NULL) )
             return;
@@ -79,8 +79,8 @@ void __init video_init(void)
         memset(video, 0, columns * lines * 2);
         video_puts = vga_text_puts;
         break;
-    case XEN_VGATYPE_VESA_LFB:
-    case XEN_VGATYPE_EFI_LFB:
+    case CRUX_VGATYPE_VESA_LFB:
+    case CRUX_VGATYPE_EFI_LFB:
         vesa_early_init();
         break;
     default:
@@ -94,7 +94,7 @@ void __init video_endboot(void)
     if ( video_puts == vga_noop_puts )
         return;
 
-    printk("xen is %s VGA console.\n",
+    printk("Xen is %s VGA console.\n",
            vgacon_keep ? "keeping" : "relinquishing");
 
     if ( !vgacon_keep )
@@ -145,7 +145,7 @@ void __init video_endboot(void)
                 }
                 if ( !b )
                 {
-                    printk(XENLOG_INFO "Boot video device %02x:%02x.%u\n",
+                    printk(CRUXLOG_INFO "Boot video device %02x:%02x.%u\n",
                            bus, PCI_SLOT(devfn), PCI_FUNC(devfn));
                     pci_hide_device(0, bus, devfn);
                 }
@@ -154,15 +154,15 @@ void __init video_endboot(void)
 
     switch ( vga_console_info.video_type )
     {
-    case XEN_VGATYPE_TEXT_MODE_3:
+    case CRUX_VGATYPE_TEXT_MODE_3:
         if ( !vgacon_keep )
         {
             memset(video, 0, columns * lines * 2);
             video = ZERO_BLOCK_PTR;
         }
         break;
-    case XEN_VGATYPE_VESA_LFB:
-    case XEN_VGATYPE_EFI_LFB:
+    case CRUX_VGATYPE_VESA_LFB:
+    case CRUX_VGATYPE_EFI_LFB:
         vesa_endboot(vgacon_keep);
         break;
     default:

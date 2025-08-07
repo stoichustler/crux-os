@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bug.h>
-#include <xen/domain_page.h>
-#include <xen/mm-frame.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/domain_page.h>
+#include <crux/mm-frame.h>
+#include <crux/types.h>
 
 void *map_domain_page_global(mfn_t mfn)
 {

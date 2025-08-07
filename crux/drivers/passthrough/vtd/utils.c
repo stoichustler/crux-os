@@ -16,12 +16,12 @@
  * Copyright (C) Allen Kay <allen.m.kay@intel.com>
  */
 
-#include <xen/sched.h>
-#include <xen/delay.h>
-#include <xen/iommu.h>
-#include <xen/time.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/sched.h>
+#include <crux/delay.h>
+#include <crux/iommu.h>
+#include <crux/time.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include "iommu.h"
 #include "dmar.h"
 #include "vtd.h"
@@ -45,7 +45,7 @@ void disable_pmr(struct vtd_iommu *iommu)
                   !(val & DMA_PMEN_PRS), val);
     spin_unlock_irqrestore(&iommu->register_lock, flags);
 
-    dprintk(XENLOG_INFO VTDPREFIX,
+    dprintk(CRUXLOG_INFO VTDPREFIX,
             "Disabled protected memory registers\n");
 }
 

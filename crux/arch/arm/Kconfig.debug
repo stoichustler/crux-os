@@ -5,10 +5,10 @@ choice
 	  You may want to enable early printk if you are debugging code
 	  that executes before the console is initialized.
 
-	  Note that selecting this option will limit xen to a single UART
-	  definition. Attempting to boot xen image on a different
+	  Note that selecting this option will limit Xen to a single UART
+	  definition. Attempting to boot Xen image on a different
 	  platform *will not work*, so this option should not be enable
-	  for xens that are intended to be portable.
+	  for Xens that are intended to be portable.
 
 	  Choose one of the UART drivers for early printk, then you'll
 	  have to specify the parameters, like the base address.

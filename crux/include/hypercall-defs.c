@@ -5,7 +5,7 @@
  *
  * Syntax is like a prototype, but without return type and without the ";" at
  * the end. Pointer types will be automatically converted to use the
- * XEN_GUEST_HANDLE_PARAM() macro. Handlers with no parameters just use a
+ * CRUX_GUEST_HANDLE_PARAM() macro. Handlers with no parameters just use a
  * definition like "fn()".
  * Hypercall/function names are without the leading "__HYPERVISOR_"/"do_"
  * strings.
@@ -26,12 +26,12 @@
  * caller: <suffix>
  * When a caller suffix is active, there is only one active prefix allowed.
  *
- * With a "defhandle:" line it is possible to add a DEFINE_XEN_GUEST_HANDLE()
+ * With a "defhandle:" line it is possible to add a DEFINE_CRUX_GUEST_HANDLE()
  * to the generated header:
  * defhandle: <handle-type> [<type>]
- * Without specifying <type> only a DEFINE_XEN_GUEST_HANDLE(<handle-type>)
+ * Without specifying <type> only a DEFINE_CRUX_GUEST_HANDLE(<handle-type>)
  * will be generated, otherwise it will be a
- * __DEFINE_XEN_GUEST_HANDLE(<handle-type>, <type>) being generated. Note that
+ * __DEFINE_CRUX_GUEST_HANDLE(<handle-type>, <type>) being generated. Note that
  * the latter will include the related "const" handle "const_<handle-type>".
  *
  * In order to support using coding style compliant pointers in the
@@ -39,7 +39,7 @@
  * handle types:
  * handle: <handle-type> <type>
  * This will result in the prototype translation from "<type> *" to
- * "XEN_GUEST_HANDLE_PARAM(<handle-type>)".
+ * "CRUX_GUEST_HANDLE_PARAM(<handle-type>)".
  *
  * The hypercall handler calling code will be generated from a final table in
  * the source file, which is started via the line:
@@ -116,7 +116,7 @@ prefix: do PREFIX_hvm
 memory_op(unsigned long cmd, void *arg)
 
 prefix: do PREFIX_compat
-xen_version(int cmd, void *arg)
+crux_version(int cmd, void *arg)
 vcpu_op(int cmd, unsigned int vcpuid, void *arg)
 sched_op(int cmd, void *arg)
 xsm_op(void *op)
@@ -127,8 +127,8 @@ argo_op(unsigned int cmd, void *arg1, void *arg2, unsigned long arg3, unsigned l
 #ifdef CONFIG_PV
 iret()
 nmi_op(unsigned int cmd, void *arg)
-#ifdef CONFIG_XENOPROF
-xenoprof_op(int op, void *arg)
+#ifdef CONFIG_CRUXOPROF
+cruxoprof_op(int op, void *arg)
 #endif
 #endif /* CONFIG_PV */
 
@@ -151,7 +151,7 @@ physdev_op_compat(physdev_op_compat_t *uop)
 update_va_mapping_otherdomain(unsigned int va, uint32_t lo, uint32_t hi, unsigned int flags, domid_t domid)
 #endif
 #ifndef CONFIG_PV_SHIM_EXCLUSIVE
-platform_op(compat_platform_op_t *u_xenpf_op)
+platform_op(compat_platform_op_t *u_cruxpf_op)
 #endif
 #ifdef CONFIG_KEXEC
 kexec_op(unsigned int op, void *uarg)
@@ -180,9 +180,9 @@ fpu_taskswitch(int set)
 set_debugreg(int reg, unsigned long value)
 get_debugreg(int reg)
 set_segment_base(unsigned int which, unsigned long base)
-mca(xen_mc_t *u_xen_mc)
+mca(crux_mc_t *u_crux_mc)
 set_trap_table(const_trap_info_t *traps)
-set_gdt(xen_ulong_t *frame_list, unsigned int entries)
+set_gdt(crux_ulong_t *frame_list, unsigned int entries)
 set_callbacks(unsigned long event_address, unsigned long failsafe_address, unsigned long syscall_address)
 update_descriptor(uint64_t gaddr, seg_desc_t desc)
 update_va_mapping(unsigned long va, uint64_t val64, unsigned long flags)
@@ -192,15 +192,15 @@ update_va_mapping_otherdomain(unsigned long va, uint64_t val64, unsigned long fl
 kexec_op(unsigned long op, void *uarg)
 #endif
 #ifdef CONFIG_IOREQ_SERVER
-dm_op(domid_t domid, unsigned int nr_bufs, xen_dm_op_buf_t *bufs)
+dm_op(domid_t domid, unsigned int nr_bufs, crux_dm_op_buf_t *bufs)
 #endif
 #ifdef CONFIG_SYSCTL
-sysctl(xen_sysctl_t *u_sysctl)
+sysctl(crux_sysctl_t *u_sysctl)
 #endif
 #ifndef CONFIG_PV_SHIM_EXCLUSIVE
-domctl(xen_domctl_t *u_domctl)
-paging_domctl_cont(xen_domctl_t *u_domctl)
-platform_op(xen_platform_op_t *u_xenpf_op)
+domctl(crux_domctl_t *u_domctl)
+paging_domctl_cont(crux_domctl_t *u_domctl)
+platform_op(crux_platform_op_t *u_cruxpf_op)
 #endif
 #ifdef CONFIG_HVM
 hvm_op(unsigned long op, void *arg)
@@ -209,7 +209,7 @@ hvm_op(unsigned long op, void *arg)
 hypfs_op(unsigned int cmd, const char *arg1, unsigned long arg2, void *arg3, unsigned long arg4)
 #endif
 #ifdef CONFIG_X86
-xenpmu_op(unsigned int op, xen_pmu_params_t *arg)
+cruxpmu_op(unsigned int op, crux_pmu_params_t *arg)
 #endif
 
 #ifdef CONFIG_PV
@@ -247,7 +247,7 @@ multicall                          compat:2 do:2     compat   do       do
 update_va_mapping                  compat   do       -        -        -
 set_timer_op                       compat   do       compat   do       -
 event_channel_op_compat            do       do       -        -        dep
-xen_version                        do       do       do       do       do
+crux_version                        do       do       do       do       do
 console_io                         do       do       do       do       do
 physdev_op_compat                  compat   do       -        -        dep
 #if defined(CONFIG_GRANT_TABLE)
@@ -267,8 +267,8 @@ xsm_op                             compat   do       compat   do       do
 nmi_op                             compat   do       -        -        -
 sched_op                           compat   do       compat   do       do
 callback_op                        compat   do       -        -        -
-#ifdef CONFIG_XENOPROF
-xenoprof_op                        compat   do       -        -        -
+#ifdef CONFIG_CRUXOPROF
+cruxoprof_op                        compat   do       -        -        -
 #endif
 event_channel_op                   do       do       do:1     do:1     do:1
 physdev_op                         compat   do       hvm      hvm      do_arm
@@ -288,7 +288,7 @@ tmem_op                            -        -        -        -        -
 #ifdef CONFIG_ARGO
 argo_op                            compat   do       compat   do       do
 #endif
-xenpmu_op                          do       do       do       do       -
+cruxpmu_op                          do       do       do       do       -
 #ifdef CONFIG_IOREQ_SERVER
 dm_op                              compat   do       compat   do       do
 #endif

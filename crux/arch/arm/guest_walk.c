@@ -4,9 +4,9 @@
  * Copyright (c) 2017 Sergej Proskurin <proskurin@sec.in.tum.de>
  */
 
-#include <xen/domain_page.h>
-#include <xen/guest_access.h>
-#include <xen/sched.h>
+#include <crux/domain_page.h>
+#include <crux/guest_access.h>
+#include <crux/sched.h>
 
 #include <asm/guest_walk.h>
 #include <asm/short-desc.h>

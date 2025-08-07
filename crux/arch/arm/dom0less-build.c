@@ -1,21 +1,21 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/device_tree.h>
-#include <xen/domain_page.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/fdt-kernel.h>
-#include <xen/dom0less-build.h>
-#include <xen/err.h>
-#include <xen/event.h>
-#include <xen/grant_table.h>
-#include <xen/iocap.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/llc-coloring.h>
-#include <xen/sched.h>
-#include <xen/serial.h>
-#include <xen/sizes.h>
-#include <xen/static-memory.h>
-#include <xen/static-shmem.h>
-#include <xen/vmap.h>
+#include <crux/device_tree.h>
+#include <crux/domain_page.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/fdt-kernel.h>
+#include <crux/dom0less-build.h>
+#include <crux/err.h>
+#include <crux/event.h>
+#include <crux/grant_table.h>
+#include <crux/iocap.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/llc-coloring.h>
+#include <crux/sched.h>
+#include <crux/serial.h>
+#include <crux/sizes.h>
+#include <crux/static-memory.h>
+#include <crux/static-shmem.h>
+#include <crux/vmap.h>
 
 #include <public/bootfdt.h>
 #include <public/io/xs_wire.h>
@@ -275,12 +275,12 @@ int __init init_vuart(struct domain *d, struct kernel_info *kinfo,
 int __init arch_parse_dom0less_node(struct dt_device_node *node,
                                     struct boot_domain *bd)
 {
-    struct xen_domctl_createdomain *d_cfg = &bd->create_cfg;
+    struct crux_domctl_createdomain *d_cfg = &bd->create_cfg;
     unsigned int flags = bd->create_flags;
     uint32_t val;
 
-    d_cfg->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_NATIVE;
-    d_cfg->flags |= XEN_DOMCTL_CDF_hvm | XEN_DOMCTL_CDF_hap;
+    d_cfg->arch.gic_version = CRUX_DOMCTL_CONFIG_GIC_NATIVE;
+    d_cfg->flags |= CRUX_DOMCTL_CDF_hvm | CRUX_DOMCTL_CDF_hap;
 
     if ( !dt_property_read_u32(node, "nr_spis", &d_cfg->arch.nr_spis) )
     {
@@ -346,13 +346,13 @@ int __init arch_parse_dom0less_node(struct dt_device_node *node,
     }
 
     /* Trap unmapped accesses by default. */
-    d_cfg->flags |= XEN_DOMCTL_CDF_trap_unmapped_accesses;
+    d_cfg->flags |= CRUX_DOMCTL_CDF_trap_unmapped_accesses;
     if ( dt_property_read_u32(node, "trap-unmapped-accesses", &val) )
     {
         if ( val > 1 )
             panic("trap-unmapped-accesses: supported values are 0 or 1");
         if ( !val )
-            d_cfg->flags &= ~XEN_DOMCTL_CDF_trap_unmapped_accesses;
+            d_cfg->flags &= ~CRUX_DOMCTL_CDF_trap_unmapped_accesses;
     }
 
     return 0;

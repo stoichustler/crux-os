@@ -2,12 +2,12 @@
 /******************************************************************************
  * arch-x86_64.h
  *
- * Guest OS interface to x86 64-bit xen.
+ * Guest OS interface to x86 64-bit Xen.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */
 
-#include "arch-x86/xen.h"
+#include "arch-x86/crux.h"
 
 /*
  * ` enum neg_errnoval

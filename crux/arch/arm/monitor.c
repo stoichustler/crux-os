@@ -7,21 +7,21 @@
  * Copyright (c) 2016 Tamas K Lengyel (tamas.lengyel@zentific.com)
  */
 
-#include <xen/vm_event.h>
-#include <xen/monitor.h>
+#include <crux/vm_event.h>
+#include <crux/monitor.h>
 #include <asm/monitor.h>
 #include <asm/vm_event.h>
 #include <public/vm_event.h>
 
 int arch_monitor_domctl_event(struct domain *d,
-                              struct xen_domctl_monitor_op *mop)
+                              struct crux_domctl_monitor_op *mop)
 {
     struct arch_domain *ad = &d->arch;
-    bool requested_status = (XEN_DOMCTL_MONITOR_OP_ENABLE == mop->op);
+    bool requested_status = (CRUX_DOMCTL_MONITOR_OP_ENABLE == mop->op);
 
     switch ( mop->event )
     {
-    case XEN_DOMCTL_MONITOR_EVENT_PRIVILEGED_CALL:
+    case CRUX_DOMCTL_MONITOR_EVENT_PRIVILEGED_CALL:
     {
         bool old_status = ad->monitor.privileged_call_enabled;
 

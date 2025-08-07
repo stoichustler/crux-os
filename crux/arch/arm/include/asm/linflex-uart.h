@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/include/asm/linflex-uart.h
+ * crux/arch/arm/include/asm/linflex-uart.h
  *
  * Common constant definition between early printk and the UART driver
  * for NXP LINFlexD UART.
@@ -37,8 +37,8 @@
 #define UARTCR_UART         BIT(0, U)
 #define UARTCR_WL0          BIT(1, U)
 #define UARTCR_PC0          BIT(3, U)
-#define UARTCR_TXEN         BIT(4, U)
-#define UARTCR_RXEN         BIT(5, U)
+#define UARTCR_TCRUX         BIT(4, U)
+#define UARTCR_RCRUX         BIT(5, U)
 #define UARTCR_PC1          BIT(6, U)
 #define UARTCR_TFBM         BIT(8, U)
 #define UARTCR_RFBM         BIT(9, U)

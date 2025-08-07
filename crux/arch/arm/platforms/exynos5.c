@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/exynos5.c
+ * crux/arch/arm/platforms/exynos5.c
  *
  * Exynos5 specific settings
  *
@@ -17,11 +17,11 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/device_tree.h>
-#include <xen/domain_page.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
-#include <xen/delay.h>
+#include <crux/device_tree.h>
+#include <crux/domain_page.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
+#include <crux/delay.h>
 #include <asm/platforms/exynos5.h>
 #include <asm/platform.h>
 #include <asm/io.h>
@@ -48,24 +48,24 @@ static int exynos5_init_time(void)
     node = dt_find_compatible_node(NULL, NULL, "samsung,exynos4210-mct");
     if ( !node )
     {
-        dprintk(XENLOG_ERR, "samsung,exynos4210-mct missing in DT\n");
+        dprintk(CRUXLOG_ERR, "samsung,exynos4210-mct missing in DT\n");
         return -ENXIO;
     }
 
     rc = dt_device_get_paddr(node, 0, &mct_base_addr, &size);
     if ( rc )
     {
-        dprintk(XENLOG_ERR, "Error in \"samsung,exynos4210-mct\"\n");
+        dprintk(CRUXLOG_ERR, "Error in \"samsung,exynos4210-mct\"\n");
         return -ENXIO;
     }
 
-    dprintk(XENLOG_INFO, "mct_base_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"\n",
+    dprintk(CRUXLOG_INFO, "mct_base_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"\n",
             mct_base_addr, size);
 
     mct = ioremap_nocache(mct_base_addr, size);
     if ( !mct )
     {
-        dprintk(XENLOG_ERR, "Unable to map MCT\n");
+        dprintk(CRUXLOG_ERR, "Unable to map MCT\n");
         return -ENOMEM;
     }
 
@@ -121,23 +121,23 @@ static int __init exynos5_smp_init(void)
     node = dt_find_compatible_node(NULL, NULL, compatible);
     if ( !node )
     {
-        dprintk(XENLOG_ERR, "%s missing in DT\n", compatible);
+        dprintk(CRUXLOG_ERR, "%s missing in DT\n", compatible);
         return -ENXIO;
     }
 
     rc = dt_device_get_paddr(node, 0, &sysram_addr, &size);
     if ( rc )
     {
-        dprintk(XENLOG_ERR, "Error in %s\n", compatible);
+        dprintk(CRUXLOG_ERR, "Error in %s\n", compatible);
         return -ENXIO;
     }
-    dprintk(XENLOG_INFO,"sysram_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"offset: 0x%"PRIpaddr"\n",
+    dprintk(CRUXLOG_INFO,"sysram_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"offset: 0x%"PRIpaddr"\n",
             sysram_addr, size, sysram_offset);
 
     sysram = ioremap_nocache(sysram_addr, size);
     if ( !sysram )
     {
-        dprintk(XENLOG_ERR, "Unable to map exynos5 MMIO\n");
+        dprintk(CRUXLOG_ERR, "Unable to map exynos5 MMIO\n");
         return -EFAULT;
     }
 
@@ -182,7 +182,7 @@ static int exynos5_cpu_power_up(void __iomem *power, int cpu)
 
         if ( timeout == 0 )
         {
-            dprintk(XENLOG_ERR, "CPU%d power enable failed\n", cpu);
+            dprintk(CRUXLOG_ERR, "CPU%d power enable failed\n", cpu);
             return -ETIMEDOUT;
         }
     }
@@ -204,18 +204,18 @@ static int exynos5_get_pmu_baseandsize(paddr_t *power_base_addr, paddr_t *size)
     node = dt_find_matching_node(NULL, exynos_dt_pmu_matches);
     if ( !node )
     {
-        dprintk(XENLOG_ERR, "samsung,exynos5XXX-pmu missing in DT\n");
+        dprintk(CRUXLOG_ERR, "samsung,exynos5XXX-pmu missing in DT\n");
         return -ENXIO;
     }
 
     rc = dt_device_get_paddr(node, 0, power_base_addr, size);
     if ( rc )
     {
-        dprintk(XENLOG_ERR, "Error in \"samsung,exynos5XXX-pmu\"\n");
+        dprintk(CRUXLOG_ERR, "Error in \"samsung,exynos5XXX-pmu\"\n");
         return -ENXIO;
     }
 
-    dprintk(XENLOG_DEBUG, "power_base_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"\n",
+    dprintk(CRUXLOG_DEBUG, "power_base_addr: 0x%"PRIpaddr" size: 0x%"PRIpaddr"\n",
             *power_base_addr, *size);
 
     return 0;
@@ -235,7 +235,7 @@ static int exynos5_cpu_up(int cpu)
     power = ioremap_nocache(power_base_addr, size);
     if ( !power )
     {
-        dprintk(XENLOG_ERR, "Unable to map power MMIO\n");
+        dprintk(CRUXLOG_ERR, "Unable to map power MMIO\n");
         return -EFAULT;
     }
 
@@ -268,7 +268,7 @@ static void exynos5_reset(void)
     pmu = ioremap_nocache(power_base_addr, size);
     if ( !pmu )
     {
-        dprintk(XENLOG_ERR, "Unable to map PMU\n");
+        dprintk(CRUXLOG_ERR, "Unable to map PMU\n");
         return;
     }
 
@@ -280,7 +280,7 @@ static void exynos5_reset(void)
 static const struct dt_device_match exynos5_blacklist_dev[] __initconst =
 {
     /* Multi core Timer
-     * TODO: this device set up IRQ to CPU 1 which is not yet handled by xen.
+     * TODO: this device set up IRQ to CPU 1 which is not yet handled by crux.
      * This is result to random freeze.
      */
     DT_MATCH_COMPATIBLE("samsung,exynos4210-mct"),

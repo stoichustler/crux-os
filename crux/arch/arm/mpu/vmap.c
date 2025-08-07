@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bug.h>
-#include <xen/mm-frame.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
+#include <crux/bug.h>
+#include <crux/mm-frame.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
 
 void *vmap_contig(mfn_t mfn, unsigned int nr)
 {

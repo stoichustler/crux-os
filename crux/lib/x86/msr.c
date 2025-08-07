@@ -1,6 +1,6 @@
 #include "private.h"
 
-#include <xen/lib/x86/cpu-policy.h>
+#include <crux/lib/x86/cpu-policy.h>
 
 /*
  * Copy a single MSR into the provided msr_entry_buffer_t buffer, performing a
@@ -10,7 +10,7 @@ static int copy_msr_to_buffer(uint32_t idx, uint64_t val,
                               msr_entry_buffer_t msrs,
                               uint32_t *curr_entry, const uint32_t nr_entries)
 {
-    const xen_msr_entry_t ent = { .idx = idx, .val = val };
+    const crux_msr_entry_t ent = { .idx = idx, .val = val };
 
     if ( *curr_entry == nr_entries )
         return -ENOBUFS;
@@ -53,7 +53,7 @@ int x86_msr_copy_from_buffer(struct cpu_policy *p,
                              uint32_t *err_msr)
 {
     unsigned int i;
-    xen_msr_entry_t data;
+    crux_msr_entry_t data;
     int rc;
 
     if ( err_msr )

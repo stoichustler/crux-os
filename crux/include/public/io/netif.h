@@ -2,19 +2,19 @@
 /******************************************************************************
  * netif.h
  *
- * Unified network-device I/O interface for xen guest OSes.
+ * Unified network-device I/O interface for Xen guest OSes.
  *
  * Copyright (c) 2003-2004, Keir Fraser
  */
 
-#ifndef __XEN_PUBLIC_IO_NETIF_H__
-#define __XEN_PUBLIC_IO_NETIF_H__
+#ifndef __CRUX_PUBLIC_IO_NETIF_H__
+#define __CRUX_PUBLIC_IO_NETIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
 
 /*
- * Older implementation of xen network frontend / backend has an
+ * Older implementation of Xen network frontend / backend has an
  * implicit dependency on the MAX_SKB_FRAGS as the maximum number of
  * ring slots a skb can use. Netfront / netback may not work as
  * expected when frontend and backend have different MAX_SKB_FRAGS.
@@ -29,20 +29,20 @@
  * which doesn't negotiate with frontend should expect frontend to
  * send a valid packet using slots up to this value.
  */
-#define XEN_NETIF_NR_SLOTS_MIN 18
+#define CRUX_NETIF_NR_SLOTS_MIN 18
 
 /*
  * Notifications after enqueuing any type of message should be conditional on
  * the appropriate req_event or rsp_event field in the shared ring.
  * If the client sends notification for rx requests then it should specify
- * feature 'feature-rx-notify' via xenbus. Otherwise the backend will assume
+ * feature 'feature-rx-notify' via cruxbus. Otherwise the backend will assume
  * that it cannot safely queue packets (as it may not be kicked to send them).
  */
 
 /*
  * "feature-split-event-channels" is introduced to separate guest TX
  * and RX notification. Backend either doesn't support this feature or
- * advertises it via xenstore as 0 (disabled) or 1 (enabled).
+ * advertises it via cruxstore as 0 (disabled) or 1 (enabled).
  *
  * To make use of this feature, frontend should allocate two event
  * channels for TX and RX, advertise them to backend as
@@ -92,7 +92,7 @@
  * /local/domain/1/device/vif/0/queue-1/event-channel-tx = "<evtchn-tx1>"
  * /local/domain/1/device/vif/0/queue-1/event-channel-rx = "<evtchn-rx1>"
  *
- * If there is any inconsistency in the xenStore data, the backend may
+ * If there is any inconsistency in the XenStore data, the backend may
  * choose not to connect any queues, instead treating the request as an
  * error. This includes scenarios where more (or fewer) queues were
  * requested than the frontend provided details for.
@@ -136,7 +136,7 @@
  * frontend, it should instead drop any multicast packet that does not
  * match in a filter list.
  * The list is amended by the frontend by sending dummy transmit requests
- * containing XEN_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL} extra-info fragments as
+ * containing CRUX_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL} extra-info fragments as
  * specified below.
  * Note that the filter list may be amended even if the sampled value of
  * "request-multicast-control" is not set, however the filter should only
@@ -155,7 +155,7 @@
  *
  * Some features, such as hashing (detailed below), require a
  * significant amount of out-of-band data to be passed from frontend to
- * backend. Use of xenstore is not suitable for large quantities of data
+ * backend. Use of cruxstore is not suitable for large quantities of data
  * because of quota limitations and so a dedicated 'control ring' is used.
  * The ability of the backend to use a control ring is advertised by
  * setting:
@@ -223,9 +223,9 @@
  *
  * Result = Hash(Buffer, 8)
  */
-#define _XEN_NETIF_CTRL_HASH_TYPE_IPV4 0
-#define XEN_NETIF_CTRL_HASH_TYPE_IPV4 \
-    (1 << _XEN_NETIF_CTRL_HASH_TYPE_IPV4)
+#define _CRUX_NETIF_CTRL_HASH_TYPE_IPV4 0
+#define CRUX_NETIF_CTRL_HASH_TYPE_IPV4 \
+    (1 << _CRUX_NETIF_CTRL_HASH_TYPE_IPV4)
 
 /*
  * A hash calculated over an IP version 4 header and TCP header as
@@ -238,9 +238,9 @@
  *
  * Result = Hash(Buffer, 12)
  */
-#define _XEN_NETIF_CTRL_HASH_TYPE_IPV4_TCP 1
-#define XEN_NETIF_CTRL_HASH_TYPE_IPV4_TCP \
-    (1 << _XEN_NETIF_CTRL_HASH_TYPE_IPV4_TCP)
+#define _CRUX_NETIF_CTRL_HASH_TYPE_IPV4_TCP 1
+#define CRUX_NETIF_CTRL_HASH_TYPE_IPV4_TCP \
+    (1 << _CRUX_NETIF_CTRL_HASH_TYPE_IPV4_TCP)
 
 /*
  * A hash calculated over an IP version 6 header as follows:
@@ -250,9 +250,9 @@
  *
  * Result = Hash(Buffer, 32)
  */
-#define _XEN_NETIF_CTRL_HASH_TYPE_IPV6 2
-#define XEN_NETIF_CTRL_HASH_TYPE_IPV6 \
-    (1 << _XEN_NETIF_CTRL_HASH_TYPE_IPV6)
+#define _CRUX_NETIF_CTRL_HASH_TYPE_IPV6 2
+#define CRUX_NETIF_CTRL_HASH_TYPE_IPV6 \
+    (1 << _CRUX_NETIF_CTRL_HASH_TYPE_IPV6)
 
 /*
  * A hash calculated over an IP version 6 header and TCP header as
@@ -265,22 +265,22 @@
  *
  * Result = Hash(Buffer, 36)
  */
-#define _XEN_NETIF_CTRL_HASH_TYPE_IPV6_TCP 3
-#define XEN_NETIF_CTRL_HASH_TYPE_IPV6_TCP \
-    (1 << _XEN_NETIF_CTRL_HASH_TYPE_IPV6_TCP)
+#define _CRUX_NETIF_CTRL_HASH_TYPE_IPV6_TCP 3
+#define CRUX_NETIF_CTRL_HASH_TYPE_IPV6_TCP \
+    (1 << _CRUX_NETIF_CTRL_HASH_TYPE_IPV6_TCP)
 
 /*
  * Hash algorithms
  * ===============
  */
 
-#define XEN_NETIF_CTRL_HASH_ALGORITHM_NONE 0
+#define CRUX_NETIF_CTRL_HASH_ALGORITHM_NONE 0
 
 /*
  * Toeplitz hash:
  */
 
-#define XEN_NETIF_CTRL_HASH_ALGORITHM_TOEPLITZ 1
+#define CRUX_NETIF_CTRL_HASH_ALGORITHM_TOEPLITZ 1
 
 /*
  * This algorithm uses a 'key' as well as the data buffer itself.
@@ -298,8 +298,8 @@
  * The code below is provided for convenience where an operating system
  * does not already provide an implementation.
  */
-#ifdef XEN_NETIF_DEFINE_TOEPLITZ
-static uint32_t xen_netif_toeplitz_hash(const uint8_t *key,
+#ifdef CRUX_NETIF_DEFINE_TOEPLITZ
+static uint32_t crux_netif_toeplitz_hash(const uint8_t *key,
                                         unsigned int keylen,
                                         const uint8_t *buf,
                                         unsigned int buflen)
@@ -336,10 +336,10 @@ static uint32_t xen_netif_toeplitz_hash(const uint8_t *key,
     /* The valid part of the hash is in the upper 32 bits. */
     return hash >> 32;
 }
-#endif /* XEN_NETIF_DEFINE_TOEPLITZ */
+#endif /* CRUX_NETIF_DEFINE_TOEPLITZ */
 
 /*
- * Control requests (struct xen_netif_ctrl_request)
+ * Control requests (struct crux_netif_ctrl_request)
  * ================================================
  *
  * All requests have the following format:
@@ -356,27 +356,27 @@ static uint32_t xen_netif_toeplitz_hash(const uint8_t *key,
  * data[]: any data associated with the request (determined by type)
  */
 
-struct xen_netif_ctrl_request {
+struct crux_netif_ctrl_request {
     uint16_t id;
     uint16_t type;
 
-#define XEN_NETIF_CTRL_TYPE_INVALID               0
-#define XEN_NETIF_CTRL_TYPE_GET_HASH_FLAGS        1
-#define XEN_NETIF_CTRL_TYPE_SET_HASH_FLAGS        2
-#define XEN_NETIF_CTRL_TYPE_SET_HASH_KEY          3
-#define XEN_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE 4
-#define XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE 5
-#define XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING      6
-#define XEN_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM    7
-#define XEN_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE 8
-#define XEN_NETIF_CTRL_TYPE_ADD_GREF_MAPPING      9
-#define XEN_NETIF_CTRL_TYPE_DEL_GREF_MAPPING     10
+#define CRUX_NETIF_CTRL_TYPE_INVALID               0
+#define CRUX_NETIF_CTRL_TYPE_GET_HASH_FLAGS        1
+#define CRUX_NETIF_CTRL_TYPE_SET_HASH_FLAGS        2
+#define CRUX_NETIF_CTRL_TYPE_SET_HASH_KEY          3
+#define CRUX_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE 4
+#define CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE 5
+#define CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING      6
+#define CRUX_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM    7
+#define CRUX_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE 8
+#define CRUX_NETIF_CTRL_TYPE_ADD_GREF_MAPPING      9
+#define CRUX_NETIF_CTRL_TYPE_DEL_GREF_MAPPING     10
 
     uint32_t data[3];
 };
 
 /*
- * Control responses (struct xen_netif_ctrl_response)
+ * Control responses (struct crux_netif_ctrl_response)
  * ==================================================
  *
  * All responses have the following format:
@@ -395,32 +395,32 @@ struct xen_netif_ctrl_request {
  *       status)
  */
 
-struct xen_netif_ctrl_response {
+struct crux_netif_ctrl_response {
     uint16_t id;
     uint16_t type;
     uint32_t status;
 
-#define XEN_NETIF_CTRL_STATUS_SUCCESS           0
-#define XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     1
-#define XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER 2
-#define XEN_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   3
+#define CRUX_NETIF_CTRL_STATUS_SUCCESS           0
+#define CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     1
+#define CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER 2
+#define CRUX_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   3
 
     uint32_t data;
 };
 
 /*
- * Static Grants (struct xen_netif_gref)
+ * Static Grants (struct crux_netif_gref)
  * =====================================
  *
  * A frontend may provide a fixed set of grant references to be mapped on
- * the backend. The message of type XEN_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
+ * the backend. The message of type CRUX_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
  * prior its usage in the command ring allows for creation of these mappings.
  * The backend will maintain a fixed amount of these mappings.
  *
- * XEN_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE lets a frontend query how many
+ * CRUX_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE lets a frontend query how many
  * of these mappings can be kept.
  *
- * Each entry in the XEN_NETIF_CTRL_TYPE_{ADD,DEL}_GREF_MAPPING input table has
+ * Each entry in the CRUX_NETIF_CTRL_TYPE_{ADD,DEL}_GREF_MAPPING input table has
  * the following format:
  *
  *    0     1     2     3     4     5     6     7  octet
@@ -430,18 +430,18 @@ struct xen_netif_ctrl_response {
  *
  * grant ref: grant reference (IN)
  * flags: flags describing the control operation (IN)
- * status: XEN_NETIF_CTRL_STATUS_* (OUT)
+ * status: CRUX_NETIF_CTRL_STATUS_* (OUT)
  *
  * 'status' is an output parameter which does not require to be set to zero
  * prior to its usage in the corresponding control messages.
  */
 
-struct xen_netif_gref {
+struct crux_netif_gref {
        grant_ref_t ref;
        uint16_t flags;
 
-#define _XEN_NETIF_CTRLF_GREF_readonly    0
-#define XEN_NETIF_CTRLF_GREF_readonly    (1U<<_XEN_NETIF_CTRLF_GREF_readonly)
+#define _CRUX_NETIF_CTRLF_GREF_readonly    0
+#define CRUX_NETIF_CTRLF_GREF_readonly    (1U<<_CRUX_NETIF_CTRLF_GREF_readonly)
 
        uint16_t status;
 };
@@ -450,31 +450,31 @@ struct xen_netif_gref {
  * Control messages
  * ================
  *
- * XEN_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM
+ * CRUX_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM
  * --------------------------------------
  *
  * This is sent by the frontend to set the desired hash algorithm.
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM
- *  data[0] = a XEN_NETIF_CTRL_HASH_ALGORITHM_* value
+ *  type    = CRUX_NETIF_CTRL_TYPE_SET_HASH_ALGORITHM
+ *  data[0] = a CRUX_NETIF_CTRL_HASH_ALGORITHM_* value
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - The algorithm is not
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - The algorithm is not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *
- * NOTE: Setting data[0] to XEN_NETIF_CTRL_HASH_ALGORITHM_NONE disables
+ * NOTE: Setting data[0] to CRUX_NETIF_CTRL_HASH_ALGORITHM_NONE disables
  *       hashing and the backend is free to choose how it steers packets
  *       to queues (which is the default behaviour).
  *
- * XEN_NETIF_CTRL_TYPE_GET_HASH_FLAGS
+ * CRUX_NETIF_CTRL_TYPE_GET_HASH_FLAGS
  * ----------------------------------
  *
  * This is sent by the frontend to query the types of hash supported by
@@ -482,21 +482,21 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_GET_HASH_FLAGS
+ *  type    = CRUX_NETIF_CTRL_TYPE_GET_HASH_FLAGS
  *  data[0] = 0
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED - Operation not supported
- *           XEN_NETIF_CTRL_STATUS_SUCCESS       - Operation successful
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED - Operation not supported
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS       - Operation successful
  *  data   = supported hash types (if operation was successful)
  *
  * NOTE: A valid hash algorithm must be selected before this operation can
  *       succeed.
  *
- * XEN_NETIF_CTRL_TYPE_SET_HASH_FLAGS
+ * CRUX_NETIF_CTRL_TYPE_SET_HASH_FLAGS
  * ----------------------------------
  *
  * This is sent by the frontend to set the types of hash that the backend
@@ -508,19 +508,19 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_SET_HASH_FLAGS
- *  data[0] = bitwise OR of XEN_NETIF_CTRL_HASH_TYPE_* values
+ *  type    = CRUX_NETIF_CTRL_TYPE_SET_HASH_FLAGS
+ *  data[0] = bitwise OR of CRUX_NETIF_CTRL_HASH_TYPE_* values
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - One or more flag
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - One or more flag
  *                                                     value is invalid or
  *                                                     unsupported
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = 0
  *
  * NOTE: A valid hash algorithm must be selected before this operation can
@@ -528,7 +528,7 @@ struct xen_netif_gref {
  *       Also, setting data[0] to zero disables hashing and the backend
  *       is free to choose how it steers packets to queues.
  *
- * XEN_NETIF_CTRL_TYPE_SET_HASH_KEY
+ * CRUX_NETIF_CTRL_TYPE_SET_HASH_KEY
  * --------------------------------
  *
  * This is sent by the frontend to set the key of the hash if the algorithm
@@ -536,7 +536,7 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_SET_HASH_KEY
+ *  type    = CRUX_NETIF_CTRL_TYPE_SET_HASH_KEY
  *  data[0] = grant reference of page containing the key (assumed to
  *            start at beginning of grant)
  *  data[1] = size of key in octets
@@ -544,13 +544,13 @@ struct xen_netif_gref {
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - Key size is invalid
- *           XEN_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   - Key size is larger
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - Key size is invalid
+ *           CRUX_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   - Key size is larger
  *                                                     than the backend
  *                                                     supports
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = 0
  *
  * NOTE: Any key octets not specified are assumed to be zero (the key
@@ -563,7 +563,7 @@ struct xen_netif_gref {
  *       The grant reference may be read-only and must remain valid until
  *       the response has been processed.
  *
- * XEN_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE
+ * CRUX_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE
  * -----------------------------------------
  *
  * This is sent by the frontend to query the maximum size of mapping
@@ -572,21 +572,21 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE
+ *  type    = CRUX_NETIF_CTRL_TYPE_GET_HASH_MAPPING_SIZE
  *  data[0] = 0
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED - Operation not supported
- *           XEN_NETIF_CTRL_STATUS_SUCCESS       - Operation successful
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED - Operation not supported
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS       - Operation successful
  *  data   = maximum number of entries allowed in the mapping table
  *           (if operation was successful) or zero if a mapping table is
  *           not supported (i.e. hash mapping is done only by modular
  *           arithmetic).
  *
- * XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
+ * CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
  * -------------------------------------
  *
  * This is sent by the frontend to set the actual size of the mapping
@@ -597,23 +597,23 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
+ *  type    = CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
  *  data[0] = number of entries in mapping table
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - Table size is invalid
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - Table size is invalid
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = 0
  *
  * NOTE: Setting data[0] to 0 means that hash mapping should be done
  *       using modular arithmetic.
  *
- * XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING
+ * CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING
  * ------------------------------------
  *
  * This is sent by the frontend to set the content of the table mapping
@@ -624,7 +624,7 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING
+ *  type    = CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING
  *  data[0] = grant reference of page containing the mapping (sub-)table
  *            (assumed to start at beginning of grant)
  *  data[1] = size of (sub-)table in entries
@@ -632,14 +632,14 @@ struct xen_netif_gref {
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - Table size or content
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - Table size or content
  *                                                     is invalid
- *           XEN_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   - Table size is larger
+ *           CRUX_NETIF_CTRL_STATUS_BUFFER_OVERFLOW   - Table size is larger
  *                                                     than the backend
  *                                                     supports
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = 0
  *
  * NOTE: The overall table has the following format:
@@ -655,7 +655,7 @@ struct xen_netif_gref {
  *       |      mapping[N-2]     |      mapping[N-1]     |
  *       +-----+-----+-----+-----+-----+-----+-----+-----+
  *
- *       where N is specified by a XEN_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
+ *       where N is specified by a CRUX_NETIF_CTRL_TYPE_SET_HASH_MAPPING_SIZE
  *       message and each  mapping must specifies a queue between 0 and
  *       "multi-queue-num-queues" (see above).
  *       The backend may support a mapping table larger than can be
@@ -666,7 +666,7 @@ struct xen_netif_gref {
  *       The grant reference may be read-only and must remain valid until
  *       the response has been processed.
  *
- * XEN_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE
+ * CRUX_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE
  * -----------------------------------------
  *
  * This is sent by the frontend to fetch the number of grefs that can be kept
@@ -674,22 +674,22 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE
+ *  type    = CRUX_NETIF_CTRL_TYPE_GET_GREF_MAPPING_SIZE
  *  data[0] = queue index (assumed 0 for single queue)
  *  data[1] = 0
  *  data[2] = 0
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - The queue index is
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - The queue index is
  *                                                     out of range
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = maximum number of entries allowed in the gref mapping table
  *           (if operation was successful) or zero if it is not supported.
  *
- * XEN_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
+ * CRUX_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
  * ------------------------------------
  *
  * This is sent by the frontend for backend to map a list of grant
@@ -697,7 +697,7 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
+ *  type    = CRUX_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
  *  data[0] = queue index
  *  data[1] = grant reference of page containing the mapping list
  *            (r/w and assumed to start at beginning of page)
@@ -705,19 +705,19 @@ struct xen_netif_gref {
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - Operation failed
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - Operation failed
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *
  * NOTE: Each entry in the input table has the format outlined
- *       in struct xen_netif_gref.
- *       Contrary to XEN_NETIF_CTRL_TYPE_DEL_GREF_MAPPING, the struct
- *       xen_netif_gref 'status' field is not used and therefore the response
+ *       in struct crux_netif_gref.
+ *       Contrary to CRUX_NETIF_CTRL_TYPE_DEL_GREF_MAPPING, the struct
+ *       crux_netif_gref 'status' field is not used and therefore the response
  *       'status' determines the success of this operation. In case of
  *       failure none of grants mappings get added in the backend.
  *
- * XEN_NETIF_CTRL_TYPE_DEL_GREF_MAPPING
+ * CRUX_NETIF_CTRL_TYPE_DEL_GREF_MAPPING
  * ------------------------------------
  *
  * This is sent by the frontend for backend to unmap a list of grant
@@ -725,7 +725,7 @@ struct xen_netif_gref {
  *
  * Request:
  *
- *  type    = XEN_NETIF_CTRL_TYPE_DEL_GREF_MAPPING
+ *  type    = CRUX_NETIF_CTRL_TYPE_DEL_GREF_MAPPING
  *  data[0] = queue index
  *  data[1] = grant reference of page containing the mapping list
  *            (r/w and assumed to start at beginning of page)
@@ -733,25 +733,25 @@ struct xen_netif_gref {
  *
  * Response:
  *
- *  status = XEN_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
+ *  status = CRUX_NETIF_CTRL_STATUS_NOT_SUPPORTED     - Operation not
  *                                                     supported
- *           XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER - Operation failed
- *           XEN_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
+ *           CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER - Operation failed
+ *           CRUX_NETIF_CTRL_STATUS_SUCCESS           - Operation successful
  *  data   = number of entries that were unmapped
  *
  * NOTE: Each entry in the input table has the format outlined in struct
- *       xen_netif_gref.
- *       The struct xen_netif_gref 'status' field determines if the entry
+ *       crux_netif_gref.
+ *       The struct crux_netif_gref 'status' field determines if the entry
  *       was successfully removed.
  *       The entries used are only the ones representing grant references that
- *       were previously the subject of a XEN_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
+ *       were previously the subject of a CRUX_NETIF_CTRL_TYPE_ADD_GREF_MAPPING
  *       operation. Any other entries will have their status set to
- *       XEN_NETIF_CTRL_STATUS_INVALID_PARAMETER upon completion.
+ *       CRUX_NETIF_CTRL_STATUS_INVALID_PARAMETER upon completion.
  */
 
-DEFINE_RING_TYPES(xen_netif_ctrl,
-                  struct xen_netif_ctrl_request,
-                  struct xen_netif_ctrl_response);
+DEFINE_RING_TYPES(crux_netif_ctrl,
+                  struct crux_netif_ctrl_request,
+                  struct crux_netif_ctrl_response);
 
 /*
  * Guest transmit
@@ -765,7 +765,7 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
  *                                     NETTXF_extra_info)
  *  ...
  * [Extra N: netif_extra_info_t]    - (only if extra N-1 flags include
- *                                     XEN_NETIF_EXTRA_MORE)
+ *                                     CRUX_NETIF_EXTRA_MORE)
  *  ...
  *  Fragment N: netif_tx_request_t  - (only if fragment N-1 flags include
  *                                     NETTXF_more_data - flags on preceding
@@ -823,7 +823,7 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
  *                                     NETRXF_extra_info)
  *  ...
  * [Extra N: netif_extra_info_t]    - (only if extra N-1 flags include
- *                                     XEN_NETIF_EXTRA_MORE)
+ *                                     CRUX_NETIF_EXTRA_MORE)
  *  ...
  *  Fragment N: netif_rx_request_t  - (only if fragment N-1 flags include
  *                                     NETRXF_more_data - flags on preceding
@@ -875,7 +875,7 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
  * ==========
  *
  * Can be present if initial request or response has NET{T,R}XF_extra_info,
- * or previous extra request has XEN_NETIF_EXTRA_MORE.
+ * or previous extra request has CRUX_NETIF_EXTRA_MORE.
  *
  * The struct therefore needs to fit into either a tx or rx slot and
  * is therefore limited to 8 octets.
@@ -899,42 +899,42 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
  * | padding for tx        |
  * +-----+-----+-----+-----+
  *
- * type: XEN_NETIF_EXTRA_TYPE_*
- * flags: XEN_NETIF_EXTRA_FLAG_*
+ * type: CRUX_NETIF_EXTRA_TYPE_*
+ * flags: CRUX_NETIF_EXTRA_FLAG_*
  * padding for tx: present only in the tx case due to 8 octet limit
  *                 from rx case. Not shown in type specific entries
  *                 below.
  *
- * XEN_NETIF_EXTRA_TYPE_GSO:
+ * CRUX_NETIF_EXTRA_TYPE_GSO:
  *
  *    0     1     2     3     4     5     6     7  octet
  * +-----+-----+-----+-----+-----+-----+-----+-----+
  * |type |flags| size      |type | pad | features  |
  * +-----+-----+-----+-----+-----+-----+-----+-----+
  *
- * type: Must be XEN_NETIF_EXTRA_TYPE_GSO
- * flags: XEN_NETIF_EXTRA_FLAG_*
+ * type: Must be CRUX_NETIF_EXTRA_TYPE_GSO
+ * flags: CRUX_NETIF_EXTRA_FLAG_*
  * size: Maximum payload size of each segment. For example,
  *       for TCP this is just the path MSS.
- * type: XEN_NETIF_GSO_TYPE_*: This determines the protocol of
+ * type: CRUX_NETIF_GSO_TYPE_*: This determines the protocol of
  *       the packet and any extra features required to segment the
  *       packet properly.
  * features: EN_NETIF_GSO_FEAT_*: This specifies any extra GSO
  *           features required to process this packet, such as ECN
  *           support for TCPv4.
  *
- * XEN_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL}:
+ * CRUX_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL}:
  *
  *    0     1     2     3     4     5     6     7  octet
  * +-----+-----+-----+-----+-----+-----+-----+-----+
  * |type |flags| addr                              |
  * +-----+-----+-----+-----+-----+-----+-----+-----+
  *
- * type: Must be XEN_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL}
- * flags: XEN_NETIF_EXTRA_FLAG_*
+ * type: Must be CRUX_NETIF_EXTRA_TYPE_MCAST_{ADD,DEL}
+ * flags: CRUX_NETIF_EXTRA_FLAG_*
  * addr: address to add/remove
  *
- * XEN_NETIF_EXTRA_TYPE_HASH:
+ * CRUX_NETIF_EXTRA_TYPE_HASH:
  *
  * A backend that supports teoplitz hashing is assumed to accept
  * this type of extra info in transmit packets.
@@ -946,11 +946,11 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
  * |type |flags|htype| alg |LSB ---- value ---- MSB|
  * +-----+-----+-----+-----+-----+-----+-----+-----+
  *
- * type: Must be XEN_NETIF_EXTRA_TYPE_HASH
- * flags: XEN_NETIF_EXTRA_FLAG_*
- * htype: Hash type (one of _XEN_NETIF_CTRL_HASH_TYPE_* - see above)
+ * type: Must be CRUX_NETIF_EXTRA_TYPE_HASH
+ * flags: CRUX_NETIF_EXTRA_FLAG_*
+ * htype: Hash type (one of _CRUX_NETIF_CTRL_HASH_TYPE_* - see above)
  * alg: The algorithm used to calculate the hash (one of
- *      XEN_NETIF_CTRL_HASH_TYPE_ALGORITHM_* - see above)
+ *      CRUX_NETIF_CTRL_HASH_TYPE_ALGORITHM_* - see above)
  * value: Hash value
  */
 
@@ -970,7 +970,7 @@ DEFINE_RING_TYPES(xen_netif_ctrl,
 #define _NETTXF_extra_info     (3)
 #define  NETTXF_extra_info     (1U<<_NETTXF_extra_info)
 
-#define XEN_NETIF_MAX_TX_SIZE 0xFFFF
+#define CRUX_NETIF_MAX_TX_SIZE 0xFFFF
 struct netif_tx_request {
     grant_ref_t gref;
     uint16_t offset;
@@ -981,21 +981,21 @@ struct netif_tx_request {
 typedef struct netif_tx_request netif_tx_request_t;
 
 /* Types of netif_extra_info descriptors. */
-#define XEN_NETIF_EXTRA_TYPE_NONE      (0)  /* Never used - invalid */
-#define XEN_NETIF_EXTRA_TYPE_GSO       (1)  /* u.gso */
-#define XEN_NETIF_EXTRA_TYPE_MCAST_ADD (2)  /* u.mcast */
-#define XEN_NETIF_EXTRA_TYPE_MCAST_DEL (3)  /* u.mcast */
-#define XEN_NETIF_EXTRA_TYPE_HASH      (4)  /* u.hash */
-#define XEN_NETIF_EXTRA_TYPE_MAX       (5)
+#define CRUX_NETIF_EXTRA_TYPE_NONE      (0)  /* Never used - invalid */
+#define CRUX_NETIF_EXTRA_TYPE_GSO       (1)  /* u.gso */
+#define CRUX_NETIF_EXTRA_TYPE_MCAST_ADD (2)  /* u.mcast */
+#define CRUX_NETIF_EXTRA_TYPE_MCAST_DEL (3)  /* u.mcast */
+#define CRUX_NETIF_EXTRA_TYPE_HASH      (4)  /* u.hash */
+#define CRUX_NETIF_EXTRA_TYPE_MAX       (5)
 
 /* netif_extra_info_t flags. */
-#define _XEN_NETIF_EXTRA_FLAG_MORE (0)
-#define XEN_NETIF_EXTRA_FLAG_MORE  (1U<<_XEN_NETIF_EXTRA_FLAG_MORE)
+#define _CRUX_NETIF_EXTRA_FLAG_MORE (0)
+#define CRUX_NETIF_EXTRA_FLAG_MORE  (1U<<_CRUX_NETIF_EXTRA_FLAG_MORE)
 
 /* GSO types */
-#define XEN_NETIF_GSO_TYPE_NONE         (0)
-#define XEN_NETIF_GSO_TYPE_TCPV4        (1)
-#define XEN_NETIF_GSO_TYPE_TCPV6        (2)
+#define CRUX_NETIF_GSO_TYPE_NONE         (0)
+#define CRUX_NETIF_GSO_TYPE_TCPV4        (1)
+#define CRUX_NETIF_GSO_TYPE_TCPV6        (2)
 
 /*
  * This structure needs to fit within both netif_tx_request_t and

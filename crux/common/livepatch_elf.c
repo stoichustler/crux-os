@@ -2,11 +2,11 @@
  * Copyright (C) 2016 Citrix Systems R&D Ltd.
  */
 
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/symbols.h>
-#include <xen/livepatch_elf.h>
-#include <xen/livepatch.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/symbols.h>
+#include <crux/livepatch_elf.h>
+#include <crux/livepatch.h>
 
 const struct livepatch_elf_sec *
 livepatch_elf_sec_by_name(const struct livepatch_elf *elf,
@@ -55,7 +55,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
     sec = xzalloc_array(struct livepatch_elf_sec, elf->hdr->e_shnum);
     if ( !sec )
     {
-        printk(XENLOG_ERR LIVEPATCH"%s: Could not allocate memory for section table\n",
+        printk(CRUXLOG_ERR LIVEPATCH"%s: Could not allocate memory for section table\n",
                elf->name);
         return -ENOMEM;
     }
@@ -81,21 +81,21 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
              (sec[i].sec->sh_type != SHT_NOBITS && /* Skip SHT_NOBITS */
               (delta > elf->len || (delta + sec[i].sec->sh_size > elf->len))) )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Section [%u] data %s of payload\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Section [%u] data %s of payload\n",
                    elf->name, i,
                    delta < sizeof(Elf_Ehdr) ? "at ELF header" : "is past end");
             return -EINVAL;
         }
         else if ( sec[i].sec->sh_addralign & (sec[i].sec->sh_addralign - 1) )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Section [%u] alignment (%#"PRIxElfAddr") is not supported\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Section [%u] alignment (%#"PRIxElfAddr") is not supported\n",
                    elf->name, i, sec[i].sec->sh_addralign);
             return -EOPNOTSUPP;
         }
         else if ( sec[i].sec->sh_addralign &&
                   sec[i].sec->sh_addr % sec[i].sec->sh_addralign )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Section [%u] addr (%#"PRIxElfAddr") is not aligned properly (%#"PRIxElfAddr")\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Section [%u] addr (%#"PRIxElfAddr") is not aligned properly (%#"PRIxElfAddr")\n",
                    elf->name, i, sec[i].sec->sh_addr, sec[i].sec->sh_addralign);
             return -EINVAL;
         }
@@ -112,7 +112,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
         {
             if ( elf->symtab )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: Unsupported multiple symbol tables\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: Unsupported multiple symbol tables\n",
                        elf->name);
                 return -EOPNOTSUPP;
             }
@@ -126,7 +126,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
              */
             if ( elf->symtab->sec->sh_link >= elf->hdr->e_shnum )
             {
-                printk(XENLOG_ERR LIVEPATCH
+                printk(CRUXLOG_ERR LIVEPATCH
                        "%s: Symbol table idx (%u) to strtab past end (%u)\n",
                        elf->name, elf->symtab->sec->sh_link,
                        elf->hdr->e_shnum);
@@ -137,7 +137,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
 
     if ( !elf->symtab )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: No symbol table found\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: No symbol table found\n",
                elf->name);
         return -EINVAL;
     }
@@ -146,7 +146,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
          elf->symtab->sec->sh_entsize < sizeof(Elf_Sym) ||
          elf->symtab->sec->sh_size % elf->symtab->sec->sh_entsize )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Symbol table header is corrupted\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Symbol table header is corrupted\n",
                elf->name);
         return -EINVAL;
     }
@@ -160,7 +160,7 @@ static int elf_resolve_sections(struct livepatch_elf *elf, void *data)
     rc = elf_verify_strtab(elf->strtab);
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: String table section is corrupted\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: String table section is corrupted\n",
                elf->name);
     }
 
@@ -185,7 +185,7 @@ static int elf_resolve_section_names(struct livepatch_elf *elf, const void *data
     rc = elf_verify_strtab(sec);
     if ( rc )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section string table is corrupted\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section string table is corrupted\n",
                elf->name);
         return rc;
     }
@@ -203,7 +203,7 @@ static int elf_resolve_section_names(struct livepatch_elf *elf, const void *data
         /* Boundary check on offset of name within the .shstrtab. */
         if ( delta >= sec->sec->sh_size )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Section %u name is not within .shstrtab\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Section %u name is not within .shstrtab\n",
                    elf->name, i);
             return -EINVAL;
         }
@@ -241,7 +241,7 @@ static int elf_get_sym(struct livepatch_elf *elf, const void *data)
     sym = xzalloc_array(struct livepatch_elf_sym, nsym);
     if ( !sym )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Could not allocate memory for symbols\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Could not allocate memory for symbols\n",
                elf->name);
         return -ENOMEM;
     }
@@ -257,7 +257,7 @@ static int elf_get_sym(struct livepatch_elf *elf, const void *data)
         /* Boundary check within the .strtab. */
         if ( delta >= strtab_sec->sec->sh_size )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Symbol [%u] name is not within .strtab\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Symbol [%u] name is not within .strtab\n",
                    elf->name, i);
             return -EINVAL;
         }
@@ -266,7 +266,7 @@ static int elf_get_sym(struct livepatch_elf *elf, const void *data)
         sym[i].name = strtab_sec->addr + delta;
         if ( arch_livepatch_symbol_deny(elf, &sym[i]) )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Symbol '%s' should not be in payload\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Symbol '%s' should not be in payload\n",
                    elf->name, sym[i].name);
             return -EINVAL;
         }
@@ -292,7 +292,7 @@ int livepatch_elf_resolve_symbols(struct livepatch_elf *elf)
         switch ( idx )
         {
         case SHN_COMMON:
-            printk(XENLOG_ERR LIVEPATCH "%s: Unexpected common symbol: %s\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Unexpected common symbol: %s\n",
                    elf->name, elf->sym[i].name);
             rc = -EINVAL;
             break;
@@ -304,18 +304,18 @@ int livepatch_elf_resolve_symbols(struct livepatch_elf *elf)
                 st_value = livepatch_symbols_lookup_by_name(elf->sym[i].name);
                 if ( !st_value )
                 {
-                    printk(XENLOG_ERR LIVEPATCH "%s: Unknown symbol: %s\n",
+                    printk(CRUXLOG_ERR LIVEPATCH "%s: Unknown symbol: %s\n",
                            elf->name, elf->sym[i].name);
                     rc = -ENOENT;
                     break;
                 }
             }
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Undefined symbol resolved: %s => %#"PRIxElfAddr"\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Undefined symbol resolved: %s => %#"PRIxElfAddr"\n",
                     elf->name, elf->sym[i].name, st_value);
             break;
 
         case SHN_ABS:
-            dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Absolute symbol: %s => %#"PRIxElfAddr"\n",
+            dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Absolute symbol: %s => %#"PRIxElfAddr"\n",
                     elf->name, elf->sym[i].name, sym->st_value);
             break;
 
@@ -328,14 +328,14 @@ int livepatch_elf_resolve_symbols(struct livepatch_elf *elf)
 
             if ( rc )
             {
-                printk(XENLOG_ERR LIVEPATCH "%s: Out of bounds symbol section %#x\n",
+                printk(CRUXLOG_ERR LIVEPATCH "%s: Out of bounds symbol section %#x\n",
                        elf->name, idx);
                 break;
             }
 
             if ( livepatch_elf_ignore_section(elf->sec[idx].sec) )
             {
-                dprintk(XENLOG_DEBUG, LIVEPATCH
+                dprintk(CRUXLOG_DEBUG, LIVEPATCH
                         "%s: Symbol %s from section %s ignored\n",
                         elf->name, elf->sym[i].name, elf->sec[idx].name);
                 elf->sym[i].ignored = true;
@@ -344,7 +344,7 @@ int livepatch_elf_resolve_symbols(struct livepatch_elf *elf)
 
             st_value += (unsigned long)elf->sec[idx].addr;
             if ( elf->sym[i].name )
-                dprintk(XENLOG_DEBUG, LIVEPATCH "%s: Symbol resolved: %s => %#"PRIxElfAddr" (%s)\n",
+                dprintk(CRUXLOG_DEBUG, LIVEPATCH "%s: Symbol resolved: %s => %#"PRIxElfAddr" (%s)\n",
                        elf->name, elf->sym[i].name,
                        st_value, elf->sec[idx].name);
         }
@@ -387,7 +387,7 @@ int livepatch_elf_perform_relocs(struct livepatch_elf *elf)
 
         if ( r->sec->sh_link != elf->symtab_idx )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Relative link of %s is incorrect (%d, expected=%d)\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Relative link of %s is incorrect (%d, expected=%d)\n",
                    elf->name, r->name, r->sec->sh_link, elf->symtab_idx);
             rc = -EINVAL;
             break;
@@ -403,7 +403,7 @@ int livepatch_elf_perform_relocs(struct livepatch_elf *elf)
 
         if ( r->sec->sh_entsize < sz || r->sec->sh_size % r->sec->sh_entsize )
         {
-            printk(XENLOG_ERR LIVEPATCH "%s: Section relative header is corrupted\n",
+            printk(CRUXLOG_ERR LIVEPATCH "%s: Section relative header is corrupted\n",
                    elf->name);
             rc = -EINVAL;
             break;
@@ -428,14 +428,14 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
 
     if ( sizeof(*elf->hdr) > elf->len )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section header is bigger than payload\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section header is bigger than payload\n",
                elf->name);
         return -EINVAL;
     }
 
     if ( !IS_ELF(*hdr) )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Not an ELF payload\n", elf->name);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Not an ELF payload\n", elf->name);
         return -EINVAL;
     }
 
@@ -448,7 +448,7 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
          hdr->e_type != ET_REL ||
          hdr->e_phnum != 0 )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Invalid ELF payload\n", elf->name);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Invalid ELF payload\n", elf->name);
         return -EOPNOTSUPP;
     }
 
@@ -458,7 +458,7 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
 
     if ( elf->hdr->e_shstrndx == SHN_UNDEF )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section name idx is undefined\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section name idx is undefined\n",
                elf->name);
         return -EINVAL;
     }
@@ -466,7 +466,7 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
     /* Arbitrary boundary limit. */
     if ( elf->hdr->e_shnum >= 1024 )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Too many (%u) sections\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Too many (%u) sections\n",
                elf->name, elf->hdr->e_shnum);
         return -EOPNOTSUPP;
     }
@@ -474,20 +474,20 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
     /* Check that section name index is within the sections. */
     if ( elf->hdr->e_shstrndx >= elf->hdr->e_shnum )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section name idx (%u) is past end of sections (%u)\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section name idx (%u) is past end of sections (%u)\n",
                elf->name, elf->hdr->e_shstrndx, elf->hdr->e_shnum);
         return -EINVAL;
     }
 
     if ( elf->hdr->e_shoff >= elf->len )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Bogus e_shoff\n", elf->name);
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Bogus e_shoff\n", elf->name);
         return -EINVAL;
     }
 
     if ( elf->hdr->e_shentsize < sizeof(Elf_Shdr) )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section header size is %u! Expected %zu.\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section header size is %u! Expected %zu.\n",
                elf->name, elf->hdr->e_shentsize, sizeof(Elf_Shdr));
         return -EINVAL;
     }
@@ -495,7 +495,7 @@ static int livepatch_header_check(const struct livepatch_elf *elf)
     if ( ((elf->len - elf->hdr->e_shoff) / elf->hdr->e_shentsize) <
          elf->hdr->e_shnum )
     {
-        printk(XENLOG_ERR LIVEPATCH "%s: Section header size is corrupted\n",
+        printk(CRUXLOG_ERR LIVEPATCH "%s: Section header size is corrupted\n",
                elf->name);
         return -EINVAL;
     }

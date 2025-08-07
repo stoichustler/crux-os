@@ -1,44 +1,44 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/setup.c
+ * crux/arch/arm/setup.c
  *
  * Early bringup code for an ARMv7-A with virt extensions.
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/bootinfo.h>
-#include <xen/compile.h>
-#include <xen/device_tree.h>
-#include <xen/dom0less-build.h>
-#include <xen/domain_page.h>
-#include <xen/grant_table.h>
-#include <xen/llc-coloring.h>
-#include <xen/types.h>
-#include <xen/string.h>
-#include <xen/serial.h>
-#include <xen/sched.h>
-#include <xen/console.h>
-#include <xen/err.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/softirq.h>
-#include <xen/keyhandler.h>
-#include <xen/cpu.h>
-#include <xen/pfn.h>
-#include <xen/virtual_region.h>
-#include <xen/version.h>
-#include <xen/vmap.h>
-#include <xen/stack-protector.h>
-#include <xen/static-evtchn.h>
-#include <xen/trace.h>
-#include <xen/libfdt/libfdt-xen.h>
-#include <xen/acpi.h>
-#include <xen/warning.h>
-#include <xen/hypercall.h>
+#include <crux/bootinfo.h>
+#include <crux/compile.h>
+#include <crux/device_tree.h>
+#include <crux/dom0less-build.h>
+#include <crux/domain_page.h>
+#include <crux/grant_table.h>
+#include <crux/llc-coloring.h>
+#include <crux/types.h>
+#include <crux/string.h>
+#include <crux/serial.h>
+#include <crux/sched.h>
+#include <crux/console.h>
+#include <crux/err.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/softirq.h>
+#include <crux/keyhandler.h>
+#include <crux/cpu.h>
+#include <crux/pfn.h>
+#include <crux/virtual_region.h>
+#include <crux/version.h>
+#include <crux/vmap.h>
+#include <crux/stack-protector.h>
+#include <crux/static-evtchn.h>
+#include <crux/trace.h>
+#include <crux/libfdt/libfdt-crux.h>
+#include <crux/acpi.h>
+#include <crux/warning.h>
+#include <crux/hypercall.h>
 #include <asm/alternative.h>
 #include <asm/page.h>
 #include <asm/current.h>
@@ -77,7 +77,7 @@ static __used void noreturn init_done(void)
      * We have finished booting. Mark the section .data.ro_after_init
      * read-only.
      */
-    rc = modify_xen_mappings((unsigned long)&__ro_after_init_start,
+    rc = modify_crux_mappings((unsigned long)&__ro_after_init_start,
                              (unsigned long)&__ro_after_init_end,
                              PAGE_HYPERVISOR_RO);
     if ( rc )
@@ -119,23 +119,23 @@ static void __init processor_id(void)
         implementer = processor_implementers[c->midr.implementer];
 
     if ( c->midr.architecture != 0xf )
-        printk("huh, cpu architecture %x, expected 0xf (defined by cpuid)\n",
+        printk("Huh, cpu architecture %x, expected 0xf (defined by cpuid)\n",
                c->midr.architecture);
 
-    printk("processor: %"PRIregister": \"%s\", variant: 0x%x, part 0x%03x,"
+    printk("Processor: %"PRIregister": \"%s\", variant: 0x%x, part 0x%03x,"
            "rev 0x%x\n", c->midr.bits, implementer,
            c->midr.variant, c->midr.part_number, c->midr.revision);
 
 #if defined(CONFIG_ARM_64)
-    printk("64-bit execution:\n");
-    printk("  processor features: %016"PRIx64" %016"PRIx64"\n",
+    printk("64-bit Execution:\n");
+    printk("  Processor Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.pfr64.bits[0], system_cpuinfo.pfr64.bits[1]);
-    printk("    exception levels: EL3:%s EL2:%s EL1:%s EL0:%s\n",
+    printk("    Exception Levels: EL3:%s EL2:%s EL1:%s EL0:%s\n",
            cpu_has_el3_32 ? "64+32" : cpu_has_el3_64 ? "64" : "No",
            cpu_has_el2_32 ? "64+32" : cpu_has_el2_64 ? "64" : "No",
            cpu_has_el1_32 ? "64+32" : cpu_has_el1_64 ? "64" : "No",
            cpu_has_el0_32 ? "64+32" : cpu_has_el0_64 ? "64" : "No");
-    printk("    extensions:%s%s%s%s\n",
+    printk("    Extensions:%s%s%s%s\n",
            cpu_has_fp ? " FloatingPoint" : "",
            cpu_has_simd ? " AdvancedSIMD" : "",
            cpu_has_gicv3 ? " GICv3-SysReg" : "",
@@ -143,23 +143,23 @@ static void __init processor_id(void)
 
     /* Warn user if we find unknown floating-point features */
     if ( cpu_has_fp && (boot_cpu_feature64(fp) >= 2) )
-        printk(XENLOG_WARNING "WARNING: unknown Floating-point ID:%d, "
+        printk(CRUXLOG_WARNING "WARNING: Unknown Floating-point ID:%d, "
                "this may result in corruption on the platform\n",
                boot_cpu_feature64(fp));
 
     /* Warn user if we find unknown AdvancedSIMD features */
     if ( cpu_has_simd && (boot_cpu_feature64(simd) >= 2) )
-        printk(XENLOG_WARNING "WARNING: unknown AdvancedSIMD ID:%d, "
+        printk(CRUXLOG_WARNING "WARNING: Unknown AdvancedSIMD ID:%d, "
                "this may result in corruption on the platform\n",
                boot_cpu_feature64(simd));
 
-    printk("  debug features: %016"PRIx64" %016"PRIx64"\n",
+    printk("  Debug Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.dbg64.bits[0], system_cpuinfo.dbg64.bits[1]);
-    printk("  auxiliary features: %016"PRIx64" %016"PRIx64"\n",
+    printk("  Auxiliary Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.aux64.bits[0], system_cpuinfo.aux64.bits[1]);
-    printk("  memory model features: %016"PRIx64" %016"PRIx64"\n",
+    printk("  Memory Model Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.mm64.bits[0], system_cpuinfo.mm64.bits[1]);
-    printk("  ISA features:  %016"PRIx64" %016"PRIx64"\n",
+    printk("  ISA Features:  %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.isa64.bits[0], system_cpuinfo.isa64.bits[1]);
 #endif
 
@@ -170,28 +170,28 @@ static void __init processor_id(void)
     if ( cpu_has_aarch32 )
     {
         printk("32-bit Execution:\n");
-        printk("  processor features: %"PRIregister":%"PRIregister"\n",
+        printk("  Processor Features: %"PRIregister":%"PRIregister"\n",
                system_cpuinfo.pfr32.bits[0], system_cpuinfo.pfr32.bits[1]);
-        printk("    instruction sets:%s%s%s%s%s%s\n",
+        printk("    Instruction Sets:%s%s%s%s%s%s\n",
                cpu_has_aarch32 ? " AArch32" : "",
                cpu_has_arm ? " A32" : "",
                cpu_has_thumb ? " Thumb" : "",
                cpu_has_thumb2 ? " Thumb-2" : "",
                cpu_has_thumbee ? " ThumbEE" : "",
                cpu_has_jazelle ? " Jazelle" : "");
-        printk("    extensions:%s%s\n",
+        printk("    Extensions:%s%s\n",
                cpu_has_gentimer ? " GenericTimer" : "",
                cpu_has_security ? " Security" : "");
 
-        printk("  debug features: %"PRIregister"\n",
+        printk("  Debug Features: %"PRIregister"\n",
                system_cpuinfo.dbg32.bits[0]);
-        printk("  auxiliary features: %"PRIregister"\n",
+        printk("  Auxiliary Features: %"PRIregister"\n",
                system_cpuinfo.aux32.bits[0]);
-        printk("  memory model features: %"PRIregister" %"PRIregister"\n"
+        printk("  Memory Model Features: %"PRIregister" %"PRIregister"\n"
                "                         %"PRIregister" %"PRIregister"\n",
                system_cpuinfo.mm32.bits[0], system_cpuinfo.mm32.bits[1],
                system_cpuinfo.mm32.bits[2], system_cpuinfo.mm32.bits[3]);
-        printk("  ISA features: %"PRIregister" %"PRIregister" %"PRIregister"\n"
+        printk("  ISA Features: %"PRIregister" %"PRIregister" %"PRIregister"\n"
                "                %"PRIregister" %"PRIregister" %"PRIregister"\n",
                system_cpuinfo.isa32.bits[0], system_cpuinfo.isa32.bits[1],
                system_cpuinfo.isa32.bits[2], system_cpuinfo.isa32.bits[3],
@@ -199,7 +199,7 @@ static void __init processor_id(void)
     }
     else
     {
-        printk("32-bit execution: unsupported\n");
+        printk("32-bit Execution: Unsupported\n");
     }
 
     processor_setup();
@@ -222,7 +222,7 @@ void __init discard_initial_modules(void)
         paddr_t s = mi->module[i].start;
         paddr_t e = s + PAGE_ALIGN(mi->module[i].size);
 
-        if ( mi->module[i].kind == BOOTMOD_XEN )
+        if ( mi->module[i].kind == BOOTMOD_CRUX )
             continue;
 
         if ( !mfn_valid(maddr_to_mfn(s)) ||
@@ -238,7 +238,7 @@ void __init discard_initial_modules(void)
     remove_early_mappings();
 }
 
-/* Relocate the FDT in xen heap */
+/* Relocate the FDT in Xen heap */
 static void __init relocate_fdt(const void **dtb_vaddr, size_t dtb_size)
 {
     void *fdt = xmalloc_bytes(dtb_size);
@@ -306,11 +306,11 @@ void __init init_pdx(void)
 size_t __read_mostly dcache_line_bytes;
 
 /* C entry point for boot CPU */
-void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
+void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
 {
     size_t fdt_size;
     const char *cmdline;
-    struct boot_module *xen_boot_module;
+    struct boot_module *crux_boot_module;
     struct domain *d;
     int rc, i;
 
@@ -333,16 +333,16 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
               "Please check your bootloader.\n",
               fdt_paddr);
 
-    /* Register xen's load address as a boot module. */
-    xen_boot_module = add_boot_module(BOOTMOD_XEN,
+    /* Register Xen's load address as a boot module. */
+    crux_boot_module = add_boot_module(BOOTMOD_CRUX,
                              virt_to_maddr(_start),
                              (paddr_t)(uintptr_t)(_end - _start), false);
-    BUG_ON(!xen_boot_module);
+    BUG_ON(!crux_boot_module);
 
     fdt_size = boot_fdt_info(device_tree_flattened, fdt_paddr);
 
     cmdline = boot_fdt_cmdline(device_tree_flattened);
-    printk("command line: %s\n", cmdline);
+    printk("Command line: %s\n", cmdline);
     cmdline_parse(cmdline);
 
     llc_coloring_init();
@@ -372,13 +372,13 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
 
     if ( acpi_disabled )
     {
-        printk("booting using device tree\n");
+        printk("Booting using Device Tree\n");
         relocate_fdt(&device_tree_flattened, fdt_size);
         dt_unflatten_host_device_tree();
     }
     else
     {
-        printk("booting using ACPI\n");
+        printk("Booting using ACPI\n");
         device_tree_flattened = NULL;
     }
 
@@ -386,7 +386,7 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
 
     platform_init();
 
-    preinit_xen_time();
+    preinit_crux_time();
 
     gic_preinit();
 
@@ -398,7 +398,7 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
 
     smp_init_cpus();
     nr_cpu_ids = smp_get_max_cpus();
-    printk(XENLOG_INFO "SMP: allowing %u CPUs\n", nr_cpu_ids);
+    printk(CRUXLOG_INFO "SMP: Allowing %u CPUs\n", nr_cpu_ids);
 
     /*
      * Some errata relies on SMCCC version which is detected by psci_init()
@@ -408,7 +408,7 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
 
     check_local_cpu_features();
 
-    init_xen_time();
+    init_crux_time();
 
     gic_init();
 
@@ -485,7 +485,7 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
     if ( !is_dom0less_mode() )
         create_dom0();
     else
-        printk(XENLOG_INFO "xen dom0less mode detected\n");
+        printk(CRUXLOG_INFO "Xen dom0less mode detected\n");
 
     if ( acpi_disabled )
     {
@@ -523,19 +523,19 @@ void asmlinkage __init noreturn start_xen(unsigned long fdt_paddr)
     switch_stack_and_jump(idle_vcpu[0]->arch.cpu_info, init_done);
 }
 
-static int __init init_xen_cap_info(void)
+static int __init init_crux_cap_info(void)
 {
-    /* Interface name is always xen-3.0-* for xen-3.x. */
+    /* Interface name is always crux-3.0-* for Xen-3.x. */
 
 #ifdef CONFIG_ARM_64
-    safe_strcat(xen_cap_info, "xen-3.0-aarch64 ");
+    safe_strcat(crux_cap_info, "crux-3.0-aarch64 ");
 #endif
     if ( cpu_has_aarch32 )
-        safe_strcat(xen_cap_info, "xen-3.0-armv7l ");
+        safe_strcat(crux_cap_info, "crux-3.0-armv7l ");
 
     return 0;
 }
-__initcall(init_xen_cap_info);
+__initcall(init_crux_cap_info);
 
 /*
  * Local variables:

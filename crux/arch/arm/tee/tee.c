@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/tee/tee.c
+ * crux/arch/arm/tee/tee.c
  *
  * Generic part of TEE mediator subsystem
  *
@@ -16,9 +16,9 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/types.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/types.h>
 
 #include <asm/tee/tee.h>
 
@@ -40,7 +40,7 @@ bool tee_handle_call(struct cpu_user_regs *regs)
 
 int tee_domain_init(struct domain *d, uint16_t tee_type)
 {
-    if ( tee_type == XEN_DOMCTL_CONFIG_TEE_NONE )
+    if ( tee_type == CRUX_DOMCTL_CONFIG_TEE_NONE )
         return 0;
 
     if ( !cur_mediator )
@@ -71,7 +71,7 @@ int tee_relinquish_resources(struct domain *d)
 uint16_t tee_get_type(void)
 {
     if ( !cur_mediator )
-        return XEN_DOMCTL_CONFIG_TEE_NONE;
+        return CRUX_DOMCTL_CONFIG_TEE_NONE;
 
     return cur_mediator->tee_type;
 }
@@ -85,7 +85,7 @@ static int __init tee_init(void)
     {
         if ( desc->ops->probe() )
         {
-            printk(XENLOG_INFO "using TEE mediator for %s\n", desc->name);
+            printk(CRUXLOG_INFO "Using TEE mediator for %s\n", desc->name);
             cur_mediator = desc;
             return 0;
         }

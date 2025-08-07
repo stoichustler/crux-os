@@ -2,8 +2,8 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/string.h>
-#include <xen/ctype.h>
+#include <crux/string.h>
+#include <crux/ctype.h>
 
 int (strcasecmp)(const char *s1, const char *s2)
 {

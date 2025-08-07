@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm32/debug-exynos4210.inc
+ * crux/arch/arm/arm32/debug-exynos4210.inc
  *
  * Exynos 5 specific debug code
  *

@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootfdt.h>
-#include <xen/device_tree.h>
-#include <xen/event.h>
-#include <xen/static-evtchn.h>
+#include <crux/bootfdt.h>
+#include <crux/device_tree.h>
+#include <crux/event.h>
+#include <crux/static-evtchn.h>
 
 #define STATIC_EVTCHN_NODE_SIZE_CELLS 2
 
@@ -13,16 +13,16 @@ static int __init get_evtchn_dt_property(const struct dt_device_node *np,
     const __be32 *prop = NULL;
     uint32_t len;
 
-    prop = dt_get_property(np, "xen,evtchn", &len);
+    prop = dt_get_property(np, "crux,evtchn", &len);
     if ( !prop )
     {
-        printk(XENLOG_ERR "xen,evtchn property should not be empty.\n");
+        printk(CRUXLOG_ERR "crux,evtchn property should not be empty.\n");
         return -EINVAL;
     }
 
     if ( !len || len < dt_cells_to_size(STATIC_EVTCHN_NODE_SIZE_CELLS) )
     {
-        printk(XENLOG_ERR "xen,evtchn property value is not valid.\n");
+        printk(CRUXLOG_ERR "crux,evtchn property value is not valid.\n");
         return -EINVAL;
     }
 
@@ -42,7 +42,7 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
     struct evtchn_bind_interdomain bind_interdomain;
     struct domain *d1 = NULL, *d2 = NULL;
 
-    if ( !dt_device_is_compatible(node, "xen,evtchn-v1") )
+    if ( !dt_device_is_compatible(node, "crux,evtchn-v1") )
         return 0;
 
     /*
@@ -59,7 +59,7 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
     remote_node = dt_find_node_by_phandle(remote_phandle);
     if ( !remote_node )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                 "evtchn: could not find remote evtchn phandle\n");
         return -EINVAL;
     }
@@ -70,21 +70,21 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
 
     if ( node->phandle != remote_phandle )
     {
-        printk(XENLOG_ERR "xen,evtchn property is not setup correctly.\n");
+        printk(CRUXLOG_ERR "crux,evtchn property is not setup correctly.\n");
         return -EINVAL;
     }
 
     p1_node = dt_get_parent(node);
     if ( !p1_node )
     {
-        printk(XENLOG_ERR "evtchn: evtchn parent node is NULL\n" );
+        printk(CRUXLOG_ERR "evtchn: evtchn parent node is NULL\n" );
         return -EINVAL;
     }
 
     p2_node = dt_get_parent(remote_node);
     if ( !p2_node )
     {
-        printk(XENLOG_ERR "evtchn: remote parent node is NULL\n" );
+        printk(CRUXLOG_ERR "evtchn: remote parent node is NULL\n" );
         return -EINVAL;
     }
 
@@ -93,7 +93,7 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
 
     if ( !d1 || !d2 )
     {
-        printk(XENLOG_ERR "evtchn: could not find domains\n" );
+        printk(CRUXLOG_ERR "evtchn: could not find domains\n" );
         return -EINVAL;
     }
 
@@ -103,7 +103,7 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
     rc = evtchn_alloc_unbound(&alloc_unbound, domU1_port);
     if ( rc < 0 )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                 "evtchn_alloc_unbound() failure (Error %d) \n", rc);
         return rc;
     }
@@ -114,7 +114,7 @@ static int __init alloc_domain_evtchn(struct dt_device_node *node)
     rc = evtchn_bind_interdomain(&bind_interdomain, d2, domU2_port);
     if ( rc < 0 )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                 "evtchn_bind_interdomain() failure (Error %d) \n", rc);
         return rc;
     }

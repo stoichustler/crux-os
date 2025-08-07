@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/console.h>
-#include <xen/cpu.h>
-#include <xen/delay.h>
-#include <xen/lib.h>
-#include <xen/shutdown.h>
-#include <xen/smp.h>
+#include <crux/console.h>
+#include <crux/cpu.h>
+#include <crux/delay.h>
+#include <crux/lib.h>
+#include <crux/shutdown.h>
+#include <crux/smp.h>
 #include <asm/platform.h>
 #include <asm/psci.h>
 
@@ -68,7 +68,7 @@ void machine_restart(unsigned int delay_millisecs)
         platform_reset();
         mdelay(100);
         if ( (count % 50) == 0 )
-            printk(XENLOG_ERR "xen: Platform reset did not work properly!\n");
+            printk(CRUXLOG_ERR "Xen: Platform reset did not work properly!\n");
         count++;
     }
 }

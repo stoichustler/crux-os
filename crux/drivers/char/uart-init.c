@@ -2,7 +2,7 @@
 
 /*
  * Derived from:
- * xen/drivers/char/arm-uart.c
+ * crux/drivers/char/arm-uart.c
  *
  * Generic uart retrieved via the device tree or ACPI
  *
@@ -12,12 +12,12 @@
 
 #include <asm/device.h>
 
-#include <xen/console.h>
-#include <xen/device_tree.h>
-#include <xen/param.h>
-#include <xen/serial.h>
-#include <xen/errno.h>
-#include <xen/acpi.h>
+#include <crux/console.h>
+#include <crux/device_tree.h>
+#include <crux/param.h>
+#include <crux/serial.h>
+#include <crux/errno.h>
+#include <crux/acpi.h>
 
 /*
  * Configure UART port with a string:
@@ -77,7 +77,7 @@ static void __init dt_uart_init(void)
     else
         options = "";
 
-    printk("looking for dtuart at \"%s\", options \"%s\"\n", devpath, options);
+    printk("Looking for dtuart at \"%s\", options \"%s\"\n", devpath, options);
     if ( *devpath == '/' )
         dev = dt_find_node_by_path(devpath);
     else

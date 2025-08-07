@@ -8,7 +8,7 @@
 #ifndef __ASM_GENERIC_VM_EVENT_H__
 #define __ASM_GENERIC_VM_EVENT_H__
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <public/vm_event.h>
 
 static inline int vm_event_init_domain(struct domain *d)

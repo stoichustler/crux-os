@@ -20,10 +20,10 @@
 /*-****************************************
 *  Dependencies
 ******************************************/
-#ifdef __XEN__
-#include <xen/string.h> /* memcpy */
-#include <xen/types.h>  /* size_t, ptrdiff_t */
-#include <xen/unaligned.h>
+#ifdef __CRUX__
+#include <crux/string.h> /* memcpy */
+#include <crux/types.h>  /* size_t, ptrdiff_t */
+#include <crux/unaligned.h>
 #endif
 
 /*-****************************************

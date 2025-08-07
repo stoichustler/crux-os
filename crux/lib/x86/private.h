@@ -1,14 +1,14 @@
-#ifndef XEN_LIB_X86_PRIVATE_H
-#define XEN_LIB_X86_PRIVATE_H
+#ifndef CRUX_LIB_X86_PRIVATE_H
+#define CRUX_LIB_X86_PRIVATE_H
 
-#ifdef __XEN__
+#ifdef __CRUX__
 
-#include <xen/bitops.h>
-#include <xen/guest_access.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/nospec.h>
-#include <xen/types.h>
+#include <crux/bitops.h>
+#include <crux/guest_access.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/nospec.h>
+#include <crux/types.h>
 
 #include <asm/msr-index.h>
 
@@ -23,10 +23,10 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <xen/asm/msr-index.h>
-#include <xen/asm/x86-vendors.h>
+#include <crux/asm/msr-index.h>
+#include <crux/asm/x86-vendors.h>
 
-#include <xen-tools/common-macros.h>
+#include <crux-tools/common-macros.h>
 
 static inline bool test_bit(unsigned int bit, const void *vaddr)
 {
@@ -63,9 +63,9 @@ static inline bool test_bit(unsigned int bit, const void *vaddr)
     0;                                                  \
 })
 
-#endif /* __XEN__ */
+#endif /* __CRUX__ */
 
-#endif /* XEN_LIB_X86_PRIVATE_H */
+#endif /* CRUX_LIB_X86_PRIVATE_H */
 
 /*
  * Local variables:

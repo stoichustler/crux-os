@@ -4,7 +4,7 @@
 $(call cc-options-add,CFLAGS,CC,$(EMBEDDED_EXTRA_CFLAGS))
 $(call cc-option-add,CFLAGS,CC,-Wnested-externs)
 
-# Prevent floating-point variables from creeping into xen.
+# Prevent floating-point variables from creeping into Xen.
 CFLAGS-$(CONFIG_ARM_32) += -msoft-float
 CFLAGS-$(CONFIG_ARM_32) += -mcpu=cortex-a15
 CFLAGS-$(CONFIG_ARM_32) += -mno-unaligned-access
@@ -23,7 +23,7 @@ endif
 
 ifeq ($(CONFIG_ARM64_ERRATUM_843419),y)
     ifeq ($(call ld-option, --fix-cortex-a53-843419),n)
-        $(warning ld does not support --fix-cortex-a53-843419; xen may be susceptible to erratum)
+        $(warning ld does not support --fix-cortex-a53-843419; crux may be susceptible to erratum)
     else
         LDFLAGS += --fix-cortex-a53-843419
     endif

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/decode.c
+ * crux/arch/arm/decode.c
  *
  * Instruction decoder
  *
@@ -8,10 +8,10 @@
  * Copyright (C) 2013 Linaro Limited.
  */
 
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 
 #include <asm/current.h>
 
@@ -70,7 +70,7 @@ static int decode_thumb2(register_t pc, struct hsr_dabt *dabt, uint16_t hw1)
     return 0;
 
 bad_thumb2:
-    gprintk(XENLOG_ERR, "unhandled THUMB2 instruction 0x%x%x\n", hw1, hw2);
+    gprintk(CRUXLOG_ERR, "unhandled THUMB2 instruction 0x%x%x\n", hw1, hw2);
 
     return 1;
 }
@@ -83,7 +83,7 @@ static int decode_arm64(register_t pc, mmio_info_t *info)
 
     if ( raw_copy_from_guest(&opcode.value, (void * __user)pc, sizeof (opcode)) )
     {
-        gprintk(XENLOG_ERR, "Could not copy the instruction from PC\n");
+        gprintk(CRUXLOG_ERR, "Could not copy the instruction from PC\n");
         return 1;
     }
 
@@ -99,21 +99,21 @@ static int decode_arm64(register_t pc, mmio_info_t *info)
      */
     if ( (opcode.ldr_str.rn == opcode.ldr_str.rt) && (opcode.ldr_str.rn != 31) )
     {
-        gprintk(XENLOG_ERR, "Rn should not be equal to Rt except for r31\n");
+        gprintk(CRUXLOG_ERR, "Rn should not be equal to Rt except for r31\n");
         goto bad_loadstore;
     }
 
     /* First, let's check for the fixed values */
     if ( (opcode.value & POST_INDEX_FIXED_MASK) != POST_INDEX_FIXED_VALUE )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "Decoding instruction 0x%x is not supported\n", opcode.value);
         goto bad_loadstore;
     }
 
     if ( opcode.ldr_str.v != 0 )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "ldr/str post indexing for vector types are not supported\n");
         goto bad_loadstore;
     }
@@ -126,12 +126,12 @@ static int decode_arm64(register_t pc, mmio_info_t *info)
         dabt->write = 0;
     else
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "Decoding ldr/str post indexing is not supported for this variant\n");
         goto bad_loadstore;
     }
 
-    gprintk(XENLOG_INFO,
+    gprintk(CRUXLOG_INFO,
             "opcode->ldr_str.rt = 0x%x, opcode->ldr_str.size = 0x%x, opcode->ldr_str.imm9 = %d\n",
             opcode.ldr_str.rt, opcode.ldr_str.size, opcode.ldr_str.imm9);
 
@@ -145,7 +145,7 @@ static int decode_arm64(register_t pc, mmio_info_t *info)
     return 0;
 
  bad_loadstore:
-    gprintk(XENLOG_ERR, "unhandled Arm instruction 0x%x\n", opcode.value);
+    gprintk(CRUXLOG_ERR, "unhandled Arm instruction 0x%x\n", opcode.value);
     return 1;
 }
 
@@ -211,7 +211,7 @@ static int decode_thumb(register_t pc, struct hsr_dabt *dabt)
     return 0;
 
 bad_thumb:
-    gprintk(XENLOG_ERR, "unhandled THUMB instruction 0x%x\n", instr);
+    gprintk(CRUXLOG_ERR, "unhandled THUMB instruction 0x%x\n", instr);
     return 1;
 }
 
@@ -224,7 +224,7 @@ int decode_instruction(const struct cpu_user_regs *regs, mmio_info_t *info)
         return decode_arm64(regs->pc, info);
 
     /* TODO: Handle ARM instruction */
-    gprintk(XENLOG_ERR, "unhandled ARM instruction\n");
+    gprintk(CRUXLOG_ERR, "unhandled ARM instruction\n");
 
     return 1;
 }

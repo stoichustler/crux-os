@@ -8,20 +8,20 @@
  * Copyright (c) 2004, K A Fraser
  */
 
-#ifndef __XEN_PUBLIC_GRANT_TABLE_H__
-#define __XEN_PUBLIC_GRANT_TABLE_H__
+#ifndef __CRUX_PUBLIC_GRANT_TABLE_H__
+#define __CRUX_PUBLIC_GRANT_TABLE_H__
 
-#include "xen.h"
+#include "crux.h"
 
 /*
  * `incontents 150 gnttab Grant Tables
  *
- * xen's grant tables provide a generic mechanism to memory sharing
+ * Xen's grant tables provide a generic mechanism to memory sharing
  * between domains. This shared memory interface underpins the split
  * device drivers for block and network IO.
  *
  * Each domain has its own grant table. This is a data structure that
- * is shared with xen; it allows the domain to tell xen what kind of
+ * is shared with Xen; it allows the domain to tell Xen what kind of
  * permissions other domains have on its pages. Entries in the grant
  * table are identified by grant references. A grant reference is an
  * integer, which indexes into the grant table. It acts as a
@@ -42,8 +42,8 @@
 
 /* Some rough guidelines on accessing and updating grant-table entries
  * in a concurrency-safe manner. For more information, Linux contains a
- * reference implementation for guest OSes (drivers/xen/grant_table.c, see
- * http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=drivers/xen/grant-table.c;hb=HEAD
+ * reference implementation for guest OSes (drivers/crux/grant_table.c, see
+ * http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=drivers/crux/grant-table.c;hb=HEAD
  *
  * NB. WMB is a no-op on current-generation x86 processors. However, a
  *     compiler barrier will still be required.
@@ -98,9 +98,9 @@ typedef uint32_t grant_ref_t;
 
 /*
  * A grant table comprises a packed array of grant entries in one or more
- * page frames shared between xen and a guest.
- * [XEN]: This field is written by xen and read by the sharing guest.
- * [GST]: This field is written by the guest and read by xen.
+ * page frames shared between Xen and a guest.
+ * [CRUX]: This field is written by Xen and read by the sharing guest.
+ * [GST]: This field is written by the guest and read by Xen.
  */
 
 /*
@@ -108,12 +108,12 @@ typedef uint32_t grant_ref_t;
  * backwards compatibility.  New guests are recommended to support using
  * version 2 to overcome version 1 limitations, but to default to version 1.
  */
-#if __XEN_INTERFACE_VERSION__ < 0x0003020a
+#if __CRUX_INTERFACE_VERSION__ < 0x0003020a
 #define grant_entry_v1 grant_entry
 #define grant_entry_v1_t grant_entry_t
 #endif
 struct grant_entry_v1 {
-    /* GTF_xxx: various type and flag information.  [XEN,GST] */
+    /* GTF_xxx: various type and flag information.  [CRUX,GST] */
     uint16_t flags;
     /* The domain being granted foreign privileges. [GST] */
     domid_t  domid;
@@ -121,7 +121,7 @@ struct grant_entry_v1 {
      * GTF_permit_access: GFN that @domid is allowed to map and access. [GST]
      * GTF_accept_transfer: GFN that @domid is allowed to transfer into. [GST]
      * GTF_transfer_completed: MFN whose ownership transferred by @domid
-     *                         (non-translated guests only). [XEN]
+     *                         (non-translated guests only). [CRUX]
      */
     uint32_t frame;
 };
@@ -132,14 +132,14 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
  */
 #define GNTTAB_NR_RESERVED_ENTRIES     8
 #define GNTTAB_RESERVED_CONSOLE        0
-#define GNTTAB_RESERVED_XENSTORE       1
+#define GNTTAB_RESERVED_CRUXSTORE       1
 
 /*
  * Type of grant entry.
  *  GTF_invalid: This grant entry grants no privileges.
  *  GTF_permit_access: Allow @domid to map/access @frame.
  *  GTF_accept_transfer: Allow @domid to transfer ownership of one page frame
- *                       to this guest. xen writes the page number to @frame.
+ *                       to this guest. Xen writes the page number to @frame.
  *  GTF_transitive: Allow @domid to transitively access a subrange of
  *                  @trans_grant in @trans_domid.  No mappings are allowed.
  */
@@ -152,8 +152,8 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
 /*
  * Subflags for GTF_permit_access and GTF_transitive.
  *  GTF_readonly: Restrict @domid to read-only mappings and accesses. [GST]
- *  GTF_reading: Grant entry is currently mapped for reading by @domid. [XEN]
- *  GTF_writing: Grant entry is currently mapped for writing by @domid. [XEN]
+ *  GTF_reading: Grant entry is currently mapped for reading by @domid. [CRUX]
+ *  GTF_writing: Grant entry is currently mapped for writing by @domid. [CRUX]
  * Further subflags for GTF_permit_access only.
  *  GTF_PAT, GTF_PWT, GTF_PCD: (x86) cache attribute flags to be used for
  *                             mappings of the grant [GST]
@@ -178,12 +178,12 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
 
 /*
  * Subflags for GTF_accept_transfer:
- *  GTF_transfer_committed: xen sets this flag to indicate that it is committed
+ *  GTF_transfer_committed: Xen sets this flag to indicate that it is committed
  *      to transferring ownership of a page frame. When a guest sees this flag
  *      it must /not/ modify the grant entry until GTF_transfer_completed is
- *      set by xen.
+ *      set by Xen.
  *  GTF_transfer_completed: It is safe for the guest to spin-wait on this flag
- *      after reading GTF_transfer_committed. xen will always write the frame
+ *      after reading GTF_transfer_committed. Xen will always write the frame
  *      address, followed by ORing this flag, in a timely manner.
  */
 #define _GTF_transfer_committed (2)
@@ -200,7 +200,7 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
  * The interface by which domains use grant references does not depend
  * on the grant table version in use by the other domain.
  */
-#if __XEN_INTERFACE_VERSION__ >= 0x0003020a
+#if __CRUX_INTERFACE_VERSION__ >= 0x0003020a
 /*
  * Version 1 and version 2 grant entries share a common prefix.  The
  * fields of the prefix are documented as part of struct
@@ -251,7 +251,7 @@ union grant_entry_v2 {
      * domain.  Obviously, the transitive access must be compatible
      * with the original grant.
      *
-     * The current version of xen does not allow transitive grants
+     * The current version of Xen does not allow transitive grants
      * to be mapped.
      */
     struct {
@@ -267,7 +267,7 @@ typedef union grant_entry_v2 grant_entry_v2_t;
 
 typedef uint16_t grant_status_t;
 
-#endif /* __XEN_INTERFACE_VERSION__ */
+#endif /* __CRUX_INTERFACE_VERSION__ */
 
 /***********************************
  * GRANT TABLE QUERIES AND USES
@@ -292,13 +292,13 @@ typedef uint16_t grant_status_t;
 #define GNTTABOP_copy                 5
 #define GNTTABOP_query_size           6
 #define GNTTABOP_unmap_and_replace    7
-#if __XEN_INTERFACE_VERSION__ >= 0x0003020a
+#if __CRUX_INTERFACE_VERSION__ >= 0x0003020a
 #define GNTTABOP_set_version          8
 #define GNTTABOP_get_status_frames    9
 #define GNTTABOP_get_version          10
 #define GNTTABOP_swap_grant_ref	      11
 #define GNTTABOP_cache_flush	      12
-#endif /* __XEN_INTERFACE_VERSION__ */
+#endif /* __CRUX_INTERFACE_VERSION__ */
 /* ` } */
 
 /*
@@ -335,7 +335,7 @@ struct gnttab_map_grant_ref {
     uint64_t dev_bus_addr;
 };
 typedef struct gnttab_map_grant_ref gnttab_map_grant_ref_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_map_grant_ref_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_map_grant_ref_t);
 
 /*
  * GNTTABOP_unmap_grant_ref: Destroy one or more grant-reference mappings
@@ -357,7 +357,7 @@ struct gnttab_unmap_grant_ref {
     int16_t  status;              /* => enum grant_status */
 };
 typedef struct gnttab_unmap_grant_ref gnttab_unmap_grant_ref_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_unmap_grant_ref_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_unmap_grant_ref_t);
 
 /*
  * GNTTABOP_setup_table: Set up a grant table for <dom> comprising at least
@@ -366,7 +366,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_unmap_grant_ref_t);
  * NOTES:
  *  1. <dom> may be specified as DOMID_SELF.
  *  2. Only a sufficiently-privileged domain may specify <dom> != DOMID_SELF.
- *  3. xen may not support more than a single grant-table page per domain.
+ *  3. Xen may not support more than a single grant-table page per domain.
  */
 struct gnttab_setup_table {
     /* IN parameters. */
@@ -374,18 +374,18 @@ struct gnttab_setup_table {
     uint32_t nr_frames;
     /* OUT parameters. */
     int16_t  status;              /* => enum grant_status */
-#if __XEN_INTERFACE_VERSION__ < 0x00040300
-    XEN_GUEST_HANDLE(ulong) frame_list;
+#if __CRUX_INTERFACE_VERSION__ < 0x00040300
+    CRUX_GUEST_HANDLE(ulong) frame_list;
 #else
-    XEN_GUEST_HANDLE(xen_pfn_t) frame_list;
+    CRUX_GUEST_HANDLE(crux_pfn_t) frame_list;
 #endif
 };
 typedef struct gnttab_setup_table gnttab_setup_table_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_setup_table_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_setup_table_t);
 
 /*
  * GNTTABOP_dump_table: Dump the contents of the grant table to the
- * xen console. Debugging use only.
+ * crux console. Debugging use only.
  */
 struct gnttab_dump_table {
     /* IN parameters. */
@@ -394,7 +394,7 @@ struct gnttab_dump_table {
     int16_t status;               /* => enum grant_status */
 };
 typedef struct gnttab_dump_table gnttab_dump_table_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_dump_table_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_dump_table_t);
 
 /*
  * GNTTABOP_transfer: Transfer <frame> to a foreign domain. The foreign domain
@@ -407,14 +407,14 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_dump_table_t);
  */
 struct gnttab_transfer {
     /* IN parameters. */
-    xen_pfn_t     mfn;
+    crux_pfn_t     mfn;
     domid_t       domid;
     grant_ref_t   ref;
     /* OUT parameters. */
     int16_t       status;
 };
 typedef struct gnttab_transfer gnttab_transfer_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_transfer_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_transfer_t);
 
 
 /*
@@ -445,7 +445,7 @@ struct gnttab_copy {
     struct gnttab_copy_ptr {
         union {
             grant_ref_t ref;
-            xen_pfn_t   gmfn;
+            crux_pfn_t   gmfn;
         } u;
         domid_t  domid;
         uint16_t offset;
@@ -456,7 +456,7 @@ struct gnttab_copy {
     int16_t       status;
 };
 typedef struct gnttab_copy  gnttab_copy_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_copy_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_copy_t);
 
 /*
  * GNTTABOP_query_size: Query the current and maximum sizes of the shared
@@ -474,7 +474,7 @@ struct gnttab_query_size {
     int16_t  status;              /* => enum grant_status */
 };
 typedef struct gnttab_query_size gnttab_query_size_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_query_size_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_query_size_t);
 
 /*
  * GNTTABOP_unmap_and_replace: Destroy one or more grant-reference mappings
@@ -496,9 +496,9 @@ struct gnttab_unmap_and_replace {
     int16_t  status;              /* => enum grant_status */
 };
 typedef struct gnttab_unmap_and_replace gnttab_unmap_and_replace_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_unmap_and_replace_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_unmap_and_replace_t);
 
-#if __XEN_INTERFACE_VERSION__ >= 0x0003020a
+#if __CRUX_INTERFACE_VERSION__ >= 0x0003020a
 /*
  * GNTTABOP_set_version: Request a particular version of the grant
  * table shared table structure.  This operation may be used to toggle
@@ -510,7 +510,7 @@ struct gnttab_set_version {
     uint32_t version;
 };
 typedef struct gnttab_set_version gnttab_set_version_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_set_version_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_set_version_t);
 
 
 /*
@@ -531,10 +531,10 @@ struct gnttab_get_status_frames {
     domid_t  dom;
     /* OUT parameters. */
     int16_t  status;              /* => enum grant_status */
-    XEN_GUEST_HANDLE(uint64_t) frame_list;
+    CRUX_GUEST_HANDLE(uint64_t) frame_list;
 };
 typedef struct gnttab_get_status_frames gnttab_get_status_frames_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_get_status_frames_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_get_status_frames_t);
 
 /*
  * GNTTABOP_get_version: Get the grant table version which is in
@@ -548,7 +548,7 @@ struct gnttab_get_version {
     uint32_t version;
 };
 typedef struct gnttab_get_version gnttab_get_version_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_get_version_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_get_version_t);
 
 /*
  * GNTTABOP_swap_grant_ref: Swap the contents of two grant entries.
@@ -561,7 +561,7 @@ struct gnttab_swap_grant_ref {
     int16_t status;             /* => enum grant_status */
 };
 typedef struct gnttab_swap_grant_ref gnttab_swap_grant_ref_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_swap_grant_ref_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_swap_grant_ref_t);
 
 /*
  * Issue one or more cache maintenance operations on a portion of a
@@ -580,9 +580,9 @@ struct gnttab_cache_flush {
     uint32_t op;
 };
 typedef struct gnttab_cache_flush gnttab_cache_flush_t;
-DEFINE_XEN_GUEST_HANDLE(gnttab_cache_flush_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_cache_flush_t);
 
-#endif /* __XEN_INTERFACE_VERSION__ */
+#endif /* __CRUX_INTERFACE_VERSION__ */
 
 /*
  * Bitfield values for gnttab_map_grant_ref.flags.
@@ -614,7 +614,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_cache_flush_t);
 
 /*
  * Bits to be placed in guest kernel available PTE bits (architecture
- * dependent; only supported when XENFEAT_gnttab_map_avail_bits is set).
+ * dependent; only supported when CRUXFEAT_gnttab_map_avail_bits is set).
  */
 #define _GNTMAP_guest_avail0    (16)
 #define GNTMAP_guest_avail_mask ((uint32_t)~0 << _GNTMAP_guest_avail0)
@@ -656,7 +656,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_cache_flush_t);
     "out of space",                             \
 }
 
-#endif /* __XEN_PUBLIC_GRANT_TABLE_H__ */
+#endif /* __CRUX_PUBLIC_GRANT_TABLE_H__ */
 
 /*
  * Local variables:

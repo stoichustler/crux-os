@@ -1,21 +1,21 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vgic-v3.c
+ * crux/arch/arm/vgic-v3.c
  *
  * ARM Virtual Generic Interrupt Controller v3 support
- * based on xen/arch/arm/vgic.c
+ * based on crux/arch/arm/vgic.c
  *
  * Vijaya Kumar K <vijaya.kumar@caviumnetworks.com>
  * Copyright (c) 2014 Cavium Inc.
  */
 
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/sizes.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/sizes.h>
 
 #include <asm/cpregs.h>
 #include <asm/current.h>
@@ -315,13 +315,13 @@ static int __vgic_v3_rdistr_rd_mmio_read(struct vcpu *v, mmio_info_t *info,
          goto read_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICR: unhandled read r%d offset %#08x\n",
                v, dabt.reg, gicr_reg);
         goto read_as_zero;
     }
 bad_width:
-    printk(XENLOG_G_ERR "%pv vGICR: bad read width %d r%d offset %#08x\n",
+    printk(CRUXLOG_G_ERR "%pv vGICR: bad read width %d r%d offset %#08x\n",
            v, dabt.size, dabt.reg, gicr_reg);
     return 0;
 
@@ -340,14 +340,14 @@ read_as_zero:
     return 1;
 
 read_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: RAZ on implementation defined register offset %#08x\n",
            v, gicr_reg);
     *r = 0;
     return 1;
 
 read_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: RAZ on reserved register offset %#08x\n",
            v, gicr_reg);
     *r = 0;
@@ -638,12 +638,12 @@ static int __vgic_v3_rdistr_rd_mmio_write(struct vcpu *v, mmio_info_t *info,
          goto write_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR "%pv: vGICR: unhandled write r%d offset %#08x\n",
+        printk(CRUXLOG_G_ERR "%pv: vGICR: unhandled write r%d offset %#08x\n",
                v, dabt.reg, gicr_reg);
         goto write_ignore;
     }
 bad_width:
-    printk(XENLOG_G_ERR
+    printk(CRUXLOG_G_ERR
           "%pv: vGICR: bad write width %d r%d=%"PRIregister" offset %#08x\n",
           v, dabt.size, dabt.reg, r, gicr_reg);
     return 0;
@@ -661,13 +661,13 @@ write_ignore:
     return 1;
 
 write_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: WI on implementation defined register offset %#08x\n",
            v, gicr_reg);
     return 1;
 
 write_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: WI on reserved register offset %#08x\n",
            v, gicr_reg);
     return 1;
@@ -753,14 +753,14 @@ static int __vgic_v3_distr_common_mmio_read(const char *name, struct vcpu *v,
     }
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: %s: unhandled read r%d offset %#08x\n",
                v, name, dabt.reg, reg);
         return 0;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR "%pv: %s: bad read width %d r%d offset %#08x\n",
+    printk(CRUXLOG_G_ERR "%pv: %s: bad read width %d r%d offset %#08x\n",
            v, name, dabt.size, dabt.reg, reg);
     return 0;
 
@@ -827,13 +827,13 @@ static int __vgic_v3_distr_common_mmio_write(const char *name, struct vcpu *v,
 
     case VRANGE32(GICD_ISACTIVER, GICD_ISACTIVERN):
         if ( dabt.size != DABT_WORD ) goto bad_width;
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: %s: unhandled word write %#"PRIregister" to ISACTIVER%d\n",
                v, name, r, reg - GICD_ISACTIVER);
         return 0;
 
     case VRANGE32(GICD_ICACTIVER, GICD_ICACTIVERN):
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: %s: unhandled word write %#"PRIregister" to ICACTIVER%d\n",
                v, name, r, reg - GICD_ICACTIVER);
         goto write_ignore_32;
@@ -872,14 +872,14 @@ static int __vgic_v3_distr_common_mmio_write(const char *name, struct vcpu *v,
         return 1;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: %s: unhandled write r%d=%"PRIregister" offset %#08x\n",
                v, name, dabt.reg, r, reg);
         return 0;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR
+    printk(CRUXLOG_G_ERR
            "%pv: %s: bad write width %d r%d=%"PRIregister" offset %#08x\n",
            v, name, dabt.size, dabt.reg, r, reg);
     return 0;
@@ -934,13 +934,13 @@ static int vgic_v3_rdistr_sgi_mmio_read(struct vcpu *v, mmio_info_t *info,
         goto read_reserved;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICR: SGI: unhandled read r%d offset %#08x\n",
                v, dabt.reg, gicr_reg);
         goto read_as_zero;
     }
 bad_width:
-    printk(XENLOG_G_ERR "%pv: vGICR: SGI: bad read width %d r%d offset %#08x\n",
+    printk(CRUXLOG_G_ERR "%pv: vGICR: SGI: bad read width %d r%d offset %#08x\n",
            v, dabt.size, dabt.reg, gicr_reg);
     return 0;
 
@@ -951,14 +951,14 @@ read_as_zero:
     return 1;
 
 read_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: SGI: RAZ on implementation defined register offset %#08x\n",
            v, gicr_reg);
     *r = 0;
     return 1;
 
 read_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICR: SGI: RAZ on reserved register offset %#08x\n",
            v, gicr_reg);
     *r = 0;
@@ -1002,14 +1002,14 @@ static int vgic_v3_rdistr_sgi_mmio_write(struct vcpu *v, mmio_info_t *info,
         goto write_ignore_32;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICR: SGI: unhandled write r%d offset %#08x\n",
                v, dabt.reg, gicr_reg);
         goto write_ignore;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR
+    printk(CRUXLOG_G_ERR
            "%pv: vGICR: SGI: bad write width %d r%d=%"PRIregister" offset %#08x\n",
            v, dabt.size, dabt.reg, r, gicr_reg);
     return 0;
@@ -1057,7 +1057,7 @@ static int vgic_v3_rdistr_mmio_read(struct vcpu *v, mmio_info_t *info,
     else  if ( (offset >= SZ_64K) && (offset < 2 * SZ_64K) )
         return vgic_v3_rdistr_sgi_mmio_read(v, info, (offset - SZ_64K), r);
     else
-        printk(XENLOG_G_WARNING
+        printk(CRUXLOG_G_WARNING
                "%pv: vGICR: unknown gpa read address %"PRIpaddr"\n",
                 v, info->gpa);
 
@@ -1081,7 +1081,7 @@ static int vgic_v3_rdistr_mmio_write(struct vcpu *v, mmio_info_t *info,
     else  if ( (offset >= SZ_64K) && (offset < 2 * SZ_64K) )
         return vgic_v3_rdistr_sgi_mmio_write(v, info, (offset - SZ_64K), r);
     else
-        printk(XENLOG_G_WARNING
+        printk(CRUXLOG_G_WARNING
                "%pv: vGICR: unknown gpa write address %"PRIpaddr"\n",
                v, info->gpa);
 
@@ -1257,13 +1257,13 @@ static int vgic_v3_distr_mmio_read(struct vcpu *v, mmio_info_t *info,
          goto read_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR "%pv: vGICD: unhandled read r%d offset %#08x\n",
+        printk(CRUXLOG_G_ERR "%pv: vGICD: unhandled read r%d offset %#08x\n",
                v, dabt.reg, gicd_reg);
         goto read_as_zero;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR "%pv: vGICD: bad read width %d r%d offset %#08x\n",
+    printk(CRUXLOG_G_ERR "%pv: vGICD: bad read width %d r%d offset %#08x\n",
            v, dabt.size, dabt.reg, gicd_reg);
     return 0;
 
@@ -1277,14 +1277,14 @@ read_as_zero:
     return 1;
 
 read_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: RAZ on implementation defined register offset %#08x\n",
            v, gicd_reg);
     *r = 0;
     return 1;
 
 read_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: RAZ on reserved register offset %#08x\n",
            v, gicd_reg);
     *r = 0;
@@ -1443,14 +1443,14 @@ static int vgic_v3_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
          goto write_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled write r%d=%"PRIregister" offset %#08x\n",
                v, dabt.reg, r, gicd_reg);
         goto write_ignore;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR
+    printk(CRUXLOG_G_ERR
            "%pv: vGICD: bad write width %d r%d=%"PRIregister" offset %#08x\n",
            v, dabt.size, dabt.reg, r, gicd_reg);
     return 0;
@@ -1463,13 +1463,13 @@ write_ignore:
     return 1;
 
 write_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: WI on implementation defined register offset %#08x\n",
            v, gicd_reg);
     return 1;
 
 write_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: WI on reserved register offset %#08x\n",
            v, gicd_reg);
     return 1;
@@ -1499,7 +1499,7 @@ static bool vgic_v3_to_sgi(struct vcpu *v, uint64_t sgir)
         sgi_mode = SGI_TARGET_OTHERS;
         break;
     default:
-        gprintk(XENLOG_WARNING, "Wrong irq mode in SGI1R_EL1 register\n");
+        gprintk(CRUXLOG_WARNING, "Wrong irq mode in SGI1R_EL1 register\n");
         return false;
     }
 
@@ -1514,7 +1514,7 @@ static bool vgic_v3_emulate_sgi1r(struct cpu_user_regs *regs, uint64_t *r,
         return vgic_v3_to_sgi(current, *r);
     else
     {
-        gdprintk(XENLOG_WARNING, "Reading SGI1R_EL1 - WO register\n");
+        gdprintk(CRUXLOG_WARNING, "Reading SGI1R_EL1 - WO register\n");
         return false;
     }
 }
@@ -1615,7 +1615,7 @@ static int vgic_v3_vcpu_init(struct vcpu *v)
     if ( (rdist_base < region->base) ||
          ((rdist_base + GICV3_GICR_SIZE) > (region->base + region->size)) )
     {
-        dprintk(XENLOG_ERR,
+        dprintk(CRUXLOG_ERR,
                 "d%u: Unable to find a re-distributor for VCPU %u\n",
                 d->domain_id, v->vcpu_id);
         return -EINVAL;
@@ -1817,7 +1817,7 @@ int vgic_v3_init(struct domain *d, unsigned int *mmio_count)
 {
     if ( !vgic_v3_hw.enabled )
     {
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "d%d: vGICv3 is not supported on this platform.\n",
                d->domain_id);
         return -ENODEV;

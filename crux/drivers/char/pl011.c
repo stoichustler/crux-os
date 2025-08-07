@@ -1,9 +1,9 @@
 /*
- * xen/drivers/char/pl011.c
+ * crux/drivers/char/pl011.c
  *
  * Driver for ARM PrimeCell PL011 UART.
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,15 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/console.h>
-#include <xen/serial.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
+#include <crux/console.h>
+#include <crux/serial.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
 #include <asm/device.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/pl011-uart.h>
 #include <asm/io.h>
 
@@ -316,7 +316,7 @@ static int __init pl011_dt_uart_init(struct dt_device_node *dev,
         return res;
     }
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }
@@ -335,7 +335,7 @@ DT_DEVICE_START(pl011, "PL011 UART", DEVICE_SERIAL)
 DT_DEVICE_END
 
 #ifdef CONFIG_ACPI
-#include <xen/acpi.h>
+#include <crux/acpi.h>
 
 static int __init pl011_acpi_uart_init(const void *data)
 {

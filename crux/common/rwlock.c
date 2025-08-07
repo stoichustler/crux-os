@@ -1,5 +1,5 @@
-#include <xen/rwlock.h>
-#include <xen/irq.h>
+#include <crux/rwlock.h>
+#include <crux/irq.h>
 
 /*
  * rspin_until_writer_unlock - spin until writer is gone.

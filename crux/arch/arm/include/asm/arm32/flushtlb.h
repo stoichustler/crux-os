@@ -9,7 +9,7 @@
  * DSB ISH          ; Ensure the TLB invalidation has completed
  * ISB              ; See explanation below
  *
- * For xen page-tables the ISB will discard any instructions fetched
+ * For Xen page-tables the ISB will discard any instructions fetched
  * from the old mappings.
  *
  * For the Stage-2 page-tables the ISB ensures the completion of the DSB
@@ -41,18 +41,18 @@ TLB_HELPER(flush_all_guests_tlb_local, TLBIALLNSNH, nsh)
 TLB_HELPER(flush_all_guests_tlb, TLBIALLNSNHIS, ish)
 
 /* Flush all hypervisor mappings from the TLB of the local processor. */
-TLB_HELPER(flush_xen_tlb_local, TLBIALLH, nsh)
+TLB_HELPER(flush_crux_tlb_local, TLBIALLH, nsh)
 
 #undef TLB_HELPER
 
 /* Flush TLB of local processor for address va. */
-static inline void __flush_xen_tlb_one_local(vaddr_t va)
+static inline void __flush_crux_tlb_one_local(vaddr_t va)
 {
     asm volatile(STORE_CP32(0, TLBIMVAH) : : "r" (va) : "memory");
 }
 
 /* Flush TLB of all processors in the inner-shareable domain for address va. */
-static inline void __flush_xen_tlb_one(vaddr_t va)
+static inline void __flush_crux_tlb_one(vaddr_t va)
 {
     asm volatile(STORE_CP32(0, TLBIMVAHIS) : : "r" (va) : "memory");
 }

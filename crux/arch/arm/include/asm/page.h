@@ -1,8 +1,8 @@
 #ifndef __ARM_PAGE_H__
 #define __ARM_PAGE_H__
 
-#include <public/xen.h>
-#include <xen/page-size.h>
+#include <public/crux.h>
+#include <crux/page-size.h>
 #include <asm/processor.h>
 #include <asm/lpae.h>
 #include <asm/sysregs.h>
@@ -123,9 +123,9 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/errno.h>
-#include <xen/types.h>
-#include <xen/lib.h>
+#include <crux/errno.h>
+#include <crux/types.h>
+#include <crux/lib.h>
 #include <asm/atomic.h>
 #include <asm/system.h>
 

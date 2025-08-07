@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/common/boot_cpupools.c
+ * crux/common/boot_cpupools.c
  *
  * Code to create cpupools at boot time.
  *
  * Copyright (C) 2022 Arm Ltd.
  */
 
-#include <xen/bootfdt.h>
-#include <xen/acpi.h>
-#include <xen/sched.h>
+#include <crux/bootfdt.h>
+#include <crux/acpi.h>
+#include <crux/sched.h>
 
 /*
  * pool_cpu_map:   Index is logical cpu number, content is cpupool id, (-1) for
@@ -64,7 +64,7 @@ int __init btcpupools_get_domain_pool_id(const struct dt_device_node *node)
     const struct dt_device_node *phandle_node;
     int cpu_num;
 
-    if ( !dt_device_is_compatible(node, "xen,cpupool") )
+    if ( !dt_device_is_compatible(node, "crux,cpupool") )
         return BTCPUPOOLS_DT_WRONG_NODE;
     /*
      * Get first cpu listed in the cpupool, from its reg it's possible to
@@ -109,7 +109,7 @@ void __init btcpupools_dtb_parse(void)
         const char* scheduler_name;
         unsigned int i = 0;
 
-        if ( !dt_device_is_compatible(node, "xen,cpupool") )
+        if ( !dt_device_is_compatible(node, "crux,cpupool") )
             continue;
 
         if ( !dt_property_read_string(node, "cpupool-sched", &scheduler_name) )
@@ -140,7 +140,7 @@ void __init btcpupools_dtb_parse(void)
         /* Save scheduler choice for this cpupool id */
         pool_sched_map[next_pool_id] = sched_id;
 
-        /* Let xen generate pool ids */
+        /* Let Xen generate pool ids */
         next_pool_id++;
     }
 }
@@ -218,7 +218,7 @@ unsigned int __init btcpupools_get_cpupool_id(unsigned int cpu)
 {
     ASSERT((cpu < NR_CPUS) && (pool_cpu_map[cpu] >= 0));
 
-    printk(XENLOG_INFO "Logical CPU %u in Pool-%d (Scheduler id: %d).\n",
+    printk(CRUXLOG_INFO "Logical CPU %u in Pool-%d (Scheduler id: %d).\n",
            cpu, pool_cpu_map[cpu], pool_sched_map[pool_cpu_map[cpu]]);
 
     return pool_cpu_map[cpu];

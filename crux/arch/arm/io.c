@@ -1,18 +1,18 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/io.c
+ * crux/arch/arm/io.c
  *
  * ARM I/O handlers
  *
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/bsearch.h>
-#include <xen/ioreq.h>
-#include <xen/lib.h>
-#include <xen/spinlock.h>
-#include <xen/sched.h>
-#include <xen/sort.h>
+#include <crux/bsearch.h>
+#include <crux/ioreq.h>
+#include <crux/lib.h>
+#include <crux/spinlock.h>
+#include <crux/sched.h>
+#include <crux/sort.h>
 #include <asm/cpuerrata.h>
 #include <asm/current.h>
 #include <asm/ioreq.h>
@@ -141,7 +141,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
             rc = decode_instruction(regs, info);
             if ( rc )
             {
-                gprintk(XENLOG_DEBUG, "Unable to decode instruction\n");
+                gprintk(CRUXLOG_DEBUG, "Unable to decode instruction\n");
                 info->dabt_instr.state = INSTR_ERROR;
             }
         }
@@ -151,7 +151,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
     /*
      * At this point, we know that the stage1 translation table is either in an
      * emulated MMIO region or its address is invalid . This is not expected by
-     * xen and thus it forwards the abort to the guest.
+     * Xen and thus it forwards the abort to the guest.
      */
     if ( info->dabt.s1ptw )
     {
@@ -160,7 +160,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
     }
 
     /*
-     * When the data abort is caused due to cache maintenance, xen should check
+     * When the data abort is caused due to cache maintenance, Xen should check
      * if the address belongs to an emulated MMIO region or not. The behavior
      * will differ accordingly.
      */
@@ -172,13 +172,13 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
 
     /*
      * Armv8 processor does not provide a valid syndrome for decoding some
-     * instructions. So in order to process these instructions, xen must
+     * instructions. So in order to process these instructions, Xen must
      * decode them.
      */
     rc = decode_instruction(regs, info);
     if ( rc )
     {
-        gprintk(XENLOG_ERR, "Unable to decode instruction\n");
+        gprintk(CRUXLOG_ERR, "Unable to decode instruction\n");
         info->dabt_instr.state = INSTR_ERROR;
     }
 }
@@ -202,7 +202,7 @@ enum io_state try_handle_mmio(struct cpu_user_regs *regs,
     if ( !handler )
     {
         bool trap_unmapped = v->domain->options &
-                                         XEN_DOMCTL_CDF_trap_unmapped_accesses;
+                                         CRUX_DOMCTL_CDF_trap_unmapped_accesses;
         rc = try_fwd_ioserv(regs, v, info);
         if ( rc == IO_HANDLED )
             return handle_ioserv(regs, v);
@@ -217,14 +217,14 @@ enum io_state try_handle_mmio(struct cpu_user_regs *regs,
 
     /*
      * When the data abort is caused due to cache maintenance and the address
-     * belongs to an emulated region, xen should ignore this instruction.
+     * belongs to an emulated region, Xen should ignore this instruction.
      */
     if ( info->dabt_instr.state == INSTR_CACHE )
         return IO_HANDLED;
 
     /*
      * At this point, we know that the instruction is either valid or has been
-     * decoded successfully. Thus, xen should be allowed to execute the
+     * decoded successfully. Thus, Xen should be allowed to execute the
      * instruction on the emulated MMIO region.
      */
     if ( info->dabt.write )

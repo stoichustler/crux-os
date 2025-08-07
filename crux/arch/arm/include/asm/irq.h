@@ -1,7 +1,7 @@
 #ifndef _ASM_HW_IRQ_H
 #define _ASM_HW_IRQ_H
 
-#include <xen/device_tree.h>
+#include <crux/device_tree.h>
 #include <public/device_tree_defs.h>
 
 #include <asm/irq-dt.h>
@@ -23,7 +23,7 @@ struct arch_irq_desc {
 #define NR_LOCAL_IRQS	32
 
 /*
- * This only covers the interrupts that xen cares about, so SGIs, PPIs and
+ * This only covers the interrupts that Xen cares about, so SGIs, PPIs and
  * SPIs. LPIs are too numerous, also only propagated to guests, so they are
  * not included in this number.
  */

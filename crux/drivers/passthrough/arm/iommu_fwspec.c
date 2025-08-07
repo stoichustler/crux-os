@@ -1,5 +1,5 @@
 /*
- * xen/drivers/passthrough/arm/iommu_fwspec.c
+ * crux/drivers/passthrough/arm/iommu_fwspec.c
  *
  * Contains functions to maintain per-device firmware data
  *
@@ -23,8 +23,8 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/iommu.h>
-#include <xen/lib.h>
+#include <crux/iommu.h>
+#include <crux/lib.h>
 
 #include <asm/device.h>
 #include <asm/iommu_fwspec.h>

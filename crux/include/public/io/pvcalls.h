@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * pvcalls.h -- xen PV Calls Protocol
+ * pvcalls.h -- Xen PV Calls Protocol
  *
  * Refer to docs/misc/pvcalls.markdown for the specification
  *
@@ -10,15 +10,15 @@
  * Copyright (C) 2017 Stefano Stabellini <stefano@aporeto.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_PVCALLS_H__
-#define __XEN_PUBLIC_IO_PVCALLS_H__
+#ifndef __CRUX_PUBLIC_IO_PVCALLS_H__
+#define __CRUX_PUBLIC_IO_PVCALLS_H__
 
 #include "../grant_table.h"
 #include "ring.h"
 
 /*
- * See docs/misc/pvcalls.markdown in xen.git for the full specification:
- * https://xenbits.xen.org/docs/unstable/misc/pvcalls.html
+ * See docs/misc/pvcalls.markdown in crux.git for the full specification:
+ * https://cruxbits.crux.org/docs/unstable/misc/pvcalls.html
  */
 struct pvcalls_data_intf {
     RING_IDX in_cons, in_prod, in_error;
@@ -30,9 +30,9 @@ struct pvcalls_data_intf {
     uint8_t pad2[52];
 
     RING_IDX ring_order;
-    grant_ref_t ref[XEN_FLEX_ARRAY_DIM];
+    grant_ref_t ref[CRUX_FLEX_ARRAY_DIM];
 };
-DEFINE_XEN_FLEX_RING(pvcalls);
+DEFINE_CRUX_FLEX_RING(pvcalls);
 
 #define PVCALLS_SOCKET         0
 #define PVCALLS_CONNECT        1
@@ -42,18 +42,18 @@ DEFINE_XEN_FLEX_RING(pvcalls);
 #define PVCALLS_ACCEPT         5
 #define PVCALLS_POLL           6
 
-struct xen_pvcalls_request {
+struct crux_pvcalls_request {
     uint32_t req_id; /* private to guest, echoed in response */
     uint32_t cmd;    /* command to execute */
     union {
-        struct xen_pvcalls_socket {
+        struct crux_pvcalls_socket {
             uint64_t id;
             uint32_t domain;
             uint32_t type;
             uint32_t protocol;
             uint8_t pad[4];
         } socket;
-        struct xen_pvcalls_connect {
+        struct crux_pvcalls_connect {
             uint64_t id;
             uint8_t addr[28];
             uint32_t len;
@@ -62,73 +62,73 @@ struct xen_pvcalls_request {
             uint32_t evtchn;
             uint8_t pad[4];
         } connect;
-        struct xen_pvcalls_release {
+        struct crux_pvcalls_release {
             uint64_t id;
             uint8_t reuse;
             uint8_t pad[7];
         } release;
-        struct xen_pvcalls_bind {
+        struct crux_pvcalls_bind {
             uint64_t id;
             uint8_t addr[28];
             uint32_t len;
         } bind;
-        struct xen_pvcalls_listen {
+        struct crux_pvcalls_listen {
             uint64_t id;
             uint32_t backlog;
             uint8_t pad[4];
         } listen;
-        struct xen_pvcalls_accept {
+        struct crux_pvcalls_accept {
             uint64_t id;
             uint64_t id_new;
             grant_ref_t ref;
             uint32_t evtchn;
         } accept;
-        struct xen_pvcalls_poll {
+        struct crux_pvcalls_poll {
             uint64_t id;
         } poll;
-        /* dummy member to force sizeof(struct xen_pvcalls_request)
+        /* dummy member to force sizeof(struct crux_pvcalls_request)
          * to match across archs */
-        struct xen_pvcalls_dummy {
+        struct crux_pvcalls_dummy {
             uint8_t dummy[56];
         } dummy;
     } u;
 };
 
-struct xen_pvcalls_response {
+struct crux_pvcalls_response {
     uint32_t req_id;
     uint32_t cmd;
     int32_t ret;
     uint32_t pad;
     union {
-        struct _xen_pvcalls_socket {
+        struct _crux_pvcalls_socket {
             uint64_t id;
         } socket;
-        struct _xen_pvcalls_connect {
+        struct _crux_pvcalls_connect {
             uint64_t id;
         } connect;
-        struct _xen_pvcalls_release {
+        struct _crux_pvcalls_release {
             uint64_t id;
         } release;
-        struct _xen_pvcalls_bind {
+        struct _crux_pvcalls_bind {
             uint64_t id;
         } bind;
-        struct _xen_pvcalls_listen {
+        struct _crux_pvcalls_listen {
             uint64_t id;
         } listen;
-        struct _xen_pvcalls_accept {
+        struct _crux_pvcalls_accept {
             uint64_t id;
         } accept;
-        struct _xen_pvcalls_poll {
+        struct _crux_pvcalls_poll {
             uint64_t id;
         } poll;
-        struct _xen_pvcalls_dummy {
+        struct _crux_pvcalls_dummy {
             uint8_t dummy[8];
         } dummy;
     } u;
 };
 
-DEFINE_RING_TYPES(xen_pvcalls, struct xen_pvcalls_request,
-                  struct xen_pvcalls_response);
+DEFINE_RING_TYPES(crux_pvcalls, struct crux_pvcalls_request,
+                  struct crux_pvcalls_response);
 
 #endif
 

@@ -1,7 +1,7 @@
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/string.h>
-#include <xen/decompress.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/string.h>
+#include <crux/decompress.h>
 
 static void __init cf_check error(const char *msg)
 {

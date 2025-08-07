@@ -4,13 +4,13 @@
  * VESA linear frame buffer handling.
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/xmalloc.h>
-#include <xen/kernel.h>
-#include <xen/mm.h>
-#include <xen/vga.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/xmalloc.h>
+#include <crux/kernel.h>
+#include <crux/mm.h>
+#include <crux/vga.h>
 #include <asm/io.h>
 #include "font.h"
 #include "lfb.h"
@@ -104,14 +104,14 @@ void __init vesa_init(void)
 
     memset(lfb, 0, vram_remap);
 
-    printk(XENLOG_INFO "vesafb: framebuffer at 0x%" PRIpaddr ", mapped to 0x%p, using %uk, total %uk\n",
+    printk(CRUXLOG_INFO "vesafb: framebuffer at 0x%" PRIpaddr ", mapped to 0x%p, using %uk, total %uk\n",
            lfb_base(), lfb,
            vram_remap >> 10, vram_total >> 10);
-    printk(XENLOG_INFO "vesafb: mode is %dx%dx%u, linelength=%d, font %ux%u\n",
+    printk(CRUXLOG_INFO "vesafb: mode is %dx%dx%u, linelength=%d, font %ux%u\n",
            vlfb_info.width, vlfb_info.height,
            vlfb_info.bits_per_pixel, vlfb_info.bytes_per_line,
            font->width, font->height);
-    printk(XENLOG_INFO "vesafb: %scolor: size=%d:%d:%d:%d, "
+    printk(CRUXLOG_INFO "vesafb: %scolor: size=%d:%d:%d:%d, "
            "shift=%d:%d:%d:%d\n",
            vlfb_info.bits_per_pixel > 8 ? "True" :
            vga_compat ? "Pseudo" : "Static Pseudo",

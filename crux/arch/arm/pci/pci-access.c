@@ -12,7 +12,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/pci.h>
+#include <crux/pci.h>
 #include <asm/io.h>
 
 #define INVALID_VALUE (~0U)

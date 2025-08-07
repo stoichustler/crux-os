@@ -15,10 +15,10 @@
  *  value of action.
  */
 
-#ifndef __XEN_XSM_DUMMY_H__
-#define __XEN_XSM_DUMMY_H__
+#ifndef __CRUX_XSM_DUMMY_H__
+#define __CRUX_XSM_DUMMY_H__
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <xsm/xsm.h>
 #include <public/hvm/params.h>
 
@@ -87,7 +87,7 @@ static always_inline int xsm_default_action(
         fallthrough;
     case XSM_XS_PRIV:
         if ( action == XSM_XS_PRIV &&
-             evaluate_nospec(is_xenstore_domain(src)) )
+             evaluate_nospec(is_cruxstore_domain(src)) )
             return 0;
         fallthrough;
     case XSM_DM_PRIV:
@@ -122,7 +122,7 @@ static XSM_INLINE int cf_check xsm_set_system_active(void)
 }
 
 static XSM_INLINE void cf_check xsm_security_domaininfo(
-    struct domain *d, struct xen_domctl_getdomaininfo *info)
+    struct domain *d, struct crux_domctl_getdomaininfo *info)
 {
     return;
 }
@@ -167,13 +167,13 @@ static XSM_INLINE int cf_check xsm_domctl(
     XSM_ASSERT_ACTION(XSM_OTHER);
     switch ( cmd )
     {
-    case XEN_DOMCTL_ioport_mapping:
-    case XEN_DOMCTL_memory_mapping:
-    case XEN_DOMCTL_bind_pt_irq:
-    case XEN_DOMCTL_unbind_pt_irq:
+    case CRUX_DOMCTL_ioport_mapping:
+    case CRUX_DOMCTL_memory_mapping:
+    case CRUX_DOMCTL_bind_pt_irq:
+    case CRUX_DOMCTL_unbind_pt_irq:
         return xsm_default_action(XSM_DM_PRIV, current->domain, d);
-    case XEN_DOMCTL_getdomaininfo:
-    case XEN_DOMCTL_get_domain_state:
+    case CRUX_DOMCTL_getdomaininfo:
+    case CRUX_DOMCTL_get_domain_state:
         return xsm_default_action(XSM_XS_PRIV, current->domain, d);
     default:
         return xsm_default_action(XSM_PRIV, current->domain, d);
@@ -497,13 +497,13 @@ static XSM_INLINE int cf_check xsm_hypfs_op(XSM_DEFAULT_VOID)
     return xsm_default_action(action, current->domain, NULL);
 }
 
-static XSM_INLINE long cf_check xsm_do_xsm_op(XEN_GUEST_HANDLE_PARAM(void) op)
+static XSM_INLINE long cf_check xsm_do_xsm_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return -ENOSYS;
 }
 
 #ifdef CONFIG_COMPAT
-static XSM_INLINE int cf_check xsm_do_compat_op(XEN_GUEST_HANDLE_PARAM(void) op)
+static XSM_INLINE int cf_check xsm_do_compat_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return -ENOSYS;
 }
@@ -536,14 +536,14 @@ static XSM_INLINE int cf_check xsm_unmap_domain_pirq(
 }
 
 static XSM_INLINE int cf_check xsm_bind_pt_irq(
-    XSM_DEFAULT_ARG struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    XSM_DEFAULT_ARG struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     XSM_ASSERT_ACTION(XSM_HOOK);
     return xsm_default_action(action, current->domain, d);
 }
 
 static XSM_INLINE int cf_check xsm_unbind_pt_irq(
-    XSM_DEFAULT_ARG struct domain *d, struct xen_domctl_bind_pt_irq *bind)
+    XSM_DEFAULT_ARG struct domain *d, struct crux_domctl_bind_pt_irq *bind)
 {
     XSM_ASSERT_ACTION(XSM_HOOK);
     return xsm_default_action(action, current->domain, d);
@@ -627,11 +627,11 @@ static XSM_INLINE int cf_check xsm_hvm_altp2mhvm_op(
 
     switch ( mode )
     {
-    case XEN_ALTP2M_mixed:
+    case CRUX_ALTP2M_mixed:
         return xsm_default_action(XSM_TARGET, current->domain, d);
-    case XEN_ALTP2M_external:
+    case CRUX_ALTP2M_external:
         return xsm_default_action(XSM_DM_PRIV, current->domain, d);
-    case XEN_ALTP2M_limited:
+    case CRUX_ALTP2M_limited:
         if ( HVMOP_altp2m_vcpu_enable_notify == op )
             return xsm_default_action(XSM_TARGET, current->domain, d);
         return xsm_default_action(XSM_DM_PRIV, current->domain, d);
@@ -772,10 +772,10 @@ static XSM_INLINE int cf_check xsm_pmu_op(
     XSM_ASSERT_ACTION(XSM_OTHER);
     switch ( op )
     {
-    case XENPMU_init:
-    case XENPMU_finish:
-    case XENPMU_lvtpc_set:
-    case XENPMU_flush:
+    case CRUXPMU_init:
+    case CRUXPMU_finish:
+    case CRUXPMU_lvtpc_set:
+    case CRUXPMU_flush:
         return xsm_default_action(XSM_HOOK, d, current->domain);
     default:
         return xsm_default_action(XSM_PRIV, d, current->domain);
@@ -824,26 +824,26 @@ static XSM_INLINE int cf_check xsm_get_domain_state(
 }
 
 #include <public/version.h>
-static XSM_INLINE int cf_check xsm_xen_version(XSM_DEFAULT_ARG uint32_t op)
+static XSM_INLINE int cf_check xsm_crux_version(XSM_DEFAULT_ARG uint32_t op)
 {
     XSM_ASSERT_ACTION(XSM_OTHER);
     switch ( op )
     {
-    case XENVER_version:
-    case XENVER_platform_parameters:
-    case XENVER_get_features:
+    case CRUXVER_version:
+    case CRUXVER_platform_parameters:
+    case CRUXVER_get_features:
         /* These sub-ops ignore the permission checks and return data. */
         block_speculation();
         return 0;
-    case XENVER_extraversion:
-    case XENVER_extraversion2:
-    case XENVER_compile_info:
-    case XENVER_capabilities:
-    case XENVER_capabilities2:
-    case XENVER_changeset:
-    case XENVER_changeset2:
-    case XENVER_pagesize:
-    case XENVER_guest_handle:
+    case CRUXVER_extraversion:
+    case CRUXVER_extraversion2:
+    case CRUXVER_compile_info:
+    case CRUXVER_capabilities:
+    case CRUXVER_capabilities2:
+    case CRUXVER_changeset:
+    case CRUXVER_changeset2:
+    case CRUXVER_pagesize:
+    case CRUXVER_guest_handle:
         /* These MUST always be accessible to any guest by default. */
         return xsm_default_action(XSM_HOOK, current->domain, NULL);
     default:
@@ -858,4 +858,4 @@ static XSM_INLINE int cf_check xsm_domain_resource_map(
     return xsm_default_action(action, current->domain, d);
 }
 
-#endif /* __XEN_XSM_DUMMY_H__ */
+#endif /* __CRUX_XSM_DUMMY_H__ */

@@ -2,9 +2,9 @@
 #ifndef ASM__RISCV__SMP_H
 #define ASM__RISCV__SMP_H
 
-#include <xen/cpumask.h>
-#include <xen/macros.h>
-#include <xen/percpu.h>
+#include <crux/cpumask.h>
+#include <crux/macros.h>
+#include <crux/percpu.h>
 
 #include <asm/current.h>
 
@@ -12,7 +12,7 @@ DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_mask);
 DECLARE_PER_CPU(cpumask_var_t, cpu_core_mask);
 
 /*
- * Mapping between xen logical cpu index and hartid.
+ * Mapping between Xen logical cpu index and hartid.
  */
 static inline unsigned long cpuid_to_hartid(unsigned long cpuid)
 {

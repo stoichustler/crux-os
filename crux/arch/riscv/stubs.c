@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/cpumask.h>
-#include <xen/domain.h>
-#include <xen/irq.h>
-#include <xen/nodemask.h>
-#include <xen/sections.h>
-#include <xen/time.h>
+#include <crux/cpumask.h>
+#include <crux/domain.h>
+#include <crux/irq.h>
+#include <crux/nodemask.h>
+#include <crux/sections.h>
+#include <crux/time.h>
 #include <public/domctl.h>
 
 #include <asm/current.h>
@@ -38,14 +38,14 @@ void domain_set_time_offset(struct domain *d, int64_t time_offset_seconds)
 
 /* domctl.c */
 
-long arch_do_domctl(struct xen_domctl *domctl, struct domain *d,
-                    XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+long arch_do_domctl(struct crux_domctl *domctl, struct domain *d,
+                    CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     BUG_ON("unimplemented");
 }
 
 void arch_get_domain_info(const struct domain *d,
-                          struct xen_domctl_getdomaininfo *info)
+                          struct crux_domctl_getdomaininfo *info)
 {
     BUG_ON("unimplemented");
 }
@@ -58,7 +58,7 @@ void arch_get_info_guest(struct vcpu *v, vcpu_guest_context_u c)
 /* monitor.c */
 
 int arch_monitor_domctl_event(struct domain *d,
-                              struct xen_domctl_monitor_op *mop)
+                              struct crux_domctl_monitor_op *mop)
 {
     BUG_ON("unimplemented");
 }
@@ -81,26 +81,6 @@ void smp_send_call_function_mask(const cpumask_t *mask)
 }
 
 /* irq.c */
-
-struct pirq *alloc_pirq_struct(struct domain *d)
-{
-    BUG_ON("unimplemented");
-}
-
-int pirq_guest_bind(struct vcpu *v, struct pirq *pirq, int will_share)
-{
-    BUG_ON("unimplemented");
-}
-
-void pirq_guest_unbind(struct domain *d, struct pirq *pirq)
-{
-    BUG_ON("unimplemented");
-}
-
-void pirq_set_affinity(struct domain *d, int pirq, const cpumask_t *mask)
-{
-    BUG_ON("unimplemented");
-}
 
 void irq_ack_none(struct irq_desc *desc)
 {
@@ -171,13 +151,13 @@ void vcpu_switch_to_aarch64_mode(struct vcpu *v)
     BUG_ON("unimplemented");
 }
 
-int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
+int arch_sanitise_domain_config(struct crux_domctl_createdomain *config)
 {
     BUG_ON("unimplemented");
 }
 
 int arch_domain_create(struct domain *d,
-                       struct xen_domctl_createdomain *config,
+                       struct crux_domctl_createdomain *config,
                        unsigned int flags)
 {
     BUG_ON("unimplemented");
@@ -223,7 +203,7 @@ int arch_set_info_guest(struct vcpu *v, vcpu_guest_context_u c)
     BUG_ON("unimplemented");
 }
 
-int arch_initialise_vcpu(struct vcpu *v, XEN_GUEST_HANDLE_PARAM(void) arg)
+int arch_initialise_vcpu(struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     BUG_ON("unimplemented");
 }
@@ -305,13 +285,13 @@ unsigned long raw_copy_from_guest(void *to, const void __user *from,
 #ifdef CONFIG_SYSCTL
 /* sysctl.c */
 
-long arch_do_sysctl(struct xen_sysctl *sysctl,
-                    XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
+long arch_do_sysctl(struct crux_sysctl *sysctl,
+                    CRUX_GUEST_HANDLE_PARAM(crux_sysctl_t) u_sysctl)
 {
     BUG_ON("unimplemented");
 }
 
-void arch_do_physinfo(struct xen_sysctl_physinfo *pi)
+void arch_do_physinfo(struct crux_sysctl_physinfo *pi)
 {
     BUG_ON("unimplemented");
 }

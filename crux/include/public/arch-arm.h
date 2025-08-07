@@ -2,13 +2,13 @@
 /******************************************************************************
  * arch-arm.h
  *
- * Guest OS interface to ARM xen.
+ * Guest OS interface to ARM Xen.
  *
  * Copyright 2011 (C) Citrix Systems
  */
 
-#ifndef __XEN_PUBLIC_ARCH_ARM_H__
-#define __XEN_PUBLIC_ARCH_ARM_H__
+#ifndef __CRUX_PUBLIC_ARCH_ARM_H__
+#define __CRUX_PUBLIC_ARCH_ARM_H__
 
 /*
  * `incontents 50 arm_abi Hypercall Calling Convention
@@ -26,7 +26,7 @@
  * is an inter-procedure-call scratch register (e.g. for use in linker
  * stubs). This use does not conflict with use during a hypercall.
  *
- * The HVC ISS must contain a xen specific TAG: XEN_HYPERCALL_TAG.
+ * The HVC ISS must contain a Xen specific TAG: CRUX_HYPERCALL_TAG.
  *
  * The return value is in x0/r0.
  *
@@ -58,7 +58,7 @@
 /*
  * `incontents 55 arm_hcall Supported Hypercalls
  *
- * xen on ARM makes extensive use of hardware facilities and therefore
+ * Xen on ARM makes extensive use of hardware facilities and therefore
  * only a subset of the potential hypercalls are required.
  *
  * Since ARM uses second stage paging any machine/physical addresses
@@ -74,7 +74,7 @@
  *
  *  HYPERVISOR_domctl
  *   All generic sub-operations, with the exception of:
- *    * XEN_DOMCTL_irq_permission (not yet implemented)
+ *    * CRUX_DOMCTL_irq_permission (not yet implemented)
  *
  *  HYPERVISOR_sched_op
  *   All generic sub-operations, with the exception of:
@@ -83,7 +83,7 @@
  *  HYPERVISOR_console_io
  *   All generic sub-operations
  *
- *  HYPERVISOR_xen_version
+ *  HYPERVISOR_crux_version
  *   All generic sub-operations
  *
  *  HYPERVISOR_event_channel_op
@@ -96,9 +96,9 @@
  *
  *  HYPERVISOR_sysctl
  *   All generic sub-operations, with the exception of:
- *    * XEN_SYSCTL_page_offline_op
- *    * XEN_SYSCTL_get_pmstat
- *    * XEN_SYSCTL_pm_op
+ *    * CRUX_SYSCTL_page_offline_op
+ *    * CRUX_SYSCTL_get_pmstat
+ *    * CRUX_SYSCTL_pm_op
  *
  *  HYPERVISOR_hvm_op
  *   Exactly these sub-operations are supported:
@@ -122,21 +122,21 @@
  *
  *  HYPERVISOR_platform_op
  *   Exactly these sub-operations are supported:
- *    * XENPF_settime64
+ *    * CRUXPF_settime64
  *
  *  HYPERVISOR_vm_assist
  *   All generic sub-operations
  *
  *  HYPERVISOR_dm_op
  *   Exactly these sub-operations are supported:
- *    * XEN_DMOP_create_ioreq_server
- *    * XEN_DMOP_get_ioreq_server_info
- *    * XEN_DMOP_map_io_range_to_ioreq_server
- *    * XEN_DMOP_unmap_io_range_from_ioreq_server
- *    * XEN_DMOP_set_ioreq_server_state
- *    * XEN_DMOP_destroy_ioreq_server
- *    * XEN_DMOP_set_irq_level
- *    * XEN_DMOP_nr_vcpus
+ *    * CRUX_DMOP_create_ioreq_server
+ *    * CRUX_DMOP_get_ioreq_server_info
+ *    * CRUX_DMOP_map_io_range_to_ioreq_server
+ *    * CRUX_DMOP_unmap_io_range_from_ioreq_server
+ *    * CRUX_DMOP_set_ioreq_server_state
+ *    * CRUX_DMOP_destroy_ioreq_server
+ *    * CRUX_DMOP_set_irq_level
+ *    * CRUX_DMOP_nr_vcpus
  *
  *  HYPERVISOR_xsm_op
  *   All generic sub-operations
@@ -148,20 +148,20 @@
  * - struct start_info is not exported to ARM guests.
  *
  * - struct shared_info is mapped by ARM guests using the
- *   HYPERVISOR_memory_op sub-op XENMEM_add_to_physmap, passing
- *   XENMAPSPACE_shared_info as space parameter.
+ *   HYPERVISOR_memory_op sub-op CRUXMEM_add_to_physmap, passing
+ *   CRUXMAPSPACE_shared_info as space parameter.
  *
  * - All the per-cpu struct vcpu_info are mapped by ARM guests using the
  *   HYPERVISOR_vcpu_op sub-op VCPUOP_register_vcpu_info, including cpu0
  *   struct vcpu_info.
  *
  * - The grant table is mapped using the HYPERVISOR_memory_op sub-op
- *   XENMEM_add_to_physmap, passing XENMAPSPACE_grant_table as space
- *   parameter. The memory range specified under the xen compatible
+ *   CRUXMEM_add_to_physmap, passing CRUXMAPSPACE_grant_table as space
+ *   parameter. The memory range specified under the Xen compatible
  *   hypervisor node on device tree can be used as target gpfn for the
  *   mapping.
  *
- * - xenstore is initialized by using the two hvm_params
+ * - Xenstore is initialized by using the two hvm_params
  *   HVM_PARAM_STORE_PFN and HVM_PARAM_STORE_EVTCHN. They can be read
  *   with the HYPERVISOR_hvm_op sub-op HVMOP_get_param.
  *
@@ -170,63 +170,63 @@
  *   can be read with the HYPERVISOR_hvm_op sub-op HVMOP_get_param.
  *
  * - Event channel notifications are delivered using the percpu GIC
- *   interrupt specified under the xen compatible hypervisor node on
+ *   interrupt specified under the Xen compatible hypervisor node on
  *   device tree.
  *
- * - The device tree xen compatible node is fully described under Linux
- *   at Documentation/devicetree/bindings/arm/xen.txt.
+ * - The device tree Xen compatible node is fully described under Linux
+ *   at Documentation/devicetree/bindings/arm/crux.txt.
  */
 
-#define XEN_HYPERCALL_TAG   0XEA1
+#define CRUX_HYPERCALL_TAG   0XEA1
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__) || defined(__GNUC__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__) || defined(__GNUC__)
 #define  int64_aligned_t  int64_t __attribute__((__aligned__(8)))
 #define uint64_aligned_t uint64_t __attribute__((__aligned__(8)))
 #endif
 
 #ifndef __ASSEMBLY__
-#define ___DEFINE_XEN_GUEST_HANDLE(name, type)                  \
+#define ___DEFINE_CRUX_GUEST_HANDLE(name, type)                  \
     typedef union { type *p; unsigned long q; }                 \
         __guest_handle_ ## name;                                \
     typedef union { type *p; uint64_aligned_t q; }              \
         __guest_handle_64_ ## name
 
 /*
- * XEN_GUEST_HANDLE represents a guest pointer, when passed as a field
+ * CRUX_GUEST_HANDLE represents a guest pointer, when passed as a field
  * in a struct in memory. On ARM is always 8 bytes sizes and 8 bytes
  * aligned.
- * XEN_GUEST_HANDLE_PARAM represents a guest pointer, when passed as an
+ * CRUX_GUEST_HANDLE_PARAM represents a guest pointer, when passed as an
  * hypercall argument. It is 4 bytes on aarch32 and 8 bytes on aarch64.
  */
-#define __DEFINE_XEN_GUEST_HANDLE(name, type) \
-    ___DEFINE_XEN_GUEST_HANDLE(name, type);   \
-    ___DEFINE_XEN_GUEST_HANDLE(const_##name, const type)
-#define DEFINE_XEN_GUEST_HANDLE(name)   __DEFINE_XEN_GUEST_HANDLE(name, name)
-#define __XEN_GUEST_HANDLE(name)        __guest_handle_64_ ## name
-#define XEN_GUEST_HANDLE(name)          __XEN_GUEST_HANDLE(name)
-#define XEN_GUEST_HANDLE_PARAM(name)    __guest_handle_ ## name
-#define set_xen_guest_handle_raw(hnd, val)                  \
+#define __DEFINE_CRUX_GUEST_HANDLE(name, type) \
+    ___DEFINE_CRUX_GUEST_HANDLE(name, type);   \
+    ___DEFINE_CRUX_GUEST_HANDLE(const_##name, const type)
+#define DEFINE_CRUX_GUEST_HANDLE(name)   __DEFINE_CRUX_GUEST_HANDLE(name, name)
+#define __CRUX_GUEST_HANDLE(name)        __guest_handle_64_ ## name
+#define CRUX_GUEST_HANDLE(name)          __CRUX_GUEST_HANDLE(name)
+#define CRUX_GUEST_HANDLE_PARAM(name)    __guest_handle_ ## name
+#define set_crux_guest_handle_raw(hnd, val)                  \
     do {                                                    \
         __typeof__(&(hnd)) _sxghr_tmp = &(hnd);             \
         _sxghr_tmp->q = 0;                                  \
         _sxghr_tmp->p = (val);                              \
     } while ( 0 )
-#define set_xen_guest_handle(hnd, val) set_xen_guest_handle_raw(hnd, val)
+#define set_crux_guest_handle(hnd, val) set_crux_guest_handle_raw(hnd, val)
 
-typedef uint64_t xen_pfn_t;
-#define PRI_xen_pfn PRIx64
-#define PRIu_xen_pfn PRIu64
+typedef uint64_t crux_pfn_t;
+#define PRI_crux_pfn PRIx64
+#define PRIu_crux_pfn PRIu64
 
 /*
  * Maximum number of virtual CPUs in legacy multi-processor guests.
  * Only one. All other VCPUS must use VCPUOP_register_vcpu_info.
  */
-#define XEN_LEGACY_MAX_VCPUS 1
+#define CRUX_LEGACY_MAX_VCPUS 1
 
-typedef uint64_t xen_ulong_t;
-#define PRI_xen_ulong PRIx64
+typedef uint64_t crux_ulong_t;
+#define PRI_crux_ulong PRIx64
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 /* Anonymous union includes both 32- and 64-bit names (e.g., r0/x0). */
 # define __DECL_REG(n64, n32) union {          \
@@ -298,7 +298,7 @@ struct vcpu_guest_core_regs
     uint64_t sp_el1, elr_el1;
 };
 typedef struct vcpu_guest_core_regs vcpu_guest_core_regs_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_guest_core_regs_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_guest_core_regs_t);
 
 #undef __DECL_REG
 
@@ -313,21 +313,21 @@ struct vcpu_guest_context {
     uint64_t ttbcr, ttbr0, ttbr1;
 };
 typedef struct vcpu_guest_context vcpu_guest_context_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_guest_context_t);
 
 /*
- * struct xen_arch_domainconfig's ABI is covered by
- * XEN_DOMCTL_INTERFACE_VERSION.
+ * struct crux_arch_domainconfig's ABI is covered by
+ * CRUX_DOMCTL_INTERFACE_VERSION.
  */
-#define XEN_DOMCTL_CONFIG_GIC_NATIVE    0
-#define XEN_DOMCTL_CONFIG_GIC_V2        1
-#define XEN_DOMCTL_CONFIG_GIC_V3        2
+#define CRUX_DOMCTL_CONFIG_GIC_NATIVE    0
+#define CRUX_DOMCTL_CONFIG_GIC_V2        1
+#define CRUX_DOMCTL_CONFIG_GIC_V3        2
 
-#define XEN_DOMCTL_CONFIG_TEE_NONE      0
-#define XEN_DOMCTL_CONFIG_TEE_OPTEE     1
-#define XEN_DOMCTL_CONFIG_TEE_FFA       2
+#define CRUX_DOMCTL_CONFIG_TEE_NONE      0
+#define CRUX_DOMCTL_CONFIG_TEE_OPTEE     1
+#define CRUX_DOMCTL_CONFIG_TEE_FFA       2
 
-struct xen_arch_domainconfig {
+struct crux_arch_domainconfig {
     /* IN/OUT */
     uint8_t gic_version;
     /* IN - Contains SVE vector length divided by 128 */
@@ -351,7 +351,7 @@ struct xen_arch_domainconfig {
      */
     uint32_t clock_frequency;
 };
-#endif /* __XEN__ || __XEN_TOOLS__ */
+#endif /* __CRUX__ || __CRUX_TOOLS__ */
 
 struct arch_vcpu_info {
 };
@@ -360,11 +360,11 @@ typedef struct arch_vcpu_info arch_vcpu_info_t;
 struct arch_shared_info {
 };
 typedef struct arch_shared_info arch_shared_info_t;
-typedef uint64_t xen_callback_t;
+typedef uint64_t crux_callback_t;
 
 #endif
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
 /* PSR bits (CPSR, SPSR) */
 
@@ -410,7 +410,7 @@ typedef uint64_t xen_callback_t;
 #define PSR_GUEST32_INIT (PSR_Z|PSR_ABT_MASK|PSR_FIQ_MASK|PSR_IRQ_MASK|PSR_MODE_SVC)
 #define PSR_GUEST64_INIT (PSR_ABT_MASK|PSR_FIQ_MASK|PSR_IRQ_MASK|PSR_MODE_EL1h)
 
-#define SCTLR_GUEST_INIT    xen_mk_ullong(0x00c50078)
+#define SCTLR_GUEST_INIT    crux_mk_ullong(0x00c50078)
 
 /*
  * Virtual machine platform (memory layout, interrupts)
@@ -423,8 +423,8 @@ typedef uint64_t xen_callback_t;
 /* Physical Address Space */
 
 /* Virtio MMIO mappings */
-#define GUEST_VIRTIO_MMIO_BASE   xen_mk_ullong(0x02000000)
-#define GUEST_VIRTIO_MMIO_SIZE   xen_mk_ullong(0x00100000)
+#define GUEST_VIRTIO_MMIO_BASE   crux_mk_ullong(0x02000000)
+#define GUEST_VIRTIO_MMIO_SIZE   crux_mk_ullong(0x00100000)
 
 /*
  * vGIC mappings: Only one set of mapping is used by the guest.
@@ -432,49 +432,49 @@ typedef uint64_t xen_callback_t;
  */
 
 /* vGIC v2 mappings */
-#define GUEST_GICD_BASE   xen_mk_ullong(0x03001000)
-#define GUEST_GICD_SIZE   xen_mk_ullong(0x00001000)
-#define GUEST_GICC_BASE   xen_mk_ullong(0x03002000)
-#define GUEST_GICC_SIZE   xen_mk_ullong(0x00002000)
+#define GUEST_GICD_BASE   crux_mk_ullong(0x03001000)
+#define GUEST_GICD_SIZE   crux_mk_ullong(0x00001000)
+#define GUEST_GICC_BASE   crux_mk_ullong(0x03002000)
+#define GUEST_GICC_SIZE   crux_mk_ullong(0x00002000)
 
 /* vGIC v3 mappings */
-#define GUEST_GICV3_GICD_BASE      xen_mk_ullong(0x03001000)
-#define GUEST_GICV3_GICD_SIZE      xen_mk_ullong(0x00010000)
+#define GUEST_GICV3_GICD_BASE      crux_mk_ullong(0x03001000)
+#define GUEST_GICV3_GICD_SIZE      crux_mk_ullong(0x00010000)
 
 #define GUEST_GICV3_RDIST_REGIONS  1
 
-#define GUEST_GICV3_GICR0_BASE     xen_mk_ullong(0x03020000) /* vCPU0..127 */
-#define GUEST_GICV3_GICR0_SIZE     xen_mk_ullong(0x01000000)
+#define GUEST_GICV3_GICR0_BASE     crux_mk_ullong(0x03020000) /* vCPU0..127 */
+#define GUEST_GICV3_GICR0_SIZE     crux_mk_ullong(0x01000000)
 
 /*
  * 256 MB is reserved for VPCI configuration space based on calculation
  * 256 buses x 32 devices x 8 functions x 4 KB = 256 MB
  */
-#define GUEST_VPCI_ECAM_BASE    xen_mk_ullong(0x10000000)
-#define GUEST_VPCI_ECAM_SIZE    xen_mk_ullong(0x10000000)
+#define GUEST_VPCI_ECAM_BASE    crux_mk_ullong(0x10000000)
+#define GUEST_VPCI_ECAM_SIZE    crux_mk_ullong(0x10000000)
 
 /* ACPI tables physical address */
-#define GUEST_ACPI_BASE xen_mk_ullong(0x20000000)
-#define GUEST_ACPI_SIZE xen_mk_ullong(0x02000000)
+#define GUEST_ACPI_BASE crux_mk_ullong(0x20000000)
+#define GUEST_ACPI_SIZE crux_mk_ullong(0x02000000)
 
 /* PL011 mappings */
-#define GUEST_PL011_BASE    xen_mk_ullong(0x22000000)
-#define GUEST_PL011_SIZE    xen_mk_ullong(0x00001000)
+#define GUEST_PL011_BASE    crux_mk_ullong(0x22000000)
+#define GUEST_PL011_SIZE    crux_mk_ullong(0x00001000)
 
 /* Guest PCI-PCIe memory space where config space and BAR will be available.*/
-#define GUEST_VPCI_ADDR_TYPE_MEM            xen_mk_ullong(0x02000000)
-#define GUEST_VPCI_MEM_ADDR                 xen_mk_ullong(0x23000000)
-#define GUEST_VPCI_MEM_SIZE                 xen_mk_ullong(0x10000000)
+#define GUEST_VPCI_ADDR_TYPE_MEM            crux_mk_ullong(0x02000000)
+#define GUEST_VPCI_MEM_ADDR                 crux_mk_ullong(0x23000000)
+#define GUEST_VPCI_MEM_SIZE                 crux_mk_ullong(0x10000000)
 
 /*
  * 16MB == 4096 pages reserved for guest to use as a region to map its
  * grant table in.
  */
-#define GUEST_GNTTAB_BASE xen_mk_ullong(0x38000000)
-#define GUEST_GNTTAB_SIZE xen_mk_ullong(0x01000000)
+#define GUEST_GNTTAB_BASE crux_mk_ullong(0x38000000)
+#define GUEST_GNTTAB_SIZE crux_mk_ullong(0x01000000)
 
-#define GUEST_MAGIC_BASE  xen_mk_ullong(0x39000000)
-#define GUEST_MAGIC_SIZE  xen_mk_ullong(0x01000000)
+#define GUEST_MAGIC_BASE  crux_mk_ullong(0x39000000)
+#define GUEST_MAGIC_SIZE  crux_mk_ullong(0x01000000)
 
 #define GUEST_RAM_BANKS   2
 
@@ -483,16 +483,16 @@ typedef uint64_t xen_callback_t;
  * address space) relies on the fact that the regions reserved for the RAM
  * below are big enough to also accommodate such regions.
  */
-#define GUEST_RAM0_BASE   xen_mk_ullong(0x40000000) /* 3GB of low RAM @ 1GB */
-#define GUEST_RAM0_SIZE   xen_mk_ullong(0xc0000000)
+#define GUEST_RAM0_BASE   crux_mk_ullong(0x40000000) /* 3GB of low RAM @ 1GB */
+#define GUEST_RAM0_SIZE   crux_mk_ullong(0xc0000000)
 
 /* 4GB @ 4GB Prefetch Memory for VPCI */
-#define GUEST_VPCI_ADDR_TYPE_PREFETCH_MEM   xen_mk_ullong(0x43000000)
-#define GUEST_VPCI_PREFETCH_MEM_ADDR        xen_mk_ullong(0x100000000)
-#define GUEST_VPCI_PREFETCH_MEM_SIZE        xen_mk_ullong(0x100000000)
+#define GUEST_VPCI_ADDR_TYPE_PREFETCH_MEM   crux_mk_ullong(0x43000000)
+#define GUEST_VPCI_PREFETCH_MEM_ADDR        crux_mk_ullong(0x100000000)
+#define GUEST_VPCI_PREFETCH_MEM_SIZE        crux_mk_ullong(0x100000000)
 
-#define GUEST_RAM1_BASE   xen_mk_ullong(0x0200000000) /* 1016GB of RAM @ 8GB */
-#define GUEST_RAM1_SIZE   xen_mk_ullong(0xfe00000000)
+#define GUEST_RAM1_BASE   crux_mk_ullong(0x0200000000) /* 1016GB of RAM @ 8GB */
+#define GUEST_RAM1_SIZE   crux_mk_ullong(0xfe00000000)
 
 #define GUEST_RAM_BASE    GUEST_RAM0_BASE /* Lowest RAM address */
 /* Largest amount of actual RAM, not including holes */
@@ -539,10 +539,10 @@ typedef uint64_t xen_callback_t;
 
 #ifndef __ASSEMBLY__
 /* Stub definition of PMU structure */
-typedef struct xen_pmu_arch { uint8_t dummy; } xen_pmu_arch_t;
+typedef struct crux_pmu_arch { uint8_t dummy; } crux_pmu_arch_t;
 #endif
 
-#endif /*  __XEN_PUBLIC_ARCH_ARM_H__ */
+#endif /*  __CRUX_PUBLIC_ARCH_ARM_H__ */
 
 /*
  * Local variables:

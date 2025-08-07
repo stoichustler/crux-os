@@ -1,11 +1,11 @@
-#include <xen/bug.h>
-#include <xen/errno.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/livepatch.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/virtual_region.h>
+#include <crux/bug.h>
+#include <crux/errno.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/livepatch.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/virtual_region.h>
 
 /*
  * Returns a negative value in case of an error otherwise
@@ -66,15 +66,15 @@ int do_bug_frame(const struct cpu_user_regs *regs, unsigned long pc)
     switch ( id )
     {
     case BUGFRAME_warn:
-        printk("xen WARN at %s%s:%d\n", prefix, filename, lineno);
+        printk("Xen WARN at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
 
         break;
 
     case BUGFRAME_bug:
-        printk("xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        printk("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
-        panic("xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        panic("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
 
     case BUGFRAME_assert:
         /* ASSERT: decode the predicate string pointer. */

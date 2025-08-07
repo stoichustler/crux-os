@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm32/debug-scif.inc
+ * crux/arch/arm/arm32/debug-scif.inc
  *
  * SCIF(A) specific debug code
  *

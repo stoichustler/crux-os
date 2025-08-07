@@ -1,5 +1,5 @@
 /*
- * xen/drivers/char/scif-uart.c
+ * crux/drivers/char/scif-uart.c
  *
  * Driver for (H)SCIF(A) ((High-speed) Serial communication interface
  * with FIFO (A)) compatible UART.
@@ -18,13 +18,13 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/console.h>
-#include <xen/errno.h>
-#include <xen/serial.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/delay.h>
+#include <crux/console.h>
+#include <crux/errno.h>
+#include <crux/serial.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/delay.h>
 #include <asm/device.h>
 #include <asm/scif-uart.h>
 #include <asm/io.h>
@@ -181,7 +181,7 @@ static void __init scif_uart_init_postirq(struct serial_port *port)
     uart->irqaction.dev_id  = port;
 
     if ( (rc = setup_irq(uart->irq, 0, &uart->irqaction)) != 0 )
-        dprintk(XENLOG_ERR, "Failed to allocated scif_uart IRQ %d\n",
+        dprintk(CRUXLOG_ERR, "Failed to allocated scif_uart IRQ %d\n",
                 uart->irq);
 
     /* Clear all errors */
@@ -341,7 +341,7 @@ static int __init scif_uart_init(struct dt_device_node *dev,
     /* Register with generic serial driver */
     serial_register_uart(SERHND_DTUART, &scif_uart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

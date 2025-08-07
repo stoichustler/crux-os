@@ -9,39 +9,39 @@
  *              Updated for generic API by Mark Williamson
  *
  * Description: Generic CPU scheduling code
- *              implements support functionality for the xen scheduler API.
+ *              implements support functionality for the Xen scheduler API.
  *
  */
 
 #ifndef COMPAT
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/domain.h>
-#include <xen/delay.h>
-#include <xen/event.h>
-#include <xen/time.h>
-#include <xen/timer.h>
-#include <xen/perfc.h>
-#include <xen/softirq.h>
-#include <xen/trace.h>
-#include <xen/mm.h>
-#include <xen/err.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/multicall.h>
-#include <xen/cpu.h>
-#include <xen/preempt.h>
-#include <xen/event.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/domain.h>
+#include <crux/delay.h>
+#include <crux/event.h>
+#include <crux/time.h>
+#include <crux/timer.h>
+#include <crux/perfc.h>
+#include <crux/softirq.h>
+#include <crux/trace.h>
+#include <crux/mm.h>
+#include <crux/err.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/multicall.h>
+#include <crux/cpu.h>
+#include <crux/preempt.h>
+#include <crux/event.h>
 #include <public/sched.h>
 #include <xsm/xsm.h>
-#include <xen/err.h>
+#include <crux/err.h>
 
 #include "private.h"
 
-#ifdef CONFIG_XEN_GUEST
+#ifdef CONFIG_CRUX_GUEST
 #include <asm/guest.h>
 #else
 #define pv_shim false
@@ -1236,7 +1236,7 @@ int cpu_disable_scheduler(unsigned int cpu)
                     break;
                 }
 
-                printk(XENLOG_DEBUG "Breaking affinity for %pv\n",
+                printk(CRUXLOG_DEBUG "Breaking affinity for %pv\n",
                        unit->vcpu_list);
 
                 sched_set_affinity(unit, &cpumask_all, NULL);
@@ -1684,17 +1684,17 @@ int vcpu_temporary_affinity(struct vcpu *v, unsigned int cpu, uint8_t reason)
 }
 
 static inline
-int vcpuaffinity_params_invalid(const struct xen_domctl_vcpuaffinity *vcpuaff)
+int vcpuaffinity_params_invalid(const struct crux_domctl_vcpuaffinity *vcpuaff)
 {
     return vcpuaff->flags == 0 ||
-           ((vcpuaff->flags & XEN_VCPUAFFINITY_HARD) &&
+           ((vcpuaff->flags & CRUX_VCPUAFFINITY_HARD) &&
             guest_handle_is_null(vcpuaff->cpumap_hard.bitmap)) ||
-           ((vcpuaff->flags & XEN_VCPUAFFINITY_SOFT) &&
+           ((vcpuaff->flags & CRUX_VCPUAFFINITY_SOFT) &&
             guest_handle_is_null(vcpuaff->cpumap_soft.bitmap));
 }
 
 int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
-                         struct xen_domctl_vcpuaffinity *vcpuaff)
+                         struct crux_domctl_vcpuaffinity *vcpuaff)
 {
     struct vcpu *v;
     const struct sched_unit *unit;
@@ -1711,7 +1711,7 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
 
     unit = v->sched_unit;
 
-    if ( cmd == XEN_DOMCTL_setvcpuaffinity )
+    if ( cmd == CRUX_DOMCTL_setvcpuaffinity )
     {
         cpumask_var_t new_affinity, old_affinity;
         cpumask_t *online = cpupool_domain_master_cpumask(v->domain);
@@ -1733,7 +1733,7 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
         }
 
         /* Undo a stuck SCHED_pin_override? */
-        if ( vcpuaff->flags & XEN_VCPUAFFINITY_FORCE )
+        if ( vcpuaff->flags & CRUX_VCPUAFFINITY_FORCE )
             vcpu_temporary_affinity(v, NR_CPUS, VCPU_AFFINITY_OVERRIDE);
 
         ret = 0;
@@ -1742,9 +1742,9 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
          * We both set a new affinity and report back to the caller what
          * the scheduler will be effectively using.
          */
-        if ( vcpuaff->flags & XEN_VCPUAFFINITY_HARD )
+        if ( vcpuaff->flags & CRUX_VCPUAFFINITY_HARD )
         {
-            ret = xenctl_bitmap_to_bitmap(cpumask_bits(new_affinity),
+            ret = cruxctl_bitmap_to_bitmap(cpumask_bits(new_affinity),
                                           &vcpuaff->cpumap_hard, nr_cpu_ids);
             if ( !ret )
                 ret = vcpu_set_hard_affinity(v, new_affinity);
@@ -1756,11 +1756,11 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
              * cpupool's online mask and the new hard affinity.
              */
             cpumask_and(new_affinity, online, unit->cpu_hard_affinity);
-            ret = cpumask_to_xenctl_bitmap(&vcpuaff->cpumap_hard, new_affinity);
+            ret = cpumask_to_cruxctl_bitmap(&vcpuaff->cpumap_hard, new_affinity);
         }
-        if ( vcpuaff->flags & XEN_VCPUAFFINITY_SOFT )
+        if ( vcpuaff->flags & CRUX_VCPUAFFINITY_SOFT )
         {
-            ret = xenctl_bitmap_to_bitmap(cpumask_bits(new_affinity),
+            ret = cruxctl_bitmap_to_bitmap(cpumask_bits(new_affinity),
                                           &vcpuaff->cpumap_soft, nr_cpu_ids);
             if ( !ret)
                 ret = vcpu_set_soft_affinity(v, new_affinity);
@@ -1771,7 +1771,7 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
                  * happened, so we rollback the changes to hard affinity
                  * (if any).
                  */
-                if ( vcpuaff->flags & XEN_VCPUAFFINITY_HARD )
+                if ( vcpuaff->flags & CRUX_VCPUAFFINITY_HARD )
                     vcpu_set_hard_affinity(v, old_affinity);
                 goto setvcpuaffinity_out;
             }
@@ -1783,7 +1783,7 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
              */
             cpumask_and(new_affinity, new_affinity, online);
             cpumask_and(new_affinity, new_affinity, unit->cpu_hard_affinity);
-            ret = cpumask_to_xenctl_bitmap(&vcpuaff->cpumap_soft, new_affinity);
+            ret = cpumask_to_cruxctl_bitmap(&vcpuaff->cpumap_soft, new_affinity);
         }
 
  setvcpuaffinity_out:
@@ -1792,11 +1792,11 @@ int vcpu_affinity_domctl(struct domain *d, uint32_t cmd,
     }
     else
     {
-        if ( vcpuaff->flags & XEN_VCPUAFFINITY_HARD )
-            ret = cpumask_to_xenctl_bitmap(&vcpuaff->cpumap_hard,
+        if ( vcpuaff->flags & CRUX_VCPUAFFINITY_HARD )
+            ret = cpumask_to_cruxctl_bitmap(&vcpuaff->cpumap_hard,
                                            unit->cpu_hard_affinity);
-        if ( vcpuaff->flags & XEN_VCPUAFFINITY_SOFT )
-            ret = cpumask_to_xenctl_bitmap(&vcpuaff->cpumap_soft,
+        if ( vcpuaff->flags & CRUX_VCPUAFFINITY_SOFT )
+            ret = cpumask_to_cruxctl_bitmap(&vcpuaff->cpumap_soft,
                                            unit->cpu_soft_affinity);
     }
 
@@ -1895,7 +1895,7 @@ typedef long ret_t;
 
 #endif /* !COMPAT */
 
-ret_t do_sched_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+ret_t do_sched_op(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     ret_t ret = 0;
 
@@ -2055,7 +2055,7 @@ long do_set_timer_op(s_time_t timeout)
          * timeout in this case can burn a lot of CPU. We therefore go for a
          * reasonable middleground of triggering a timer event in 100ms.
          */
-        gdprintk(XENLOG_INFO, "Warning: huge timeout set: %"PRIx64"\n",
+        gdprintk(CRUXLOG_INFO, "Warning: huge timeout set: %"PRIx64"\n",
                  timeout);
         set_timer(&v->singleshot_timer, NOW() + MILLISECS(100));
     }
@@ -2077,7 +2077,7 @@ int scheduler_id(void)
 #endif
 
 /* Adjust scheduling parameter for a given domain. */
-long sched_adjust(struct domain *d, struct xen_domctl_scheduler_op *op)
+long sched_adjust(struct domain *d, struct crux_domctl_scheduler_op *op)
 {
     long ret;
 
@@ -2090,10 +2090,10 @@ long sched_adjust(struct domain *d, struct xen_domctl_scheduler_op *op)
 
     switch ( op->cmd )
     {
-    case XEN_DOMCTL_SCHEDOP_putinfo:
-    case XEN_DOMCTL_SCHEDOP_getinfo:
-    case XEN_DOMCTL_SCHEDOP_putvcpuinfo:
-    case XEN_DOMCTL_SCHEDOP_getvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_putinfo:
+    case CRUX_DOMCTL_SCHEDOP_getinfo:
+    case CRUX_DOMCTL_SCHEDOP_putvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_getvcpuinfo:
         break;
     default:
         return -EINVAL;
@@ -2112,7 +2112,7 @@ long sched_adjust(struct domain *d, struct xen_domctl_scheduler_op *op)
 }
 
 #ifdef CONFIG_SYSCTL
-long sched_adjust_global(struct xen_sysctl_scheduler_op *op)
+long sched_adjust_global(struct crux_sysctl_scheduler_op *op)
 {
     struct cpupool *pool;
     int rc;
@@ -2121,8 +2121,8 @@ long sched_adjust_global(struct xen_sysctl_scheduler_op *op)
     if ( rc )
         return rc;
 
-    if ( (op->cmd != XEN_SYSCTL_SCHEDOP_putinfo) &&
-         (op->cmd != XEN_SYSCTL_SCHEDOP_getinfo) )
+    if ( (op->cmd != CRUX_SYSCTL_SCHEDOP_putinfo) &&
+         (op->cmd != CRUX_SYSCTL_SCHEDOP_getinfo) )
         return -EINVAL;
 
     pool = cpupool_get_by_id(op->cpupool_id);
@@ -3047,7 +3047,7 @@ void __init scheduler_init(void)
         printk("Could not find scheduler: %s\n", opt_sched);
         scheduler = sched_get_by_name(CONFIG_SCHED_DEFAULT);
         BUG_ON(!scheduler);
-        printk("using '%s' (%s)\n", scheduler->name, scheduler->opt_name);
+        printk("Using '%s' (%s)\n", scheduler->name, scheduler->opt_name);
     }
     operations = *scheduler;
 
@@ -3055,18 +3055,18 @@ void __init scheduler_init(void)
         BUG();
     register_cpu_notifier(&cpu_schedule_nfb);
 
-    printk("using scheduler: %s (%s)\n", operations.name, operations.opt_name);
+    printk("Using scheduler: %s (%s)\n", operations.name, operations.opt_name);
     if ( sched_init(&operations) )
         panic("scheduler returned error on init\n");
 
     if ( sched_ratelimit_us &&
-         (sched_ratelimit_us > XEN_SYSCTL_SCHED_RATELIMIT_MAX
-          || sched_ratelimit_us < XEN_SYSCTL_SCHED_RATELIMIT_MIN) )
+         (sched_ratelimit_us > CRUX_SYSCTL_SCHED_RATELIMIT_MAX
+          || sched_ratelimit_us < CRUX_SYSCTL_SCHED_RATELIMIT_MIN) )
     {
         printk("WARNING: sched_ratelimit_us outside of valid range [%d,%d].\n"
                " Resetting to default %u\n",
-               XEN_SYSCTL_SCHED_RATELIMIT_MIN,
-               XEN_SYSCTL_SCHED_RATELIMIT_MAX,
+               CRUX_SYSCTL_SCHED_RATELIMIT_MIN,
+               CRUX_SYSCTL_SCHED_RATELIMIT_MAX,
                SCHED_DEFAULT_RATELIMIT_US);
         sched_ratelimit_us = SCHED_DEFAULT_RATELIMIT_US;
     }

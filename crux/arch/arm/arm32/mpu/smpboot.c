@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bug.h>
-#include <xen/errno.h>
-#include <xen/mm.h>
-#include <xen/stdbool.h>
+#include <crux/bug.h>
+#include <crux/errno.h>
+#include <crux/mm.h>
+#include <crux/stdbool.h>
 
 int prepare_secondary_mm(int cpu)
 {

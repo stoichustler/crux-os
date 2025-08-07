@@ -1,7 +1,7 @@
 /*
  *  NSA Security-Enhanced Linux (SELinux) security module
  *
- *  This file contains the Flask security data structures for xen objects.
+ *  This file contains the Flask security data structures for crux objects.
  *
  *  Author(s):  George Coker, <gscoker@alpha.ncsc.mil>
  *
@@ -13,7 +13,7 @@
 #ifndef _FLASK_OBJSEC_H_
 #define _FLASK_OBJSEC_H_
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include "flask.h"
 #include "avc.h"
 

@@ -6,40 +6,40 @@
  * Copyright (c) 2002-2006, K Fraser
  */
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/domain.h>
-#include <xen/event.h>
-#include <xen/grant_table.h>
-#include <xen/domain_page.h>
-#include <xen/trace.h>
-#include <xen/console.h>
-#include <xen/iocap.h>
-#include <xen/guest_access.h>
-#include <xen/keyhandler.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/domain.h>
+#include <crux/event.h>
+#include <crux/grant_table.h>
+#include <crux/domain_page.h>
+#include <crux/trace.h>
+#include <crux/console.h>
+#include <crux/iocap.h>
+#include <crux/guest_access.h>
+#include <crux/keyhandler.h>
 #include <asm/current.h>
-#include <xen/hypercall.h>
+#include <crux/hypercall.h>
 #include <public/sysctl.h>
-#include <xen/nodemask.h>
-#include <xen/numa.h>
+#include <crux/nodemask.h>
+#include <crux/numa.h>
 #include <xsm/xsm.h>
-#include <xen/pmstat.h>
-#include <xen/livepatch.h>
-#include <xen/coverage.h>
+#include <crux/pmstat.h>
+#include <crux/livepatch.h>
+#include <crux/coverage.h>
 
-long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
+long do_sysctl(CRUX_GUEST_HANDLE_PARAM(crux_sysctl_t) u_sysctl)
 {
     long ret = 0;
     int copyback = -1;
-    struct xen_sysctl curop, *op = &curop;
+    struct crux_sysctl curop, *op = &curop;
     static DEFINE_SPINLOCK(sysctl_lock);
 
     if ( copy_from_guest(op, u_sysctl, 1) )
         return -EFAULT;
 
-    if ( op->interface_version != XEN_SYSCTL_INTERFACE_VERSION )
+    if ( op->interface_version != CRUX_SYSCTL_INTERFACE_VERSION )
         return -EACCES;
 
     ret = xsm_sysctl(XSM_PRIV, op->cmd);
@@ -58,7 +58,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
 
     switch ( op->cmd )
     {
-    case XEN_SYSCTL_readconsole:
+    case CRUX_SYSCTL_readconsole:
         ret = xsm_readconsole(XSM_HOOK, op->u.readconsole.clear);
         if ( ret )
             break;
@@ -66,18 +66,18 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
         ret = read_console_ring(&op->u.readconsole);
         break;
 
-    case XEN_SYSCTL_tbuf_op:
+    case CRUX_SYSCTL_tbuf_op:
         ret = tb_control(&op->u.tbuf_op);
         break;
 
-    case XEN_SYSCTL_sched_id:
+    case CRUX_SYSCTL_sched_id:
         op->u.sched_id.sched_id = scheduler_id();
         break;
 
-    case XEN_SYSCTL_getdomaininfolist:
+    case CRUX_SYSCTL_getdomaininfolist:
     { 
         struct domain *d;
-        struct xen_domctl_getdomaininfo info;
+        struct crux_domctl_getdomaininfo info;
         u32 num_domains = 0;
 
         rcu_read_lock(&domlist_read_lock);
@@ -114,17 +114,17 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     break;
 
 #ifdef CONFIG_PERF_COUNTERS
-    case XEN_SYSCTL_perfc_op:
+    case CRUX_SYSCTL_perfc_op:
         ret = perfc_control(&op->u.perfc_op);
         break;
 #endif
 
 #ifdef CONFIG_DEBUG_LOCK_PROFILE
-    case XEN_SYSCTL_lockprof_op:
+    case CRUX_SYSCTL_lockprof_op:
         ret = spinlock_profile_control(&op->u.lockprof_op);
         break;
 #endif
-    case XEN_SYSCTL_debug_keys:
+    case CRUX_SYSCTL_debug_keys:
     {
         char c;
         uint32_t i;
@@ -141,10 +141,10 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
     break;
 
-    case XEN_SYSCTL_getcpuinfo:
+    case CRUX_SYSCTL_getcpuinfo:
     {
         uint32_t i, nr_cpus;
-        struct xen_sysctl_cpuinfo cpuinfo = { 0 };
+        struct crux_sysctl_cpuinfo cpuinfo = { 0 };
 
         nr_cpus = min(op->u.getcpuinfo.max_cpus, nr_cpu_ids);
 
@@ -162,7 +162,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
     break;
 
-    case XEN_SYSCTL_availheap:
+    case CRUX_SYSCTL_availheap:
         op->u.availheap.avail_bytes = avail_domheap_pages_region(
             op->u.availheap.node,
             op->u.availheap.min_bitwidth,
@@ -171,20 +171,20 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
         break;
 
 #ifdef CONFIG_PM_STATS
-    case XEN_SYSCTL_get_pmstat:
+    case CRUX_SYSCTL_get_pmstat:
         ret = do_get_pm_info(&op->u.get_pmstat);
         break;
 #endif
 
 #ifdef CONFIG_PM_OP
-    case XEN_SYSCTL_pm_op:
+    case CRUX_SYSCTL_pm_op:
         ret = do_pm_op(&op->u.pm_op);
         if ( ret == -EAGAIN )
             copyback = 1;
         break;
 #endif
 
-    case XEN_SYSCTL_page_offline_op:
+    case CRUX_SYSCTL_page_offline_op:
     {
         uint32_t *status, *ptr;
         mfn_t mfn;
@@ -202,7 +202,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
                                       op->u.page_offline.start + 1));
         if ( !status )
         {
-            dprintk(XENLOG_WARNING, "Out of memory for page offline op\n");
+            dprintk(CRUXLOG_WARNING, "Out of memory for page offline op\n");
             ret = -ENOMEM;
             break;
         }
@@ -245,17 +245,17 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
     break;
 
-    case XEN_SYSCTL_cpupool_op:
+    case CRUX_SYSCTL_cpupool_op:
         ret = cpupool_do_sysctl(&op->u.cpupool_op);
         break;
 
-    case XEN_SYSCTL_scheduler_op:
+    case CRUX_SYSCTL_scheduler_op:
         ret = sched_adjust_global(&op->u.scheduler_op);
         break;
 
-    case XEN_SYSCTL_physinfo:
+    case CRUX_SYSCTL_physinfo:
     {
-        struct xen_sysctl_physinfo *pi = &op->u.physinfo;
+        struct crux_sysctl_physinfo *pi = &op->u.physinfo;
 
         memset(pi, 0, sizeof(*pi));
         pi->threads_per_core =
@@ -275,30 +275,30 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
         arch_do_physinfo(pi);
         if ( iommu_enabled )
         {
-            pi->capabilities |= XEN_SYSCTL_PHYSCAP_directio;
+            pi->capabilities |= CRUX_SYSCTL_PHYSCAP_directio;
             if ( iommu_hap_pt_share )
-                pi->capabilities |= XEN_SYSCTL_PHYSCAP_iommu_hap_pt_share;
+                pi->capabilities |= CRUX_SYSCTL_PHYSCAP_iommu_hap_pt_share;
         }
         if ( vmtrace_available )
-            pi->capabilities |= XEN_SYSCTL_PHYSCAP_vmtrace;
+            pi->capabilities |= CRUX_SYSCTL_PHYSCAP_vmtrace;
 
         if ( vpmu_is_available )
-            pi->capabilities |= XEN_SYSCTL_PHYSCAP_vpmu;
+            pi->capabilities |= CRUX_SYSCTL_PHYSCAP_vpmu;
 
         if ( opt_gnttab_max_version >= 1 )
-            pi->capabilities |= XEN_SYSCTL_PHYSCAP_gnttab_v1;
+            pi->capabilities |= CRUX_SYSCTL_PHYSCAP_gnttab_v1;
         if ( opt_gnttab_max_version >= 2 )
-            pi->capabilities |= XEN_SYSCTL_PHYSCAP_gnttab_v2;
+            pi->capabilities |= CRUX_SYSCTL_PHYSCAP_gnttab_v2;
 
         if ( copy_to_guest(u_sysctl, op, 1) )
             ret = -EFAULT;
     }
     break;
 
-    case XEN_SYSCTL_numainfo:
+    case CRUX_SYSCTL_numainfo:
     {
         unsigned int i, j, num_nodes;
-        struct xen_sysctl_numainfo *ni = &op->u.numainfo;
+        struct crux_sysctl_numainfo *ni = &op->u.numainfo;
         bool do_meminfo = !guest_handle_is_null(ni->meminfo);
         bool do_distance = !guest_handle_is_null(ni->distance);
 
@@ -306,7 +306,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
 
         if ( do_meminfo || do_distance )
         {
-            struct xen_sysctl_meminfo meminfo = { };
+            struct crux_sysctl_meminfo meminfo = { };
 
             if ( num_nodes > ni->num_nodes )
                 num_nodes = ni->num_nodes;
@@ -322,7 +322,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
                         meminfo.memfree = avail_node_heap_pages(i) << PAGE_SHIFT;
                     }
                     else
-                        meminfo.memsize = meminfo.memfree = XEN_INVALID_MEM_SZ;
+                        meminfo.memsize = meminfo.memfree = CRUX_INVALID_MEM_SZ;
 
                     if ( copy_to_guest_offset(ni->meminfo, i, &meminfo, 1) )
                     {
@@ -337,7 +337,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
                     {
                         distance[j] = __node_distance(i, j);
                         if ( distance[j] == NUMA_NO_DISTANCE )
-                            distance[j] = XEN_INVALID_NODE_DIST;
+                            distance[j] = CRUX_INVALID_NODE_DIST;
                     }
 
                     if ( copy_to_guest_offset(ni->distance, i * num_nodes,
@@ -365,15 +365,15 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
     break;
 
-    case XEN_SYSCTL_cputopoinfo:
+    case CRUX_SYSCTL_cputopoinfo:
     {
         unsigned int i, num_cpus;
-        struct xen_sysctl_cputopoinfo *ti = &op->u.cputopoinfo;
+        struct crux_sysctl_cputopoinfo *ti = &op->u.cputopoinfo;
 
         num_cpus = cpumask_last(&cpu_present_map) + 1;
         if ( !guest_handle_is_null(ti->cputopo) )
         {
-            struct xen_sysctl_cputopo cputopo = { };
+            struct crux_sysctl_cputopo cputopo = { };
 
             if ( num_cpus > ti->num_cpus )
                 num_cpus = ti->num_cpus;
@@ -385,13 +385,13 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
                     cputopo.socket = cpu_to_socket(i);
                     cputopo.node = cpu_to_node(i);
                     if ( cputopo.node == NUMA_NO_NODE )
-                        cputopo.node = XEN_INVALID_NODE_ID;
+                        cputopo.node = CRUX_INVALID_NODE_ID;
                 }
                 else
                 {
-                    cputopo.core = XEN_INVALID_CORE_ID;
-                    cputopo.socket = XEN_INVALID_SOCKET_ID;
-                    cputopo.node = XEN_INVALID_NODE_ID;
+                    cputopo.core = CRUX_INVALID_CORE_ID;
+                    cputopo.socket = CRUX_INVALID_SOCKET_ID;
+                    cputopo.node = CRUX_INVALID_NODE_ID;
                 }
 
                 if ( copy_to_guest_offset(ti->cputopo, i, &cputopo, 1) )
@@ -417,15 +417,15 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
     break;
 
-    case XEN_SYSCTL_coverage_op:
+    case CRUX_SYSCTL_coverage_op:
         ret = sysctl_cov_op(&op->u.coverage_op);
         copyback = 1;
         break;
 
 #ifdef CONFIG_HAS_PCI
-    case XEN_SYSCTL_pcitopoinfo:
+    case CRUX_SYSCTL_pcitopoinfo:
     {
-        struct xen_sysctl_pcitopoinfo *ti = &op->u.pcitopoinfo;
+        struct crux_sysctl_pcitopoinfo *ti = &op->u.pcitopoinfo;
         unsigned int i = 0;
 
         if ( guest_handle_is_null(ti->devs) ||
@@ -450,9 +450,9 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
             pcidevs_lock();
             pdev = pci_get_pdev(NULL, PCI_SBDF(dev.seg, dev.bus, dev.devfn));
             if ( !pdev )
-                node = XEN_INVALID_DEV;
+                node = CRUX_INVALID_DEV;
             else if ( pdev->node == NUMA_NO_NODE )
-                node = XEN_INVALID_NODE_ID;
+                node = CRUX_INVALID_NODE_ID;
             else
                 node = pdev->node;
             pcidevs_unlock();
@@ -477,7 +477,7 @@ long do_sysctl(XEN_GUEST_HANDLE_PARAM(xen_sysctl_t) u_sysctl)
     }
 #endif
 
-    case XEN_SYSCTL_livepatch_op:
+    case CRUX_SYSCTL_livepatch_op:
         ret = livepatch_op(&op->u.livepatch);
         if ( ret != -ENOSYS && ret != -EOPNOTSUPP )
             copyback = 1;

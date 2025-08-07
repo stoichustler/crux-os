@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/xgene-storm.c
+ * crux/arch/arm/platforms/xgene-storm.c
  *
  * Applied Micro's X-Gene specific settings
  *
@@ -19,8 +19,8 @@
  */
 
 #include <asm/platform.h>
-#include <xen/vmap.h>
-#include <xen/device_tree.h>
+#include <crux/vmap.h>
+#include <crux/device_tree.h>
 #include <asm/io.h>
 
 /* XGENE RESET Specific defines */
@@ -57,11 +57,11 @@ static void __init xgene_check_pirq_eoi(void)
     /*
      * In old X-Gene Storm firmware and DT, secure mode addresses have
      * been mentioned in GICv2 node. EOI HW won't work in this case.
-     * We check the GIC Distributor Base Address to deny xen booting
+     * We check the GIC Distributor Base Address to deny crux booting
      * with older firmware.
      */
     if ( dbase == XGENE_SEC_GICV2_DIST_ADDR )
-        panic("OLD X-Gene Firmware is not supported by xen.\n"
+        panic("OLD X-Gene Firmware is not supported by crux.\n"
               "Please upgrade your firmware to the latest version\n");
 }
 

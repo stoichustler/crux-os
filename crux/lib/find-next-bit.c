@@ -8,8 +8,8 @@
  * as published by the Free Software Foundation; either version
  * 2 of the License, or (at your option) any later version.
  */
-#include <xen/bitops.h>
-#include <xen/byteorder.h>
+#include <crux/bitops.h>
+#include <crux/byteorder.h>
 
 #define __ffs(x) (ffsl(x) - 1)
 #define ffz(x) __ffs(~(x))

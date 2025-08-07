@@ -1,6 +1,6 @@
 #include "private.h"
 
-#include <xen/lib/x86/cpu-policy.h>
+#include <crux/lib/x86/cpu-policy.h>
 
 int x86_cpu_policies_are_compatible(const struct cpu_policy *host,
                                     const struct cpu_policy *guest,
@@ -9,7 +9,7 @@ int x86_cpu_policies_are_compatible(const struct cpu_policy *host,
     struct cpu_policy_errors e = INIT_CPU_POLICY_ERRORS;
     int ret = -EINVAL;
 
-#define NA XEN_CPUID_NO_SUBLEAF
+#define NA CRUX_CPUID_NO_SUBLEAF
 #define FAIL_CPUID(l, s) \
     do { e.leaf = (l); e.subleaf = (s); goto out; } while ( 0 )
 #define FAIL_MSR(m) \

@@ -20,7 +20,7 @@ config NR_CPUS
 	  the number of logical entities the scheduler can run code on.
 
 	  For CPU cores which support Simultaneous Multi-Threading or similar
-	  technologies, this the number of logical threads which xen will
+	  technologies, this the number of logical threads which Xen will
 	  support.
 
 config NR_NUMA_NODES

@@ -1,8 +1,8 @@
-include $(XEN_ROOT)/config/StdGNU.mk
+include $(CRUX_ROOT)/config/StdGNU.mk
 
 PTHREAD_LIBS =
 
 WGET = ftp
 
-XENSTORE_XENSTORED=n
+CRUXSTORE_CRUXSTORED=n
 nosharedlibs=y

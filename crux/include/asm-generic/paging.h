@@ -2,7 +2,7 @@
 #ifndef __ASM_GENERIC_PAGING_H__
 #define __ASM_GENERIC_PAGING_H__
 
-#include <xen/stdbool.h>
+#include <crux/stdbool.h>
 
 #define paging_mode_translate(d)    ((void)(d), true)
 #define paging_mode_external(d)     ((void)(d), true)

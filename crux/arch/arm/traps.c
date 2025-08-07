@@ -1,35 +1,35 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/traps.c
+ * crux/arch/arm/traps.c
  *
  * ARM Trap handlers
  *
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/acpi.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/hypercall.h>
-#include <xen/init.h>
-#include <xen/iocap.h>
-#include <xen/ioreq.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/mem_access.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/perfc.h>
-#include <xen/smp.h>
-#include <xen/softirq.h>
-#include <xen/string.h>
-#include <xen/symbols.h>
-#include <xen/version.h>
-#include <xen/virtual_region.h>
-#include <xen/vpci.h>
+#include <crux/acpi.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/hypercall.h>
+#include <crux/init.h>
+#include <crux/iocap.h>
+#include <crux/ioreq.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/mem_access.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/perfc.h>
+#include <crux/smp.h>
+#include <crux/softirq.h>
+#include <crux/string.h>
+#include <crux/symbols.h>
+#include <crux/version.h>
+#include <crux/virtual_region.h>
+#include <crux/vpci.h>
 
 #include <public/sched.h>
-#include <public/xen.h>
+#include <public/crux.h>
 
 #include <asm/cpuerrata.h>
 #include <asm/cpufeature.h>
@@ -55,7 +55,7 @@ boolean_param("partial-emulation", partial_emulation);
 
 /* The base of the stack must always be double-word aligned, which means
  * that both the kernel half of struct cpu_user_regs (which is pushed in
- * entry.S) and struct cpu_info (which lives at the bottom of a xen
+ * entry.S) and struct cpu_info (which lives at the bottom of a Xen
  * stack) must be doubleword-aligned in size.  */
 static void __init __maybe_unused build_assertions(void)
 {
@@ -110,7 +110,7 @@ register_t get_default_cptr_flags(void)
      * Trap all coprocessor registers (0-13) except cp10 and
      * cp11 for VFP.
      *
-     * /!\ All coprocessors except cp10 and cp11 cannot be used in xen.
+     * /!\ All coprocessors except cp10 and cp11 cannot be used in Xen.
      *
      * On ARM64 the TCPx bits which we set here (0..9,12,13) are all
      * RES1, i.e. they would trap whether we did this write or not.
@@ -164,7 +164,7 @@ void init_traps(void)
     WRITE_SYSREG(get_default_cptr_flags(), CPTR_EL2);
 
     /*
-     * Configure HCR_EL2 with the bare minimum to run xen until a guest
+     * Configure HCR_EL2 with the bare minimum to run Xen until a guest
      * is scheduled. {A,I,F}MO bits are set to allow EL2 receiving
      * interrupts.
      */
@@ -179,18 +179,18 @@ void asmlinkage __div0(void)
 }
 
 /* XXX could/should be common code */
-static void print_xen_info(void)
+static void print_crux_info(void)
 {
     char taint_str[TAINT_STRING_MAX_LEN];
 
-    printk("----[ xen-%d.%d%s  %s  %s  %s ]----\n",
-           xen_major_version(), xen_minor_version(), xen_extra_version(),
+    printk("----[ Xen-%d.%d%s  %s  %s  %s ]----\n",
+           crux_major_version(), crux_minor_version(), crux_extra_version(),
 #ifdef CONFIG_ARM_32
            "arm32",
 #else
            "arm64",
 #endif
-           xen_build_info(), print_tainted(taint_str));
+           crux_build_info(), print_tainted(taint_str));
 }
 
 #ifdef CONFIG_ARM_32
@@ -894,7 +894,7 @@ static void _show_registers(const struct cpu_user_regs *regs,
                             bool guest_mode_on,
                             const struct vcpu *v)
 {
-    print_xen_info();
+    print_crux_info();
 
     printk("CPU:    %d\n", smp_processor_id());
 
@@ -1128,7 +1128,7 @@ static void show_trace(const struct cpu_user_regs *regs)
 {
     register_t *frame, next, addr, low, high;
 
-    printk("xen call trace:\n");
+    printk("Xen call trace:\n");
 
     printk("   [<%p>] %pS (PC)\n", _p(regs->pc), _p(regs->pc));
     printk("   [<%p>] %pS (LR)\n", _p(regs->lr), _p(regs->lr));
@@ -1167,7 +1167,7 @@ void show_stack(const struct cpu_user_regs *regs)
     if ( guest_mode(regs) )
         return show_guest_stack(current, regs);
 
-    printk("xen stack trace from sp=%p:\n  ", stack);
+    printk("Xen stack trace from sp=%p:\n  ", stack);
 
     for ( i = 0; i < (debug_stack_lines*stack_words_per_line); i++ )
     {
@@ -1272,14 +1272,14 @@ int do_bug_frame(const struct cpu_user_regs *regs, vaddr_t pc)
     switch ( id )
     {
     case BUGFRAME_warn:
-        printk("xen WARN at %s%s:%d\n", prefix, filename, lineno);
+        printk("Xen WARN at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
         return 0;
 
     case BUGFRAME_bug:
-        printk("xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        printk("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
-        panic("xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        panic("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
 
     case BUGFRAME_assert:
         /* ASSERT: decode the predicate string pointer. */
@@ -1338,7 +1338,7 @@ static register_t do_deprecated_hypercall(void)
 #endif
             regs->r12;
 
-    gdprintk(XENLOG_DEBUG, "%pv: deprecated hypercall %lu\n",
+    gdprintk(CRUXLOG_DEBUG, "%pv: deprecated hypercall %lu\n",
              current, (unsigned long)op);
     return -ENOSYS;
 }
@@ -1348,12 +1348,12 @@ long dep_sched_op_compat(int cmd, unsigned long arg)
     return do_deprecated_hypercall();
 }
 
-long dep_event_channel_op_compat(XEN_GUEST_HANDLE_PARAM(evtchn_op_t) uop)
+long dep_event_channel_op_compat(CRUX_GUEST_HANDLE_PARAM(evtchn_op_t) uop)
 {
     return do_deprecated_hypercall();
 }
 
-long dep_physdev_op_compat(XEN_GUEST_HANDLE_PARAM(physdev_op_t) uop)
+long dep_physdev_op_compat(CRUX_GUEST_HANDLE_PARAM(physdev_op_t) uop)
 {
     return do_deprecated_hypercall();
 }
@@ -1411,9 +1411,9 @@ static void do_trap_hypercall(struct cpu_user_regs *regs, register_t *nr,
 {
     struct vcpu *curr = current;
 
-    if ( hsr.iss != XEN_HYPERCALL_TAG )
+    if ( hsr.iss != CRUX_HYPERCALL_TAG )
     {
-        gprintk(XENLOG_WARNING, "Invalid HVC imm 0x%x\n", hsr.iss);
+        gprintk(CRUXLOG_WARNING, "Invalid HVC imm 0x%x\n", hsr.iss);
         return inject_undef_exception(regs);
     }
 
@@ -1453,7 +1453,7 @@ static void do_trap_hypercall(struct cpu_user_regs *regs, register_t *nr,
 
     /* Ensure the hypercall trap instruction is re-executed. */
     if ( curr->hcall_preempted )
-        regs->pc -= 4;  /* re-execute 'hvc #XEN_HYPERCALL_TAG' */
+        regs->pc -= 4;  /* re-execute 'hvc #CRUX_HYPERCALL_TAG' */
 
 #ifdef CONFIG_IOREQ_SERVER
     /*
@@ -1753,7 +1753,7 @@ static inline bool hpfar_is_valid(bool s1ptw, uint8_t fsc)
      *  does not carry erratum #834220
      *
      * Note that technically HPFAR is valid for other cases, but they
-     * are currently not supported by xen.
+     * are currently not supported by Xen.
      */
     return s1ptw || (fsc == FSC_FLT_TRANS && !check_workaround_834220());
 }
@@ -1761,7 +1761,7 @@ static inline bool hpfar_is_valid(bool s1ptw, uint8_t fsc)
 /*
  * Try to map the MMIO regions for some special cases:
  * 1. When using ACPI, most of the MMIO regions will be mapped on-demand
- *    in stage-2 page tables for the hardware domain because xen is not
+ *    in stage-2 page tables for the hardware domain because Xen is not
  *    able to know from the EFI memory map the MMIO regions.
  * 2. For guests using GICv2, the GICv2 CPU interface mapping is created
  *    on the first access of the MMIO region.
@@ -1899,7 +1899,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
 
             /*
              * If the instruction abort could not be resolved by setting the
-             * appropriate bits in the translation table, then xen should
+             * appropriate bits in the translation table, then Xen should
              * forward the abort to the guest.
              */
             if ( !is_data )
@@ -1909,7 +1909,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
         try_decode_instruction(regs, &info);
 
         /*
-         * If xen could not decode the instruction or encountered an error
+         * If Xen could not decode the instruction or encountered an error
          * while decoding, then it should forward the abort to the guest.
          */
         if ( info.dabt_instr.state == INSTR_ERROR )
@@ -1924,7 +1924,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
             case IO_HANDLED:
                 /*
                  * If the instruction was decoded and has executed successfully
-                 * on the MMIO region, then xen should execute the next part of
+                 * on the MMIO region, then Xen should execute the next part of
                  * the instruction. (for eg increment the rn if it is a
                  * post-indexing instruction.
                  */
@@ -1950,14 +1950,14 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
         break;
     }
     default:
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "Unsupported FSC: HSR=%#"PRIregister" DFSC=%#x\n",
                 hsr.bits, xabt.fsc);
         break;
     }
 
 inject_abt:
-    gdprintk(XENLOG_DEBUG,
+    gdprintk(CRUXLOG_DEBUG,
              "HSR=%#"PRIregister" pc=%#"PRIregister" gva=%#"PRIvaddr" gpa=%#"PRIpaddr"\n",
              hsr.bits, regs->pc, gva, gpa);
     if ( is_data )
@@ -2142,7 +2142,7 @@ void asmlinkage do_trap_guest_sync(struct cpu_user_regs *regs)
         break;
     case HSR_EC_SVE:
         GUEST_BUG_ON(regs_mode_is_32bit(regs));
-        gprintk(XENLOG_WARNING, "domain tried to use SVE while not allowed\n");
+        gprintk(CRUXLOG_WARNING, "Domain tried to use SVE while not allowed\n");
         inject_undef_exception(regs);
         break;
 #endif
@@ -2157,7 +2157,7 @@ void asmlinkage do_trap_guest_sync(struct cpu_user_regs *regs)
         break;
 
     default:
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "Unknown Guest Trap. HSR=%#"PRIregister" EC=0x%x IL=%x Syndrome=0x%"PRIx32"\n",
                 hsr.bits, hsr.ec, hsr.len, hsr.iss);
         inject_undef_exception(regs);

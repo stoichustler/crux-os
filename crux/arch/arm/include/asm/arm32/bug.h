@@ -1,7 +1,7 @@
 #ifndef __ARM_ARM32_BUG_H__
 #define __ARM_ARM32_BUG_H__
 
-#include <xen/stringify.h>
+#include <crux/stringify.h>
 
 /* ARMv7 provides a list of undefined opcode (see A8.8.247 DDI 0406C.b)
  * Use one them encoding A1 to go in exception mode

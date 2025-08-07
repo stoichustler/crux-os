@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/tee/ffa.c
+ * crux/arch/arm/tee/ffa.c
  *
  * Arm Firmware Framework for ARMv8-A (FF-A) mediator
  *
@@ -44,7 +44,7 @@
  *     are not supported
  *   - doesn't support signalling the secondary scheduler of pending
  *     notification for secure partitions
- *   - doesn't support notifications for xen itself
+ *   - doesn't support notifications for Xen itself
  *
  * There are some large locked sections with ffa_tx_buffer_lock and
  * ffa_rx_buffer_lock. Especially the ffa_tx_buffer_lock spinlock used
@@ -52,16 +52,16 @@
  * affect another VM.
  */
 
-#include <xen/bitops.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
-#include <xen/timer.h>
-#include <xen/types.h>
+#include <crux/bitops.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
+#include <crux/timer.h>
+#include <crux/types.h>
 
 #include <asm/event.h>
 #include <asm/regs.h>
@@ -211,7 +211,7 @@ static void handle_features(struct cpu_user_regs *regs)
     case FFA_RXTX_MAP_32:
         /*
          * We currently support 4k pages only, report that as 00 in
-         * bit[0:1] in w0. This needs to be revised if xen page size
+         * bit[0:1] in w0. This needs to be revised if Xen page size
          * differs from FFA_PAGE_SIZE (SZ_4K).
          */
         BUILD_BUG_ON(PAGE_SIZE != FFA_PAGE_SIZE);
@@ -307,7 +307,7 @@ static bool ffa_handle_call(struct cpu_user_regs *regs)
         break;
 
     default:
-        gprintk(XENLOG_ERR, "ffa: unhandled fid 0x%x\n", fid);
+        gprintk(CRUXLOG_ERR, "ffa: unhandled fid 0x%x\n", fid);
         ffa_set_regs_error(regs, FFA_RET_NOT_SUPPORTED);
         return true;
     }
@@ -329,7 +329,7 @@ static int ffa_domain_init(struct domain *d)
     /*
      * We are using the domain_id + 1 as the FF-A ID for VMs as FF-A ID 0 is
      * reserved for the hypervisor and we only support secure endpoints using
-     * FF-A IDs with BIT 15 set to 1 so make sure those are not used by xen.
+     * FF-A IDs with BIT 15 set to 1 so make sure those are not used by Xen.
      */
     BUILD_BUG_ON(DOMID_FIRST_RESERVED >= UINT16_MAX);
     BUILD_BUG_ON((DOMID_MASK & BIT(15, U)) != 0);
@@ -369,7 +369,7 @@ static void ffa_domain_teardown_continue(struct ffa_ctx *ctx, bool first_time)
 
     if ( retry )
     {
-        printk(XENLOG_G_INFO "%pd: ffa: Remaining cleanup, retrying\n", ctx->teardown_d);
+        printk(CRUXLOG_G_INFO "%pd: ffa: Remaining cleanup, retrying\n", ctx->teardown_d);
 
         ctx->teardown_expire = NOW() + FFA_CTX_TEARDOWN_DELAY;
 
@@ -410,7 +410,7 @@ static void ffa_teardown_timer_callback(void *arg)
     if ( ctx )
         ffa_domain_teardown_continue(ctx, false /* !first_time */);
     else
-        printk(XENLOG_G_ERR "%s: teardown list is empty\n", __func__);
+        printk(CRUXLOG_G_ERR "%s: teardown list is empty\n", __func__);
 }
 
 /* This function is supposed to undo what ffa_domain_init() has done */
@@ -455,13 +455,13 @@ static bool ffa_probe(void)
      * that we can map memory using that granularity. See also the comment
      * above the FFA_PAGE_SIZE define.
      *
-     * It is possible to support a PAGE_SIZE larger than 4K in xen, but
+     * It is possible to support a PAGE_SIZE larger than 4K in Xen, but
      * until that is fully handled in this code make sure that we only use
      * 4K page sizes.
      */
     BUILD_BUG_ON(PAGE_SIZE != FFA_PAGE_SIZE);
 
-    printk(XENLOG_INFO "ARM FF-A Mediator version %u.%u\n",
+    printk(CRUXLOG_INFO "ARM FF-A Mediator version %u.%u\n",
            FFA_MY_VERSION_MAJOR, FFA_MY_VERSION_MINOR);
 
     /*
@@ -470,7 +470,7 @@ static bool ffa_probe(void)
      */
     if ( smccc_ver < ARM_SMCCC_VERSION_1_2 )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "ffa: unsupported SMCCC version %#x (need at least %#x)\n",
                smccc_ver, ARM_SMCCC_VERSION_1_2);
         goto err_no_fw;
@@ -478,7 +478,7 @@ static bool ffa_probe(void)
 
     if ( !ffa_get_version(&vers) )
     {
-        gprintk(XENLOG_ERR, "Cannot retrieve the FFA version\n");
+        gprintk(CRUXLOG_ERR, "Cannot retrieve the FFA version\n");
         goto err_no_fw;
     }
 
@@ -493,18 +493,18 @@ static bool ffa_probe(void)
     if ( major_vers != FFA_MY_VERSION_MAJOR ||
          minor_vers < FFA_VERSION_MINOR(FFA_MIN_SPMC_VERSION) )
     {
-        printk(XENLOG_ERR "ffa: Incompatible firmware version %u.%u\n",
+        printk(CRUXLOG_ERR "ffa: Incompatible firmware version %u.%u\n",
                major_vers, minor_vers);
         goto err_no_fw;
     }
 
-    printk(XENLOG_INFO "ARM FF-A Firmware version %u.%u\n",
+    printk(CRUXLOG_INFO "ARM FF-A Firmware version %u.%u\n",
            major_vers, minor_vers);
 
     /*
      * If the call succeed and the version returned is higher or equal to
-     * the one xen requested, the version requested by xen will be the one
-     * used. If the version returned is lower but compatible with xen, xen
+     * the one Xen requested, the version requested by Xen will be the one
+     * used. If the version returned is lower but compatible with Xen, Xen
      * will use that version instead.
      * A version with a different major or lower than the minimum version
      * we support is rejected before.
@@ -523,13 +523,13 @@ static bool ffa_probe(void)
             set_bit(FFA_ABI_BITNUM(ffa_fw_abi_needed[i].id),
                     ffa_fw_abi_supported);
         else
-            printk(XENLOG_INFO "ARM FF-A Firmware does not support %s\n",
+            printk(CRUXLOG_INFO "ARM FF-A Firmware does not support %s\n",
                    ffa_fw_abi_needed[i].name);
     }
 
     if ( !ffa_rxtx_init() )
     {
-        printk(XENLOG_ERR "ffa: Error during RXTX buffer init\n");
+        printk(CRUXLOG_ERR "ffa: Error during RXTX buffer init\n");
         goto err_no_fw;
     }
 
@@ -547,7 +547,7 @@ err_rxtx_destroy:
 err_no_fw:
     ffa_fw_version = 0;
     bitmap_zero(ffa_fw_abi_supported, FFA_ABI_BITMAP_SIZE);
-    printk(XENLOG_WARNING "ARM FF-A No firmware support\n");
+    printk(CRUXLOG_WARNING "ARM FF-A No firmware support\n");
 
     return false;
 }
@@ -563,4 +563,4 @@ static const struct tee_mediator_ops ffa_ops =
     .handle_call = ffa_handle_call,
 };
 
-REGISTER_TEE_MEDIATOR(ffa, "FF-A", XEN_DOMCTL_CONFIG_TEE_FFA, &ffa_ops);
+REGISTER_TEE_MEDIATOR(ffa, "FF-A", CRUX_DOMCTL_CONFIG_TEE_FFA, &ffa_ops);

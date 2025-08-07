@@ -1,9 +1,9 @@
 #ifndef __ASM_GRANT_TABLE_H__
 #define __ASM_GRANT_TABLE_H__
 
-#include <xen/kernel.h>
-#include <xen/pfn.h>
-#include <xen/sched.h>
+#include <crux/kernel.h>
+#include <crux/pfn.h>
+#include <crux/sched.h>
 
 #include <asm/guest_atomics.h>
 
@@ -19,7 +19,7 @@ static inline void gnttab_clear_flags(struct domain *d,
 static inline void gnttab_mark_dirty(struct domain *d, mfn_t mfn)
 {
 #ifndef NDEBUG
-    printk_once(XENLOG_G_WARNING "gnttab_mark_dirty not implemented yet\n");
+    printk_once(CRUXLOG_G_WARNING "gnttab_mark_dirty not implemented yet\n");
 #endif
 }
 
@@ -41,7 +41,7 @@ int replace_grant_host_mapping(uint64_t gpaddr, mfn_t frame,
                                uint64_t new_gpaddr, unsigned int flags);
 
 /*
- * The region used by xen on the memory will never be mapped in DOM0
+ * The region used by Xen on the memory will never be mapped in DOM0
  * memory layout. Therefore it can be used for the grant table.
  *
  * Only use the text section as it's always present and will contain
@@ -67,10 +67,10 @@ int replace_grant_host_mapping(uint64_t gpaddr, mfn_t frame,
 #define gnttab_status_page(t, i)   virt_to_page((t)->status[i])
 
 #define gnttab_shared_gfn(d, t, i)                                       \
-    page_get_xenheap_gfn(gnttab_shared_page(t, i))
+    page_get_cruxheap_gfn(gnttab_shared_page(t, i))
 
 #define gnttab_status_gfn(d, t, i)                                       \
-    page_get_xenheap_gfn(gnttab_status_page(t, i))
+    page_get_cruxheap_gfn(gnttab_status_page(t, i))
 
 #define gnttab_need_iommu_mapping(d)                                     \
     (IS_ENABLED(CONFIG_HAS_PASSTHROUGH) && is_domain_direct_mapped(d) && \

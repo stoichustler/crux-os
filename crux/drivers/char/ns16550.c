@@ -1,7 +1,7 @@
 /******************************************************************************
  * ns16550.c
  *
- * Driver for 16550-series UARTs. This driver is to be kept within xen as
+ * Driver for 16550-series UARTs. This driver is to be kept within Xen as
  * it permits debugging of seriously-toasted machines (e.g., in situations
  * where a device driver within a guest OS would be inaccessible).
  *
@@ -17,22 +17,22 @@
 # define NS16550_PCI
 #endif
 
-#include <xen/console.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/timer.h>
-#include <xen/serial.h>
-#include <xen/iocap.h>
+#include <crux/console.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/timer.h>
+#include <crux/serial.h>
+#include <crux/iocap.h>
 #ifdef NS16550_PCI
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
-#include <xen/pci_ids.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
+#include <crux/pci_ids.h>
 #endif
-#include <xen/8250-uart.h>
-#include <xen/vmap.h>
+#include <crux/8250-uart.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 #ifdef CONFIG_HAS_DEVICE_TREE_DISCOVERY
 #include <asm/device.h>
@@ -350,7 +350,7 @@ static void ns16550_setup_preirq(struct ns16550 *uart)
         if ( divisor )
             uart->baud = uart->clock_hz / (divisor << 4);
         else
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Automatic baud rate determination was requested,"
                    " but a baud rate was not set up\n");
     }
@@ -445,11 +445,11 @@ static void __init cf_check ns16550_init_postirq(struct serial_port *port)
         if ( uart->param && uart->param->mmio &&
              rangeset_add_range(mmio_ro_ranges, PFN_DOWN(uart->io_base),
                                 PFN_UP(uart->io_base + uart->io_size) - 1) )
-            printk(XENLOG_INFO "Error while adding MMIO range of device to mmio_ro_ranges\n");
+            printk(CRUXLOG_INFO "Error while adding MMIO range of device to mmio_ro_ranges\n");
 
         if ( pci_ro_device(0, uart->ps_bdf[0],
                            PCI_DEVFN(uart->ps_bdf[1], uart->ps_bdf[2])) )
-            printk(XENLOG_INFO "Could not mark config space of %02x:%02x.%u read-only.\n",
+            printk(CRUXLOG_INFO "Could not mark config space of %02x:%02x.%u read-only.\n",
                    uart->ps_bdf[0], uart->ps_bdf[1],
                    uart->ps_bdf[2]);
 
@@ -499,7 +499,7 @@ static void __init cf_check ns16550_init_postirq(struct serial_port *port)
             }
 
             if ( rc )
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "MSI setup failed (%d) for %02x:%02x.%o\n",
                        rc, uart->ps_bdf[0], uart->ps_bdf[1], uart->ps_bdf[2]);
         }
@@ -1357,7 +1357,7 @@ pci_uart_config(struct ns16550 *uart, bool skip_amt, unsigned int idx)
                     uart->irq = 0;
 #endif
                 if ( !uart->irq )
-                    printk(XENLOG_INFO
+                    printk(CRUXLOG_INFO
                            "ns16550: %pp: no legacy IRQ, using poll mode\n",
                            &PCI_SBDF(0, b, d, f));
 
@@ -1631,7 +1631,7 @@ static bool __init parse_namevalue_pairs(char *str, struct ns16550 *uart)
         case io_base:
             if ( dev_set )
             {
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "Can't use io_base with dev=pci or dev=amt options\n");
                 break;
             }
@@ -1832,7 +1832,7 @@ static int __init ns16550_uart_dt_init(struct dt_device_node *dev,
     /* Register with generic serial driver. */
     serial_register_uart(uart - ns16550_com, &ns16550_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }
@@ -1854,7 +1854,7 @@ DT_DEVICE_END
 #endif /* HAS_DEVICE_TREE_DISCOVERY */
 
 #if defined(CONFIG_ACPI) && defined(CONFIG_ARM)
-#include <xen/acpi.h>
+#include <crux/acpi.h>
 
 static int __init ns16550_acpi_uart_init(const void *data)
 {

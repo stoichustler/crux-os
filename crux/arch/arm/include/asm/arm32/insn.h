@@ -16,7 +16,7 @@
 #ifndef __ARCH_ARM_ARM32_INSN
 #define __ARCH_ARM_ARM32_INSN
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 int32_t aarch32_get_branch_offset(uint32_t insn);
 uint32_t aarch32_set_branch_offset(uint32_t insn, int32_t offset);
@@ -25,9 +25,9 @@ uint32_t aarch32_set_branch_offset(uint32_t insn, int32_t offset);
 static inline bool insn_is_branch_imm(uint32_t insn)
 {
     /*
-     * xen is using ARM execution state only on ARM32 platform. So, the
+     * Xen is using ARM execution state only on ARM32 platform. So, the
      * Thumb branch instructions (CBZ, CBNZ, TBB and TBH) will not be used
-     * in xen. The left ARM32 branch instructions are BX, BLX, BL and B.
+     * in Xen. The left ARM32 branch instructions are BX, BLX, BL and B.
      * BX is using register as parameter, we don't need to rewrite it. So,
      * we only need to check BLX, BL and B encodings in this function.
      *

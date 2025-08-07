@@ -1,23 +1,23 @@
 /******************************************************************************
  * debugtrace.c
  *
- * Debugtrace for xen
+ * Debugtrace for Xen
  */
 
 
-#include <xen/console.h>
-#include <xen/cpu.h>
-#include <xen/init.h>
-#include <xen/keyhandler.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/percpu.h>
-#include <xen/sections.h>
-#include <xen/serial.h>
-#include <xen/smp.h>
-#include <xen/spinlock.h>
-#include <xen/watchdog.h>
+#include <crux/console.h>
+#include <crux/cpu.h>
+#include <crux/init.h>
+#include <crux/keyhandler.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/percpu.h>
+#include <crux/sections.h>
+#include <crux/serial.h>
+#include <crux/smp.h>
+#include <crux/spinlock.h>
+#include <crux/watchdog.h>
 
 #define DEBUGTRACE_COUNT_WRAP 99999999
 
@@ -249,7 +249,7 @@ static void debugtrace_alloc_buffer(struct debugtrace_data **ptr,
         return;
 
     order = get_order_from_bytes(debugtrace_bytes);
-    data = alloc_xenheap_pages(order, 0);
+    data = alloc_cruxheap_pages(order, 0);
     if ( !data )
     {
         if ( debugtrace_per_cpu )

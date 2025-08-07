@@ -6,7 +6,7 @@
 /*
  * ARM32 layout:
  *   0  -   2M   Unmapped
- *   2M -  10M   xen text, data, bss
+ *   2M -  10M   Xen text, data, bss
  *  10M -  12M   Fixmap: special-purpose 4K mapping slots
  *  12M -  16M   Early boot mapping of FDT
  *  16M -  18M   Livepatch vmap (if compiled in)
@@ -15,22 +15,22 @@
  * 256M -   1G   VMAP: ioremap and early_ioremap use this virtual address
  *                    space
  *
- *   1G -   2G   xenheap: always-mapped memory
+ *   1G -   2G   Xenheap: always-mapped memory
  *   2G -   4G   Domheap: on-demand-mapped
  *
  * ARM64 layout:
  * 0x0000000000000000 - 0x000009ffffffffff (10TB, L0 slots [0..19])
  *
- *  Reserved to identity map xen
+ *  Reserved to identity map Xen
  *
  * 0x00000a0000000000 - 0x00000a7fffffffff (512GB, L0 slot [20])
  *  (Relative offsets)
  *   0  -   2M   Unmapped
- *   2M -  10M   xen text, data, bss
+ *   2M -  10M   Xen text, data, bss
  *  10M -  12M   Fixmap: special-purpose 4K mapping slots
  *  12M -  16M   Early boot mapping of FDT
  *  16M -  18M   Livepatch vmap (if compiled in)
- *  16M -  24M   Cache-colored xen text, data, bss (temporary, if compiled in)
+ *  16M -  24M   Cache-colored Xen text, data, bss (temporary, if compiled in)
  *
  *   1G -   2G   VMAP: ioremap and early_ioremap
  *
@@ -47,27 +47,27 @@
  */
 
 #ifdef CONFIG_ARM_32
-#define XEN_VIRT_START          _AT(vaddr_t, MB(2))
+#define CRUX_VIRT_START          _AT(vaddr_t, MB(2))
 #else
 
 #define IDENTITY_MAPPING_AREA_NR_L0     20
-#define XEN_VM_MAPPING                  SLOT0(IDENTITY_MAPPING_AREA_NR_L0)
+#define CRUX_VM_MAPPING                  SLOT0(IDENTITY_MAPPING_AREA_NR_L0)
 
 #define SLOT0_ENTRY_BITS  39
 #define SLOT0(slot) (_AT(vaddr_t,slot) << SLOT0_ENTRY_BITS)
 #define SLOT0_ENTRY_SIZE  SLOT0(1)
 
-#define XEN_VIRT_START          (XEN_VM_MAPPING + _AT(vaddr_t, MB(2)))
+#define CRUX_VIRT_START          (CRUX_VM_MAPPING + _AT(vaddr_t, MB(2)))
 #endif
 
 /*
  * Reserve enough space so both UBSAN and GCOV can be enabled together
  * plus some slack for future growth.
  */
-#define XEN_VIRT_SIZE           _AT(vaddr_t, MB(8))
-#define XEN_NR_ENTRIES(lvl)     (XEN_VIRT_SIZE / XEN_PT_LEVEL_SIZE(lvl))
+#define CRUX_VIRT_SIZE           _AT(vaddr_t, MB(8))
+#define CRUX_NR_ENTRIES(lvl)     (CRUX_VIRT_SIZE / CRUX_PT_LEVEL_SIZE(lvl))
 
-#define FIXMAP_VIRT_START       (XEN_VIRT_START + XEN_VIRT_SIZE)
+#define FIXMAP_VIRT_START       (CRUX_VIRT_START + CRUX_VIRT_SIZE)
 #define FIXMAP_VIRT_SIZE        _AT(vaddr_t, MB(2))
 
 #define FIXMAP_ADDR(n)          (FIXMAP_VIRT_START + (n) * PAGE_SIZE)
@@ -82,11 +82,11 @@
 #define LIVEPATCH_VMAP_SIZE    _AT(vaddr_t, MB(2))
 #endif
 
-#define HYPERVISOR_VIRT_START  XEN_VIRT_START
+#define HYPERVISOR_VIRT_START  CRUX_VIRT_START
 
 #ifdef CONFIG_ARM_32
 
-#define CONFIG_SEPARATE_XENHEAP 1
+#define CONFIG_SEPARATE_CRUXHEAP 1
 
 #define FRAMETABLE_VIRT_START  _AT(vaddr_t, MB(32))
 #define FRAMETABLE_SIZE        MB(128-32)
@@ -95,8 +95,8 @@
 #define VMAP_VIRT_START        _AT(vaddr_t, MB(256))
 #define VMAP_VIRT_SIZE         _AT(vaddr_t, GB(1) - MB(256))
 
-#define XENHEAP_VIRT_START     _AT(vaddr_t, GB(1))
-#define XENHEAP_VIRT_SIZE      _AT(vaddr_t, GB(1))
+#define CRUXHEAP_VIRT_START     _AT(vaddr_t, GB(1))
+#define CRUXHEAP_VIRT_SIZE      _AT(vaddr_t, GB(1))
 
 #define DOMHEAP_VIRT_START     _AT(vaddr_t, GB(2))
 #define DOMHEAP_VIRT_SIZE      _AT(vaddr_t, GB(2))
@@ -108,17 +108,17 @@
 
 /*
  * The temporary area is overlapping with the domheap area. This may
- * be used to create an alias of the first slot containing xen mappings
+ * be used to create an alias of the first slot containing Xen mappings
  * when turning on/off the MMU.
  */
 #define TEMPORARY_AREA_FIRST_SLOT    (first_table_offset(DOMHEAP_VIRT_START))
 
 /* Calculate the address in the temporary area */
 #define TEMPORARY_AREA_ADDR(addr)                           \
-     (((addr) & ~XEN_PT_LEVEL_MASK(1)) |                    \
-      (TEMPORARY_AREA_FIRST_SLOT << XEN_PT_LEVEL_SHIFT(1)))
+     (((addr) & ~CRUX_PT_LEVEL_MASK(1)) |                    \
+      (TEMPORARY_AREA_FIRST_SLOT << CRUX_PT_LEVEL_SHIFT(1)))
 
-#define TEMPORARY_XEN_VIRT_START    TEMPORARY_AREA_ADDR(XEN_VIRT_START)
+#define TEMPORARY_CRUX_VIRT_START    TEMPORARY_AREA_ADDR(CRUX_VIRT_START)
 #define TEMPORARY_FIXMAP_VIRT_START TEMPORARY_AREA_ADDR(FIXMAP_VIRT_START)
 
 #define TEMPORARY_FIXMAP_ADDR(n)                    \
@@ -126,10 +126,10 @@
 
 #else /* ARM_64 */
 
-#define VMAP_VIRT_START  (XEN_VM_MAPPING + GB(1))
+#define VMAP_VIRT_START  (CRUX_VM_MAPPING + GB(1))
 #define VMAP_VIRT_SIZE   GB(1)
 
-#define FRAMETABLE_VIRT_START  (XEN_VM_MAPPING + GB(32))
+#define FRAMETABLE_VIRT_START  (CRUX_VM_MAPPING + GB(32))
 #define FRAMETABLE_SIZE        GB(32)
 #define FRAMETABLE_NR          (FRAMETABLE_SIZE / sizeof(*frame_table))
 
@@ -137,7 +137,7 @@
 #define DIRECTMAP_SIZE         (SLOT0_ENTRY_SIZE * (266 - 256))
 #define DIRECTMAP_VIRT_END     (DIRECTMAP_VIRT_START + DIRECTMAP_SIZE - 1)
 
-#define XENHEAP_VIRT_START     directmap_virt_start
+#define CRUXHEAP_VIRT_START     directmap_virt_start
 
 #define HYPERVISOR_VIRT_END    DIRECTMAP_VIRT_END
 

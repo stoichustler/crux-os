@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/traps.c
+ * crux/arch/arm/arm64/traps.c
  *
  * ARM AArch64 Specific Trap handlers
  *
@@ -16,15 +16,15 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 
 #include <asm/hsr.h>
 #include <asm/system.h>
 #include <asm/processor.h>
 #include <asm/traps.h>
 
-#include <public/xen.h>
+#include <public/crux.h>
 
 static const char *handler[]= {
         "Synchronous Abort",

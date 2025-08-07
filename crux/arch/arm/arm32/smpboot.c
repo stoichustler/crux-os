@@ -1,6 +1,6 @@
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/smp.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/smp.h>
 #include <asm/platform.h>
 
 int __init arch_smp_init(void)

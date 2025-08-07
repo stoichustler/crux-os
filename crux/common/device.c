@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
  * Based on the code from:
- *   xen/arch/arm/device.c
+ *   crux/arch/arm/device.c
  */
 
-#include <xen/bug.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
+#include <crux/bug.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
 
 #include <asm/device.h>
 

@@ -5,13 +5,13 @@
  * Author : Stephen Smalley, <sds@epoch.ncsc.mil>
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _SS_SIDTAB_H_
 #define _SS_SIDTAB_H_
 
 #include "context.h"
-#include <xen/spinlock.h>
+#include <crux/spinlock.h>
 
 struct sidtab_node {
     u32 sid;        /* security identifier */

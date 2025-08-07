@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/self-tests.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/self-tests.h>
 
 static void __init test_ffs(void)
 {
@@ -30,7 +30,7 @@ static void __init test_ffs(void)
     /*
      * unsigned int ffs64(uint64_t)
      *
-     * 32-bit builds of xen have to split this into two adjacent operations,
+     * 32-bit builds of Xen have to split this into two adjacent operations,
      * so test all interesting bit positions across the divide.
      */
     CHECK(ffs64, 0, 0);
@@ -70,7 +70,7 @@ static void __init test_fls(void)
     /*
      * unsigned int fls64(uint64_t)
      *
-     * 32-bit builds of xen have to split this into two adjacent operations,
+     * 32-bit builds of Xen have to split this into two adjacent operations,
      * so test all interesting bit positions across the divide.
      */
     CHECK(fls64, 0, 0);

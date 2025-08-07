@@ -2,9 +2,9 @@
 #ifndef __ARM_MMU_MM_H__
 #define __ARM_MMU_MM_H__
 
-#include <xen/bug.h>
-#include <xen/pdx.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/pdx.h>
+#include <crux/types.h>
 #include <asm/mm.h>
 #include <asm/mmu/layout.h>
 #include <asm/page.h>
@@ -27,8 +27,8 @@ extern unsigned long directmap_base_pdx;
 })
 
 #ifdef CONFIG_ARM_32
-#define is_xen_heap_page(page) is_xen_heap_mfn(page_to_mfn(page))
-#define is_xen_heap_mfn(mfn) ({                                 \
+#define is_crux_heap_page(page) is_crux_heap_mfn(page_to_mfn(page))
+#define is_crux_heap_mfn(mfn) ({                                 \
     unsigned long mfn_ = mfn_x(mfn);                            \
     (mfn_ >= mfn_x(directmap_mfn_start) &&                      \
      mfn_ < mfn_x(directmap_mfn_end));                          \
@@ -37,10 +37,10 @@ extern unsigned long directmap_base_pdx;
 /**
  * Find the virtual address corresponding to a machine address
  *
- * Only memory backing the XENHEAP has a corresponding virtual address to
+ * Only memory backing the CRUXHEAP has a corresponding virtual address to
  * be found. This is so we can save precious virtual space, as it's in
  * short supply on arm32. This mapping is not subject to PDX compression
- * because XENHEAP is known to be physically contiguous and can't hence
+ * because CRUXHEAP is known to be physically contiguous and can't hence
  * jump over the PDX hole. This means we can avoid the roundtrips
  * converting to/from pdx.
  *
@@ -49,9 +49,9 @@ extern unsigned long directmap_base_pdx;
  */
 static inline void *maddr_to_virt(paddr_t ma)
 {
-    ASSERT(is_xen_heap_mfn(maddr_to_mfn(ma)));
+    ASSERT(is_crux_heap_mfn(maddr_to_mfn(ma)));
     ma -= mfn_to_maddr(directmap_mfn_start);
-    return (void *)(unsigned long) ma + XENHEAP_VIRT_START;
+    return (void *)(unsigned long) ma + CRUXHEAP_VIRT_START;
 }
 #else
 /**
@@ -71,22 +71,22 @@ static inline void *maddr_to_virt(paddr_t ma)
 {
     ASSERT((mfn_to_pdx(maddr_to_mfn(ma)) - directmap_base_pdx) <
            (DIRECTMAP_SIZE >> PAGE_SHIFT));
-    return (void *)(XENHEAP_VIRT_START -
+    return (void *)(CRUXHEAP_VIRT_START -
                     (directmap_base_pdx << PAGE_SHIFT) +
                     maddr_to_directmapoff(ma));
 }
 #endif
 
-/* Convert between xen-heap virtual addresses and page-info structures. */
+/* Convert between Xen-heap virtual addresses and page-info structures. */
 static inline struct page_info *virt_to_page(const void *v)
 {
     unsigned long va = (unsigned long)v;
     unsigned long pdx;
 
-    ASSERT(va >= XENHEAP_VIRT_START);
+    ASSERT(va >= CRUXHEAP_VIRT_START);
     ASSERT(va < directmap_virt_end);
 
-    pdx = (va - XENHEAP_VIRT_START) >> PAGE_SHIFT;
+    pdx = (va - CRUXHEAP_VIRT_START) >> PAGE_SHIFT;
     pdx += mfn_to_pdx(directmap_mfn_start);
     return frame_table + pdx - frametable_base_pdx;
 }

@@ -2,7 +2,7 @@
 #ifndef __ASM_SYSTEM_H
 #define __ASM_SYSTEM_H
 
-#include <xen/lib.h>
+#include <crux/lib.h>
 #include <public/arch-arm.h>
 
 #define sev()           asm volatile("sev" : : : "memory")

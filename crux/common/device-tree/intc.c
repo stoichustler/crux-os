@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/lib.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/lib.h>
 
 void __init intc_dt_preinit(void)
 {
@@ -30,7 +30,7 @@ void __init intc_dt_preinit(void)
 
     /* Set the interrupt controller as the primary interrupt controller */
     dt_interrupt_controller = node;
-    dt_device_set_used_by(node, DOMID_XEN);
+    dt_device_set_used_by(node, DOMID_CRUX);
 }
 
 /*

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/pci.h>
-#include <xen/sched.h>
+#include <crux/pci.h>
+#include <crux/sched.h>
 
 /*
  * Function to implement the pci_ops->map_bus method.

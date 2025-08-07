@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Device tree overlay support in xen.
+ * Device tree overlay support in Xen.
  *
  * Copyright (C) 2023, Advanced Micro Devices, Inc. All Rights Reserved.
  * Written by Vikram Garhwal <vikram.garhwal@amd.com>
  *
  */
-#include <xen/dt-overlay.h>
-#include <xen/fdt-kernel.h>
-#include <xen/guest_access.h>
-#include <xen/iocap.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/xmalloc.h>
+#include <crux/dt-overlay.h>
+#include <crux/fdt-kernel.h>
+#include <crux/guest_access.h>
+#include <crux/iocap.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/xmalloc.h>
 
 #include <asm/setup.h>
 
@@ -204,13 +204,13 @@ static int dt_overlay_add_node(struct dt_device_node *device_node,
     return 0;
 }
 
-/* Basic sanity check for the dtbo tool stack provided to xen. */
+/* Basic sanity check for the dtbo tool stack provided to Xen. */
 static int check_overlay_fdt(const void *overlay_fdt, uint32_t overlay_fdt_size)
 {
     if ( (fdt_totalsize(overlay_fdt) != overlay_fdt_size) ||
           fdt_check_header(overlay_fdt) )
     {
-        printk(XENLOG_ERR "The overlay FDT is not a valid Flat Device Tree\n");
+        printk(CRUXLOG_ERR "The overlay FDT is not a valid Flat Device Tree\n");
         return -EINVAL;
     }
 
@@ -231,7 +231,7 @@ static int irq_remove_cb(unsigned long s, unsigned long e, void *dom,
     rc = irq_deny_access(d, s);
     if ( rc )
     {
-        printk(XENLOG_ERR "unable to revoke access for irq %lu\n", s);
+        printk(CRUXLOG_ERR "unable to revoke access for irq %lu\n", s);
     }
     else
         *c += e - s + 1;
@@ -253,7 +253,7 @@ static int iomem_remove_cb(unsigned long s, unsigned long e, void *dom,
     rc = iomem_deny_access(d, s, e);
     if ( rc )
     {
-        printk(XENLOG_ERR "Unable to remove %pd access to %#lx - %#lx\n",
+        printk(CRUXLOG_ERR "Unable to remove %pd access to %#lx - %#lx\n",
                d, s, e);
     }
     else
@@ -388,7 +388,7 @@ find_track_entry_from_tracker(const void *overlay_fdt,
 
     if ( !found_entry )
     {
-        printk(XENLOG_ERR "Cannot find any matching tracker with input dtbo."
+        printk(CRUXLOG_ERR "Cannot find any matching tracker with input dtbo."
                " Operation is supported only for prior added dtbo.\n");
         return NULL;
     }
@@ -405,13 +405,13 @@ static int remove_node_resources(struct dt_device_node *device_node)
 
     domid = dt_device_used_by(device_node);
 
-    dt_dprintk("checking if node %s is used by any domain\n",
+    dt_dprintk("Checking if node %s is used by any domain\n",
                device_node->full_name);
 
     /* Remove the node if only it's assigned to hardware domain or domain io. */
     if ( domid != hardware_domain->domain_id && domid != DOMID_IO )
     {
-        printk(XENLOG_ERR "device %s is being used by domain %u. Removing nodes failed\n",
+        printk(CRUXLOG_ERR "Device %s is being used by domain %u. Removing nodes failed\n",
                device_node->full_name, domid);
         return -EINVAL;
     }
@@ -544,7 +544,7 @@ static long handle_remove_overlay_nodes(const void *overlay_fdt,
     rc = remove_nodes(entry);
     if ( rc )
     {
-        printk(XENLOG_ERR "Removing node failed\n");
+        printk(CRUXLOG_ERR "Removing node failed\n");
         goto out;
     }
 
@@ -721,7 +721,7 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
     rc = fdt_open_into(tr->fdt, tr->fdt, new_fdt_size);
     if ( rc )
     {
-        printk(XENLOG_ERR "Increasing fdt size to accommodate overlay_fdt failed with error %d\n",
+        printk(CRUXLOG_ERR "Increasing fdt size to accommodate overlay_fdt failed with error %d\n",
                rc);
         goto err;
     }
@@ -741,7 +741,7 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
     rc = overlay_get_nodes_info(overlay_fdt, nodes_full_path);
     if ( rc )
     {
-        printk(XENLOG_ERR "Getting nodes information failed with error %d\n",
+        printk(CRUXLOG_ERR "Getting nodes information failed with error %d\n",
                rc);
         goto err;
     }
@@ -749,7 +749,7 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
     rc = fdt_overlay_apply(tr->fdt, overlay_fdt);
     if ( rc )
     {
-        printk(XENLOG_ERR "Adding overlay node failed with error %d\n", rc);
+        printk(CRUXLOG_ERR "Adding overlay node failed with error %d\n", rc);
         goto err;
     }
 
@@ -762,7 +762,7 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
         overlay_node = dt_find_node_by_path(nodes_full_path[j]);
         if ( overlay_node != NULL )
         {
-            printk(XENLOG_ERR "node %s exists in device tree\n",
+            printk(CRUXLOG_ERR "node %s exists in device tree\n",
                    nodes_full_path[j]);
             rc = -EINVAL;
             goto err;
@@ -776,14 +776,14 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
     rc = unflatten_device_tree(tr->fdt, &tr->dt_host_new);
     if ( rc )
     {
-        printk(XENLOG_ERR "unflatten_device_tree failed with error %d\n", rc);
+        printk(CRUXLOG_ERR "unflatten_device_tree failed with error %d\n", rc);
         goto err;
     }
 
     rc = add_nodes(tr, nodes_full_path);
     if ( rc )
     {
-        printk(XENLOG_ERR "Adding nodes failed. Removing the partially added nodes.\n");
+        printk(CRUXLOG_ERR "Adding nodes failed. Removing the partially added nodes.\n");
         goto remove_node;
     }
 
@@ -815,7 +815,7 @@ static long handle_add_overlay_nodes(void *overlay_fdt,
          * but given that we don't manage that code keeping this warning message
          * is better here.
          */
-        printk(XENLOG_ERR "Removing node failed.\n");
+        printk(CRUXLOG_ERR "Removing node failed.\n");
         spin_unlock(&overlay_lock);
 
         free_nodes_full_path(tr->num_nodes, nodes_full_path);
@@ -865,7 +865,7 @@ static long handle_attach_overlay_nodes(struct domain *d,
     if (entry->irq_ranges == NULL)
     {
         rc = -ENOMEM;
-        printk(XENLOG_ERR "Creating IRQ rangeset failed");
+        printk(CRUXLOG_ERR "Creating IRQ rangeset failed");
         goto out;
     }
 
@@ -874,7 +874,7 @@ static long handle_attach_overlay_nodes(struct domain *d,
     if (entry->iomem_ranges == NULL)
     {
         rc = -ENOMEM;
-        printk(XENLOG_ERR "Creating IOMMU rangeset failed");
+        printk(CRUXLOG_ERR "Creating IOMMU rangeset failed");
         goto out;
     }
 
@@ -895,7 +895,7 @@ static long handle_attach_overlay_nodes(struct domain *d,
         write_unlock(&dt_host_lock);
         if ( rc )
         {
-            printk(XENLOG_ERR "Adding IRQ and IOMMU failed\n");
+            printk(CRUXLOG_ERR "Adding IRQ and IOMMU failed\n");
             goto out;
         }
     }
@@ -916,13 +916,13 @@ static long handle_attach_overlay_nodes(struct domain *d,
     return rc;
 }
 
-long dt_overlay_sysctl(struct xen_sysctl_dt_overlay *op)
+long dt_overlay_sysctl(struct crux_sysctl_dt_overlay *op)
 {
     long ret;
     void *overlay_fdt;
 
-    if ( op->overlay_op != XEN_SYSCTL_DT_OVERLAY_ADD &&
-         op->overlay_op != XEN_SYSCTL_DT_OVERLAY_REMOVE )
+    if ( op->overlay_op != CRUX_SYSCTL_DT_OVERLAY_ADD &&
+         op->overlay_op != CRUX_SYSCTL_DT_OVERLAY_REMOVE )
         return -EOPNOTSUPP;
 
     if ( op->overlay_fdt_size == 0 ||
@@ -940,13 +940,13 @@ long dt_overlay_sysctl(struct xen_sysctl_dt_overlay *op)
     ret = copy_from_guest(overlay_fdt, op->overlay_fdt, op->overlay_fdt_size);
     if ( ret )
     {
-        gprintk(XENLOG_ERR, "copy from guest failed\n");
+        gprintk(CRUXLOG_ERR, "copy from guest failed\n");
         xfree(overlay_fdt);
 
         return -EFAULT;
     }
 
-    if ( op->overlay_op == XEN_SYSCTL_DT_OVERLAY_REMOVE )
+    if ( op->overlay_op == CRUX_SYSCTL_DT_OVERLAY_REMOVE )
         ret = handle_remove_overlay_nodes(overlay_fdt, op->overlay_fdt_size);
     else
         ret = handle_add_overlay_nodes(overlay_fdt, op->overlay_fdt_size);
@@ -956,12 +956,12 @@ long dt_overlay_sysctl(struct xen_sysctl_dt_overlay *op)
     return ret;
 }
 
-long dt_overlay_domctl(struct domain *d, struct xen_domctl_dt_overlay *op)
+long dt_overlay_domctl(struct domain *d, struct crux_domctl_dt_overlay *op)
 {
     long ret;
     void *overlay_fdt;
 
-    if ( op->overlay_op != XEN_DOMCTL_DT_OVERLAY_ATTACH )
+    if ( op->overlay_op != CRUX_DOMCTL_DT_OVERLAY_ATTACH )
         return -EOPNOTSUPP;
 
     if ( op->overlay_fdt_size == 0 ||
@@ -971,7 +971,7 @@ long dt_overlay_domctl(struct domain *d, struct xen_domctl_dt_overlay *op)
     if ( op->pad[0] || op->pad[1] || op->pad[2] )
         return -EINVAL;
 
-    /* TODO: add support for non-1:1 domains using xen,reg */
+    /* TODO: add support for non-1:1 domains using crux,reg */
     if ( !is_domain_direct_mapped(d) )
         return -EOPNOTSUPP;
 
@@ -983,13 +983,13 @@ long dt_overlay_domctl(struct domain *d, struct xen_domctl_dt_overlay *op)
     ret = copy_from_guest(overlay_fdt, op->overlay_fdt, op->overlay_fdt_size);
     if ( ret )
     {
-        gprintk(XENLOG_ERR, "copy from guest failed\n");
+        gprintk(CRUXLOG_ERR, "copy from guest failed\n");
         xfree(overlay_fdt);
 
         return -EFAULT;
     }
 
-    if ( op->overlay_op == XEN_DOMCTL_DT_OVERLAY_ATTACH )
+    if ( op->overlay_op == CRUX_DOMCTL_DT_OVERLAY_ATTACH )
         ret = handle_attach_overlay_nodes(d, overlay_fdt, op->overlay_fdt_size);
     else
         ret = -EOPNOTSUPP;

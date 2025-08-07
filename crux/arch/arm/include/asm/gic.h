@@ -1,7 +1,7 @@
 /*
  * ARM Generic Interrupt Controller support
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -159,8 +159,8 @@
 #define GICH_LR_ACTIVE          2
 
 #ifndef __ASSEMBLY__
-#include <xen/device_tree.h>
-#include <xen/irq.h>
+#include <crux/device_tree.h>
+#include <crux/irq.h>
 
 #define DT_COMPAT_GIC_CORTEX_A15 "arm,cortex-a15-gic"
 
@@ -245,7 +245,7 @@ extern enum gic_version gic_hw_version(void);
 void gic_set_irq_type(struct irq_desc *desc, unsigned int type);
 
 /* Program the GIC to route an interrupt */
-extern void gic_route_irq_to_xen(struct irq_desc *desc, unsigned int priority);
+extern void gic_route_irq_to_crux(struct irq_desc *desc, unsigned int priority);
 extern int gic_route_irq_to_guest(struct domain *d, unsigned int virq,
                                   struct irq_desc *desc,
                                   unsigned int priority);
@@ -410,7 +410,7 @@ static inline unsigned int gic_get_nr_lrs(void)
  * For private IRQs this only works for those of the current CPU.
  *
  * This function should only be called for interrupts routed to the
- * guest. The flow of interrupts routed to xen is not able cope with
+ * guest. The flow of interrupts routed to Xen is not able cope with
  * software changes to the active state.
  */
 static inline void gic_set_active_state(struct irq_desc *irqd, bool state)

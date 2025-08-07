@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/debug-cadence.S
+ * crux/arch/arm/arm64/debug-cadence.S
  *
  * Cadence UART specific debug code
  *

@@ -17,9 +17,9 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/io.h>
-#include <xen/sched.h>
-#include <xen/vpci.h>
+#include <crux/io.h>
+#include <crux/sched.h>
+#include <crux/vpci.h>
 
 #include <asm/msi.h>
 #include <asm/p2m.h>
@@ -51,7 +51,7 @@ static void update_entry(struct vpci_msix_entry *entry,
     /* Ignore ENOENT, it means the entry wasn't setup. */
     if ( rc && rc != -ENOENT )
     {
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "%pp: unable to disable entry %u for update: %d\n",
                 &pdev->sbdf, nr, rc);
         return;
@@ -62,7 +62,7 @@ static void update_entry(struct vpci_msix_entry *entry,
                                                            VPCI_MSIX_TABLE));
     if ( rc )
     {
-        gprintk(XENLOG_WARNING, "%pp: unable to enable entry %u: %d\n",
+        gprintk(CRUXLOG_WARNING, "%pp: unable to enable entry %u: %d\n",
                 &pdev->sbdf, nr, rc);
         /* Entry is likely not properly configured. */
         return;
@@ -89,7 +89,7 @@ static void cf_check control_write(
      * and data fields to be recalculated.
      *
      * In order to avoid the overhead of disabling and enabling all the
-     * entries every time the guest sets the maskall bit, xen will only
+     * entries every time the guest sets the maskall bit, Xen will only
      * perform the disable and enable sequence when the guest has written to
      * the entry.
      */
@@ -129,7 +129,7 @@ static void cf_check control_write(
                 /* Ignore non-present entry. */
                 break;
             default:
-                gprintk(XENLOG_WARNING, "%pp: unable to disable entry %u: %d\n",
+                gprintk(CRUXLOG_WARNING, "%pp: unable to disable entry %u: %d\n",
                         &pdev->sbdf, i, rc);
                 return;
             }
@@ -189,7 +189,7 @@ static bool access_allowed(const struct pci_dev *pdev, unsigned long addr,
     if ( (len == 4 || len == 8) && !(addr & (len - 1)) )
         return true;
 
-    gprintk(XENLOG_WARNING,
+    gprintk(CRUXLOG_WARNING,
             "%pp: unaligned or invalid size MSI-X table access\n", &pdev->sbdf);
 
     return false;
@@ -301,7 +301,7 @@ static int adjacent_read(const struct domain *d, const struct vpci_msix *msix,
     {
         unsigned int i;
 
-        gprintk(XENLOG_DEBUG, "%pp: unaligned read to MSI-X related page\n",
+        gprintk(CRUXLOG_DEBUG, "%pp: unaligned read to MSI-X related page\n",
                 &msix->pdev->sbdf);
 
         /*
@@ -333,7 +333,7 @@ static int adjacent_read(const struct domain *d, const struct vpci_msix *msix,
     if ( !mem )
     {
         spin_unlock(&vpci->lock);
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "%pp: unable to map MSI-X page, returning all bits set\n",
                 &msix->pdev->sbdf);
         return X86EMUL_OKAY;
@@ -442,7 +442,7 @@ static int adjacent_write(const struct domain *d, const struct vpci_msix *msix,
     {
         unsigned int i;
 
-        gprintk(XENLOG_DEBUG, "%pp: unaligned write to MSI-X related page\n",
+        gprintk(CRUXLOG_DEBUG, "%pp: unaligned write to MSI-X related page\n",
                 &msix->pdev->sbdf);
 
         for ( i = 0; i < len; i++ )
@@ -461,7 +461,7 @@ static int adjacent_write(const struct domain *d, const struct vpci_msix *msix,
     if ( !mem )
     {
         spin_unlock(&vpci->lock);
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "%pp: unable to map MSI-X page, dropping write\n",
                 &msix->pdev->sbdf);
         return X86EMUL_OKAY;
@@ -509,8 +509,8 @@ static int cf_check msix_write(
     offset = addr & (PCI_MSIX_ENTRY_SIZE - 1);
 
     /*
-     * NB: xen allows writes to the data/address registers with the entry
-     * unmasked. The specification says this is undefined behavior, and xen
+     * NB: Xen allows writes to the data/address registers with the entry
+     * unmasked. The specification says this is undefined behavior, and Xen
      * implements it as storing the written value, which will be made effective
      * in the next mask/unmask cycle. This also mimics the implementation in
      * QEMU.
@@ -562,7 +562,7 @@ static int cf_check msix_write(
             /*
              * If MSI-X is enabled, the function mask is not active, the entry
              * is being unmasked and there have been changes to the address or
-             * data fields xen needs to disable and enable the entry in order
+             * data fields Xen needs to disable and enable the entry in order
              * to pick up the changes.
              */
             update_entry(entry, pdev, vmsix_entry_nr(msix, entry));
@@ -623,7 +623,7 @@ int vpci_make_msix_hole(const struct pci_dev *pdev)
                 /* fallthrough. */
             default:
                 put_gfn(d, start);
-                gprintk(XENLOG_WARNING,
+                gprintk(CRUXLOG_WARNING,
                         "%pp: existing mapping (mfn: %" PRI_mfn " type: %d) at %#lx clobbers MSIX MMIO area\n",
                         &pdev->sbdf, mfn_x(mfn), t, start);
                 return -EEXIST;
@@ -706,7 +706,7 @@ static int cf_check init_msix(struct pci_dev *pdev)
     /*
      * vPCI header initialization will have mapped the whole BAR into the
      * p2m, as MSI-X capability was not yet initialized.  Crave a hole for
-     * the MSI-X table here, so that xen can trap accesses.
+     * the MSI-X table here, so that Xen can trap accesses.
      */
     return vpci_make_msix_hole(pdev);
 }

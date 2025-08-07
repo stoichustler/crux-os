@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vpci.c
+ * crux/arch/arm/vpci.c
  */
-#include <xen/sched.h>
-#include <xen/vpci.h>
+#include <crux/sched.h>
+#include <crux/vpci.h>
 
 #include <asm/mmio.h>
 

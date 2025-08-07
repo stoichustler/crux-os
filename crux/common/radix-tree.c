@@ -18,10 +18,10 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/radix-tree.h>
-#include <xen/errno.h>
-#include <xen/sections.h>
+#include <crux/init.h>
+#include <crux/radix-tree.h>
+#include <crux/errno.h>
+#include <crux/sections.h>
 
 struct radix_tree_path {
 	struct radix_tree_node *node;

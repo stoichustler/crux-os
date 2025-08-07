@@ -3,13 +3,13 @@
  * Copyright (C) 2024  Linaro Limited
  */
 
-#include <xen/const.h>
-#include <xen/cpu.h>
-#include <xen/list.h>
-#include <xen/notifier.h>
-#include <xen/spinlock.h>
-#include <xen/tasklet.h>
-#include <xen/types.h>
+#include <crux/const.h>
+#include <crux/cpu.h>
+#include <crux/list.h>
+#include <crux/notifier.h>
+#include <crux/spinlock.h>
+#include <crux/tasklet.h>
+#include <crux/types.h>
 
 #include <asm/smccc.h>
 #include <asm/regs.h>
@@ -225,7 +225,7 @@ static void notif_vm_pend_intr(uint16_t vm_id)
     struct vcpu *v;
 
     /*
-     * vm_id == 0 means a notifications pending for xen itself, but
+     * vm_id == 0 means a notifications pending for Xen itself, but
      * we don't support that yet.
      */
     if ( !vm_id )
@@ -277,7 +277,7 @@ static void notif_vm_pend_intr(uint16_t vm_id)
         }
     }
     if ( !v )
-        printk(XENLOG_ERR "ffa: can't inject NPI, all vCPUs offline\n");
+        printk(CRUXLOG_ERR "ffa: can't inject NPI, all vCPUs offline\n");
 
 out_unlock:
     rcu_unlock_domain(d);
@@ -301,7 +301,7 @@ static void notif_sri_action(void *unused)
         if ( res )
         {
             if ( res != FFA_RET_NO_DATA )
-                printk(XENLOG_ERR "ffa: notification info get failed: error %d\n",
+                printk(CRUXLOG_ERR "ffa: notification info get failed: error %d\n",
                        res);
             return;
         }
@@ -362,7 +362,7 @@ void ffa_notif_init_interrupt(void)
         ret = request_irq(notif_sri_irq, 0, notif_irq_handler, "FF-A notif",
                           NULL);
         if ( ret )
-            printk(XENLOG_ERR "ffa: request_irq irq %u failed: error %d\n",
+            printk(CRUXLOG_ERR "ffa: request_irq irq %u failed: error %d\n",
                    notif_sri_irq, ret);
     }
 }
@@ -395,7 +395,7 @@ void ffa_notif_init(void)
     ret = request_irq(irq, 0, notif_irq_handler, "FF-A notif", NULL);
     if ( ret )
     {
-        printk(XENLOG_ERR "ffa: request_irq irq %u failed: error %d\n",
+        printk(CRUXLOG_ERR "ffa: request_irq irq %u failed: error %d\n",
                irq, ret);
         return;
     }

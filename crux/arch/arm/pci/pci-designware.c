@@ -3,11 +3,11 @@
  * Based on Linux drivers/pci/controller/pci-host-common.c
  * Based on Linux drivers/pci/controller/pci-host-generic.c
  * Based on Linux drivers/pci/controller/dwc/pcie-designware.c
- * Based on xen/arch/arm/pci/pci-host-generic.c
+ * Based on crux/arch/arm/pci/pci-host-generic.c
  *
  */
 
-#include <xen/delay.h>
+#include <crux/delay.h>
 #include <asm/io.h>
 
 #include "pci-designware.h"
@@ -85,7 +85,7 @@ static uint32_t dw_pcie_read_dbi(struct pci_host_bridge *bridge, uint32_t reg,
 
     ret = dw_pcie_read(addr, size, &val);
     if ( ret )
-        printk(XENLOG_G_ERR "Read DBI address failed\n");
+        printk(CRUXLOG_G_ERR "Read DBI address failed\n");
 
     return val;
 }
@@ -98,7 +98,7 @@ static void dw_pcie_write_dbi(struct pci_host_bridge *bridge, uint32_t reg,
 
     ret = dw_pcie_write(addr, size, val);
     if ( ret )
-        printk(XENLOG_G_ERR "Write DBI address failed\n");
+        printk(CRUXLOG_G_ERR "Write DBI address failed\n");
 }
 
 static uint32_t dw_pcie_readl_dbi(struct pci_host_bridge *bridge, uint32_t reg)
@@ -121,7 +121,7 @@ static void dw_pcie_read_iatu_unroll_enabled(struct pci_host_bridge *bridge)
     if ( val == 0xffffffffU )
         priv->iatu_unroll_enabled = true;
 
-    printk(XENLOG_G_DEBUG "%s iATU unroll: %sabled\n",
+    printk(CRUXLOG_G_DEBUG "%s iATU unroll: %sabled\n",
            dt_node_full_name(bridge->dt_node),
            priv->iatu_unroll_enabled ? "en" : "dis");
 }
@@ -134,7 +134,7 @@ static uint32_t dw_pcie_readl_atu(struct pci_host_bridge *pci, uint32_t reg)
 
     ret = dw_pcie_read(priv->atu_base + reg, 4, &val);
     if ( ret )
-        printk(XENLOG_G_ERR "Read ATU address %x failed\n", reg);
+        printk(CRUXLOG_G_ERR "Read ATU address %x failed\n", reg);
 
     return val;
 }
@@ -147,7 +147,7 @@ static void dw_pcie_writel_atu(struct pci_host_bridge *pci, uint32_t reg,
 
     ret = dw_pcie_write(priv->atu_base + reg, 4, val);
     if ( ret )
-        printk(XENLOG_G_ERR "Write ATU address %x failed\n", reg);
+        printk(CRUXLOG_G_ERR "Write ATU address %x failed\n", reg);
 }
 
 static uint32_t dw_pcie_readl_ob_unroll(struct pci_host_bridge *pci,
@@ -204,7 +204,7 @@ static int dw_pcie_prog_outbound_atu_unroll(struct pci_host_bridge *pci,
 
         mdelay(LINK_WAIT_IATU_DELAY_MS);
     }
-    printk(XENLOG_G_ERR "Outbound iATU is not being enabled\n");
+    printk(CRUXLOG_G_ERR "Outbound iATU is not being enabled\n");
 
     return -ENXIO;
 }
@@ -250,7 +250,7 @@ static int __dw_pcie_prog_outbound_atu(struct pci_host_bridge *pci,
 
         mdelay(LINK_WAIT_IATU_DELAY_MS);
     }
-    printk(XENLOG_G_ERR "Outbound iATU is not being enabled\n");
+    printk(CRUXLOG_G_ERR "Outbound iATU is not being enabled\n");
 
     return -ENXIO;
 }
@@ -372,13 +372,13 @@ dw_pcie_host_probe(struct dt_device_node *dev, const void *data,
     atu_idx = dt_property_match_string(dev, "reg-names", "atu");
     if ( atu_idx < 0 )
     {
-        printk(XENLOG_ERR "Cannot find \"atu\" range index in device tree\n");
+        printk(CRUXLOG_ERR "Cannot find \"atu\" range index in device tree\n");
         return ERR_PTR(atu_idx);
     }
     ret = dt_device_get_address(dev, atu_idx, &atu_phys_addr, &atu_size);
     if ( ret )
     {
-        printk(XENLOG_ERR "Cannot find \"atu\" range in device tree\n");
+        printk(CRUXLOG_ERR "Cannot find \"atu\" range in device tree\n");
         return ERR_PTR(ret);
     }
     printk("iATU at [mem 0x%" PRIpaddr "-0x%" PRIpaddr "]\n", atu_phys_addr,
@@ -386,7 +386,7 @@ dw_pcie_host_probe(struct dt_device_node *dev, const void *data,
     priv->atu_base = ioremap_nocache(atu_phys_addr, atu_size);
     if ( !priv->atu_base )
     {
-        printk(XENLOG_ERR "iATU ioremap failed\n");
+        printk(CRUXLOG_ERR "iATU ioremap failed\n");
         return ERR_PTR(ENXIO);
     }
 
@@ -398,7 +398,7 @@ dw_pcie_host_probe(struct dt_device_node *dev, const void *data,
      * HW is not yet initialized by Domain-0: leave it for later.
      */
 
-    printk(XENLOG_INFO "%s number of view ports: %d\n", dt_node_full_name(dev),
+    printk(CRUXLOG_INFO "%s number of view ports: %d\n", dt_node_full_name(dev),
            priv->num_viewport);
 
     return bridge;

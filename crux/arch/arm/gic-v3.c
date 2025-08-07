@@ -1,29 +1,29 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/gic-v3.c
+ * crux/arch/arm/gic-v3.c
  *
  * ARM Generic Interrupt Controller support v3 version
- * based on xen/arch/arm/gic-v2.c and kernel GICv3 driver
+ * based on crux/arch/arm/gic-v2.c and kernel GICv3 driver
  *
  * Copyright (C) 2012,2013 - ARM Ltd
  * Marc Zyngier <marc.zyngier@arm.com>
  *
  * Vijaya Kumar K <vijaya.kumar@caviumnetworks.com>, Cavium Inc
- * ported to xen
+ * ported to Xen
  */
 
-#include <xen/acpi.h>
-#include <xen/delay.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/iocap.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/acpi.h>
+#include <crux/delay.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/iocap.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 
 #include <asm/cpufeature.h>
 #include <asm/device.h>
@@ -295,7 +295,7 @@ static void gicv3_do_wait_for_rwp(void __iomem *base)
     } while ( 1 );
 
     if ( timeout )
-        dprintk(XENLOG_ERR, "RWP timeout\n");
+        dprintk(CRUXLOG_ERR, "RWP timeout\n");
 }
 
 static void gicv3_dist_wait_for_rwp(void)
@@ -584,7 +584,7 @@ static void gicv3_set_irq_type(struct irq_desc *desc, unsigned int type)
     actual = readl_relaxed(base);
     if ( ( cfg & edgebit ) ^ ( actual & edgebit ) )
     {
-        printk(XENLOG_WARNING "GICv3: WARNING: "
+        printk(CRUXLOG_WARNING "GICv3: WARNING: "
                "CPU%d: Failed to configure IRQ%u as %s-triggered. "
                "H/w forces to %s-triggered.\n",
                smp_processor_id(), desc->irq,
@@ -699,7 +699,7 @@ static int gicv3_enable_redist(void)
 
     if ( timeout )
     {
-        dprintk(XENLOG_ERR, "GICv3: Redist enable RWP timeout\n");
+        dprintk(CRUXLOG_ERR, "GICv3: Redist enable RWP timeout\n");
         return 1;
     }
 
@@ -736,7 +736,7 @@ static int __init gicv3_populate_rdist(void)
      * If we ever get a cluster of more than 16 CPUs, just scream.
      */
     if ( (mpidr & 0xff) >= 16 )
-          dprintk(XENLOG_WARNING, "GICv3:Cluster with more than 16's cpus\n");
+          dprintk(CRUXLOG_WARNING, "GICv3:Cluster with more than 16's cpus\n");
 
     /*
      * Convert affinity to a 32bit value that can be matched to GICR_TYPER
@@ -757,7 +757,7 @@ static int __init gicv3_populate_rdist(void)
         reg = readl_relaxed(ptr + GICR_PIDR2) & GIC_PIDR2_ARCH_MASK;
         if ( reg != GIC_PIDR2_ARCH_GICv3 && reg != GIC_PIDR2_ARCH_GICv4 )
         {
-            dprintk(XENLOG_ERR,
+            dprintk(CRUXLOG_ERR,
                     "GICv3: No redistributor present @%"PRIpaddr"\n",
                     gicv3.rdist_regions[i].base);
             break;
@@ -820,7 +820,7 @@ static int __init gicv3_populate_rdist(void)
         } while ( !(typer & GICR_TYPER_LAST) );
     }
 
-    dprintk(XENLOG_ERR, "GICv3: CPU%d: mpidr 0x%"PRIregister" has no re-distributor!\n",
+    dprintk(CRUXLOG_ERR, "GICv3: CPU%d: mpidr 0x%"PRIregister" has no re-distributor!\n",
             smp_processor_id(), cpu_logical_map(smp_processor_id()));
 
     return -ENODEV;
@@ -1300,8 +1300,8 @@ static int gicv3_make_hwdom_dt_node(const struct domain *d,
     compatible = dt_get_property(gic, "compatible", &len);
     if ( !compatible )
     {
-        dprintk(XENLOG_ERR, "Can't find compatible property for the gic node\n");
-        return -FDT_ERR_XEN(ENOENT);
+        dprintk(CRUXLOG_ERR, "Can't find compatible property for the gic node\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     res = fdt_property(fdt, "compatible", compatible, len);
@@ -1325,9 +1325,9 @@ static int gicv3_make_hwdom_dt_node(const struct domain *d,
 
     hw_reg = dt_get_property(gic, "reg", &len);
     if ( !hw_reg )
-        return -FDT_ERR_XEN(ENOENT);
+        return -FDT_ERR_CRUX(ENOENT);
     if ( new_len > len )
-        return -FDT_ERR_XEN(ERANGE);
+        return -FDT_ERR_CRUX(ERANGE);
 
     res = fdt_property(fdt, "reg", hw_reg, new_len);
     if ( res )
@@ -1376,7 +1376,7 @@ static void __init gicv3_init_v2(void)
      */
     if ( vsize < GUEST_GICC_SIZE )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "GICv3: WARNING: Not enabling support for GICv2 compat mode.\n"
                "Size of GICV (%#"PRIpaddr") must at least be %#llx.\n",
                vsize, GUEST_GICC_SIZE);
@@ -1785,7 +1785,7 @@ static int __init gicv3_init(void)
 
     if ( !cpu_has_gicv3 )
     {
-        dprintk(XENLOG_ERR, "GICv3: driver requires system register support\n");
+        dprintk(CRUXLOG_ERR, "GICv3: driver requires system register support\n");
         return -ENODEV;
     }
 

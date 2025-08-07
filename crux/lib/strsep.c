@@ -2,7 +2,7 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/string.h>
+#include <crux/string.h>
 
 /**
  * strsep - Split a string into tokens

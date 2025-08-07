@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/scif-uart.h
+ * crux/include/asm-arm/scif-uart.h
  *
  * Common constant definition between early printk and the UART driver
  * for the SCIF(A) compatible UART.

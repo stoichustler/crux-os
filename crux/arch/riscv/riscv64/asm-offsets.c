@@ -2,7 +2,7 @@
 
 #include <asm/current.h>
 #include <asm/processor.h>
-#include <xen/types.h>
+#include <crux/types.h>
 
 #define DEFINE(_sym, _val)                                                 \
     asm volatile ( "\n.ascii\"==>#define " #_sym " %0 /* " #_val " */<==\""\

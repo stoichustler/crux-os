@@ -3,7 +3,7 @@
 #define __ASM_ARM_DIV64
 
 #include <asm/system.h>
-#include <xen/types.h>
+#include <crux/types.h>
 
 /*
  * The semantics of do_div() are:
@@ -54,7 +54,7 @@
 	__rem;							\
 })
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 /*
  * If the divisor happens to be constant, we determine the appropriate

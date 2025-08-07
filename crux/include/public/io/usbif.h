@@ -2,14 +2,14 @@
 /*
  * usbif.h
  *
- * USB I/O interface for xen guest OSes.
+ * USB I/O interface for Xen guest OSes.
  *
  * Copyright (C) 2009, FUJITSU LABORATORIES LTD.
  * Author: Noboru Iwamatsu <n_iwamatsu@jp.fujitsu.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_USBIF_H__
-#define __XEN_PUBLIC_IO_USBIF_H__
+#ifndef __CRUX_PUBLIC_IO_USBIF_H__
+#define __CRUX_PUBLIC_IO_USBIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -21,14 +21,14 @@
  * the guest and a backend driver in a driver domain (normally dom0) having
  * access to the physical USB device(s) being passed to the guest.
  *
- * The frontend and backend drivers use xenStore to initiate the connection
+ * The frontend and backend drivers use XenStore to initiate the connection
  * between them, the I/O activity is handled via two shared ring pages and an
  * event channel. As the interface between frontend and backend is at the USB
  * host connector level, multiple (up to 31) physical USB devices can be
  * handled by a single connection.
  *
- * The xen pvUSB device name is "qusb", so the frontend's xenStore entries are
- * to be found under "device/qusb", while the backend's xenStore entries are
+ * The Xen pvUSB device name is "qusb", so the frontend's XenStore entries are
+ * to be found under "device/qusb", while the backend's XenStore entries are
  * under "backend/<guest-dom-id>/qusb".
  *
  * When a new pvUSB connection is established, the frontend needs to setup the
@@ -45,19 +45,19 @@
  *
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a xen pvUSB driver utilize nodes within the xenStore to
+ * The two halves of a Xen pvUSB driver utilize nodes within the XenStore to
  * communicate capabilities and to negotiate operating parameters. This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the xenStore, following the xenBus convention.
+ * backend portions of the XenStore, following the XenBus convention.
  *
- * Any specified default value is in effect if the corresponding xenBus node
- * is not present in the xenStore.
+ * Any specified default value is in effect if the corresponding XenBus node
+ * is not present in the XenStore.
  *
- * xenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose xenBus tree contains them.
+ * XenStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose XenBus tree contains them.
  *
  *****************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -78,7 +78,7 @@
  *      Physical USB device connected to the given port, e.g. "3-1.5".
  *
  *****************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -86,26 +86,26 @@
  * event-channel
  *      Values:         unsigned
  *
- *      The identifier of the xen event channel used to signal activity
+ *      The identifier of the Xen event channel used to signal activity
  *      in the ring buffer.
  *
  * urb-ring-ref
  *      Values:         unsigned
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer. This is the ring
  *      buffer for urb requests.
  *
  * conn-ring-ref
  *      Values:         unsigned
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer. This is the ring
  *      buffer for connection/disconnection requests.
  *
  * protocol
- *      Values:         string (XEN_IO_PROTO_ABI_*)
- *      Default Value:  XEN_IO_PROTO_ABI_NATIVE
+ *      Values:         string (CRUX_IO_PROTO_ABI_*)
+ *      Default Value:  CRUX_IO_PROTO_ABI_NATIVE
  *
  *      The machine ABI rules governing the format of all ring request and
  *      response structures.
@@ -405,4 +405,4 @@ typedef struct usbif_conn_response usbif_conn_response_t;
 DEFINE_RING_TYPES(usbif_conn, struct usbif_conn_request, struct usbif_conn_response);
 #define USB_CONN_RING_SIZE __CONST_RING_SIZE(usbif_conn, USBIF_RING_SIZE)
 
-#endif /* __XEN_PUBLIC_IO_USBIF_H__ */
+#endif /* __CRUX_PUBLIC_IO_USBIF_H__ */

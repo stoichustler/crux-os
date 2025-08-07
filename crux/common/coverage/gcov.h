@@ -1,8 +1,8 @@
 #ifndef _GCOV_H_
 #define _GCOV_H_
 
-#include <xen/guest_access.h>
-#include <xen/types.h>
+#include <crux/guest_access.h>
+#include <crux/types.h>
 
 /*
  * Profiling data types used for gcc 3.4 and above - these are defined by

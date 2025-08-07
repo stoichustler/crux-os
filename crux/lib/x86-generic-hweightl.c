@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/self-tests.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/self-tests.h>
 
 /*
  * An implementation of generic_hweightl() used on hardware without the POPCNT
@@ -13,7 +13,7 @@
  * preserved.
  *
  * The ASM is what GCC-12 emits for generic_hweightl() in a release build of
- * xen, with spilling of %rdi/%rdx to preserve the callers registers.
+ * Xen, with spilling of %rdi/%rdx to preserve the callers registers.
  *
  * Note: When we can use __attribute__((no_caller_saved_registers))
  *       unconditionally (GCC 7, Clang 5), we can implement this in plain C.

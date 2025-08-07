@@ -16,16 +16,16 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/domain.h>
-#include <xen/domain_page.h>
-#include <xen/event.h>
-#include <xen/init.h>
-#include <xen/ioreq.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/paging.h>
-#include <xen/sched.h>
-#include <xen/trace.h>
+#include <crux/domain.h>
+#include <crux/domain_page.h>
+#include <crux/event.h>
+#include <crux/init.h>
+#include <crux/ioreq.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/paging.h>
+#include <crux/sched.h>
+#include <crux/trace.h>
 
 #include <asm/guest_atomics.h>
 #include <asm/ioreq.h>
@@ -55,7 +55,7 @@ void ioreq_signal_mapcache_invalidate(void)
     };
 
     if ( ioreq_broadcast(&p, false) != 0 )
-        gprintk(XENLOG_ERR, "Unsuccessful map-cache invalidate\n");
+        gprintk(CRUXLOG_ERR, "Unsuccessful map-cache invalidate\n");
 }
 
 static void set_ioreq_server(struct domain *d, unsigned int id,
@@ -167,7 +167,7 @@ static bool wait_for_io(struct ioreq_vcpu *sv, ioreq_t *p)
     {
         if ( unlikely(state < prev_state) )
         {
-            gdprintk(XENLOG_ERR, "Weird HVM ioreq state transition %u -> %u\n",
+            gdprintk(CRUXLOG_ERR, "Weird HVM ioreq state transition %u -> %u\n",
                      prev_state, state);
             sv->pending = false;
             domain_crash(sv->vcpu->domain);
@@ -183,14 +183,14 @@ static bool wait_for_io(struct ioreq_vcpu *sv, ioreq_t *p)
 
         case STATE_IOREQ_READY:  /* IOREQ_{READY,INPROCESS} -> IORESP_READY */
         case STATE_IOREQ_INPROCESS:
-            wait_on_xen_event_channel(sv->ioreq_evtchn,
+            wait_on_crux_event_channel(sv->ioreq_evtchn,
                                       ({ state = p->state;
                                          smp_rmb();
                                          state != prev_state; }));
             continue;
 
         default:
-            gdprintk(XENLOG_ERR, "Weird HVM iorequest state %u\n", state);
+            gdprintk(CRUXLOG_ERR, "Weird HVM iorequest state %u\n", state);
             sv->pending = false;
             domain_crash(sv->vcpu->domain);
             return false; /* bail */
@@ -372,7 +372,7 @@ static int ioreq_server_add_vcpu(struct ioreq_server *s,
 
     spin_lock(&s->lock);
 
-    rc = alloc_unbound_xen_event_channel(v->domain, v->vcpu_id,
+    rc = alloc_unbound_crux_event_channel(v->domain, v->vcpu_id,
                                          s->emulator->domain_id, NULL);
     if ( rc < 0 )
         goto fail2;
@@ -381,7 +381,7 @@ static int ioreq_server_add_vcpu(struct ioreq_server *s,
 
     if ( v->vcpu_id == 0 && HANDLE_BUFIOREQ(s) )
     {
-        rc = alloc_unbound_xen_event_channel(v->domain, 0,
+        rc = alloc_unbound_crux_event_channel(v->domain, 0,
                                              s->emulator->domain_id, NULL);
         if ( rc < 0 )
             goto fail3;
@@ -400,7 +400,7 @@ static int ioreq_server_add_vcpu(struct ioreq_server *s,
     return 0;
 
  fail3:
-    free_xen_event_channel(v->domain, sv->ioreq_evtchn);
+    free_crux_event_channel(v->domain, sv->ioreq_evtchn);
 
  fail2:
     spin_unlock(&s->lock);
@@ -427,9 +427,9 @@ static void ioreq_server_remove_vcpu(struct ioreq_server *s,
         list_del(&sv->list_entry);
 
         if ( v->vcpu_id == 0 && HANDLE_BUFIOREQ(s) )
-            free_xen_event_channel(v->domain, s->bufioreq_evtchn);
+            free_crux_event_channel(v->domain, s->bufioreq_evtchn);
 
-        free_xen_event_channel(v->domain, sv->ioreq_evtchn);
+        free_crux_event_channel(v->domain, sv->ioreq_evtchn);
 
         xfree(sv);
         break;
@@ -454,9 +454,9 @@ static void ioreq_server_remove_all_vcpus(struct ioreq_server *s)
         list_del(&sv->list_entry);
 
         if ( v->vcpu_id == 0 && HANDLE_BUFIOREQ(s) )
-            free_xen_event_channel(v->domain, s->bufioreq_evtchn);
+            free_crux_event_channel(v->domain, s->bufioreq_evtchn);
 
-        free_xen_event_channel(v->domain, sv->ioreq_evtchn);
+        free_crux_event_channel(v->domain, sv->ioreq_evtchn);
 
         xfree(sv);
     }
@@ -506,9 +506,9 @@ static int ioreq_server_alloc_rangesets(struct ioreq_server *s,
 
         switch ( i )
         {
-        case XEN_DMOP_IO_RANGE_PORT:   type = " port";   break;
-        case XEN_DMOP_IO_RANGE_MEMORY: type = " memory"; break;
-        case XEN_DMOP_IO_RANGE_PCI:    type = " pci";    break;
+        case CRUX_DMOP_IO_RANGE_PORT:   type = " port";   break;
+        case CRUX_DMOP_IO_RANGE_MEMORY: type = " memory"; break;
+        case CRUX_DMOP_IO_RANGE_PCI:    type = " pci";    break;
         default:                       type = "";        break;
         }
 
@@ -814,7 +814,7 @@ int ioreq_server_get_frame(struct domain *d, ioservid_t id,
 
     switch ( idx )
     {
-    case XENMEM_resource_ioreq_server_frame_bufioreq:
+    case CRUXMEM_resource_ioreq_server_frame_bufioreq:
         rc = -ENOENT;
         if ( !HANDLE_BUFIOREQ(s) )
             goto out;
@@ -823,7 +823,7 @@ int ioreq_server_get_frame(struct domain *d, ioservid_t id,
         rc = 0;
         break;
 
-    case XENMEM_resource_ioreq_server_frame_ioreq(0):
+    case CRUXMEM_resource_ioreq_server_frame_ioreq(0):
         *mfn = page_to_mfn(s->ioreq.page);
         rc = 0;
         break;
@@ -864,9 +864,9 @@ static int ioreq_server_map_io_range(struct domain *d, ioservid_t id,
 
     switch ( type )
     {
-    case XEN_DMOP_IO_RANGE_PORT:
-    case XEN_DMOP_IO_RANGE_MEMORY:
-    case XEN_DMOP_IO_RANGE_PCI:
+    case CRUX_DMOP_IO_RANGE_PORT:
+    case CRUX_DMOP_IO_RANGE_MEMORY:
+    case CRUX_DMOP_IO_RANGE_PCI:
         r = s->range[type];
         break;
 
@@ -916,9 +916,9 @@ static int ioreq_server_unmap_io_range(struct domain *d, ioservid_t id,
 
     switch ( type )
     {
-    case XEN_DMOP_IO_RANGE_PORT:
-    case XEN_DMOP_IO_RANGE_MEMORY:
-    case XEN_DMOP_IO_RANGE_PCI:
+    case CRUX_DMOP_IO_RANGE_PORT:
+    case CRUX_DMOP_IO_RANGE_MEMORY:
+    case CRUX_DMOP_IO_RANGE_PCI:
         r = s->range[type];
         break;
 
@@ -960,7 +960,7 @@ int ioreq_server_map_mem_type(struct domain *d, ioservid_t id,
     if ( type != HVMMEM_ioreq_server )
         return -EINVAL;
 
-    if ( flags & ~XEN_DMOP_IOREQ_MEM_ACCESS_WRITE )
+    if ( flags & ~CRUX_DMOP_IOREQ_MEM_ACCESS_WRITE )
         return -EINVAL;
 
     rspin_lock(&d->ioreq_server.lock);
@@ -1121,7 +1121,7 @@ struct ioreq_server *ioreq_server_select(struct domain *d,
         {
             unsigned long start, end;
 
-        case XEN_DMOP_IO_RANGE_PORT:
+        case CRUX_DMOP_IO_RANGE_PORT:
             start = addr;
             end = start + p->size - 1;
             if ( rangeset_contains_range(r, start, end) )
@@ -1129,7 +1129,7 @@ struct ioreq_server *ioreq_server_select(struct domain *d,
 
             break;
 
-        case XEN_DMOP_IO_RANGE_MEMORY:
+        case CRUX_DMOP_IO_RANGE_MEMORY:
             start = ioreq_mmio_first_byte(p);
             end = ioreq_mmio_last_byte(p);
 
@@ -1138,7 +1138,7 @@ struct ioreq_server *ioreq_server_select(struct domain *d,
 
             break;
 
-        case XEN_DMOP_IO_RANGE_PCI:
+        case CRUX_DMOP_IO_RANGE_PCI:
             if ( rangeset_contains_singleton(r, addr >> 32) )
             {
                 p->type = IOREQ_TYPE_PCI_CONFIG;
@@ -1201,7 +1201,7 @@ static int ioreq_send_buffered(struct ioreq_server *s, ioreq_t *p)
         qw = 1;
         break;
     default:
-        gdprintk(XENLOG_WARNING, "unexpected ioreq size: %u\n", p->size);
+        gdprintk(CRUXLOG_WARNING, "unexpected ioreq size: %u\n", p->size);
         return IOREQ_STATUS_UNHANDLED;
     }
 
@@ -1240,7 +1240,7 @@ static int ioreq_send_buffered(struct ioreq_server *s, ioreq_t *p)
         guest_cmpxchg64(s->emulator, &pg->ptrs.full, old.full, new.full);
     }
 
-    notify_via_xen_event_channel(d, s->bufioreq_evtchn);
+    notify_via_crux_event_channel(d, s->bufioreq_evtchn);
     spin_unlock(&s->bufioreq_lock);
 
     return IOREQ_STATUS_HANDLED;
@@ -1276,14 +1276,14 @@ int ioreq_send(struct ioreq_server *s, ioreq_t *proto_p,
 
             if ( unlikely(p->state != STATE_IOREQ_NONE) )
             {
-                gprintk(XENLOG_ERR, "device model set bad IO state %d\n",
+                gprintk(CRUXLOG_ERR, "device model set bad IO state %d\n",
                         p->state);
                 break;
             }
 
             if ( unlikely(p->vp_eport != port) )
             {
-                gprintk(XENLOG_ERR, "device model set bad event channel %d\n",
+                gprintk(CRUXLOG_ERR, "device model set bad event channel %d\n",
                         p->vp_eport);
                 break;
             }
@@ -1292,15 +1292,15 @@ int ioreq_send(struct ioreq_server *s, ioreq_t *proto_p,
             proto_p->vp_eport = port;
             *p = *proto_p;
 
-            prepare_wait_on_xen_event_channel(port);
+            prepare_wait_on_crux_event_channel(port);
 
             /*
              * Following happens /after/ blocking and setting up ioreq
-             * contents. prepare_wait_on_xen_event_channel() is an implicit
+             * contents. prepare_wait_on_crux_event_channel() is an implicit
              * barrier.
              */
             p->state = STATE_IOREQ_READY;
-            notify_via_xen_event_channel(d, port);
+            notify_via_crux_event_channel(d, port);
 
             sv->pending = true;
             return IOREQ_STATUS_RETRY;
@@ -1336,15 +1336,15 @@ void ioreq_domain_init(struct domain *d)
     arch_ioreq_domain_init(d);
 }
 
-int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
+int ioreq_server_dm_op(struct crux_dm_op *op, struct domain *d, bool *const_op)
 {
     long rc;
 
     switch ( op->op )
     {
-    case XEN_DMOP_create_ioreq_server:
+    case CRUX_DMOP_create_ioreq_server:
     {
-        struct xen_dm_op_create_ioreq_server *data =
+        struct crux_dm_op_create_ioreq_server *data =
             &op->u.create_ioreq_server;
 
         *const_op = false;
@@ -1358,11 +1358,11 @@ int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
         break;
     }
 
-    case XEN_DMOP_get_ioreq_server_info:
+    case CRUX_DMOP_get_ioreq_server_info:
     {
-        struct xen_dm_op_get_ioreq_server_info *data =
+        struct crux_dm_op_get_ioreq_server_info *data =
             &op->u.get_ioreq_server_info;
-        const uint16_t valid_flags = XEN_DMOP_no_gfns;
+        const uint16_t valid_flags = CRUX_DMOP_no_gfns;
 
         *const_op = false;
 
@@ -1371,17 +1371,17 @@ int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
             break;
 
         rc = ioreq_server_get_info(d, data->id,
-                                   (data->flags & XEN_DMOP_no_gfns) ?
+                                   (data->flags & CRUX_DMOP_no_gfns) ?
                                    NULL : (unsigned long *)&data->ioreq_gfn,
-                                   (data->flags & XEN_DMOP_no_gfns) ?
+                                   (data->flags & CRUX_DMOP_no_gfns) ?
                                    NULL : (unsigned long *)&data->bufioreq_gfn,
                                    &data->bufioreq_port);
         break;
     }
 
-    case XEN_DMOP_map_io_range_to_ioreq_server:
+    case CRUX_DMOP_map_io_range_to_ioreq_server:
     {
-        const struct xen_dm_op_ioreq_server_range *data =
+        const struct crux_dm_op_ioreq_server_range *data =
             &op->u.map_io_range_to_ioreq_server;
 
         rc = -EINVAL;
@@ -1393,9 +1393,9 @@ int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
         break;
     }
 
-    case XEN_DMOP_unmap_io_range_from_ioreq_server:
+    case CRUX_DMOP_unmap_io_range_from_ioreq_server:
     {
-        const struct xen_dm_op_ioreq_server_range *data =
+        const struct crux_dm_op_ioreq_server_range *data =
             &op->u.unmap_io_range_from_ioreq_server;
 
         rc = -EINVAL;
@@ -1407,9 +1407,9 @@ int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
         break;
     }
 
-    case XEN_DMOP_set_ioreq_server_state:
+    case CRUX_DMOP_set_ioreq_server_state:
     {
-        const struct xen_dm_op_set_ioreq_server_state *data =
+        const struct crux_dm_op_set_ioreq_server_state *data =
             &op->u.set_ioreq_server_state;
 
         rc = -EINVAL;
@@ -1420,9 +1420,9 @@ int ioreq_server_dm_op(struct xen_dm_op *op, struct domain *d, bool *const_op)
         break;
     }
 
-    case XEN_DMOP_destroy_ioreq_server:
+    case CRUX_DMOP_destroy_ioreq_server:
     {
-        const struct xen_dm_op_destroy_ioreq_server *data =
+        const struct crux_dm_op_destroy_ioreq_server *data =
             &op->u.destroy_ioreq_server;
 
         rc = -EINVAL;

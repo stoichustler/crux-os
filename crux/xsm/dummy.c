@@ -146,7 +146,7 @@ static const struct xsm_ops __initconst_cf_clobber dummy_ops = {
     .pmu_op                        = xsm_pmu_op,
 #endif
     .dm_op                         = xsm_dm_op,
-    .xen_version                   = xsm_xen_version,
+    .crux_version                   = xsm_crux_version,
     .domain_resource_map           = xsm_domain_resource_map,
 #ifdef CONFIG_ARGO
     .argo_enable                   = xsm_argo_enable,

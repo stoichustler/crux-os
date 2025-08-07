@@ -1,7 +1,7 @@
 # -*- mode: Makefile; -*-
 
-ifeq ($(filter /%,$(XEN_ROOT)),)
-$(error XEN_ROOT must be absolute)
+ifeq ($(filter /%,$(CRUX_ROOT)),)
+$(error CRUX_ROOT must be absolute)
 endif
 
 # Convenient variables
@@ -17,21 +17,21 @@ space   := $(empty) $(empty)
 realpath = $(wildcard $(foreach file,$(1),$(shell cd -P $(dir $(file)) && echo "$$PWD/$(notdir $(file))")))
 or       = $(if $(strip $(1)),$(1),$(if $(strip $(2)),$(2),$(if $(strip $(3)),$(3),$(if $(strip $(4)),$(4)))))
 
--include $(XEN_ROOT)/.config
+-include $(CRUX_ROOT)/.config
 
-ifeq ($(origin XEN_COMPILE_ARCH), undefined)
-XEN_COMPILE_ARCH    := $(shell uname -m | sed -e s/i.86/x86_32/ \
+ifeq ($(origin CRUX_COMPILE_ARCH), undefined)
+CRUX_COMPILE_ARCH    := $(shell uname -m | sed -e s/i.86/x86_32/ \
                          -e s/i86pc/x86_32/ -e s/amd64/x86_64/ \
                          -e s/armv7.*/arm32/ -e s/armv8.*/arm64/ \
                          -e s/aarch64/arm64/)
 endif
 
-XEN_TARGET_ARCH     ?= $(XEN_COMPILE_ARCH)
-ifeq ($(origin XEN_OS), undefined)
-XEN_OS              := $(shell uname -s)
+CRUX_TARGET_ARCH     ?= $(CRUX_COMPILE_ARCH)
+ifeq ($(origin CRUX_OS), undefined)
+CRUX_OS              := $(shell uname -s)
 endif
 
-CONFIG_$(XEN_OS) := y
+CONFIG_$(CRUX_OS) := y
 
 SHELL     ?= /bin/sh
 
@@ -39,14 +39,14 @@ SHELL     ?= /bin/sh
 HOSTCFLAGS  = -Wall -Werror -Wstrict-prototypes -O2 -fomit-frame-pointer
 HOSTCFLAGS += -fno-strict-aliasing
 
-DISTDIR     ?= $(XEN_ROOT)/dist
+DISTDIR     ?= $(CRUX_ROOT)/dist
 DESTDIR     ?= /
 
 # Allow phony attribute to be listed as dependency rather than fake target
 .PHONY: .phony
 
 # If we are not cross-compiling, default HOSTC{C/XX} to C{C/XX}
-ifeq ($(XEN_TARGET_ARCH), $(XEN_COMPILE_ARCH))
+ifeq ($(CRUX_TARGET_ARCH), $(CRUX_COMPILE_ARCH))
 HOSTCC ?= $(CC)
 HOSTCXX ?= $(CXX)
 endif
@@ -70,8 +70,8 @@ DEPS_RM = $(DEPS) $(DEPS_INCLUDE)
 	sed "s!\(^\| \)$$PWD/! !" $^ >$@.tmp && mv -f $@.tmp $@
 
 # HUSTLER
-include $(XEN_ROOT)/scripts/config/$(XEN_OS).mk
-include $(XEN_ROOT)/scripts/config/$(XEN_TARGET_ARCH).mk
+include $(CRUX_ROOT)/scripts/config/$(CRUX_OS).mk
+include $(CRUX_ROOT)/scripts/config/$(CRUX_TARGET_ARCH).mk
 
 ifneq ($(EXTRA_PREFIX),)
 EXTRA_INCLUDES += $(EXTRA_PREFIX)/include
@@ -127,18 +127,18 @@ define cc-ver-check-closure
 endef
 
 # Require GCC v5 as the project global baseline
-check-$(gcc) = $(call cc-ver-check,CC,0x050000,"xen requires at least GCC 5")
+check-$(gcc) = $(call cc-ver-check,CC,0x050000,"crux requires at least GCC 5")
 $(eval $(check-y))
 
 ld-ver-build-id = $(shell $(1) --build-id 2>&1 | \
 					grep -q build-id && echo n || echo y)
 
-export XEN_HAS_BUILD_ID ?= n
+export CRUX_HAS_BUILD_ID ?= n
 ifeq ($(call ld-ver-build-id,$(LD)),n)
 build_id_linker :=
 else
 CFLAGS += -DBUILD_ID
-export XEN_HAS_BUILD_ID=y
+export CRUX_HAS_BUILD_ID=y
 build_id_linker := --build-id=sha1
 endif
 
@@ -152,8 +152,8 @@ endif
 
 define buildmakevars2shellvars
     export PREFIX="$(prefix)";                                            \
-    export XEN_SCRIPT_DIR="$(XEN_SCRIPT_DIR)";                            \
-    export XEN_ROOT="$(XEN_ROOT)"
+    export CRUX_SCRIPT_DIR="$(CRUX_SCRIPT_DIR)";                            \
+    export CRUX_ROOT="$(CRUX_ROOT)"
 endef
 
 #
@@ -179,7 +179,7 @@ LDFLAGS += $(foreach i, $(EXTRA_LIB), -L$(i))
 CFLAGS += $(foreach i, $(EXTRA_INCLUDES), -I$(i))
 LDFLAGS += $(foreach i, $(PREPEND_LIB), -L$(i))
 CFLAGS += $(foreach i, $(PREPEND_INCLUDES), -I$(i))
-ifeq ($(XEN_TOOLS_RPATH),y)
+ifeq ($(CRUX_TOOLS_RPATH),y)
 LDFLAGS += -Wl,-rpath,$(libdir)
 endif
 APPEND_LDFLAGS += $(foreach i, $(APPEND_LIB), -L$(i))
@@ -188,13 +188,13 @@ APPEND_CFLAGS += $(foreach i, $(APPEND_INCLUDES), -I$(i))
 EMBEDDED_EXTRA_CFLAGS := -fno-pie
 EMBEDDED_EXTRA_CFLAGS += -fno-exceptions -fno-asynchronous-unwind-tables
 
-XEN_EXTFILES_URL ?= https://xenbits.xen.org/xen-extfiles
+CRUX_EXTFILES_URL ?= https://cruxbits.crux.org/crux-extfiles
 # All the files at that location were downloaded from elsewhere on
 # the internet.  The original download URL is preserved as a comment
-# near the place in the xen Makefiles where the file is used.
+# near the place in the crux Makefiles where the file is used.
 
 # Where to look for inlined subtrees (for example, from a tarball)
-QEMU_UPSTREAM_INTREE ?= $(XEN_ROOT)/tools/qemu-xen
+QEMU_UPSTREAM_INTREE ?= $(CRUX_ROOT)/tools/qemu-crux
 
 
 # Handle legacy options
@@ -202,16 +202,16 @@ ifneq (,$(SEABIOS_UPSTREAM_TAG))
 SEABIOS_UPSTREAM_REVISION ?= $(SEABIOS_UPSTREAM_TAG)
 endif
 
-OVMF_UPSTREAM_URL ?= https://xenbits.xen.org/git-http/ovmf.git
+OVMF_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/ovmf.git
 OVMF_UPSTREAM_REVISION ?= ba91d0292e593df8528b66f99c1b0b14fadc8e16
 
-QEMU_UPSTREAM_URL ?= https://xenbits.xen.org/git-http/qemu-xen.git
+QEMU_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/qemu-crux.git
 QEMU_UPSTREAM_REVISION ?= master
 
-MINIOS_UPSTREAM_URL ?= https://xenbits.xen.org/git-http/mini-os.git
+MINIOS_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/mini-os.git
 MINIOS_UPSTREAM_REVISION ?= 6732fd42d8eb8d0af9f5eb54aca17f4c250213a8
 
-SEABIOS_UPSTREAM_URL ?= https://xenbits.xen.org/git-http/seabios.git
+SEABIOS_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/seabios.git
 SEABIOS_UPSTREAM_REVISION ?= rel-1.16.3
 
 ETHERBOOT_NICS ?= rtl8139 8086100e

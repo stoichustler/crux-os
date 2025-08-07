@@ -379,7 +379,7 @@
 typedef paddr_t		dma_addr_t;
 typedef unsigned int		gfp_t;
 
-/* Alias to xen lock functions */
+/* Alias to Xen lock functions */
 #define mutex spinlock
 #define mutex_init spin_lock_init
 #define mutex_lock spin_lock
@@ -393,7 +393,7 @@ enum arm_smmu_domain_stage {
 	ARM_SMMU_DOMAIN_BYPASS,
 };
 
-/* xen specific code. */
+/* Xen specific code. */
 struct iommu_domain {
 	/* Runtime SMMU configuration for this iommu_domain */
 	atomic_t		ref;
@@ -404,8 +404,8 @@ struct iommu_domain {
 	struct list_head		list;
 };
 
-/* Describes information required for a xen domain */
-struct arm_smmu_xen_domain {
+/* Describes information required for a Xen domain */
+struct arm_smmu_crux_domain {
 	spinlock_t		lock;
 
 	/* List of iommu domains associated to this domain */
@@ -659,7 +659,7 @@ struct arm_smmu_domain {
 	enum arm_smmu_domain_stage	stage;
 	struct arm_smmu_s2_cfg	s2_cfg;
 
-	/* xen domain associated with this SMMU domain */
+	/* Xen domain associated with this SMMU domain */
 	struct domain		*d;
 
 	struct iommu_domain		domain;

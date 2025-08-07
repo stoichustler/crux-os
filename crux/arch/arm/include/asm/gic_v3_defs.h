@@ -18,7 +18,7 @@
 #ifndef __ASM_ARM_GIC_V3_DEFS_H__
 #define __ASM_ARM_GIC_V3_DEFS_H__
 
-#include <xen/sizes.h>
+#include <crux/sizes.h>
 
 /*
  * Additional registers defined in GIC v3.

@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/bitops.h>
-#include <xen/prefetch.h>
+#include <crux/bitops.h>
+#include <crux/prefetch.h>
 #include <asm/system.h>
 
 /*

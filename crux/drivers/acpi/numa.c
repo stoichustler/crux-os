@@ -21,11 +21,11 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  */
-#include <xen/init.h>
-#include <xen/types.h>
-#include <xen/errno.h>
-#include <xen/acpi.h>
-#include <xen/numa.h>
+#include <crux/init.h>
+#include <crux/types.h>
+#include <crux/errno.h>
+#include <crux/acpi.h>
+#include <crux/numa.h>
 #include <acpi/acmacros.h>
 
 #define ACPI_NUMA	0x80000000

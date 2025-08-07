@@ -1,4 +1,4 @@
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 struct vm_event_st;
 struct vcpu;

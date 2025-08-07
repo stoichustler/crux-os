@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Structure definitions for HVM state that is held by xen and must
+ * Structure definitions for HVM state that is held by Xen and must
  * be saved along with the domain's memory and device-model state.
  *
- * Copyright (c) 2007 xenSource Ltd.
+ * Copyright (c) 2007 XenSource Ltd.
  */
 
-#ifndef __XEN_PUBLIC_HVM_SAVE_X86_H__
-#define __XEN_PUBLIC_HVM_SAVE_X86_H__
+#ifndef __CRUX_PUBLIC_HVM_SAVE_X86_H__
+#define __CRUX_PUBLIC_HVM_SAVE_X86_H__
 
-#include "../../xen.h"
+#include "../../crux.h"
 
 /*
  * Save/restore header: general info about the save file.
@@ -21,7 +21,7 @@
 struct hvm_save_header {
     uint32_t magic;             /* Must be HVM_FILE_MAGIC */
     uint32_t version;           /* File format version */
-    uint64_t changeset;         /* Version of xen that saved this file */
+    uint64_t changeset;         /* Version of Xen that saved this file */
     uint32_t cpuid;             /* CPUID[0x01][%eax] on the saving machine */
     uint32_t gtsc_khz;        /* Guest's TSC frequency in kHz */
 };
@@ -145,8 +145,8 @@ struct hvm_hw_cpu {
     /* error code for pending event */
     uint32_t error_code;
 
-#define _XEN_X86_FPU_INITIALISED        0
-#define XEN_X86_FPU_INITIALISED         (1U<<_XEN_X86_FPU_INITIALISED)
+#define _CRUX_X86_FPU_INITIALISED        0
+#define CRUX_X86_FPU_INITIALISED         (1U<<_CRUX_X86_FPU_INITIALISED)
     uint32_t flags;
     uint32_t pad0;
 };
@@ -279,7 +279,7 @@ static inline int _hvm_hw_fix_cpu(void *h, uint32_t size) {
         ucpu->nat.msr_tsc_aux = 0;
     }
     /* Mimic the old behaviour by unconditionally setting fpu_initialised. */
-    ucpu->nat.flags = XEN_X86_FPU_INITIALISED;
+    ucpu->nat.flags = CRUX_X86_FPU_INITIALISED;
 
     return 0;
 }
@@ -366,7 +366,7 @@ union vioapic_redir_entry
 
 #define VIOAPIC_NUM_PINS  48 /* 16 ISA IRQs, 32 non-legacy PCI IRQS. */
 
-#define XEN_HVM_VIOAPIC(name, cnt)                      \
+#define CRUX_HVM_VIOAPIC(name, cnt)                      \
     struct name {                                       \
         uint64_t base_address;                          \
         uint32_t ioregsel;                              \
@@ -374,10 +374,10 @@ union vioapic_redir_entry
         union vioapic_redir_entry redirtbl[cnt];        \
     }
 
-XEN_HVM_VIOAPIC(hvm_hw_vioapic, VIOAPIC_NUM_PINS);
+CRUX_HVM_VIOAPIC(hvm_hw_vioapic, VIOAPIC_NUM_PINS);
 
-#ifndef __XEN__
-#undef XEN_HVM_VIOAPIC
+#ifndef __CRUX__
+#undef CRUX_HVM_VIOAPIC
 #else
 #undef VIOAPIC_NUM_PINS
 #endif
@@ -620,7 +620,7 @@ struct hvm_msr {
         uint32_t index;
         uint32_t _rsvd;
         uint64_t val;
-    } msr[XEN_FLEX_ARRAY_DIM];
+    } msr[CRUX_FLEX_ARRAY_DIM];
 };
 
 #define CPU_MSR_CODE  20
@@ -632,7 +632,7 @@ struct hvm_msr {
  */
 #define HVM_SAVE_CODE_MAX 20
 
-#endif /* __XEN_PUBLIC_HVM_SAVE_X86_H__ */
+#endif /* __CRUX_PUBLIC_HVM_SAVE_X86_H__ */
 
 /*
  * Local variables:

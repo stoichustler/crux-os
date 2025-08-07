@@ -3,7 +3,7 @@
 #ifndef ASM__RISCV__SETUP_H
 #define ASM__RISCV__SETUP_H
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 #define max_init_domid (0)
 

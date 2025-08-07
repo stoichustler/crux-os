@@ -1,19 +1,19 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/gic-v3-lpi.c
+ * crux/arch/arm/gic-v3-lpi.c
  *
  * ARM GICv3 Locality-specific Peripheral Interrupts (LPI) support
  *
  * Copyright (C) 2016,2017 - ARM Ltd
  */
 
-#include <xen/cpu.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
-#include <xen/warning.h>
+#include <crux/cpu.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
+#include <crux/warning.h>
 #include <asm/atomic.h>
 #include <asm/domain.h>
 #include <asm/gic.h>
@@ -57,7 +57,7 @@ static struct {
     /*
      * Number of physical LPIs the host supports. This is a property of
      * the GIC hardware. We depart from the habit of naming these things
-     * "physical" in xen, as the GICv3/4 spec uses the term "physical LPI"
+     * "physical" in Xen, as the GICv3/4 spec uses the term "physical LPI"
      * in a different context to differentiate them from "virtual LPIs".
      */
     unsigned long int max_host_lpi_ids;
@@ -197,7 +197,7 @@ void gicv3_do_LPI(unsigned int lpi)
      * guest sending a command, which could be an attack vector for
      * hogging the host command queue.
      * See the thread around here for some background:
-     * https://lists.xen.org/archives/html/xen-devel/2016-12/msg00003.html
+     * https://lists.crux.org/archives/html/crux-devel/2016-12/msg00003.html
      */
     vgic_vcpu_inject_lpi(d, hlpi.virt_lpi);
 
@@ -239,7 +239,7 @@ static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
      * physically contiguous memory.
      */
     order = get_order_from_bytes(max(lpi_data.max_host_lpi_ids / 8, (unsigned long)SZ_64K));
-    pendtable = alloc_xenheap_pages(order, gicv3_its_get_memflags());
+    pendtable = alloc_cruxheap_pages(order, gicv3_its_get_memflags());
     if ( !pendtable )
         return -ENOMEM;
 
@@ -247,7 +247,7 @@ static int gicv3_lpi_allocate_pendtable(unsigned int cpu)
     /* Make sure the physical address can be encoded in the register. */
     if ( virt_to_maddr(pendtable) & ~GENMASK(51, 16) )
     {
-        free_xenheap_pages(pendtable, order);
+        free_cruxheap_pages(pendtable, order);
         return -ERANGE;
     }
     clean_and_invalidate_dcache_va_range(pendtable,
@@ -319,7 +319,7 @@ static int gicv3_lpi_set_proptable(void __iomem * rdist_base)
         void *table;
 
         order = get_order_from_bytes(max(lpi_data.max_host_lpi_ids, (unsigned long)SZ_4K));
-        table = alloc_xenheap_pages(order, gicv3_its_get_memflags());
+        table = alloc_cruxheap_pages(order, gicv3_its_get_memflags());
 
         if ( !table )
             return -ENOMEM;
@@ -327,7 +327,7 @@ static int gicv3_lpi_set_proptable(void __iomem * rdist_base)
         /* Make sure the physical address can be encoded in the register. */
         if ( (virt_to_maddr(table) & ~GENMASK(51, 12)) )
         {
-            free_xenheap_pages(table, order);
+            free_cruxheap_pages(table, order);
             return -ERANGE;
         }
         memset(table, GIC_PRI_IRQ | LPI_PROP_RES1, MAX_NR_HOST_LPIS);
@@ -393,7 +393,7 @@ static int cpu_callback(struct notifier_block *nfb, unsigned long action,
     case CPU_UP_PREPARE:
         rc = gicv3_lpi_allocate_pendtable(cpu);
         if ( rc )
-            printk(XENLOG_ERR "Unable to allocate the pendtable for CPU%lu\n",
+            printk(CRUXLOG_ERR "Unable to allocate the pendtable for CPU%lu\n",
                    cpu);
         break;
     }
@@ -426,7 +426,7 @@ int gicv3_lpi_init_host_lpis(unsigned int host_lpi_bits)
      * Tell the user about it, the actual number is reported below.
      */
     if ( max_lpi_bits < 14 || max_lpi_bits > 32 )
-        printk(XENLOG_WARNING "WARNING: max_lpi_bits must be between 14 and 32, adjusting.\n");
+        printk(CRUXLOG_WARNING "WARNING: max_lpi_bits must be between 14 and 32, adjusting.\n");
 
     max_lpi_bits = max(max_lpi_bits, 14U);
     lpi_data.max_host_lpi_ids = BIT(min(host_lpi_bits, max_lpi_bits), UL);
@@ -437,7 +437,7 @@ int gicv3_lpi_init_host_lpis(unsigned int host_lpi_bits)
      * It's very unlikely that we need more than 24 bits worth of LPIs.
      */
     if ( lpi_data.max_host_lpi_ids > BIT(24, UL) )
-        warning_add("using high number of LPIs, limit memory usage with max_lpi_bits\n");
+        warning_add("Using high number of LPIs, limit memory usage with max_lpi_bits\n");
 
     spin_lock_init(&lpi_data.host_lpis_lock);
     lpi_data.next_free_lpi = 0;
@@ -453,7 +453,7 @@ int gicv3_lpi_init_host_lpis(unsigned int host_lpi_bits)
     register_cpu_notifier(&cpu_nfb);
     rc = gicv3_lpi_allocate_pendtable(smp_processor_id());
     if ( rc )
-        printk(XENLOG_ERR "Unable to allocate the pendtable for CPU%u\n",
+        printk(CRUXLOG_ERR "Unable to allocate the pendtable for CPU%u\n",
                smp_processor_id());
 
     return rc;
@@ -525,7 +525,7 @@ int gicv3_allocate_host_lpi_block(struct domain *d, uint32_t *first_lpi)
         union host_lpi *new_chunk;
 
         /* TODO: NUMA locality for quicker IRQ path? */
-        new_chunk = alloc_xenheap_page();
+        new_chunk = alloc_cruxheap_page();
         if ( !new_chunk )
         {
             spin_unlock(&lpi_data.host_lpis_lock);

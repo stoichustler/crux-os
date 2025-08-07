@@ -5,7 +5,7 @@
 /* NB. Auto-generated from arch/.../asm-offsets.c */
 #include <asm/asm-offsets.h>
 #endif
-#include <xen/linkage.h>
+#include <crux/linkage.h>
 #include <asm/processor.h>
 
 /* Macros for generic assembly code */

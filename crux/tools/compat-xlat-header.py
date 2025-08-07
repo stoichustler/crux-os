@@ -296,7 +296,7 @@ def check_field(kind, name, field, extrafields):
                 if token in ('struct', 'union'):
                     pass
                 elif re_identifier.match(token):
-                    print("    CHECK_%s" % (removeprefix(token, 'xen_'),), end='')
+                    print("    CHECK_%s" % (removeprefix(token, 'crux_'),), end='')
                     break
                 else:
                     raise Exception("Malformed compound declaration: '%s'" % (token,))
@@ -412,7 +412,7 @@ def main():
             what = words[0]
             name = words[1]
 
-            name = removeprefix(name, 'xen')
+            name = removeprefix(name, 'crux')
             name = name.strip()
 
             fields = get_fields("compat_%s" % (name,), header_tokens)

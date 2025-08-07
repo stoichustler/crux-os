@@ -10,16 +10,16 @@
  *      compression (see tools/symbols.c for a more complete description)
  */
 
-#include <xen/symbols.h>
-#include <xen/kernel.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/string.h>
-#include <xen/spinlock.h>
-#include <xen/virtual_region.h>
+#include <crux/symbols.h>
+#include <crux/kernel.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/string.h>
+#include <crux/spinlock.h>
+#include <crux/virtual_region.h>
 #include <public/platform.h>
-#include <xen/guest_access.h>
-#include <xen/errno.h>
+#include <crux/guest_access.h>
+#include <crux/errno.h>
 
 #ifdef SYMBOLS_ORIGIN
 extern const unsigned int symbols_offsets[];
@@ -171,7 +171,7 @@ static char symbols_get_symbol_type(unsigned int off)
     return symbols_token_table[symbols_token_index[symbols_names[off + 1]]];
 }
 
-int xensyms_read(uint32_t *symnum, char *type,
+int cruxsyms_read(uint32_t *symnum, char *type,
                  unsigned long *address, char *name)
 {
     /*
@@ -247,7 +247,7 @@ unsigned long symbols_lookup_by_name(const char *symname)
     }
 #else
     do {
-        rc = xensyms_read(&symnum, &type, &addr, name);
+        rc = cruxsyms_read(&symnum, &type, &addr, name);
         if ( rc )
            break;
 

@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/vpsci.h
+ * crux/include/asm-arm/vpsci.h
  *
  * Julien Grall <julien.gral@linaro.org>
  * Copyright (c) 2018 Linaro Limited.

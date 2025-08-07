@@ -5,9 +5,9 @@
 #ifndef ASM__RISCV__FIXMAP_H
 #define ASM__RISCV__FIXMAP_H
 
-#include <xen/bug.h>
-#include <xen/page-size.h>
-#include <xen/pmap.h>
+#include <crux/bug.h>
+#include <crux/page-size.h>
+#include <crux/pmap.h>
 
 #include <asm/page.h>
 
@@ -26,11 +26,11 @@
 #ifndef __ASSEMBLY__
 
 /*
- * Direct access to xen_fixmap[] should only happen when {set,
+ * Direct access to crux_fixmap[] should only happen when {set,
  * clear}_fixmap() is unusable (e.g. where we would end up to
  * recursively call the helpers).
  */
-extern pte_t xen_fixmap[];
+extern pte_t crux_fixmap[];
 
 /* Map a page in a fixmap entry */
 void set_fixmap(unsigned int map, mfn_t mfn, pte_attr_t flags);

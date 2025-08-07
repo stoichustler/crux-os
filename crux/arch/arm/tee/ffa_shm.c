@@ -3,13 +3,13 @@
  * Copyright (C) 2024  Linaro Limited
  */
 
-#include <xen/const.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
-#include <xen/mm.h>
-#include <xen/lib.h>
-#include <xen/list.h>
-#include <xen/spinlock.h>
+#include <crux/const.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
+#include <crux/mm.h>
+#include <crux/lib.h>
+#include <crux/list.h>
+#include <crux/spinlock.h>
 
 #include <asm/smccc.h>
 #include <asm/regs.h>
@@ -668,7 +668,7 @@ bool ffa_shm_domain_destroy(struct domain *d)
         res = ffa_mem_reclaim(handle_lo, handle_hi, 0);
         switch ( res ) {
         case FFA_RET_OK:
-            printk(XENLOG_G_DEBUG "%pd: ffa: Reclaimed handle %#lx\n",
+            printk(CRUXLOG_G_DEBUG "%pd: ffa: Reclaimed handle %#lx\n",
                    d, shm->handle);
             list_del(&shm->list);
             free_ffa_shm_mem(d, shm);
@@ -678,7 +678,7 @@ bool ffa_shm_domain_destroy(struct domain *d)
              * A temporary error that may get resolved a bit later, it's
              * worth retrying.
              */
-            printk(XENLOG_G_INFO "%pd: ffa: Failed to reclaim handle %#lx : %d\n",
+            printk(CRUXLOG_G_INFO "%pd: ffa: Failed to reclaim handle %#lx : %d\n",
                    d, shm->handle, res);
             break; /* We will retry later */
         default:
@@ -691,7 +691,7 @@ bool ffa_shm_domain_destroy(struct domain *d)
              * FFA_RET_NO_MEMORY might be a temporary error as it it could
              * succeed if retried later, but treat it as permanent for now.
              */
-            printk(XENLOG_G_INFO "%pd: ffa: Permanent failure to reclaim handle %#lx : %d\n",
+            printk(CRUXLOG_G_INFO "%pd: ffa: Permanent failure to reclaim handle %#lx : %d\n",
                    d, shm->handle, res);
 
             /*

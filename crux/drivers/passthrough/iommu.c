@@ -12,14 +12,14 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/sched.h>
-#include <xen/iommu.h>
-#include <xen/paging.h>
-#include <xen/guest_access.h>
-#include <xen/event.h>
-#include <xen/param.h>
-#include <xen/softirq.h>
-#include <xen/keyhandler.h>
+#include <crux/sched.h>
+#include <crux/iommu.h>
+#include <crux/paging.h>
+#include <crux/guest_access.h>
+#include <crux/event.h>
+#include <crux/param.h>
+#include <crux/softirq.h>
+#include <crux/keyhandler.h>
 #include <xsm/xsm.h>
 
 #ifdef CONFIG_X86
@@ -224,7 +224,7 @@ int iommu_domain_init(struct domain *d, unsigned int opts)
      * be enabled.
      */
     hd->hap_pt_share = hap_enabled(d) && iommu_hap_pt_share &&
-        !(opts & XEN_DOMCTL_IOMMU_no_sharept);
+        !(opts & CRUX_DOMCTL_IOMMU_no_sharept);
 
     /*
      * NB: 'relaxed' h/w domains don't need the IOMMU mappings to be kept
@@ -356,7 +356,7 @@ long iommu_map(struct domain *d, dfn_t dfn0, mfn_t mfn0,
             continue;
 
         if ( !d->is_shutting_down && printk_ratelimit() )
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "d%d: IOMMU mapping dfn %"PRI_dfn" to mfn %"PRI_mfn" failed: %d\n",
                    d->domain_id, dfn_x(dfn), mfn_x(mfn), rc);
 
@@ -428,7 +428,7 @@ long iommu_unmap(struct domain *d, dfn_t dfn0, unsigned long page_count,
             continue;
 
         if ( !d->is_shutting_down && printk_ratelimit() )
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "d%d: IOMMU unmapping dfn %"PRI_dfn" failed: %d\n",
                    d->domain_id, dfn_x(dfn), err);
 
@@ -493,7 +493,7 @@ int iommu_iotlb_flush(struct domain *d, dfn_t dfn, unsigned long page_count,
     if ( unlikely(rc) )
     {
         if ( !d->is_shutting_down && printk_ratelimit() )
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "d%d: IOMMU IOTLB flush failed: %d, dfn %"PRI_dfn", page count %lu flags %x\n",
                    d->domain_id, rc, dfn_x(dfn), page_count, flush_flags);
 
@@ -518,7 +518,7 @@ int iommu_iotlb_flush_all(struct domain *d, unsigned int flush_flags)
     if ( unlikely(rc) )
     {
         if ( !d->is_shutting_down && printk_ratelimit() )
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "d%d: IOMMU IOTLB flush all failed: %d\n",
                    d->domain_id, rc);
 
@@ -542,7 +542,7 @@ int iommu_quarantine_dev_init(device_t *dev)
 
 static int __init iommu_quarantine_init(void)
 {
-    dom_io->options |= XEN_DOMCTL_CDF_iommu;
+    dom_io->options |= CRUX_DOMCTL_CDF_iommu;
 
     return iommu_domain_init(dom_io, 0);
 }
@@ -564,7 +564,7 @@ int __init iommu_setup(void)
             ops = iommu_get_ops();
         if ( ops && (ISOLATE_LSB(ops->page_sizes)) != PAGE_SIZE )
         {
-            printk(XENLOG_ERR "IOMMU: page size mask %lx unsupported\n",
+            printk(CRUXLOG_ERR "IOMMU: page size mask %lx unsupported\n",
                    ops->page_sizes);
             rc = ops->page_sizes ? -EPERM : -ENODATA;
         }
@@ -626,8 +626,8 @@ void iommu_resume(void)
 }
 
 int iommu_do_domctl(
-    struct xen_domctl *domctl, struct domain *d,
-    XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+    struct crux_domctl *domctl, struct domain *d,
+    CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     int ret = -ENODEV;
 
@@ -739,7 +739,7 @@ int __init iommu_get_extra_reserved_device_memory(iommu_grdm_t *func,
 
         if ( !reserve_e820_ram(&e820, start, end) )
         {
-            printk(XENLOG_ERR "Failed to reserve [%"PRIx64"-%"PRIx64") for %s, "
+            printk(CRUXLOG_ERR "Failed to reserve [%"PRIx64"-%"PRIx64") for %s, "
                    "skipping IOMMU mapping for it, some functionality may be broken\n",
                    start, end, extra_reserved_ranges[idx].name);
             continue;

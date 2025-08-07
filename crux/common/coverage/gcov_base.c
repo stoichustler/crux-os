@@ -15,7 +15,7 @@
 
 #include "gcov.h"
 
-#include <xen/init.h>
+#include <crux/init.h>
 
 /*
  * __gcov_init is called by gcc-generated constructor code for each object
@@ -29,7 +29,7 @@ void __init __gcov_init(struct gcov_info *info)
 
 /*
  * These functions may be referenced by gcc-generated profiling code but serve
- * no function for xen.
+ * no function for Xen.
  */
 void __gcov_exit(void)
 {

@@ -1,4 +1,4 @@
-#include <xen/ctype.h>
+#include <crux/ctype.h>
 
 /* for ctype.h */
 const unsigned char _ctype[] = {

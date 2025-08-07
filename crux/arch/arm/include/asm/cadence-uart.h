@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/cadence-uart.h
+ * crux/include/asm-arm/cadence-uart.h
  *
  * Written by Edgar E. Iglesias <edgar.iglesias@xilinx.com>
  * Copyright (C) 2015 Xilinx Inc.

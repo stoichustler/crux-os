@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/device.c
+ * crux/arch/arm/device.c
  *
  * Helpers to use a device retrieved via the device tree.
  *
@@ -8,10 +8,10 @@
  * Copyright (C) 2013 Linaro Limited.
  */
 
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/iocap.h>
-#include <xen/lib.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/iocap.h>
+#include <crux/lib.h>
 
 #include <asm/setup.h>
 
@@ -23,7 +23,7 @@ int map_irq_to_domain(struct domain *d, unsigned int irq,
     res = irq_permit_access(d, irq);
     if ( res )
     {
-        printk(XENLOG_ERR "Unable to permit to %pd access to IRQ %u\n", d, irq);
+        printk(CRUXLOG_ERR "Unable to permit to %pd access to IRQ %u\n", d, irq);
         return res;
     }
 
@@ -39,7 +39,7 @@ int map_irq_to_domain(struct domain *d, unsigned int irq,
         res = route_irq_to_guest(d, irq, irq, devname);
         if ( res < 0 )
         {
-            printk(XENLOG_ERR "Unable to map IRQ%u to %pd\n", irq, d);
+            printk(CRUXLOG_ERR "Unable to map IRQ%u to %pd\n", irq, d);
             return res;
         }
     }
@@ -57,7 +57,7 @@ int map_range_to_domain(const struct dt_device_node *dev,
 
     if ( (addr != (paddr_t)addr) || (((paddr_t)~0 - addr) < len) )
     {
-        printk(XENLOG_ERR "%s: [0x%"PRIx64", 0x%"PRIx64"] exceeds the maximum allowed PA width (%u bits)",
+        printk(CRUXLOG_ERR "%s: [0x%"PRIx64", 0x%"PRIx64"] exceeds the maximum allowed PA width (%u bits)",
                dt_node_full_name(dev), addr, (addr + len), PADDR_BITS);
         return -ERANGE;
     }
@@ -74,7 +74,7 @@ int map_range_to_domain(const struct dt_device_node *dev,
                                   paddr_to_pfn(addr + len - 1));
         if ( res )
         {
-            printk(XENLOG_ERR "Unable to permit to dom%d access to"
+            printk(CRUXLOG_ERR "Unable to permit to dom%d access to"
                     " 0x%"PRIx64" - 0x%"PRIx64"\n",
                     d->domain_id,
                     addr & PAGE_MASK, PAGE_ALIGN(addr + len) - 1);
@@ -92,7 +92,7 @@ int map_range_to_domain(const struct dt_device_node *dev,
 
         if ( res < 0 )
         {
-            printk(XENLOG_ERR "Unable to map 0x%"PRIx64
+            printk(CRUXLOG_ERR "Unable to map 0x%"PRIx64
                    " - 0x%"PRIx64" in domain %d\n",
                    addr & PAGE_MASK, PAGE_ALIGN(addr + len) - 1,
                    d->domain_id);
@@ -140,7 +140,7 @@ int map_device_irqs_to_domain(struct domain *d,
         res = dt_device_get_raw_irq(dev, i, &rirq);
         if ( res )
         {
-            printk(XENLOG_ERR "Unable to retrieve irq %u for %s\n",
+            printk(CRUXLOG_ERR "Unable to retrieve irq %u for %s\n",
                    i, dt_node_full_name(dev));
             return res;
         }
@@ -159,7 +159,7 @@ int map_device_irqs_to_domain(struct domain *d,
         irq = platform_get_irq(dev, i);
         if ( irq < 0 )
         {
-            printk(XENLOG_ERR "Unable to get irq %u for %s\n",
+            printk(CRUXLOG_ERR "Unable to get irq %u for %s\n",
                    i, dt_node_full_name(dev));
             return irq;
         }
@@ -190,7 +190,7 @@ static int map_dt_irq_to_domain(const struct dt_device_node *dev,
 
     if ( irq < NR_LOCAL_IRQS )
     {
-        printk(XENLOG_ERR "%s: IRQ%u is not a SPI\n", dt_node_name(dev), irq);
+        printk(CRUXLOG_ERR "%s: IRQ%u is not a SPI\n", dt_node_name(dev), irq);
         return -EINVAL;
     }
 
@@ -198,7 +198,7 @@ static int map_dt_irq_to_domain(const struct dt_device_node *dev,
     res = irq_set_spi_type(irq, dt_irq->type);
     if ( res )
     {
-        printk(XENLOG_ERR "%s: Unable to setup IRQ%u to %pd\n",
+        printk(CRUXLOG_ERR "%s: Unable to setup IRQ%u to %pd\n",
                dt_node_name(dev), irq, d);
         return res;
     }
@@ -261,7 +261,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
      * We want to avoid mapping the MMIO in dom0 for the following cases:
      *   - The device is owned by dom0 (i.e. it has been flagged for
      *     passthrough).
-     *   - PCI host bridges with driver in xen. They will later be mapped by
+     *   - PCI host bridges with driver in Xen. They will later be mapped by
      *     pci_host_bridge_mappings().
      */
     struct map_range_data mr_data = {
@@ -287,7 +287,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
         res = iommu_add_dt_device(dev);
         if ( res < 0 )
         {
-            printk(XENLOG_ERR "Failed to add %s to the IOMMU\n",
+            printk(CRUXLOG_ERR "Failed to add %s to the IOMMU\n",
                    dt_node_full_name(dev));
             return res;
         }
@@ -298,7 +298,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
             res = iommu_assign_dt_device(d, dev);
             if ( res )
             {
-                printk(XENLOG_ERR "Failed to setup the IOMMU for %s\n",
+                printk(CRUXLOG_ERR "Failed to setup the IOMMU for %s\n",
                        dt_node_full_name(dev));
                 return res;
             }
@@ -315,7 +315,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
         res = dt_device_get_paddr(dev, i, &addr, &size);
         if ( res )
         {
-            printk(XENLOG_ERR "Unable to retrieve address %u for %s\n",
+            printk(CRUXLOG_ERR "Unable to retrieve address %u for %s\n",
                    i, dt_node_full_name(dev));
             return res;
         }

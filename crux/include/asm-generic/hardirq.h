@@ -2,15 +2,15 @@
 #ifndef __ASM_GENERIC_HARDIRQ_H
 #define __ASM_GENERIC_HARDIRQ_H
 
-#include <xen/cache.h>
-#include <xen/smp.h>
+#include <crux/cache.h>
+#include <crux/smp.h>
 
 typedef struct {
         unsigned long __softirq_pending;
         unsigned int __local_irq_count;
 } __cacheline_aligned irq_cpustat_t;
 
-#include <xen/irq_cpustat.h>    /* Standard mappings for irq_cpustat_t above */
+#include <crux/irq_cpustat.h>    /* Standard mappings for irq_cpustat_t above */
 
 #define in_irq() (local_irq_count(smp_processor_id()) != 0)
 

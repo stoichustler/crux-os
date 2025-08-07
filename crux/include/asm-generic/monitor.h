@@ -12,11 +12,11 @@
 #ifndef __ASM_GENERIC_MONITOR_H__
 #define __ASM_GENERIC_MONITOR_H__
 
-#include <xen/errno.h>
-#include <xen/lib.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
 
 struct domain;
-struct xen_domctl_monitor_op;
+struct crux_domctl_monitor_op;
 
 static inline
 void arch_monitor_allow_userspace(struct domain *d, bool allow_userspace)
@@ -24,7 +24,7 @@ void arch_monitor_allow_userspace(struct domain *d, bool allow_userspace)
 }
 
 static inline
-int arch_monitor_domctl_op(struct domain *d, struct xen_domctl_monitor_op *mop)
+int arch_monitor_domctl_op(struct domain *d, struct crux_domctl_monitor_op *mop)
 {
     /* No arch-specific monitor ops on GENERIC. */
     return -EOPNOTSUPP;
@@ -33,7 +33,7 @@ int arch_monitor_domctl_op(struct domain *d, struct xen_domctl_monitor_op *mop)
 #ifndef HAS_ARCH_MONITOR_DOMCTL_EVENT
 static inline
 int arch_monitor_domctl_event(struct domain *d,
-                              struct xen_domctl_monitor_op *mop)
+                              struct crux_domctl_monitor_op *mop)
 {
     BUG_ON("unimplemented");
 }

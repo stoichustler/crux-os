@@ -8,14 +8,14 @@
  *      Applied standard bit operations to improve bitmap scanning.
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/bitmap.h>
-#include <xen/byteorder.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/spinlock.h>
-#include <xen/xmalloc.h>
+#include <crux/bitmap.h>
+#include <crux/byteorder.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/spinlock.h>
+#include <crux/xmalloc.h>
 
 #include "ebitmap.h"
 #include "policydb.h"

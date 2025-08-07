@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm32/proc-caxx.c
+ * crux/arch/arm/arm32/proc-caxx.c
  *
  * arm V7 Cortex A15 and A7 initialisation
  *

@@ -20,7 +20,7 @@
 #ifndef DRIVERS__PASSTHROUGH__VTD__VTD_H
 #define DRIVERS__PASSTHROUGH__VTD__VTD_H
 
-#include <xen/iommu.h>
+#include <crux/iommu.h>
 
 /*
  * Values for domain_context_mapping_one()'s and me_wifi_quirk()'s "mode"

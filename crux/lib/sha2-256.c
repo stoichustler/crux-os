@@ -3,12 +3,12 @@
  * SHA2-256: https://csrc.nist.gov/pubs/fips/180-2/upd1/final
  *
  * Originally derived from Linux.  Modified substantially to optimise for size
- * and xen's expected usecases.
+ * and Xen's expected usecases.
  */
-#include <xen/bitops.h>
-#include <xen/sha2.h>
-#include <xen/string.h>
-#include <xen/unaligned.h>
+#include <crux/bitops.h>
+#include <crux/sha2.h>
+#include <crux/string.h>
+#include <crux/unaligned.h>
 
 static uint32_t choose(uint32_t x, uint32_t y, uint32_t z)
 {
@@ -209,8 +209,8 @@ void sha2_256_digest(uint8_t digest[SHA2_256_DIGEST_SIZE],
 
 #ifdef CONFIG_SELF_TESTS
 
-#include <xen/init.h>
-#include <xen/lib.h>
+#include <crux/init.h>
+#include <crux/lib.h>
 
 static const struct test {
     const char *msg;

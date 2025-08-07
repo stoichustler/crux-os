@@ -15,9 +15,9 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/lib.h>
-#include <xen/list.h>
-#include <xen/list_sort.h>
+#include <crux/lib.h>
+#include <crux/list.h>
+#include <crux/list_sort.h>
 
 #define MAX_LIST_LENGTH_BITS 20
 
@@ -140,7 +140,7 @@ void list_sort(void *priv, struct list_head *head,
 		}
 		if (lev > max_lev) {
 			if (unlikely(lev >= ARRAY_SIZE(part)-1)) {
-				dprintk(XENLOG_DEBUG,
+				dprintk(CRUXLOG_DEBUG,
 					"list too long for efficiency\n");
 				lev--;
 			}

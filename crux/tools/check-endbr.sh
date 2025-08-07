@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Usage ./$0 xen-syms
+# Usage ./$0 crux-syms
 #
 # When CET-IBT (Control-flow Enforcement Technology, Indirect Branch Tracking)
 # is active, ENDBR instructions mark legal indirect branch targets in the
@@ -24,7 +24,7 @@ AWK="${AWK:-awk}"
 D=$(mktemp -d)
 trap "rm -rf $D" EXIT
 
-TEXT_BIN=$D/xen-syms.text
+TEXT_BIN=$D/crux-syms.text
 VALID=$D/valid-addrs
 ALL=$D/all-addrs
 BAD=$D/bad-addrs
@@ -69,7 +69,7 @@ ${OBJDUMP} -j .text $1 -d -w | grep '	endbr64 *$' | cut -f 1 -d ':' > $VALID &
 #    When the upper bits are set, the exponents worth of precision is lost in
 #    the lower bits, rounding integers to the nearest 4k.
 #
-#    Instead, use the fact that xen's .text is within a 1G aligned region, and
+#    Instead, use the fact that crux's .text is within a 1G aligned region, and
 #    split the VMA so AWK's numeric addition is only working on <32 bit
 #    numbers, which don't lose precision.  (See point 5)
 #
@@ -88,7 +88,7 @@ ${OBJDUMP} -j .text $1 -d -w | grep '	endbr64 *$' | cut -f 1 -d ':' > $VALID &
 #    The consequence of this is that for all offsets, $vma_lo + offset needs
 #    to be less that 256M (i.e. 7 nibbles) so as to be successfully recombined
 #    with the 9 nibbles of $vma_hi.  This is fine; .text is at the start of a
-#    1G aligned region, and xen is far far smaller than 256M, but leave safety
+#    1G aligned region, and crux is far far smaller than 256M, but leave safety
 #    check nevertheless.
 #
 eval $(${OBJDUMP} -j .text $1 -h |

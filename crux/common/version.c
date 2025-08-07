@@ -1,71 +1,71 @@
-#include <xen/bug.h>
-#include <xen/compile.h>
-#include <xen/init.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/sections.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/efi.h>
-#include <xen/elf.h>
-#include <xen/version.h>
+#include <crux/bug.h>
+#include <crux/compile.h>
+#include <crux/init.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/sections.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/efi.h>
+#include <crux/elf.h>
+#include <crux/version.h>
 
-const char *xen_compile_date(void)
+const char *crux_compile_date(void)
 {
-    return XEN_COMPILE_DATE;
+    return CRUX_COMPILE_DATE;
 }
 
-const char *xen_compile_time(void)
+const char *crux_compile_time(void)
 {
-    return XEN_COMPILE_TIME;
+    return CRUX_COMPILE_TIME;
 }
 
-const char *xen_compile_by(void)
+const char *crux_compile_by(void)
 {
-    return XEN_COMPILE_BY;
+    return CRUX_COMPILE_BY;
 }
 
-const char *xen_compile_domain(void)
+const char *crux_compile_domain(void)
 {
-    return XEN_COMPILE_DOMAIN;
+    return CRUX_COMPILE_DOMAIN;
 }
 
-const char *xen_compile_host(void)
+const char *crux_compile_host(void)
 {
-    return XEN_COMPILE_HOST;
+    return CRUX_COMPILE_HOST;
 }
 
-const char *xen_compiler(void)
+const char *crux_compiler(void)
 {
-    return XEN_COMPILER;
+    return CRUX_COMPILER;
 }
 
-unsigned int xen_major_version(void)
+unsigned int crux_major_version(void)
 {
-    return XEN_VERSION;
+    return CRUX_VERSION;
 }
 
-unsigned int xen_minor_version(void)
+unsigned int crux_minor_version(void)
 {
-    return XEN_SUBVERSION;
+    return CRUX_SUBVERSION;
 }
 
-const char *xen_extra_version(void)
+const char *crux_extra_version(void)
 {
-    return XEN_EXTRAVERSION;
+    return CRUX_EXTRAVERSION;
 }
 
-const char *xen_changeset(void)
+const char *crux_changeset(void)
 {
-    return XEN_CHANGESET;
+    return CRUX_CHANGESET;
 }
 
-const char *xen_banner(void)
+const char *crux_banner(void)
 {
-    return XEN_BANNER;
+    return CRUX_BANNER;
 }
 
-const char *xen_deny(void)
+const char *crux_deny(void)
 {
     return "<denied>";
 }
@@ -89,50 +89,32 @@ static const char build_info[] =
 #endif
     "";
 
-const char *xen_build_info(void)
+const char *crux_build_info(void)
 {
     return build_info;
 }
 
+const void *__ro_after_init crux_build_id;
+unsigned int __ro_after_init crux_build_id_len;
+
 void print_version(void)
 {
-    printk("xen version %d.%d%s (%s@%s) (%s) %s %s\n",
-           xen_major_version(), xen_minor_version(), xen_extra_version(),
-           xen_compile_by(), xen_compile_domain(), xen_compiler(),
-           xen_build_info(), xen_compile_date());
+    printk("Xen version %d.%d%s (%s@%s) (%s) %s %s\n",
+           crux_major_version(), crux_minor_version(), crux_extra_version(),
+           crux_compile_by(), crux_compile_domain(), crux_compiler(),
+           crux_build_info(), crux_compile_date());
 
-    printk("latest ChangeSet: %s\n", xen_changeset());
-}
+    printk("Latest ChangeSet: %s\n", crux_changeset());
 
-static const void *build_id_p __read_mostly;
-static unsigned int build_id_len __read_mostly;
-
-int xen_build_id(const void **p, unsigned int *len)
-{
-    if ( !build_id_len )
-        return -ENODATA;
-
-    *len = build_id_len;
-    *p = build_id_p;
-
-    return 0;
-}
-
-void print_build_id(void)
-{
-    /*
-     * NB: build_id_len may be 0 if XEN_HAS_BUILD_ID=n.
-     * Do not print empty build-id.
-     */
-    if ( build_id_len )
-        printk("build-id: %*phN\n", build_id_len, build_id_p);
+    if ( crux_build_id_len )
+        printk("build-id: %*phN\n", crux_build_id_len, crux_build_id);
 }
 
 #ifdef BUILD_ID
 /* Defined in linker script. */
 extern const Elf_Note __note_gnu_build_id_start[], __note_gnu_build_id_end[];
 
-int xen_build_id_check(const Elf_Note *n, unsigned int n_sz,
+int crux_build_id_check(const Elf_Note *n, unsigned int n_sz,
                        const void **p, unsigned int *len)
 {
     /* Check if we really have a build-id. */
@@ -184,7 +166,7 @@ struct cv_info_pdb70
     char pdb_filename[];
 };
 
-void __init xen_build_init(void)
+void __init crux_build_init(void)
 {
     const Elf_Note *n = __note_gnu_build_id_start;
     unsigned int sz;
@@ -200,11 +182,11 @@ void __init xen_build_init(void)
 
     sz = (uintptr_t)__note_gnu_build_id_end - (uintptr_t)n;
 
-    rc = xen_build_id_check(n, sz, &build_id_p, &build_id_len);
+    rc = crux_build_id_check(n, sz, &crux_build_id, &crux_build_id_len);
 
 #ifdef CONFIG_X86
     /*
-     * xen.efi built with a new enough toolchain will have a CodeView record,
+     * crux.efi built with a new enough toolchain will have a CodeView record,
      * not an ELF note.
      */
     if ( rc )
@@ -220,14 +202,14 @@ void __init xen_build_init(void)
         if ( sz > sizeof(*dir) + sizeof(struct cv_info_pdb70) &&
              dir->type == PE_IMAGE_DEBUG_TYPE_CODEVIEW &&
              dir->size > sizeof(struct cv_info_pdb70) &&
-             XEN_VIRT_START + dir->rva_of_data == (unsigned long)(dir + 1) )
+             CRUX_VIRT_START + dir->rva_of_data == (unsigned long)(dir + 1) )
         {
             const struct cv_info_pdb70 *info = (const void *)(dir + 1);
 
             if ( info->cv_signature == CVINFO_PDB70_CVSIGNATURE )
             {
-                build_id_p = info->signature;
-                build_id_len = sizeof(info->signature);
+                crux_build_id = info->signature;
+                crux_build_id_len = sizeof(info->signature);
                 rc = 0;
             }
         }

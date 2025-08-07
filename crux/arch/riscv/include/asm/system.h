@@ -3,7 +3,7 @@
 #ifndef ASM__RISCV__SYSTEM_H
 #define ASM__RISCV__SYSTEM_H
 
-#include <xen/stdbool.h>
+#include <crux/stdbool.h>
 
 #include <asm/csr.h>
 

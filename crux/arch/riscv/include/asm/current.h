@@ -3,9 +3,9 @@
 #ifndef ASM__RISCV__CURRENT_H
 #define ASM__RISCV__CURRENT_H
 
-#include <xen/bug.h>
-#include <xen/cache.h>
-#include <xen/percpu.h>
+#include <crux/bug.h>
+#include <crux/cache.h>
+#include <crux/percpu.h>
 
 #include <asm/processor.h>
 
@@ -14,7 +14,7 @@
 register struct pcpu_info *tp asm ( "tp" );
 
 struct pcpu_info {
-    unsigned int processor_id; /* xen CPU id */
+    unsigned int processor_id; /* Xen CPU id */
     unsigned long hart_id; /* physical CPU id */
 } __cacheline_aligned;
 

@@ -21,12 +21,12 @@
 # ! - needs translation
 # ? - needs checking
 
-?	dom0_vga_console_info		xen.h
-?	mmu_update			xen.h
-!	mmuext_op			xen.h
-!	start_info			xen.h
-?	vcpu_time_info			xen.h
-?	xenctl_bitmap			xen.h
+?	dom0_vga_console_info		crux.h
+?	mmu_update			crux.h
+!	mmuext_op			crux.h
+!	start_info			crux.h
+?	vcpu_time_info			crux.h
+?	cruxctl_bitmap			crux.h
 
 ?	pmu_amd_ctxt			arch-x86/pmu.h
 ?	pmu_arch			arch-x86/pmu.h
@@ -34,27 +34,27 @@
 ?	pmu_intel_ctxt			arch-x86/pmu.h
 ?	pmu_regs			arch-x86/pmu.h
 
-!	cpu_user_regs			arch-x86/xen-@arch@.h
+!	cpu_user_regs			arch-x86/crux-@arch@.h
 
-?	cpu_offline_action		arch-x86/xen-mca.h
-?	mc				arch-x86/xen-mca.h
-!	mc_fetch			arch-x86/xen-mca.h
-?	mc_info				arch-x86/xen-mca.h
-?	mc_inject_v2			arch-x86/xen-mca.h
-?	mc_mceinject			arch-x86/xen-mca.h
-?	mc_msrinject			arch-x86/xen-mca.h
-?	mc_notifydomain			arch-x86/xen-mca.h
-!	mc_physcpuinfo			arch-x86/xen-mca.h
-?	mcinfo_bank			arch-x86/xen-mca.h
-?	mcinfo_common			arch-x86/xen-mca.h
-?	mcinfo_extended			arch-x86/xen-mca.h
-?	mcinfo_global			arch-x86/xen-mca.h
-?	mcinfo_logical_cpu		arch-x86/xen-mca.h
-?	mcinfo_msr			arch-x86/xen-mca.h
-?	mcinfo_recovery			arch-x86/xen-mca.h
-?	page_offline_action		arch-x86/xen-mca.h
+?	cpu_offline_action		arch-x86/crux-mca.h
+?	mc				arch-x86/crux-mca.h
+!	mc_fetch			arch-x86/crux-mca.h
+?	mc_info				arch-x86/crux-mca.h
+?	mc_inject_v2			arch-x86/crux-mca.h
+?	mc_mceinject			arch-x86/crux-mca.h
+?	mc_msrinject			arch-x86/crux-mca.h
+?	mc_notifydomain			arch-x86/crux-mca.h
+!	mc_physcpuinfo			arch-x86/crux-mca.h
+?	mcinfo_bank			arch-x86/crux-mca.h
+?	mcinfo_common			arch-x86/crux-mca.h
+?	mcinfo_extended			arch-x86/crux-mca.h
+?	mcinfo_global			arch-x86/crux-mca.h
+?	mcinfo_logical_cpu		arch-x86/crux-mca.h
+?	mcinfo_msr			arch-x86/crux-mca.h
+?	mcinfo_recovery			arch-x86/crux-mca.h
+?	page_offline_action		arch-x86/crux-mca.h
 
-!	trap_info			arch-x86/xen.h
+!	trap_info			arch-x86/crux.h
 
 ?	argo_addr			argo.h
 !	argo_iov			argo.h
@@ -169,12 +169,12 @@
 !	processor_power			platform.h
 ?	processor_px			platform.h
 !	psd_package			platform.h
-?	xenpf_enter_acpi_sleep		platform.h
-?	xenpf_pcpu_version		platform.h
-?	xenpf_pcpuinfo			platform.h
-?	xenpf_resource_entry		platform.h
-!	xenpf_symdata			platform.h
-?	xenpf_ucode_revision		platform.h
+?	cruxpf_enter_acpi_sleep		platform.h
+?	cruxpf_pcpu_version		platform.h
+?	cruxpf_pcpuinfo			platform.h
+?	cruxpf_resource_entry		platform.h
+!	cruxpf_symdata			platform.h
+?	cruxpf_ucode_revision		platform.h
 
 ?	pmu_data			pmu.h
 ?	pmu_params			pmu.h
@@ -197,8 +197,8 @@
 ?	feature_info			version.h
 ?	varbuf                          version.h
 
-?	xenoprof_init			xenoprof.h
-?	xenoprof_passive		xenoprof.h
+?	cruxoprof_init			cruxoprof.h
+?	cruxoprof_passive		cruxoprof.h
 
 ?	flask_access			xsm/flask_op.h
 ?	flask_cache_stats		xsm/flask_op.h

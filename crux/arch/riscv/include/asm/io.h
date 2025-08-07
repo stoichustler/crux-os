@@ -20,9 +20,9 @@
  *   - drop unused argument of __io_ar() macros.
  *   - drop "#define _raw_{read,write}{b,w,l,q} _raw_{read,write}{b,w,l,q}"
  *     as they are unnecessary.
- *   - Adopt the xen code style for this header, considering that significant
+ *   - Adopt the Xen code style for this header, considering that significant
  *     changes are not anticipated in the future.
- *     In the event of any issues, adapting them to xen style should be easily
+ *     In the event of any issues, adapting them to Xen style should be easily
  *     manageable.
  *   - drop unnecessary __r variables in macros read*_cpu()
  *   - update inline assembler constraints for addr argument for
@@ -38,8 +38,8 @@
 #ifndef ASM__RISCV__IO_H
 #define ASM__RISCV__IO_H
 
-#include <xen/macros.h>
-#include <xen/types.h>
+#include <crux/macros.h>
+#include <crux/types.h>
 
 void __iomem *ioremap_cache(paddr_t pa, size_t len);
 void __iomem *ioremap_wc(paddr_t pa, size_t len);

@@ -1,6 +1,6 @@
 /*
  * VGICv2 MMIO handling functions
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -12,9 +12,9 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/bitops.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/bitops.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 #include <asm/new_vgic.h>
 
 #include "vgic.h"
@@ -37,7 +37,7 @@ static unsigned long vgic_mmio_read_v2_misc(struct vcpu *vcpu,
         break;
     case GICD_IIDR:
         value = (PRODUCT_ID_KVM << 24) |
-                (VARIANT_ID_XEN << 16) |
+                (VARIANT_ID_CRUX << 16) |
                 (IMPLEMENTER_ARM << 0);
         break;
     default:

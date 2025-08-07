@@ -1,29 +1,29 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/smpboot.c
+ * crux/arch/arm/smpboot.c
  *
  * Dummy smpboot support
  *
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/acpi.h>
-#include <xen/cpu.h>
-#include <xen/cpumask.h>
-#include <xen/delay.h>
-#include <xen/device_tree.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/smp.h>
-#include <xen/softirq.h>
-#include <xen/timer.h>
-#include <xen/warning.h>
-#include <xen/irq.h>
-#include <xen/console.h>
+#include <crux/acpi.h>
+#include <crux/cpu.h>
+#include <crux/cpumask.h>
+#include <crux/delay.h>
+#include <crux/device_tree.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/smp.h>
+#include <crux/softirq.h>
+#include <crux/timer.h>
+#include <crux/warning.h>
+#include <crux/irq.h>
+#include <crux/console.h>
 #include <asm/cpuerrata.h>
 #include <asm/gic.h>
 #include <asm/procinfo.h>
@@ -44,13 +44,13 @@ struct cpuinfo_arm cpu_data[NR_CPUS];
 static unsigned int __initdata max_cpus;
 integer_param("maxcpus", max_cpus);
 
-/* CPU logical map: map xen cpuid to an MPIDR */
+/* CPU logical map: map crux cpuid to an MPIDR */
 register_t __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = MPIDR_INVALID };
 
-/* Fake one node for now. See also xen/numa.h */
+/* Fake one node for now. See also crux/numa.h */
 nodemask_t __read_mostly node_online_map = { { [0] = 1UL } };
 
-/* xen stack for bringing up the first CPU. */
+/* Xen stack for bringing up the first CPU. */
 static unsigned char __initdata cpu0_boot_stack[STACK_SIZE]
        __attribute__((__aligned__(STACK_SIZE)));
 
@@ -69,7 +69,7 @@ static bool cpu_is_dead;
 DEFINE_PER_CPU(unsigned int, cpu_id);
 /*
  * Although multithread is part of the Arm spec, there are not many
- * processors supporting multithread and current xen on Arm assumes there
+ * processors supporting multithread and current Xen on Arm assumes there
  * is no multithread.
  */
 /* representing HT siblings of each logical CPU */
@@ -136,8 +136,8 @@ static void __init dt_smp_init_cpus(void)
 
     if ( !cpus )
     {
-        printk(XENLOG_WARNING "WARNING: Can't find /cpus in the device tree.\n"
-               "using only 1 CPU\n");
+        printk(CRUXLOG_WARNING "WARNING: Can't find /cpus in the device tree.\n"
+               "Using only 1 CPU\n");
         return;
     }
 
@@ -152,20 +152,20 @@ static void __init dt_smp_init_cpus(void)
             continue;
 
         if ( dt_n_size_cells(cpu) != 0 )
-            printk(XENLOG_WARNING "cpu node `%s`: #size-cells %d\n",
+            printk(CRUXLOG_WARNING "cpu node `%s`: #size-cells %d\n",
                    dt_node_full_name(cpu), dt_n_size_cells(cpu));
 
         prop = dt_get_property(cpu, "reg", &reg_len);
         if ( !prop )
         {
-            printk(XENLOG_WARNING "cpu node `%s`: has no reg property\n",
+            printk(CRUXLOG_WARNING "cpu node `%s`: has no reg property\n",
                    dt_node_full_name(cpu));
             continue;
         }
 
         if ( reg_len < dt_cells_to_size(dt_n_addr_cells(cpu)) )
         {
-            printk(XENLOG_WARNING "cpu node `%s`: reg property too short\n",
+            printk(CRUXLOG_WARNING "cpu node `%s`: reg property too short\n",
                    dt_node_full_name(cpu));
             continue;
         }
@@ -175,7 +175,7 @@ static void __init dt_smp_init_cpus(void)
         hwid = addr;
         if ( hwid != addr )
         {
-            printk(XENLOG_WARNING "cpu node `%s`: hwid overflow %"PRIx64"\n",
+            printk(CRUXLOG_WARNING "cpu node `%s`: hwid overflow %"PRIx64"\n",
                    dt_node_full_name(cpu), addr);
             continue;
         }
@@ -186,7 +186,7 @@ static void __init dt_smp_init_cpus(void)
          */
         if ( hwid & ~MPIDR_HWID_MASK )
         {
-            printk(XENLOG_WARNING "cpu node `%s`: invalid hwid value (0x%"PRIregister")\n",
+            printk(CRUXLOG_WARNING "cpu node `%s`: invalid hwid value (0x%"PRIregister")\n",
                    dt_node_full_name(cpu), hwid);
             continue;
         }
@@ -201,7 +201,7 @@ static void __init dt_smp_init_cpus(void)
         {
             if ( tmp_map[j] == hwid )
             {
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "cpu node `%s`: duplicate /cpu reg properties %"PRIregister" in the DT\n",
                        dt_node_full_name(cpu), hwid);
                 break;
@@ -228,7 +228,7 @@ static void __init dt_smp_init_cpus(void)
 
         if ( cpuidx > NR_CPUS )
         {
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "DT /cpu %u node greater than max cores %u, capping them\n",
                    cpuidx, NR_CPUS);
             cpuidx = NR_CPUS;
@@ -246,8 +246,8 @@ static void __init dt_smp_init_cpus(void)
 
     if ( !bootcpu_valid )
     {
-        printk(XENLOG_WARNING "DT missing boot CPU MPIDR[23:0]\n"
-               "using only 1 CPU\n");
+        printk(CRUXLOG_WARNING "DT missing boot CPU MPIDR[23:0]\n"
+               "Using only 1 CPU\n");
         return;
     }
 
@@ -269,8 +269,8 @@ void __init smp_init_cpus(void)
 
     if ( (rc = arch_smp_init()) < 0 )
     {
-        printk(XENLOG_WARNING "SMP init failed (%d)\n"
-               "using only 1 CPU\n", rc);
+        printk(CRUXLOG_WARNING "SMP init failed (%d)\n"
+               "Using only 1 CPU\n", rc);
         return;
     }
 
@@ -329,7 +329,7 @@ void asmlinkage noreturn start_secondary(void)
     init_traps();
 
     /*
-     * Currently xen assumes the platform has only one kind of CPUs.
+     * Currently Xen assumes the platform has only one kind of CPUs.
      * This assumption does not hold on big.LITTLE platform and may
      * result to instability and insecure platform (unless cpu affinity
      * is manually specified for all domains). Better to park them for
@@ -339,18 +339,18 @@ void asmlinkage noreturn start_secondary(void)
     {
         if ( !opt_hmp_unsafe )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "CPU%u MIDR (0x%"PRIregister") does not match boot CPU MIDR (0x%"PRIregister"),\n"
-                   XENLOG_ERR "disable cpu (see big.LITTLE.txt under docs/).\n",
+                   CRUXLOG_ERR "disable cpu (see big.LITTLE.txt under docs/).\n",
                    smp_processor_id(), current_cpu_data.midr.bits,
                    system_cpuinfo.midr.bits);
             stop_cpu();
         }
         else
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "CPU%u MIDR (0x%"PRIregister") does not match boot CPU MIDR (0x%"PRIregister"),\n"
-                   XENLOG_ERR "hmp-unsafe turned on so tainting xen and keep core on!!\n",
+                   CRUXLOG_ERR "hmp-unsafe turned on so tainting Xen and keep core on!!\n",
                    smp_processor_id(), current_cpu_data.midr.bits,
                    system_cpuinfo.midr.bits);
             add_taint(TAINT_CPU_OUT_OF_SPEC);
@@ -359,7 +359,7 @@ void asmlinkage noreturn start_secondary(void)
 
     if ( dcache_line_bytes != read_dcache_line_bytes() )
     {
-        printk(XENLOG_ERR "CPU%u dcache line size (%zu) does not match the boot CPU (%zu)\n",
+        printk(CRUXLOG_ERR "CPU%u dcache line size (%zu) does not match the boot CPU (%zu)\n",
                smp_processor_id(), read_dcache_line_bytes(),
                dcache_line_bytes);
         stop_cpu();
@@ -391,7 +391,7 @@ void asmlinkage noreturn start_secondary(void)
 
     /*
      * Calling request_irq() after local_irq_enable() on secondary cores
-     * will make sure the assertion condition in alloc_xenheap_pages(),
+     * will make sure the assertion condition in alloc_cruxheap_pages(),
      * i.e. !in_irq && local_irq_enabled() is satisfied.
      */
     init_maintenance_interrupt();
@@ -403,7 +403,7 @@ void asmlinkage noreturn start_secondary(void)
     check_local_cpu_errata();
     check_local_cpu_features();
 
-    printk(XENLOG_DEBUG "CPU %u booted.\n", smp_processor_id());
+    printk(CRUXLOG_DEBUG "CPU %u booted.\n", smp_processor_id());
 
     startup_cpu_idle_loop();
 }
@@ -480,7 +480,7 @@ int __cpu_up(unsigned int cpu)
     int rc;
     s_time_t deadline;
 
-    printk("bringing up CPU%d\n", cpu);
+    printk("Bringing up CPU%d\n", cpu);
 
     rc = prepare_secondary_mm(cpu);
     if ( rc < 0 )
@@ -575,7 +575,7 @@ static int cpu_smpboot_callback(struct notifier_block *nfb,
     case CPU_UP_PREPARE:
         rc = setup_cpu_sibling_map(cpu);
         if ( rc )
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Unable to allocate CPU sibling/core map  for CPU%u\n",
                    cpu);
 

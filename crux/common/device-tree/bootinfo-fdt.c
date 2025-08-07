@@ -5,16 +5,16 @@
  * Copyright (C) 2012-2014 Citrix Systems, Inc.
  */
 
-#include <xen/bootinfo.h>
-#include <xen/device_tree.h>
-#include <xen/efi.h>
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt-xen.h>
-#include <xen/sort.h>
-#include <xen/unaligned.h>
-#include <xen/static-shmem.h>
+#include <crux/bootinfo.h>
+#include <crux/device_tree.h>
+#include <crux/efi.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt-crux.h>
+#include <crux/sort.h>
+#include <crux/unaligned.h>
+#include <crux/static-shmem.h>
 #include <xsm/xsm.h>
 #include <asm/setup.h>
 
@@ -262,7 +262,7 @@ static void __init process_multiboot_node(const void *fdt, int node,
             kind = BOOTMOD_XSM_POLICY;
     }
 
-    domU = fdt_node_check_compatible(fdt, parent_node, "xen,domain") == 0;
+    domU = fdt_node_check_compatible(fdt, parent_node, "crux,domain") == 0;
     add_boot_module(kind, start, size, domU);
 
     prop = fdt_get_property(fdt, node, "bootargs", &len);
@@ -280,11 +280,13 @@ static int __init process_chosen_node(const void *fdt, int node,
     paddr_t start, end;
     int len;
 
-    if ( fdt_get_property(fdt, node, "xen,static-heap", NULL) )
+    if ( fdt_get_property(fdt, node, "crux,static-heap", NULL) )
     {
         int rc;
 
-        rc = device_tree_get_meminfo(fdt, node, "xen,static-heap",
+        printk("Checking for static heap in /chosen\n");
+
+        rc = device_tree_get_meminfo(fdt, node, "crux,static-heap",
                                      address_cells, size_cells,
                                      bootinfo_get_reserved_mem(),
                                      MEMBANK_STATIC_HEAP);
@@ -293,6 +295,8 @@ static int __init process_chosen_node(const void *fdt, int node,
 
         using_static_heap = true;
     }
+
+    printk("Checking for initrd in /chosen\n");
 
     prop = fdt_get_property(fdt, node, "linux,initrd-start", &len);
     if ( !prop )
@@ -338,12 +342,14 @@ static int __init process_domain_node(const void *fdt, int node,
 {
     const struct fdt_property *prop;
 
-    prop = fdt_get_property(fdt, node, "xen,static-mem", NULL);
+    printk("Checking for \"crux,static-mem\" in domain node\n");
+
+    prop = fdt_get_property(fdt, node, "crux,static-mem", NULL);
     if ( !prop )
-        /* No "xen,static-mem" present. */
+        /* No "crux,static-mem" present. */
         return 0;
 
-    return device_tree_get_meminfo(fdt, node, "xen,static-mem", address_cells,
+    return device_tree_get_meminfo(fdt, node, "crux,static-mem", address_cells,
                                    size_cells, bootinfo_get_reserved_mem(),
                                    MEMBANK_STATIC_DOMAIN);
 }
@@ -366,7 +372,7 @@ static int __init early_scan_node(const void *fdt,
     int rc = 0;
 
     /*
-     * If xen has been booted via UEFI, the memory banks are
+     * If Xen has been booted via UEFI, the memory banks are
      * populated. So we should skip the parsing.
      */
     if ( !efi_enabled(EFI_BOOT) &&
@@ -376,14 +382,14 @@ static int __init early_scan_node(const void *fdt,
     else if ( depth == 1 && !dt_node_cmp(name, "reserved-memory") )
         rc = process_reserved_memory(fdt, node, name, depth,
                                      address_cells, size_cells);
-    else if ( depth <= 3 && (device_tree_node_compatible(fdt, node, "xen,multiboot-module" ) ||
+    else if ( depth <= 3 && (device_tree_node_compatible(fdt, node, "crux,multiboot-module" ) ||
               device_tree_node_compatible(fdt, node, "multiboot,module" )))
         process_multiboot_node(fdt, node, name, address_cells, size_cells);
     else if ( depth == 1 && device_tree_node_matches(fdt, node, "chosen") )
         rc = process_chosen_node(fdt, node, name, address_cells, size_cells);
-    else if ( depth == 2 && device_tree_node_compatible(fdt, node, "xen,domain") )
+    else if ( depth == 2 && device_tree_node_compatible(fdt, node, "crux,domain") )
         rc = process_domain_node(fdt, node, name, address_cells, size_cells);
-    else if ( depth <= 3 && device_tree_node_compatible(fdt, node, "xen,domain-shared-memory-v1") )
+    else if ( depth <= 3 && device_tree_node_compatible(fdt, node, "crux,domain-shared-memory-v1") )
         rc = process_shm_node(fdt, node, address_cells, size_cells);
 
     if ( rc < 0 )
@@ -399,13 +405,11 @@ static void __init early_print_info(void)
     struct bootcmdlines *cmds = &bootinfo.cmdlines;
     unsigned int i;
 
-    printk("kickin' XEN HYPERVISOR ...\n");
-
     for ( i = 0; i < mi->nr_banks; i++ )
-        printk("RAM:       %"PRIpaddr" - %"PRIpaddr"\n",
+        printk("RAM: %"PRIpaddr" - %"PRIpaddr"\n",
                 mi->bank[i].start,
                 mi->bank[i].start + mi->bank[i].size - 1);
-
+    printk("\n");
     for ( i = 0 ; i < mods->nr_mods; i++ )
         printk("MODULE[%d]: %"PRIpaddr" - %"PRIpaddr" %-12s\n",
                 i,
@@ -422,12 +426,12 @@ static void __init early_print_info(void)
 #ifdef CONFIG_STATIC_SHM
     early_print_info_shmem();
 #endif
-
+    printk("\n");
     for ( i = 0 ; i < cmds->nr_mods; i++ )
-        printk("CMDLINE[%"PRIpaddr"]: %s %s\n", cmds->cmdline[i].start,
+        printk("CMDLINE[%"PRIpaddr"]:%s %s\n", cmds->cmdline[i].start,
                cmds->cmdline[i].dt_name,
                &cmds->cmdline[i].cmdline[0]);
-
+    printk("\n");
 }
 
 /* This function assumes that memory regions are not overlapped */
@@ -522,13 +526,13 @@ const __init char *boot_fdt_cmdline(const void *fdt)
     if ( node < 0 )
         return NULL;
 
-    prop = fdt_get_property(fdt, node, "xen,xen-bootargs", NULL);
+    prop = fdt_get_property(fdt, node, "crux,crux-bootargs", NULL);
     if ( prop == NULL )
     {
         struct bootcmdline *dom0_cmdline =
             boot_cmdline_find_by_kind(BOOTMOD_KERNEL);
 
-        if (fdt_get_property(fdt, node, "xen,dom0-bootargs", NULL) ||
+        if (fdt_get_property(fdt, node, "crux,dom0-bootargs", NULL) ||
             ( dom0_cmdline && dom0_cmdline->cmdline[0] ) )
             prop = fdt_get_property(fdt, node, "bootargs", NULL);
     }
@@ -560,7 +564,7 @@ int __init domain_fdt_begin_node(void *fdt, const char *name, uint64_t unit)
 
     if ( ret >= sizeof(buf) )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Insufficient buffer. Minimum size required is %d\n",
                (ret + 1));
 

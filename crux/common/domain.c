@@ -4,45 +4,45 @@
  * Generic domain-handling functions.
  */
 
-#include <xen/compat.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/ctype.h>
-#include <xen/err.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/domain.h>
-#include <xen/mm.h>
-#include <xen/event.h>
-#include <xen/vm_event.h>
-#include <xen/time.h>
-#include <xen/console.h>
-#include <xen/softirq.h>
-#include <xen/tasklet.h>
-#include <xen/domain_page.h>
-#include <xen/rangeset.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/delay.h>
-#include <xen/shutdown.h>
-#include <xen/percpu.h>
-#include <xen/multicall.h>
-#include <xen/rcupdate.h>
-#include <xen/wait.h>
-#include <xen/grant_table.h>
-#include <xen/xenoprof.h>
-#include <xen/irq.h>
-#include <xen/argo.h>
-#include <xen/llc-coloring.h>
-#include <xen/xvmalloc.h>
+#include <crux/compat.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/ctype.h>
+#include <crux/err.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/domain.h>
+#include <crux/mm.h>
+#include <crux/event.h>
+#include <crux/vm_event.h>
+#include <crux/time.h>
+#include <crux/console.h>
+#include <crux/softirq.h>
+#include <crux/tasklet.h>
+#include <crux/domain_page.h>
+#include <crux/rangeset.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/delay.h>
+#include <crux/shutdown.h>
+#include <crux/percpu.h>
+#include <crux/multicall.h>
+#include <crux/rcupdate.h>
+#include <crux/wait.h>
+#include <crux/grant_table.h>
+#include <crux/cruxoprof.h>
+#include <crux/irq.h>
+#include <crux/argo.h>
+#include <crux/llc-coloring.h>
+#include <crux/xvmalloc.h>
 #include <asm/p2m.h>
 #include <asm/processor.h>
 #include <public/sched.h>
 #include <public/sysctl.h>
 #include <public/vcpu.h>
 #include <xsm/xsm.h>
-#include <xen/trace.h>
+#include <crux/trace.h>
 #include <asm/setup.h>
 
 #ifdef CONFIG_X86
@@ -50,8 +50,8 @@
 #endif
 
 /* Linux config option: propageted to domain0 */
-/* xen_processor_pmbits: xen control Cx, Px, ... */
-unsigned int xen_processor_pmbits = XEN_PROCESSOR_PM_PX;
+/* crux_processor_pmbits: crux control Cx, Px, ... */
+unsigned int crux_processor_pmbits = CRUX_PROCESSOR_PM_PX;
 
 /* opt_dom0_vcpus_pin: If true, dom0 VCPUs are pinned. */
 bool opt_dom0_vcpus_pin;
@@ -125,8 +125,8 @@ domid_t hardware_domid __read_mostly;
 integer_param("hardware_dom", hardware_domid);
 #endif
 
-/* Private domain structs for DOMID_XEN, DOMID_IO, etc. */
-struct domain *__read_mostly dom_xen;
+/* Private domain structs for DOMID_CRUX, DOMID_IO, etc. */
+struct domain *__read_mostly dom_crux;
 struct domain *__read_mostly dom_io;
 #ifdef CONFIG_MEM_SHARING
 struct domain *__read_mostly dom_cow;
@@ -185,28 +185,28 @@ static void domain_changed_state(const struct domain *d)
     unlock_dom_exc_handler(hdl);
 }
 
-static void set_domain_state_info(struct xen_domctl_get_domain_state *info,
+static void set_domain_state_info(struct crux_domctl_get_domain_state *info,
                                   const struct domain *d)
 {
-    info->state = XEN_DOMCTL_GETDOMSTATE_STATE_EXIST;
+    info->state = CRUX_DOMCTL_GETDOMSTATE_STATE_EXIST;
     if ( d->is_shut_down )
-        info->state |= XEN_DOMCTL_GETDOMSTATE_STATE_SHUTDOWN;
+        info->state |= CRUX_DOMCTL_GETDOMSTATE_STATE_SHUTDOWN;
     if ( d->is_dying == DOMDYING_dying )
-        info->state |= XEN_DOMCTL_GETDOMSTATE_STATE_DYING;
+        info->state |= CRUX_DOMCTL_GETDOMSTATE_STATE_DYING;
     if ( d->is_dying == DOMDYING_dead )
-        info->state |= XEN_DOMCTL_GETDOMSTATE_STATE_DEAD;
+        info->state |= CRUX_DOMCTL_GETDOMSTATE_STATE_DEAD;
 
     info->caps = 0;
     if ( is_control_domain(d) )
-        info->caps |= XEN_DOMCTL_GETDOMSTATE_CAP_CONTROL;
+        info->caps |= CRUX_DOMCTL_GETDOMSTATE_CAP_CONTROL;
     if ( is_hardware_domain(d) )
-        info->caps |= XEN_DOMCTL_GETDOMSTATE_CAP_HARDWARE;
-    if ( is_xenstore_domain(d) )
-        info->caps |= XEN_DOMCTL_GETDOMSTATE_CAP_XENSTORE;
+        info->caps |= CRUX_DOMCTL_GETDOMSTATE_CAP_HARDWARE;
+    if ( is_cruxstore_domain(d) )
+        info->caps |= CRUX_DOMCTL_GETDOMSTATE_CAP_CRUXSTORE;
     info->unique_id = d->unique_id;
 }
 
-int get_domain_state(struct xen_domctl_get_domain_state *info, struct domain *d,
+int get_domain_state(struct crux_domctl_get_domain_state *info, struct domain *d,
                      domid_t *domid)
 {
     unsigned int dom;
@@ -311,7 +311,7 @@ static void vcpu_info_reset(struct vcpu *v)
     struct domain *d = v->domain;
 
     v->vcpu_info_area.map =
-        ((v->vcpu_id < XEN_LEGACY_MAX_VCPUS)
+        ((v->vcpu_id < CRUX_LEGACY_MAX_VCPUS)
          ? (vcpu_info_t *)&shared_info(d, vcpu_info[v->vcpu_id])
          : &dummy_vcpu_info);
 }
@@ -499,7 +499,7 @@ static int late_hwdom_init(struct domain *d)
     if ( rv )
         return rv;
 
-    printk("initialising hardware domain %d\n", hardware_domid);
+    printk("Initialising hardware domain %d\n", hardware_domid);
 
     dom0 = rcu_lock_domain_by_id(0);
     ASSERT(dom0 != NULL);
@@ -721,54 +721,54 @@ static uint64_t get_unique_id(void)
     return x;
 }
 
-static int sanitise_domain_config(struct xen_domctl_createdomain *config)
+static int sanitise_domain_config(struct crux_domctl_createdomain *config)
 {
-    bool hvm = config->flags & XEN_DOMCTL_CDF_hvm;
-    bool hap = config->flags & XEN_DOMCTL_CDF_hap;
-    bool iommu = config->flags & XEN_DOMCTL_CDF_iommu;
-    bool vpmu = config->flags & XEN_DOMCTL_CDF_vpmu;
+    bool hvm = config->flags & CRUX_DOMCTL_CDF_hvm;
+    bool hap = config->flags & CRUX_DOMCTL_CDF_hap;
+    bool iommu = config->flags & CRUX_DOMCTL_CDF_iommu;
+    bool vpmu = config->flags & CRUX_DOMCTL_CDF_vpmu;
 
     if ( config->flags &
-         ~(XEN_DOMCTL_CDF_hvm | XEN_DOMCTL_CDF_hap |
-           XEN_DOMCTL_CDF_s3_integrity | XEN_DOMCTL_CDF_oos_off |
-           XEN_DOMCTL_CDF_xs_domain | XEN_DOMCTL_CDF_iommu |
-           XEN_DOMCTL_CDF_nested_virt | XEN_DOMCTL_CDF_vpmu |
-           XEN_DOMCTL_CDF_trap_unmapped_accesses) )
+         ~(CRUX_DOMCTL_CDF_hvm | CRUX_DOMCTL_CDF_hap |
+           CRUX_DOMCTL_CDF_s3_integrity | CRUX_DOMCTL_CDF_oos_off |
+           CRUX_DOMCTL_CDF_xs_domain | CRUX_DOMCTL_CDF_iommu |
+           CRUX_DOMCTL_CDF_nested_virt | CRUX_DOMCTL_CDF_vpmu |
+           CRUX_DOMCTL_CDF_trap_unmapped_accesses) )
     {
-        dprintk(XENLOG_INFO, "Unknown CDF flags %#x\n", config->flags);
+        dprintk(CRUXLOG_INFO, "Unknown CDF flags %#x\n", config->flags);
         return -EINVAL;
     }
 
-    if ( config->grant_opts & ~XEN_DOMCTL_GRANT_version_mask )
+    if ( config->grant_opts & ~CRUX_DOMCTL_GRANT_version_mask )
     {
-        dprintk(XENLOG_INFO, "Unknown grant options %#x\n", config->grant_opts);
+        dprintk(CRUXLOG_INFO, "Unknown grant options %#x\n", config->grant_opts);
         return -EINVAL;
     }
 
     if ( config->max_vcpus < 1 )
     {
-        dprintk(XENLOG_INFO, "No vCPUS\n");
+        dprintk(CRUXLOG_INFO, "No vCPUS\n");
         return -EINVAL;
     }
 
     if ( hap && !hvm )
     {
-        dprintk(XENLOG_INFO, "HAP requested for non-HVM guest\n");
+        dprintk(CRUXLOG_INFO, "HAP requested for non-HVM guest\n");
         return -EINVAL;
     }
 
     if ( iommu )
     {
-        if ( config->iommu_opts & ~XEN_DOMCTL_IOMMU_no_sharept )
+        if ( config->iommu_opts & ~CRUX_DOMCTL_IOMMU_no_sharept )
         {
-            dprintk(XENLOG_INFO, "Unknown IOMMU options %#x\n",
+            dprintk(CRUXLOG_INFO, "Unknown IOMMU options %#x\n",
                     config->iommu_opts);
             return -EINVAL;
         }
 
         if ( !iommu_enabled )
         {
-            dprintk(XENLOG_INFO, "IOMMU requested but not available\n");
+            dprintk(CRUXLOG_INFO, "IOMMU requested but not available\n");
             return -EINVAL;
         }
     }
@@ -776,7 +776,7 @@ static int sanitise_domain_config(struct xen_domctl_createdomain *config)
     {
         if ( config->iommu_opts )
         {
-            dprintk(XENLOG_INFO,
+            dprintk(CRUXLOG_INFO,
                     "IOMMU options specified but IOMMU not requested\n");
             return -EINVAL;
         }
@@ -784,13 +784,13 @@ static int sanitise_domain_config(struct xen_domctl_createdomain *config)
 
     if ( config->vmtrace_size && !vmtrace_available )
     {
-        dprintk(XENLOG_INFO, "vmtrace requested but not available\n");
+        dprintk(CRUXLOG_INFO, "vmtrace requested but not available\n");
         return -EINVAL;
     }
 
     if ( vpmu && !vpmu_is_available )
     {
-        dprintk(XENLOG_INFO, "vpmu requested but cannot be enabled this way\n");
+        dprintk(CRUXLOG_INFO, "vpmu requested but cannot be enabled this way\n");
         return -EINVAL;
     }
 
@@ -798,7 +798,7 @@ static int sanitise_domain_config(struct xen_domctl_createdomain *config)
 }
 
 struct domain *domain_create(domid_t domid,
-                             struct xen_domctl_createdomain *config,
+                             struct crux_domctl_createdomain *config,
                              unsigned int flags)
 {
     struct domain *d, *old_hwdom = NULL;
@@ -864,7 +864,7 @@ struct domain *domain_create(domid_t domid,
     spin_lock_init(&d->hypercall_deadlock_mutex);
     INIT_PAGE_LIST_HEAD(&d->page_list);
     INIT_PAGE_LIST_HEAD(&d->extra_page_list);
-    INIT_PAGE_LIST_HEAD(&d->xenpage_list);
+    INIT_PAGE_LIST_HEAD(&d->cruxpage_list);
 #ifdef CONFIG_STATIC_MEMORY
     INIT_PAGE_LIST_HEAD(&d->resv_page_list);
 #endif
@@ -920,7 +920,7 @@ struct domain *domain_create(domid_t domid,
     if ( is_idle_domain(d) )
         arch_init_idle_domain(d);
 
-    /* DOMID_{XEN,IO,IDLE,etc} are sufficiently constructed. */
+    /* DOMID_{CRUX,IO,IDLE,etc} are sufficiently constructed. */
     if ( is_system_domain(d) )
         return d;
 
@@ -1044,31 +1044,31 @@ struct domain *domain_create(domid_t domid,
 void __init setup_system_domains(void)
 {
     /*
-     * Initialise our DOMID_XEN domain.
-     * Any xen-heap pages that we will allow to be mapped will have
-     * their domain field set to dom_xen.
+     * Initialise our DOMID_CRUX domain.
+     * Any Xen-heap pages that we will allow to be mapped will have
+     * their domain field set to dom_crux.
      * Hidden PCI devices will also be associated with this domain
      * (but be [partly] controlled by Dom0 nevertheless).
      */
-    dom_xen = domain_create(DOMID_XEN, NULL, 0);
-    if ( IS_ERR(dom_xen) )
-        panic("Failed to create d[XEN]: %ld\n", PTR_ERR(dom_xen));
+    dom_crux = domain_create(DOMID_CRUX, NULL, 0);
+    if ( IS_ERR(dom_crux) )
+        panic("Failed to create d[CRUX]: %ld\n", PTR_ERR(dom_crux));
 
 #ifdef CONFIG_HAS_PIRQ
     /* Bound-check values passed via "extra_guest_irqs=". */
     {
-        unsigned int n = max(arch_hwdom_irqs(dom_xen), nr_static_irqs);
+        unsigned int n = max(arch_hwdom_irqs(dom_crux), nr_static_irqs);
 
         if ( extra_hwdom_irqs > n - nr_static_irqs )
         {
             extra_hwdom_irqs = n - nr_static_irqs;
-            printk(XENLOG_WARNING "hwdom IRQs bounded to %u\n", n);
+            printk(CRUXLOG_WARNING "hwdom IRQs bounded to %u\n", n);
         }
         if ( extra_domU_irqs >
              max(DEFAULT_EXTRA_DOMU_IRQS, n - nr_static_irqs) )
         {
             extra_domU_irqs = n - nr_static_irqs;
-            printk(XENLOG_WARNING "domU IRQs bounded to %u\n", n);
+            printk(CRUXLOG_WARNING "domU IRQs bounded to %u\n", n);
         }
     }
 #endif
@@ -1282,13 +1282,13 @@ void __domain_crash(struct domain *d)
     }
     else if ( d == current->domain )
     {
-        printk("domain %d (vcpu#%d) crashed on cpu#%d:\n",
+        printk("Domain %d (vcpu#%d) crashed on cpu#%d:\n",
                d->domain_id, current->vcpu_id, smp_processor_id());
         show_execution_state(guest_cpu_user_regs());
     }
     else
     {
-        printk("domain %d reported crashed by domain %d on cpu#%d:\n",
+        printk("Domain %d reported crashed by domain %d on cpu#%d:\n",
                d->domain_id, current->domain->domain_id, smp_processor_id());
     }
 
@@ -1424,9 +1424,9 @@ static void cf_check complete_domain_destroy(struct rcu_head *head)
 
     sched_destroy_domain(d);
 
-    /* Free page used by xen oprofile buffer. */
-#ifdef CONFIG_XENOPROF
-    free_xenoprof_pages(d);
+    /* Free page used by crux oprofile buffer. */
+#ifdef CONFIG_CRUXOPROF
+    free_cruxoprof_pages(d);
 #endif
 
 #ifdef CONFIG_MEM_PAGING
@@ -1703,7 +1703,7 @@ int domain_soft_reset(struct domain *d, bool resuming)
 
     for_each_vcpu ( d, v )
     {
-        set_xen_guest_handle(runstate_guest(v), NULL);
+        set_crux_guest_handle(runstate_guest(v), NULL);
         unmap_guest_area(v, &v->vcpu_info_area);
         unmap_guest_area(v, &v->runstate_guest_area);
     }
@@ -1775,7 +1775,7 @@ int map_guest_area(struct vcpu *v, paddr_t gaddr, unsigned int size,
             align = alignof(compat_ulong_t);
         else
 #endif
-            align = alignof(xen_ulong_t);
+            align = alignof(crux_ulong_t);
         if ( !IS_ALIGNED(gaddr, align) )
             return -ENXIO;
 
@@ -1895,7 +1895,7 @@ void unmap_guest_area(struct vcpu *v, struct guest_area *area)
     }
 }
 
-int default_initialise_vcpu(struct vcpu *v, XEN_GUEST_HANDLE_PARAM(void) arg)
+int default_initialise_vcpu(struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     struct vcpu_guest_context *ctxt;
     struct domain *d = v->domain;
@@ -1948,7 +1948,7 @@ bool update_runstate_area(struct vcpu *v)
         else
 #endif
             pset = &map->state_entry_time;
-        runstate.state_entry_time |= XEN_RUNSTATE_UPDATE;
+        runstate.state_entry_time |= CRUX_RUNSTATE_UPDATE;
         write_atomic(pset, runstate.state_entry_time);
         smp_wmb();
 
@@ -1960,7 +1960,7 @@ bool update_runstate_area(struct vcpu *v)
             *map = runstate;
 
         smp_wmb();
-        runstate.state_entry_time &= ~XEN_RUNSTATE_UPDATE;
+        runstate.state_entry_time &= ~CRUX_RUNSTATE_UPDATE;
         write_atomic(pset, runstate.state_entry_time);
 
         return true;
@@ -1981,7 +1981,7 @@ bool update_runstate_area(struct vcpu *v)
         guest_handle = &v->runstate_guest.p->state_entry_time + 1;
 #endif
         guest_handle--;
-        runstate.state_entry_time |= XEN_RUNSTATE_UPDATE;
+        runstate.state_entry_time |= CRUX_RUNSTATE_UPDATE;
         __raw_copy_to_guest(guest_handle,
                             (void *)(&runstate.state_entry_time + 1) - 1, 1);
         smp_wmb();
@@ -2003,7 +2003,7 @@ bool update_runstate_area(struct vcpu *v)
 
     if ( guest_handle )
     {
-        runstate.state_entry_time &= ~XEN_RUNSTATE_UPDATE;
+        runstate.state_entry_time &= ~CRUX_RUNSTATE_UPDATE;
         smp_wmb();
         __raw_copy_to_guest(guest_handle,
                             (void *)(&runstate.state_entry_time + 1) - 1, 1);
@@ -2027,7 +2027,7 @@ vcpu_info_populate(void *map, struct vcpu *v)
     if ( v->vcpu_info_area.map == &dummy_vcpu_info )
     {
         memset(info, 0, sizeof(*info));
-#ifdef XEN_HAVE_PV_UPCALL_MASK
+#ifdef CRUX_HAVE_PV_UPCALL_MASK
         __vcpu_info(v, info, evtchn_upcall_mask) = 1;
 #endif
     }
@@ -2055,7 +2055,7 @@ runstate_area_populate(void *map, struct vcpu *v)
     }
 }
 
-long common_vcpu_op(int cmd, struct vcpu *v, XEN_GUEST_HANDLE_PARAM(void) arg)
+long common_vcpu_op(int cmd, struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     long rc = 0;
     struct domain *d = v->domain;
@@ -2255,7 +2255,7 @@ long common_vcpu_op(int cmd, struct vcpu *v, XEN_GUEST_HANDLE_PARAM(void) arg)
         struct vcpu_register_runstate_memory_area area;
 
         rc = -ENOSYS;
-        if ( 0 /* TODO: Dom's XENFEAT_runstate_phys_area setting */ )
+        if ( 0 /* TODO: Dom's CRUXFEAT_runstate_phys_area setting */ )
             break;
 
         rc = -EFAULT;

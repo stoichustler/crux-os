@@ -21,27 +21,27 @@ obj-y += vm_event.o
 $(TARGET): $(TARGET)-syms
 	$(OBJCOPY) -O binary -S $< $@
 
-$(TARGET)-syms: $(objtree)/prelink.o $(obj)/xen.lds
-	$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< \
+$(TARGET)-syms: $(objtree)/prelink.o $(obj)/crux.lds
+	$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< \
 	    $(objtree)/common/symbols-dummy.o -o $(dot-target).0
 	$(NM) -pa --format=sysv $(dot-target).0 \
 		| $(objtree)/tools/symbols $(all_symbols) --sysv --sort \
 		> $(dot-target).0.S
 	$(MAKE) $(build)=$(@D) $(dot-target).0.o
-	$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< \
+	$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< \
 	    $(dot-target).0.o -o $(dot-target).1
 	$(NM) -pa --format=sysv $(dot-target).1 \
 		| $(objtree)/tools/symbols $(all_symbols) --sysv --sort \
 		> $(dot-target).1.S
 	$(MAKE) $(build)=$(@D) $(dot-target).1.o
-	$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< $(build_id_linker) \
+	$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< $(build_id_linker) \
 	    $(dot-target).1.o -o $@
 	$(NM) -pa --format=sysv $@ \
-		| $(objtree)/tools/symbols --all-symbols --xensyms --sysv --sort \
+		| $(objtree)/tools/symbols --all-symbols --cruxsyms --sysv --sort \
 		> $@.map
 	rm -f $(@D)/.$(@F).[0-9]*
 
-$(obj)/xen.lds: $(src)/xen.lds.S FORCE
+$(obj)/crux.lds: $(src)/crux.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
 .PHONY: include

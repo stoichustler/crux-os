@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/domain_page.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
+#include <crux/domain_page.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
 
 #include <asm/current.h>
 

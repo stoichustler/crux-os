@@ -3,9 +3,9 @@
  * Copyright (C) 2024  Linaro Limited
  */
 
-#include <xen/const.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
+#include <crux/const.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
 
 #include <asm/smccc.h>
 #include <asm/regs.h>

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015, 2016 ARM Ltd.
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/bug.h>
-#include <xen/list_sort.h>
-#include <xen/sched.h>
+#include <crux/bug.h>
+#include <crux/list_sort.h>
+#include <crux/sched.h>
 #include <asm/event.h>
 #include <asm/new_vgic.h>
 
@@ -951,7 +951,7 @@ unsigned int vgic_max_vcpus(unsigned int domctl_vgic_version)
 {
     switch ( domctl_vgic_version )
     {
-    case XEN_DOMCTL_CONFIG_GIC_V2:
+    case CRUX_DOMCTL_CONFIG_GIC_V2:
         return VGIC_V2_MAX_CPUS;
 
     default:

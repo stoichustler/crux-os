@@ -1,21 +1,21 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * Derived from xen 4.19's $xen/arch/arm/setup.c.
+ * Derived from Xen 4.19's $crux/arch/arm/setup.c.
  *
  * bookkeeping routines.
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  * Copyright (c) 2024 Raptor Engineering LLC
  */
 
-#include <xen/acpi.h>
-#include <xen/bootinfo.h>
-#include <xen/bug.h>
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/libfdt/libfdt-xen.h>
-#include <xen/mm.h>
+#include <crux/acpi.h>
+#include <crux/bootinfo.h>
+#include <crux/bug.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/libfdt/libfdt-crux.h>
+#include <crux/mm.h>
 
 #include <asm/setup.h>
 
@@ -25,14 +25,14 @@ const char * __init boot_module_kind_as_string(boot_module_kind kind)
 {
     switch ( kind )
     {
-    case BOOTMOD_XEN:     return "xen";
-    case BOOTMOD_FDT:     return "device tree";
-    case BOOTMOD_KERNEL:  return "kernel";
-    case BOOTMOD_RAMDISK: return "ramdisk";
-    case BOOTMOD_XSM_POLICY:    return "XSM policy";
+    case BOOTMOD_CRUX:     return "Xen";
+    case BOOTMOD_FDT:     return "Device Tree";
+    case BOOTMOD_KERNEL:  return "Kernel";
+    case BOOTMOD_RAMDISK: return "Ramdisk";
+    case BOOTMOD_XSM_POLICY:    return "XSM Policy";
     case BOOTMOD_GUEST_DTB:     return "DTB";
-    case BOOTMOD_MICROCODE:     return "microcode";
-    case BOOTMOD_UNKNOWN: return "unknown";
+    case BOOTMOD_MICROCODE:     return "Microcode";
+    case BOOTMOD_UNKNOWN: return "Unknown";
     default: BUG();
     }
 }
@@ -228,7 +228,7 @@ struct boot_module __init *add_boot_module(boot_module_kind kind,
 
     if ( mods->nr_mods == MAX_MODULES )
     {
-        printk("ignoring %s boot module at %"PRIpaddr"-%"PRIpaddr" (too many)\n",
+        printk("Ignoring %s boot module at %"PRIpaddr"-%"PRIpaddr" (too many)\n",
                boot_module_kind_as_string(kind), start, start + size);
         return NULL;
     }
@@ -262,7 +262,7 @@ struct boot_module __init *add_boot_module(boot_module_kind kind,
 }
 
 /*
- * boot_module_find_by_kind can only be used to return xen modules (e.g
+ * boot_module_find_by_kind can only be used to return Xen modules (e.g
  * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
  * modules.
  */
@@ -306,7 +306,7 @@ void __init add_boot_cmdline(const char *name, const char *cmdline,
 }
 
 /*
- * boot_cmdline_find_by_kind can only be used to return xen modules (e.g
+ * boot_cmdline_find_by_kind can only be used to return Xen modules (e.g
  * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
  * modules.
  */
@@ -394,12 +394,12 @@ static paddr_t __init next_module(paddr_t s, paddr_t *end)
  * Populate the boot allocator.
  * If a static heap was not provided by the admin, all the RAM but the
  * following regions will be added:
- *  - Modules (e.g., xen, Kernel)
+ *  - Modules (e.g., Xen, Kernel)
  *  - Reserved regions
- *  - xenheap (CONFIG_SEPARATE_XENHEAP only)
+ *  - Xenheap (CONFIG_SEPARATE_CRUXHEAP only)
  * If a static heap was provided by the admin, populate the boot
- * allocator with the corresponding regions only, but with xenheap excluded
- * on CONFIG_SEPARATE_XENHEAP.
+ * allocator with the corresponding regions only, but with Xenheap excluded
+ * on CONFIG_SEPARATE_CRUXHEAP.
  */
 void __init populate_boot_allocator(void)
 {
@@ -417,8 +417,8 @@ void __init populate_boot_allocator(void)
 
             s = reserved_mem->bank[i].start;
             e = s + reserved_mem->bank[i].size;
-#ifdef CONFIG_SEPARATE_XENHEAP
-            /* Avoid the xenheap, note that the xenheap cannot across a bank */
+#ifdef CONFIG_SEPARATE_CRUXHEAP
+            /* Avoid the cruxheap, note that the cruxheap cannot across a bank */
             if ( s <= mfn_to_maddr(directmap_mfn_start) &&
                  e >= mfn_to_maddr(directmap_mfn_end) )
             {
@@ -455,8 +455,8 @@ void __init populate_boot_allocator(void)
             if ( e > bank_end )
                 e = bank_end;
 
-#ifdef CONFIG_SEPARATE_XENHEAP
-            /* Avoid the xenheap */
+#ifdef CONFIG_SEPARATE_CRUXHEAP
+            /* Avoid the cruxheap */
             if ( s < mfn_to_maddr(directmap_mfn_end) &&
                  mfn_to_maddr(directmap_mfn_start) < e )
             {

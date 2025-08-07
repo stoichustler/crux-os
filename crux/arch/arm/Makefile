@@ -70,7 +70,7 @@ obj-y += vsmc.o
 obj-y += vpsci.o
 obj-$(CONFIG_HWDOM_VUART) += vuart.o
 
-extra-y += xen.lds
+extra-y += crux.lds
 
 # obj-bin-y += ....o
 
@@ -93,32 +93,32 @@ ifeq ($(CONFIG_ARM_64),y)
 	$(Q)ln -sf $(@F) $@.efi
 endif
 
-$(TARGET)-syms: $(objtree)/prelink.o $(obj)/xen.lds
-	$(Q)$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< \
+$(TARGET)-syms: $(objtree)/prelink.o $(obj)/crux.lds
+	$(Q)$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< \
 	    $(objtree)/common/symbols-dummy.o -o $(dot-target).0
 	$(Q)$(NM) -pa --format=sysv $(dot-target).0 \
 		| $(objtree)/tools/symbols $(all_symbols) --sysv --sort \
 		> $(dot-target).0.S
 	$(Q)$(MAKE) $(build)=$(@D) $(dot-target).0.o
-	$(Q)$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< \
+	$(Q)$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< \
 	    $(dot-target).0.o -o $(dot-target).1
 	$(Q)$(NM) -pa --format=sysv $(dot-target).1 \
 		| $(objtree)/tools/symbols $(all_symbols) --sysv --sort \
 		> $(dot-target).1.S
 	$(Q)$(MAKE) $(build)=$(@D) $(dot-target).1.o
-	$(Q)$(LD) $(XEN_LDFLAGS) -T $(obj)/xen.lds $< $(build_id_linker) \
+	$(Q)$(LD) $(CRUX_LDFLAGS) -T $(obj)/crux.lds $< $(build_id_linker) \
 	    $(dot-target).1.o -o $@
 	$(Q)$(NM) -pa --format=sysv $@ \
-		| $(objtree)/tools/symbols --all-symbols --xensyms --sysv --sort \
+		| $(objtree)/tools/symbols --all-symbols --cruxsyms --sysv --sort \
 		> $@.map
 	$(Q)rm -f $(@D)/.$(@F).[0-9]*
 
 .PHONY: include
 include:
 
-$(obj)/xen.lds: $(src)/xen.lds.S FORCE
+$(obj)/crux.lds: $(src)/crux.lds.S FORCE
 	$(call if_changed_dep,cpp_lds_S)
 
 $(obj)/dtb.o: $(patsubst "%",%,$(CONFIG_DTB_FILE))
 
-clean-files := $(objtree)/.xen-syms.[0-9]*
+clean-files := $(objtree)/.crux-syms.[0-9]*

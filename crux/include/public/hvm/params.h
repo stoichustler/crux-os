@@ -3,13 +3,13 @@
  * Copyright (c) 2007, Keir Fraser
  */
 
-#ifndef __XEN_PUBLIC_HVM_PARAMS_H__
-#define __XEN_PUBLIC_HVM_PARAMS_H__
+#ifndef __CRUX_PUBLIC_HVM_PARAMS_H__
+#define __CRUX_PUBLIC_HVM_PARAMS_H__
 
 #include "hvm_op.h"
 
 /* These parameters are deprecated and their meaning is undefined. */
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
 #define HVM_PARAM_PAE_ENABLED                4
 #define HVM_PARAM_DM_DOMAIN                 13
@@ -22,14 +22,14 @@
 #define HVM_PARAM_BUFIOREQ_EVTCHN           26
 #define HVM_PARAM_MEMORY_EVENT_MSR          30
 
-#endif /* defined(__XEN__) || defined(__XEN_TOOLS__) */
+#endif /* defined(__CRUX__) || defined(__CRUX_TOOLS__) */
 
 /*
  * Parameter space for HVMOP_{set,get}_param.
  */
 
 #define HVM_PARAM_CALLBACK_IRQ 0
-#define HVM_PARAM_CALLBACK_IRQ_TYPE_MASK xen_mk_ullong(0xFF00000000000000)
+#define HVM_PARAM_CALLBACK_IRQ_TYPE_MASK crux_mk_ullong(0xFF00000000000000)
 /*
  * How should CPU0 event-channel notifications be delivered?
  *
@@ -52,7 +52,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 #define HVM_PARAM_CALLBACK_TYPE_VECTOR   2
 /*
- * val[7:0] is a vector number.  Check for XENFEAT_hvm_callback_vector to know
+ * val[7:0] is a vector number.  Check for CRUXFEAT_hvm_callback_vector to know
  * if this delivery method is available.
  */
 #elif defined(__arm__) || defined(__aarch64__)
@@ -71,8 +71,8 @@
 #endif
 
 /*
- * These are not used by xen. They are here for convenience of HVM-guest
- * xenbus implementations.
+ * These are not used by Xen. They are here for convenience of HVM-guest
+ * cruxbus implementations.
  */
 #define HVM_PARAM_STORE_PFN    1
 #define HVM_PARAM_STORE_EVTCHN 2
@@ -110,7 +110,7 @@
 /* Disable timer frequency MSRs (HV_X64_MSR_TSC_FREQUENCY and
  * HV_X64_MSR_APIC_FREQUENCY).
  * This modification restores the viridian feature set to the
- * original 'base' set exposed in releases prior to xen 4.4.
+ * original 'base' set exposed in releases prior to Xen 4.4.
  */
 #define _HVMPV_no_freq 1
 #define HVMPV_no_freq  (1 << _HVMPV_no_freq)
@@ -253,10 +253,10 @@
  *  limited: guest only has limited access (ie. control VMFUNC and #VE)
  */
 #define HVM_PARAM_ALTP2M       35
-#define XEN_ALTP2M_disabled      0
-#define XEN_ALTP2M_mixed         1
-#define XEN_ALTP2M_external      2
-#define XEN_ALTP2M_limited       3
+#define CRUX_ALTP2M_disabled      0
+#define CRUX_ALTP2M_mixed         1
+#define CRUX_ALTP2M_external      2
+#define CRUX_ALTP2M_limited       3
 
 /*
  * Size of the x87 FPU FIP/FDP registers that the hypervisor needs to
@@ -288,9 +288,9 @@
 
 /* Enable MCA capabilities. */
 #define HVM_PARAM_MCA_CAP 38
-#define XEN_HVM_MCA_CAP_LMCE   (xen_mk_ullong(1) << 0)
-#define XEN_HVM_MCA_CAP_MASK   XEN_HVM_MCA_CAP_LMCE
+#define CRUX_HVM_MCA_CAP_LMCE   (crux_mk_ullong(1) << 0)
+#define CRUX_HVM_MCA_CAP_MASK   CRUX_HVM_MCA_CAP_LMCE
 
 #define HVM_NR_PARAMS 39
 
-#endif /* __XEN_PUBLIC_HVM_PARAMS_H__ */
+#endif /* __CRUX_PUBLIC_HVM_PARAMS_H__ */

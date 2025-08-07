@@ -5,10 +5,10 @@
  */
 #define COMPILE_OFFSETS
 
-#include <xen/types.h>
-#include <xen/sched.h>
-#include <xen/bitops.h>
-#include <public/xen.h>
+#include <crux/types.h>
+#include <crux/sched.h>
+#include <crux/bitops.h>
+#include <public/crux.h>
 #include <asm/current.h>
 #include <asm/mm.h>
 #include <asm/setup.h>
@@ -71,8 +71,8 @@ void __dummy__(void)
    BLANK();
 
 #ifdef CONFIG_MPU
-   DEFINE(XEN_MPUMAP_MASK_sizeof, sizeof(xen_mpumap_mask));
-   DEFINE(XEN_MPUMAP_sizeof, sizeof(xen_mpumap));
+   DEFINE(CRUX_MPUMAP_MASK_sizeof, sizeof(crux_mpumap_mask));
+   DEFINE(CRUX_MPUMAP_sizeof, sizeof(crux_mpumap));
    BLANK();
 #endif
 }

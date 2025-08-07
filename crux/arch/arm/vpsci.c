@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 
 #include <asm/current.h>
 #include <asm/vgic.h>
@@ -124,7 +124,7 @@ static register_t do_psci_0_2_cpu_suspend(uint32_t power_state,
 
     /*
      * Power off requests are treated as performing standby
-     * as this simplifies xen implementation.
+     * as this simplifies Xen implementation.
      */
 
     vcpu_block_unless_event_pending(v);

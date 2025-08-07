@@ -2,20 +2,20 @@
 /******************************************************************************
  * hvm/hvm_xs_strings.h
  *
- * HVM xenstore strings used in HVMLOADER.
+ * HVM cruxstore strings used in HVMLOADER.
  *
  * Copyright (c) 2013, Citrix Systems
  */
 
-#ifndef __XEN_PUBLIC_HVM_HVM_XS_STRINGS_H__
-#define __XEN_PUBLIC_HVM_HVM_XS_STRINGS_H__
+#ifndef __CRUX_PUBLIC_HVM_HVM_XS_STRINGS_H__
+#define __CRUX_PUBLIC_HVM_HVM_XS_STRINGS_H__
 
 #define HVM_XS_HVMLOADER               "hvmloader"
 #define HVM_XS_BIOS                    "hvmloader/bios"
 #define HVM_XS_GENERATION_ID_ADDRESS   "hvmloader/generation-id-address"
 #define HVM_XS_ALLOW_MEMORY_RELOCATE   "hvmloader/allow-memory-relocate"
-/* Set xen platform pci device BAR as UC in MTRR */
-#define HVM_XS_XEN_PLATFORM_PCI_BAR_UC "hvmloader/pci/xen-platform-pci-bar-uc"
+/* Set Xen platform pci device BAR as UC in MTRR */
+#define HVM_XS_CRUX_PLATFORM_PCI_BAR_UC "hvmloader/pci/crux-platform-pci-bar-uc"
 
 /* The following values allow additional ACPI tables to be added to the
  * virtual ACPI BIOS that hvmloader constructs. The values specify the guest
@@ -27,7 +27,7 @@
 #define HVM_XS_ACPI_PT_LENGTH          "hvmloader/acpi/length"
 
 /* Any number of SMBIOS types can be passed through to an HVM guest using
- * the following xenstore values. The values specify the guest physical
+ * the following cruxstore values. The values specify the guest physical
  * address and length of a block of SMBIOS structures for hvmloader to use.
  * The block is formatted in the following way:
  *
@@ -44,7 +44,7 @@
 /* Set to 1 to enable SMBIOS default portable battery (type 22) values. */
 #define HVM_XS_SMBIOS_DEFAULT_BATTERY  "hvmloader/smbios/default_battery"
 
-/* The following xenstore values are used to override some of the default
+/* The following cruxstore values are used to override some of the default
  * string values in the SMBIOS table constructed in hvmloader.
  */
 #define HVM_XS_BIOS_STRINGS            "bios-strings"
@@ -66,9 +66,9 @@
 #define HVM_XS_BATTERY_MANUFACTURER    "bios-strings/battery-manufacturer"
 #define HVM_XS_BATTERY_DEVICE_NAME     "bios-strings/battery-device-name"
 
-/* 1 to 99 OEM strings can be set in xenstore using values of the form
+/* 1 to 99 OEM strings can be set in cruxstore using values of the form
  * below. These strings will be loaded into the SMBIOS type 11 structure.
  */
 #define HVM_XS_OEM_STRINGS             "bios-strings/oem-%d"
 
-#endif /* __XEN_PUBLIC_HVM_HVM_XS_STRINGS_H__ */
+#endif /* __CRUX_PUBLIC_HVM_HVM_XS_STRINGS_H__ */

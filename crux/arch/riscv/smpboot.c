@@ -1,10 +1,10 @@
-#include <xen/bootfdt.h>
-#include <xen/cpumask.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/sections.h>
-#include <xen/types.h>
+#include <crux/bootfdt.h>
+#include <crux/cpumask.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/sections.h>
+#include <crux/types.h>
 
 #include <asm/current.h>
 

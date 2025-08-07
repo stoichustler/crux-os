@@ -13,10 +13,10 @@
   * You should have received a copy of the GNU General Public License
   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
-#include <xen/bitops.h>
-#include <xen/bug.h>
-#include <xen/lib.h>
-#include <xen/sizes.h>
+#include <crux/bitops.h>
+#include <crux/bug.h>
+#include <crux/lib.h>
+#include <crux/sizes.h>
 #include <asm/insn.h>
 
 /* Mask of branch instructions' immediate. */
@@ -74,7 +74,7 @@ uint32_t aarch32_set_branch_offset(uint32_t insn, int32_t offset)
     /* B/BL support [-32M, 32M) offset (see ARM DDI 0406C.c A4.3). */
     if ( offset < -SZ_32M || offset >= SZ_32M )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "%s: new branch offset out of range.\n", __func__);
         return BUG_OPCODE;
     }

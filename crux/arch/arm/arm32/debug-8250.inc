@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm32/debug-8250.inc
+ * crux/arch/arm/arm32/debug-8250.inc
  *
  * 8250 specific debug code
  *
@@ -14,7 +14,7 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/8250-uart.h>
+#include <crux/8250-uart.h>
 
 /*
  * 8250 UART wait UART to be ready to transmit

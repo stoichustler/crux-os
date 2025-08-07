@@ -20,20 +20,20 @@
  */
 
 
-#include <xen/sched.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/vm_event.h>
-#include <xen/mem_access.h>
+#include <crux/sched.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/vm_event.h>
+#include <crux/mem_access.h>
 #include <public/memory.h>
 #include <xsm/xsm.h>
 
 int mem_access_memop(unsigned long cmd,
-                     XEN_GUEST_HANDLE_PARAM(xen_mem_access_op_t) arg)
+                     CRUX_GUEST_HANDLE_PARAM(crux_mem_access_op_t) arg)
 {
     unsigned long start_iter = cmd & ~MEMOP_CMD_MASK;
     long rc;
-    xen_mem_access_op_t mao;
+    crux_mem_access_op_t mao;
     struct domain *d;
 
     if ( copy_from_guest(&mao, arg, 1) )
@@ -58,7 +58,7 @@ int mem_access_memop(unsigned long cmd,
     switch ( mao.op )
     {
 
-    case XENMEM_access_op_set_access:
+    case CRUXMEM_access_op_set_access:
         rc = -EINVAL;
         if ( (mao.pfn != ~0ULL) &&
              (mao.nr < start_iter ||
@@ -72,24 +72,24 @@ int mem_access_memop(unsigned long cmd,
         {
             ASSERT(!(rc & MEMOP_CMD_MASK));
             rc = hypercall_create_continuation(__HYPERVISOR_memory_op, "lh",
-                                               XENMEM_access_op | rc, arg);
+                                               CRUXMEM_access_op | rc, arg);
         }
         break;
 
-    case XENMEM_access_op_set_access_multi:
+    case CRUXMEM_access_op_set_access_multi:
         rc = p2m_set_mem_access_multi(d, mao.pfn_list, mao.access_list, mao.nr,
                                       start_iter, MEMOP_CMD_MASK, 0);
         if ( rc > 0 )
         {
             ASSERT(!(rc & MEMOP_CMD_MASK));
             rc = hypercall_create_continuation(__HYPERVISOR_memory_op, "lh",
-                                               XENMEM_access_op | rc, arg);
+                                               CRUXMEM_access_op | rc, arg);
         }
         break;
 
-    case XENMEM_access_op_get_access:
+    case CRUXMEM_access_op_get_access:
     {
-        xenmem_access_t access;
+        cruxmem_access_t access;
 
         rc = -ENOSYS;
         if ( unlikely(start_iter) )

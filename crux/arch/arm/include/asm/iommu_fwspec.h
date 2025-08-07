@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/iommu_fwspec.h
+ * crux/include/asm-arm/iommu_fwspec.h
  *
  * Contains a common structure to hold the per-device firmware data and
  * declaration of functions used to maintain that data

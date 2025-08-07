@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/drivers/char/linflex-uart.c
+ * crux/drivers/char/linflex-uart.c
  *
  * Driver for NXP LINFlexD UART.
  *
@@ -8,13 +8,13 @@
  * Copyright 2018, 2021-2022, 2024 NXP
  */
 
-#include <xen/config.h>
-#include <xen/console.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/serial.h>
+#include <crux/config.h>
+#include <crux/console.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/serial.h>
 #include <asm/device.h>
 #include <asm/io.h>
 #include <asm/linflex-uart.h>
@@ -96,7 +96,7 @@ static void __init linflex_uart_init_preirq(struct serial_port *port)
 
     /* Disable RX/TX before init mode */
     ctrl = linflex_uart_readl(uart, UARTCR);
-    ctrl &= ~(UARTCR_RXEN | UARTCR_TXEN);
+    ctrl &= ~(UARTCR_RCRUX | UARTCR_TCRUX);
     linflex_uart_writel(uart, UARTCR, ctrl);
 
     /*
@@ -147,7 +147,7 @@ static void __init linflex_uart_init_preirq(struct serial_port *port)
 
     /* Enable RX/TX after exiting init mode */
     ctrl = linflex_uart_readl(uart, UARTCR);
-    ctrl |= UARTCR_RXEN | UARTCR_TXEN;
+    ctrl |= UARTCR_RCRUX | UARTCR_TCRUX;
     linflex_uart_writel(uart, UARTCR, ctrl);
 }
 
@@ -353,7 +353,7 @@ static int __init linflex_uart_init(struct dt_device_node *dev, const void *data
     /* Register with generic serial driver */
     serial_register_uart(SERHND_DTUART, &linflex_uart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

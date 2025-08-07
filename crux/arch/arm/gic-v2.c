@@ -1,27 +1,27 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/gic-v2.c
+ * crux/arch/arm/gic-v2.c
  *
  * ARM Generic Interrupt Controller support v2
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
-#include <xen/irq.h>
-#include <xen/iocap.h>
-#include <xen/sched.h>
-#include <xen/errno.h>
-#include <xen/softirq.h>
-#include <xen/list.h>
-#include <xen/device_tree.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/sizes.h>
-#include <xen/acpi.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
+#include <crux/irq.h>
+#include <crux/iocap.h>
+#include <crux/sched.h>
+#include <crux/errno.h>
+#include <crux/softirq.h>
+#include <crux/list.h>
+#include <crux/device_tree.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/sizes.h>
+#include <crux/acpi.h>
 #include <asm/p2m.h>
 #include <asm/domain.h>
 #include <asm/platform.h>
@@ -299,7 +299,7 @@ static void gicv2_set_irq_type(struct irq_desc *desc, unsigned int type)
     actual = readl_gicd(GICD_ICFGR + (irq / 16) * 4);
     if ( ( cfg & edgebit ) ^ ( actual & edgebit ) )
     {
-        printk(XENLOG_WARNING "GICv2: WARNING: "
+        printk(CRUXLOG_WARNING "GICv2: WARNING: "
                "CPU%d: Failed to configure IRQ%u as %s-triggered. "
                "H/w forces to %s-triggered.\n",
                smp_processor_id(), desc->irq,
@@ -688,7 +688,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
                                maddr_to_mfn(v2m_data->addr));
         if ( ret )
         {
-            printk(XENLOG_ERR "GICv2: Map v2m frame to d%d failed.\n",
+            printk(CRUXLOG_ERR "GICv2: Map v2m frame to d%d failed.\n",
                    d->domain_id);
             return ret;
         }
@@ -707,7 +707,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
             ret = irq_set_spi_type(spi, IRQ_TYPE_EDGE_RISING);
             if ( ret )
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "GICv2: Failed to set v2m MSI SPI[%d] type.\n", spi);
                 return ret;
             }
@@ -716,7 +716,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
             ret = route_irq_to_guest(d, spi, spi, "v2m");
             if ( ret )
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "GICv2: Failed to route v2m MSI SPI[%d] to Dom%d.\n",
                        spi, d->domain_id);
                 return ret;
@@ -725,7 +725,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
             /* Reserve a SPI that is allocated to MSI for the domain. */
             if ( !vgic_reserve_virq(d, spi) )
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "GICv2: Failed to reserve v2m MSI SPI[%d] for Dom%d.\n",
                        spi, d->domain_id);
                 return -EINVAL;
@@ -759,8 +759,8 @@ static int gicv2m_make_dt_node(const struct domain *d,
     prop = dt_get_property(gic, "ranges", &len);
     if ( !prop )
     {
-        printk(XENLOG_ERR "Can't find ranges property for the gic node\n");
-        return -FDT_ERR_XEN(ENOENT);
+        printk(CRUXLOG_ERR "Can't find ranges property for the gic node\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     res = fdt_property(fdt, "ranges", prop, len);
@@ -798,8 +798,8 @@ static int gicv2m_make_dt_node(const struct domain *d,
         prop = dt_get_property(v2m, "reg", &len);
         if ( !prop )
         {
-            printk(XENLOG_ERR "GICv2: Can't find v2m reg property.\n");
-            res = -FDT_ERR_XEN(ENOENT);
+            printk(CRUXLOG_ERR "GICv2: Can't find v2m reg property.\n");
+            res = -FDT_ERR_CRUX(ENOENT);
             return res;
         }
 
@@ -815,7 +815,7 @@ static int gicv2m_make_dt_node(const struct domain *d,
         res = fdt_property_u32(fdt, "arm,msi-base-spi", v2m_data->spi_start);
         if ( res )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "GICv2: Failed to create v2m msi-base-spi in Guest DT.\n");
             return res;
         }
@@ -823,7 +823,7 @@ static int gicv2m_make_dt_node(const struct domain *d,
         res = fdt_property_u32(fdt, "arm,msi-num-spis", v2m_data->nr_spis);
         if ( res )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "GICv2: Failed to create v2m msi-num-spis in Guest DT.\n");
             return res;
         }
@@ -846,8 +846,8 @@ static int gicv2_make_hwdom_dt_node(const struct domain *d,
     compatible = dt_get_property(gic, "compatible", &len);
     if ( !compatible )
     {
-        dprintk(XENLOG_ERR, "Can't find compatible property for the gic node\n");
-        return -FDT_ERR_XEN(ENOENT);
+        dprintk(CRUXLOG_ERR, "Can't find compatible property for the gic node\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     res = fdt_property(fdt, "compatible", compatible, len);
@@ -857,13 +857,13 @@ static int gicv2_make_hwdom_dt_node(const struct domain *d,
     /*
      * DTB provides up to 4 regions to handle virtualization
      * (in order GICD, GICC, GICH and GICV interfaces)
-     * however dom0 just needs GICD and GICC provided by xen.
+     * however dom0 just needs GICD and GICC provided by Xen.
      */
     regs = dt_get_property(gic, "reg", &len);
     if ( !regs )
     {
-        dprintk(XENLOG_ERR, "Can't find reg property for the gic node\n");
-        return -FDT_ERR_XEN(ENOENT);
+        dprintk(CRUXLOG_ERR, "Can't find reg property for the gic node\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     len = dt_cells_to_size(dt_n_addr_cells(gic) + dt_n_size_cells(gic));
@@ -1047,12 +1047,12 @@ static void __init gicv2_dt_init(void)
      */
     if ( csize < SZ_8K )
     {
-        printk(XENLOG_WARNING "GICv2: WARNING: "
+        printk(CRUXLOG_WARNING "GICv2: WARNING: "
                "The GICC size is too small: %#"PRIpaddr" expected %#x\n",
                csize, SZ_8K);
         if ( platform_has_quirk(PLATFORM_QUIRK_GIC_64K_STRIDE) )
         {
-            printk(XENLOG_WARNING "GICv2: enable platform quirk: 64K stride\n");
+            printk(CRUXLOG_WARNING "GICv2: enable platform quirk: 64K stride\n");
             vsize = csize = SZ_128K;
         } else
             csize = SZ_8K;
@@ -1278,11 +1278,11 @@ static int __init gicv2_init(void)
 
         gicv2.map_cbase += aliased_offset;
 
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "GICv2: Adjusting CPU interface base to %#"PRIpaddr"\n",
                cbase + aliased_offset);
     } else if ( csize == SZ_128K )
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "GICv2: GICC size=%#"PRIpaddr" but not aliased\n",
                csize);
 

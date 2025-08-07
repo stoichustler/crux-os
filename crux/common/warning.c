@@ -1,8 +1,8 @@
-#include <xen/delay.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/softirq.h>
-#include <xen/warning.h>
+#include <crux/delay.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/softirq.h>
+#include <crux/warning.h>
 
 #define WARNING_ARRAY_SIZE 20
 static unsigned int __initdata nr_warnings;

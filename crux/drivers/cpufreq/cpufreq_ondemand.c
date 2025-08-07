@@ -1,23 +1,23 @@
 /*
- *  xen/arch/x86/acpi/cpufreq/cpufreq_ondemand.c
+ *  crux/arch/x86/acpi/cpufreq/cpufreq_ondemand.c
  *
  *  Copyright (C)  2001 Russell King
  *            (C)  2003 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>.
  *                      Jun Nakajima <jun.nakajima@intel.com>
  *             Feb 2008 Liu Jinsong <jinsong.liu@intel.com>
- *             Porting cpufreq_ondemand.c from Liunx 2.6.23 to xen hypervisor 
+ *             Porting cpufreq_ondemand.c from Liunx 2.6.23 to Xen hypervisor 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
 
-#include <xen/types.h>
-#include <xen/percpu.h>
-#include <xen/cpumask.h>
-#include <xen/types.h>
-#include <xen/sched.h>
-#include <xen/timer.h>
+#include <crux/types.h>
+#include <crux/percpu.h>
+#include <crux/cpumask.h>
+#include <crux/types.h>
+#include <crux/sched.h>
+#include <crux/timer.h>
 #include <acpi/cpufreq/cpufreq.h>
 
 #define DEF_FREQUENCY_UP_THRESHOLD              (80)
@@ -323,14 +323,14 @@ static bool __init cf_check cpufreq_dbs_handle_option(
 
         if ( tmp < MIN_FREQUENCY_UP_THRESHOLD )
         {
-            printk(XENLOG_WARNING "cpufreq/ondemand: "
+            printk(CRUXLOG_WARNING "cpufreq/ondemand: "
                    "specified threshold too low, using %d\n",
                    MIN_FREQUENCY_UP_THRESHOLD);
             tmp = MIN_FREQUENCY_UP_THRESHOLD;
         }
         else if ( tmp > MAX_FREQUENCY_UP_THRESHOLD )
         {
-            printk(XENLOG_WARNING "cpufreq/ondemand: "
+            printk(CRUXLOG_WARNING "cpufreq/ondemand: "
                    "specified threshold too high, using %d\n",
                    MAX_FREQUENCY_UP_THRESHOLD);
             tmp = MAX_FREQUENCY_UP_THRESHOLD;
@@ -343,7 +343,7 @@ static bool __init cf_check cpufreq_dbs_handle_option(
 
         if ( tmp > 1000 )
         {
-            printk(XENLOG_WARNING "cpufreq/ondemand: "
+            printk(CRUXLOG_WARNING "cpufreq/ondemand: "
                    "specified bias too high, using 1000\n");
             tmp = 1000;
         }

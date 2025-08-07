@@ -7,14 +7,14 @@
  * Copyright (C) 2024 Vates
  */
 
-#include <xen/bitmap.h>
-#include <xen/bootfdt.h>
-#include <xen/ctype.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/sections.h>
+#include <crux/bitmap.h>
+#include <crux/bootfdt.h>
+#include <crux/ctype.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/sections.h>
 
 #include <asm/cpufeature.h>
 
@@ -222,7 +222,7 @@ static int __init riscv_isa_parse_string(const char *isa,
      *
      * What means that isa should contain, at least, I or E.
      *
-     * As xen isn't expected to be run on microcontrollers and according
+     * As Xen isn't expected to be run on microcontrollers and according
      * to device tree binding the first extension should be "i".
      */
     if ( isa[4] != 'i' )
@@ -499,12 +499,12 @@ void __init riscv_fill_hwcap(void)
 
         if ( !riscv_isa_extension_available(NULL, ext.id) )
         {
-            printk("xen requires extension: %s\n", ext.name);
+            printk("Xen requires extension: %s\n", ext.name);
             all_extns_available = false;
         }
     }
 
     if ( !all_extns_available )
         panic("Look why the extensions above are needed in "
-              "https://xenbits.xenproject.org/docs/unstable/misc/riscv/booting.txt\n");
+              "https://cruxbits.cruxproject.org/docs/unstable/misc/riscv/booting.txt\n");
 }

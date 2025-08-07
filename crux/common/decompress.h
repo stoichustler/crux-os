@@ -1,13 +1,13 @@
 #ifndef DECOMPRESS_H
 #define DECOMPRESS_H
 
-#ifdef __XEN__
+#ifdef __CRUX__
 
-#include <xen/decompress.h>
-#include <xen/init.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/xmalloc.h>
+#include <crux/decompress.h>
+#include <crux/init.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/xmalloc.h>
 
 #define malloc xmalloc_bytes
 #define free xfree

@@ -6,27 +6,27 @@
  * Copyright (c) 2002-2006, K A Fraser
  */
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/llc-coloring.h>
-#include <xen/err.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/domain.h>
-#include <xen/event.h>
-#include <xen/grant_table.h>
-#include <xen/domain_page.h>
-#include <xen/trace.h>
-#include <xen/console.h>
-#include <xen/iocap.h>
-#include <xen/rcupdate.h>
-#include <xen/guest_access.h>
-#include <xen/bitmap.h>
-#include <xen/paging.h>
-#include <xen/hypercall.h>
-#include <xen/vm_event.h>
-#include <xen/monitor.h>
-#include <xen/xvmalloc.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/llc-coloring.h>
+#include <crux/err.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/domain.h>
+#include <crux/event.h>
+#include <crux/grant_table.h>
+#include <crux/domain_page.h>
+#include <crux/trace.h>
+#include <crux/console.h>
+#include <crux/iocap.h>
+#include <crux/rcupdate.h>
+#include <crux/guest_access.h>
+#include <crux/bitmap.h>
+#include <crux/paging.h>
+#include <crux/hypercall.h>
+#include <crux/vm_event.h>
+#include <crux/monitor.h>
+#include <crux/xvmalloc.h>
 
 #include <asm/current.h>
 #include <asm/irq.h>
@@ -37,17 +37,17 @@
 
 static DEFINE_SPINLOCK(domctl_lock);
 
-static int nodemask_to_xenctl_bitmap(struct xenctl_bitmap *xenctl_nodemap,
+static int nodemask_to_cruxctl_bitmap(struct cruxctl_bitmap *cruxctl_nodemap,
                                      const nodemask_t *nodemask)
 {
-    return bitmap_to_xenctl_bitmap(xenctl_nodemap, nodemask_bits(nodemask),
+    return bitmap_to_cruxctl_bitmap(cruxctl_nodemap, nodemask_bits(nodemask),
                                    MAX_NUMNODES);
 }
 
-static int xenctl_bitmap_to_nodemask(nodemask_t *nodemask,
-                                     const struct xenctl_bitmap *xenctl_nodemap)
+static int cruxctl_bitmap_to_nodemask(nodemask_t *nodemask,
+                                     const struct cruxctl_bitmap *cruxctl_nodemap)
 {
-    return xenctl_bitmap_to_bitmap(nodemask_bits(nodemask), xenctl_nodemap,
+    return cruxctl_bitmap_to_bitmap(nodemask_bits(nodemask), cruxctl_nodemap,
                                    MAX_NUMNODES);
 }
 
@@ -65,17 +65,17 @@ static inline int is_free_domid(domid_t dom)
     return 0;
 }
 
-void getdomaininfo(struct domain *d, struct xen_domctl_getdomaininfo *info)
+void getdomaininfo(struct domain *d, struct crux_domctl_getdomaininfo *info)
 {
     struct vcpu *v;
     u64 cpu_time = 0;
-    int flags = XEN_DOMINF_blocked;
+    int flags = CRUX_DOMINF_blocked;
     struct vcpu_runstate_info runstate;
 
     memset(info, 0, sizeof(*info));
 
     info->domain = d->domain_id;
-    info->max_vcpu_id = XEN_INVALID_MAX_VCPU_ID;
+    info->max_vcpu_id = CRUX_INVALID_MAX_VCPU_ID;
 
     /*
      * - domain is marked as blocked only if all its vcpus are blocked
@@ -89,9 +89,9 @@ void getdomaininfo(struct domain *d, struct xen_domctl_getdomaininfo *info)
         if ( !(v->pause_flags & VPF_down) )
         {
             if ( !(v->pause_flags & VPF_blocked) )
-                flags &= ~XEN_DOMINF_blocked;
+                flags &= ~CRUX_DOMINF_blocked;
             if ( v->is_running )
-                flags |= XEN_DOMINF_running;
+                flags |= CRUX_DOMINF_running;
             info->nr_online_vcpus++;
         }
     }
@@ -99,13 +99,13 @@ void getdomaininfo(struct domain *d, struct xen_domctl_getdomaininfo *info)
     info->cpu_time = cpu_time;
 
     info->flags = (info->nr_online_vcpus ? flags : 0) |
-        ((d->is_dying == DOMDYING_dead) ? XEN_DOMINF_dying     : 0) |
-        (d->is_shut_down                ? XEN_DOMINF_shutdown  : 0) |
-        (d->controller_pause_count > 0  ? XEN_DOMINF_paused    : 0) |
-        (d->debugger_attached           ? XEN_DOMINF_debugged  : 0) |
-        (is_xenstore_domain(d)          ? XEN_DOMINF_xs_domain : 0) |
-        (is_hvm_domain(d)               ? XEN_DOMINF_hvm_guest : 0) |
-        d->shutdown_code << XEN_DOMINF_shutdownshift;
+        ((d->is_dying == DOMDYING_dead) ? CRUX_DOMINF_dying     : 0) |
+        (d->is_shut_down                ? CRUX_DOMINF_shutdown  : 0) |
+        (d->controller_pause_count > 0  ? CRUX_DOMINF_paused    : 0) |
+        (d->debugger_attached           ? CRUX_DOMINF_debugged  : 0) |
+        (is_cruxstore_domain(d)          ? CRUX_DOMINF_xs_domain : 0) |
+        (is_hvm_domain(d)               ? CRUX_DOMINF_hvm_guest : 0) |
+        d->shutdown_code << CRUX_DOMINF_shutdownshift;
 
     xsm_security_domaininfo(d, info);
 
@@ -124,7 +124,7 @@ void getdomaininfo(struct domain *d, struct xen_domctl_getdomaininfo *info)
 
     info->cpupool = cpupool_get_id(d);
 
-    memcpy(info->handle, d->handle, sizeof(xen_domain_handle_t));
+    memcpy(info->handle, d->handle, sizeof(crux_domain_handle_t));
 
     arch_get_domain_info(d, info);
 }
@@ -202,7 +202,7 @@ static struct vnuma_info *vnuma_alloc(unsigned int nr_vnodes,
     vnuma->vdistance = xvmalloc_array(unsigned int, nr_vnodes, nr_vnodes);
     vnuma->vcpu_to_vnode = xmalloc_array(unsigned int, nr_vcpus);
     vnuma->vnode_to_pnode = xmalloc_array(nodeid_t, nr_vnodes);
-    vnuma->vmemrange = xmalloc_array(xen_vmemrange_t, nr_ranges);
+    vnuma->vmemrange = xmalloc_array(crux_vmemrange_t, nr_ranges);
 
     if ( vnuma->vdistance == NULL || vnuma->vmemrange == NULL ||
          vnuma->vcpu_to_vnode == NULL || vnuma->vnode_to_pnode == NULL )
@@ -217,7 +217,7 @@ static struct vnuma_info *vnuma_alloc(unsigned int nr_vnodes,
 /*
  * Construct vNUMA topology form uinfo.
  */
-static struct vnuma_info *vnuma_init(const struct xen_domctl_vnuma *uinfo,
+static struct vnuma_info *vnuma_init(const struct crux_domctl_vnuma *uinfo,
                                      const struct domain *d)
 {
     unsigned int i, nr_vnodes;
@@ -283,31 +283,31 @@ static struct vnuma_info *vnuma_init(const struct xen_domctl_vnuma *uinfo,
 
 static bool is_stable_domctl(uint32_t cmd)
 {
-    return cmd == XEN_DOMCTL_get_domain_state;
+    return cmd == CRUX_DOMCTL_get_domain_state;
 }
 
-long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+long do_domctl(CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     long ret = 0;
     bool copyback = false;
-    struct xen_domctl curop, *op = &curop;
+    struct crux_domctl curop, *op = &curop;
     struct domain *d;
 
     if ( copy_from_guest(op, u_domctl, 1) )
         return -EFAULT;
 
     if ( op->interface_version !=
-         (is_stable_domctl(op->cmd) ? 0 : XEN_DOMCTL_INTERFACE_VERSION) )
+         (is_stable_domctl(op->cmd) ? 0 : CRUX_DOMCTL_INTERFACE_VERSION) )
         return -EACCES;
 
     switch ( op->cmd )
     {
-    case XEN_DOMCTL_createdomain:
+    case CRUX_DOMCTL_createdomain:
         d = NULL;
         break;
 
-    case XEN_DOMCTL_assign_device:
-    case XEN_DOMCTL_deassign_device:
+    case CRUX_DOMCTL_assign_device:
+    case CRUX_DOMCTL_deassign_device:
         if ( op->domain == DOMID_IO )
         {
             d = dom_io;
@@ -316,9 +316,9 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         else if ( op->domain == DOMID_INVALID )
             return -ESRCH;
         fallthrough;
-    case XEN_DOMCTL_test_assign_device:
-    case XEN_DOMCTL_vm_event_op:
-    case XEN_DOMCTL_get_domain_state:
+    case CRUX_DOMCTL_test_assign_device:
+    case CRUX_DOMCTL_vm_event_op:
+    case CRUX_DOMCTL_get_domain_state:
         if ( op->domain == DOMID_INVALID )
         {
             d = NULL;
@@ -349,7 +349,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
     switch ( op->cmd )
     {
 
-    case XEN_DOMCTL_setvcpucontext:
+    case CRUX_DOMCTL_setvcpucontext:
     {
         vcpu_guest_context_u c = { .nat = NULL };
         unsigned int vcpu = op->u.vcpucontext.vcpu;
@@ -404,24 +404,24 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_pausedomain:
+    case CRUX_DOMCTL_pausedomain:
         ret = -EINVAL;
         if ( d != current->domain )
             ret = domain_pause_by_systemcontroller(d);
         break;
 
-    case XEN_DOMCTL_unpausedomain:
+    case CRUX_DOMCTL_unpausedomain:
         ret = domain_unpause_by_systemcontroller(d);
         break;
 
-    case XEN_DOMCTL_resumedomain:
+    case CRUX_DOMCTL_resumedomain:
         if ( d == current->domain ) /* no domain_pause() */
             ret = -EINVAL;
         else
             domain_resume(d);
         break;
 
-    case XEN_DOMCTL_createdomain:
+    case CRUX_DOMCTL_createdomain:
     {
         domid_t        dom;
         static domid_t rover = 0;
@@ -465,7 +465,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_max_vcpus:
+    case CRUX_DOMCTL_max_vcpus:
     {
         unsigned int i, max = op->u.max_vcpus.max;
 
@@ -496,17 +496,17 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_soft_reset:
-    case XEN_DOMCTL_soft_reset_cont:
+    case CRUX_DOMCTL_soft_reset:
+    case CRUX_DOMCTL_soft_reset_cont:
         if ( d == current->domain ) /* no domain_pause() */
         {
             ret = -EINVAL;
             break;
         }
-        ret = domain_soft_reset(d, op->cmd == XEN_DOMCTL_soft_reset_cont);
+        ret = domain_soft_reset(d, op->cmd == CRUX_DOMCTL_soft_reset_cont);
         if ( ret == -ERESTART )
         {
-            op->cmd = XEN_DOMCTL_soft_reset_cont;
+            op->cmd = CRUX_DOMCTL_soft_reset_cont;
             if ( !__copy_field_to_guest(u_domctl, op, cmd) )
                 ret = hypercall_create_continuation(__HYPERVISOR_domctl,
                                                     "h", u_domctl);
@@ -515,40 +515,40 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         }
         break;
 
-    case XEN_DOMCTL_destroydomain:
+    case CRUX_DOMCTL_destroydomain:
         ret = domain_kill(d);
         if ( ret == -ERESTART )
             ret = hypercall_create_continuation(
                 __HYPERVISOR_domctl, "h", u_domctl);
         break;
 
-    case XEN_DOMCTL_setnodeaffinity:
+    case CRUX_DOMCTL_setnodeaffinity:
     {
         nodemask_t new_affinity;
 
-        ret = xenctl_bitmap_to_nodemask(&new_affinity,
+        ret = cruxctl_bitmap_to_nodemask(&new_affinity,
                                         &op->u.nodeaffinity.nodemap);
         if ( !ret )
             ret = domain_set_node_affinity(d, &new_affinity);
         break;
     }
 
-    case XEN_DOMCTL_getnodeaffinity:
-        ret = nodemask_to_xenctl_bitmap(&op->u.nodeaffinity.nodemap,
+    case CRUX_DOMCTL_getnodeaffinity:
+        ret = nodemask_to_cruxctl_bitmap(&op->u.nodeaffinity.nodemap,
                                         &d->node_affinity);
         break;
 
-    case XEN_DOMCTL_setvcpuaffinity:
-    case XEN_DOMCTL_getvcpuaffinity:
+    case CRUX_DOMCTL_setvcpuaffinity:
+    case CRUX_DOMCTL_getvcpuaffinity:
         ret = vcpu_affinity_domctl(d, op->cmd, &op->u.vcpuaffinity);
         break;
 
-    case XEN_DOMCTL_scheduler_op:
+    case CRUX_DOMCTL_scheduler_op:
         ret = sched_adjust(d, &op->u.scheduler_op);
         copyback = 1;
         break;
 
-    case XEN_DOMCTL_getdomaininfo:
+    case CRUX_DOMCTL_getdomaininfo:
         ret = xsm_getdomaininfo(XSM_XS_PRIV, d);
         if ( ret )
             break;
@@ -559,7 +559,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         copyback = 1;
         break;
 
-    case XEN_DOMCTL_getvcpucontext:
+    case CRUX_DOMCTL_getvcpucontext:
     {
         vcpu_guest_context_u c = { .nat = NULL };
         struct vcpu         *v;
@@ -608,7 +608,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_getvcpuinfo:
+    case CRUX_DOMCTL_getvcpuinfo:
     {
         struct vcpu   *v;
         struct vcpu_runstate_info runstate;
@@ -633,7 +633,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_max_mem:
+    case CRUX_DOMCTL_max_mem:
     {
         uint64_t new_max = op->u.max_mem.max_memkb >> (PAGE_SHIFT - 10);
 
@@ -648,12 +648,12 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_setdomainhandle:
+    case CRUX_DOMCTL_setdomainhandle:
         memcpy(d->handle, op->u.setdomainhandle.handle,
-               sizeof(xen_domain_handle_t));
+               sizeof(crux_domain_handle_t));
         break;
 
-    case XEN_DOMCTL_setdebugging:
+    case CRUX_DOMCTL_setdebugging:
         if ( unlikely(d == current->domain) ) /* no domain_pause() */
             ret = -EINVAL;
         else
@@ -665,7 +665,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
 
 #ifdef CONFIG_HAS_PIRQ
-    case XEN_DOMCTL_irq_permission:
+    case CRUX_DOMCTL_irq_permission:
     {
         unsigned int pirq = op->u.irq_permission.pirq, irq;
         int allow = op->u.irq_permission.allow_access;
@@ -686,7 +686,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
     }
 #endif
 
-    case XEN_DOMCTL_iomem_permission:
+    case CRUX_DOMCTL_iomem_permission:
     {
         unsigned long mfn = op->u.iomem_permission.first_mfn;
         unsigned long nr_mfns = op->u.iomem_permission.nr_mfns;
@@ -707,7 +707,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_memory_mapping:
+    case CRUX_DOMCTL_memory_mapping:
     {
         unsigned long gfn = op->u.memory_mapping.first_gfn;
         unsigned long mfn = op->u.memory_mapping.first_mfn;
@@ -742,36 +742,36 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
 
         if ( add )
         {
-            printk(XENLOG_G_DEBUG
+            printk(CRUXLOG_G_DEBUG
                    "memory_map:add: dom%d gfn=%lx mfn=%lx nr=%lx\n",
                    d->domain_id, gfn, mfn, nr_mfns);
 
             ret = map_mmio_regions(d, _gfn(gfn), nr_mfns, _mfn(mfn));
             if ( ret < 0 )
-                printk(XENLOG_G_WARNING
+                printk(CRUXLOG_G_WARNING
                        "memory_map:fail: dom%d gfn=%lx mfn=%lx nr=%lx ret:%ld\n",
                        d->domain_id, gfn, mfn, nr_mfns, ret);
         }
         else
         {
-            printk(XENLOG_G_DEBUG
+            printk(CRUXLOG_G_DEBUG
                    "memory_map:remove: dom%d gfn=%lx mfn=%lx nr=%lx\n",
                    d->domain_id, gfn, mfn, nr_mfns);
 
             ret = unmap_mmio_regions(d, _gfn(gfn), nr_mfns, _mfn(mfn));
             if ( ret < 0 && is_hardware_domain(current->domain) )
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "memory_map: error %ld removing dom%d access to [%lx,%lx]\n",
                        ret, d->domain_id, mfn, mfn_end);
         }
         break;
     }
 
-    case XEN_DOMCTL_settimeoffset:
+    case CRUX_DOMCTL_settimeoffset:
         domain_set_time_offset(d, op->u.settimeoffset.time_offset_seconds);
         break;
 
-    case XEN_DOMCTL_set_target:
+    case CRUX_DOMCTL_set_target:
     {
         struct domain *e;
 
@@ -801,18 +801,18 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_subscribe:
+    case CRUX_DOMCTL_subscribe:
         d->suspend_evtchn = op->u.subscribe.port;
         break;
 
-    case XEN_DOMCTL_vm_event_op:
+    case CRUX_DOMCTL_vm_event_op:
         ret = vm_event_domctl(d, &op->u.vm_event_op);
         if ( ret == 0 )
             copyback = true;
         break;
 
 #ifdef CONFIG_VM_EVENT
-    case XEN_DOMCTL_set_access_required:
+    case CRUX_DOMCTL_set_access_required:
         if ( unlikely(current->domain == d) ) /* no domain_pause() */
             ret = -EPERM;
         else
@@ -825,11 +825,11 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
 #endif
 
-    case XEN_DOMCTL_set_virq_handler:
+    case CRUX_DOMCTL_set_virq_handler:
         ret = set_global_virq_handler(d, op->u.set_virq_handler.virq);
         break;
 
-    case XEN_DOMCTL_setvnumainfo:
+    case CRUX_DOMCTL_setvnumainfo:
     {
         struct vnuma_info *vnuma;
 
@@ -849,26 +849,26 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
         break;
     }
 
-    case XEN_DOMCTL_monitor_op:
+    case CRUX_DOMCTL_monitor_op:
         ret = monitor_domctl(d, &op->u.monitor_op);
         if ( !ret )
             copyback = 1;
         break;
 
-    case XEN_DOMCTL_assign_device:
-    case XEN_DOMCTL_test_assign_device:
-    case XEN_DOMCTL_deassign_device:
-    case XEN_DOMCTL_get_device_group:
+    case CRUX_DOMCTL_assign_device:
+    case CRUX_DOMCTL_test_assign_device:
+    case CRUX_DOMCTL_deassign_device:
+    case CRUX_DOMCTL_get_device_group:
         ret = iommu_do_domctl(op, d, u_domctl);
         break;
 
-    case XEN_DOMCTL_get_paging_mempool_size:
+    case CRUX_DOMCTL_get_paging_mempool_size:
         ret = arch_get_paging_mempool_size(d, &op->u.paging_mempool.size);
         if ( !ret )
             copyback = 1;
         break;
 
-    case XEN_DOMCTL_set_paging_mempool_size:
+    case CRUX_DOMCTL_set_paging_mempool_size:
         ret = arch_set_paging_mempool_size(d, op->u.paging_mempool.size);
 
         if ( ret == -ERESTART )
@@ -876,7 +876,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
                 __HYPERVISOR_domctl, "h", u_domctl);
         break;
 
-    case XEN_DOMCTL_set_llc_colors:
+    case CRUX_DOMCTL_set_llc_colors:
         if ( op->u.set_llc_colors.pad )
             ret = -EINVAL;
         else if ( llc_coloring_enabled )
@@ -885,7 +885,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
             ret = -EOPNOTSUPP;
         break;
 
-    case XEN_DOMCTL_get_domain_state:
+    case CRUX_DOMCTL_get_domain_state:
         ret = xsm_get_domain_state(XSM_XS_PRIV, d);
         if ( ret )
             break;
@@ -913,7 +913,7 @@ long do_domctl(XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
 
 static void __init __maybe_unused build_assertions(void)
 {
-    struct xen_domctl d;
+    struct crux_domctl d;
 
     BUILD_BUG_ON(sizeof(d) != 16 /* header */ + 128 /* union */);
     BUILD_BUG_ON(offsetof(typeof(d), u) != 16);

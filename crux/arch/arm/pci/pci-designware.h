@@ -3,11 +3,11 @@
  * Based on Linux drivers/pci/controller/pci-host-common.c
  * Based on Linux drivers/pci/controller/pci-host-generic.c
  * Based on Linux drivers/pci/controller/dwc/pcie-designware.c
- * Based on xen/arch/arm/pci/pci-host-generic.c
+ * Based on crux/arch/arm/pci/pci-host-generic.c
  */
 
-#include <xen/pci.h>
-#include <xen/init.h>
+#include <crux/pci.h>
+#include <crux/init.h>
 
 #ifndef __PCI_DESIGNWARE_H__
 #define __PCI_DESIGNWARE_H__

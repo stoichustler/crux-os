@@ -22,12 +22,12 @@ config GDBSX
 	  gdbsx then say Y.
 
 config FRAME_POINTER
-	bool "Compile xen with frame pointers"
+	bool "Compile Xen with frame pointers"
 	default DEBUG
 	help
-	  If you say Y here the resulting xen will be slightly larger and
+	  If you say Y here the resulting Xen will be slightly larger and
 	  maybe slower, but it gives very useful debugging information
-	  in case of any xen bugs.
+	  in case of any Xen bugs.
 
 config SELF_TESTS
 	bool "Extra self-testing"
@@ -59,7 +59,7 @@ config DEBUG_LOCK_PROFILE
 	help
 	  Lock profiling allows you to see how often locks are taken and blocked.
 	  You can use serial console to print (and reset) using 'l' and 'L'
-	  respectively, or the 'xenlockprof' tool.
+	  respectively, or the 'cruxlockprof' tool.
 
 config DEBUG_LOCKS
 	bool "Lock debugging"
@@ -74,7 +74,7 @@ config PERF_COUNTERS
 	  Enables software performance counters that allows you to analyze
 	  bottlenecks in the system.  To access this data you can use serial
 	  console to print (and reset) using 'p' and 'P' respectively, or
-	  the 'xenperf' tool.
+	  the 'cruxperf' tool.
 
 config PERF_ARRAYS
 	bool "Performance Counter Array Histograms"
@@ -88,14 +88,14 @@ config VERBOSE_DEBUG
 	default DEBUG
 	help
 	  Guest output from HYPERVISOR_console_io and hypervisor parsing
-	  ELF images (dom0) will be logged in the xen ring buffer.
+	  ELF images (dom0) will be logged in the Xen ring buffer.
 
 config DEVICE_TREE_DEBUG
 	bool "Device tree debug messages"
 	depends on DEVICE_TREE_PARSE
 	help
 	  Device tree parsing and DOM0 device tree building messages are
-	  logged in the xen ring buffer.
+	  logged in the Xen ring buffer.
 	  If unsure, say N here.
 
 config SCRUB_DEBUG
@@ -119,7 +119,7 @@ config UBSAN_FATAL
 	bool "Panic on UBSAN failure"
 	depends on UBSAN
 	help
-	  Enabling this option will cause xen to panic when an undefined behavior
+	  Enabling this option will cause Xen to panic when an undefined behavior
 	  is detected by UBSAN. If unsure, say N here.
 
 config DEBUG_TRACE
@@ -130,7 +130,7 @@ config DEBUG_TRACE
 	  a system crash.
 
 config XMEM_POOL_POISON
-	bool "Poison free xenpool blocks"
+	bool "Poison free cruxpool blocks"
 	default DEBUG
 	help
 	  Poison free blocks with 0xAA bytes and verify them when a block is
@@ -141,18 +141,18 @@ source "arch/$(SRCARCH)/Kconfig.debug"
 endif # DEBUG || EXPERT
 
 config DEBUG_INFO
-	bool "Compile xen with debug info"
+	bool "Compile Xen with debug info"
 	default DEBUG || LIVEPATCH
 	help
-	  Say Y here if you want to build xen with debug information. This
+	  Say Y here if you want to build Xen with debug information. This
 	  information is needed e.g. for doing crash dump analysis of the
 	  hypervisor via the "crash" tool.
-	  Saying Y will increase the size of the xen-syms and xen.efi
+	  Saying Y will increase the size of the crux-syms and crux.efi
 	  binaries. In case the space on the EFI boot partition is rather
-	  limited, you may want to install a stripped variant of xen.efi in
+	  limited, you may want to install a stripped variant of crux.efi in
 	  the EFI boot partition (look for "INSTALL_EFI_STRIP" in
 	  docs/misc/efi.pandoc for more information - when not using
-	  "make install-xen" for installing xen.efi, stripping needs to be
-	  done outside the xen build environment).
+	  "make install-crux" for installing crux.efi, stripping needs to be
+	  done outside the Xen build environment).
 
 endmenu

@@ -1,56 +1,56 @@
 /* SPDX-License-Identifier: MIT */
 /*****************************************************************************
- * xenbus.h
+ * cruxbus.h
  *
- * xenbus protocol details.
+ * Xenbus protocol details.
  *
- * Copyright (C) 2005 xenSource Ltd.
+ * Copyright (C) 2005 XenSource Ltd.
  */
 
-#ifndef _XEN_PUBLIC_IO_XENBUS_H
-#define _XEN_PUBLIC_IO_XENBUS_H
+#ifndef _CRUX_PUBLIC_IO_CRUXBUS_H
+#define _CRUX_PUBLIC_IO_CRUXBUS_H
 
 /*
- * The state of either end of the xenbus, i.e. the current communication
+ * The state of either end of the Xenbus, i.e. the current communication
  * status of initialisation across the bus.  States here imply nothing about
  * the state of the connection between the driver and the kernel's device
  * layers.
  */
-enum xenbus_state {
-    xenbusStateUnknown       = 0,
+enum cruxbus_state {
+    XenbusStateUnknown       = 0,
 
-    xenbusStateInitialising  = 1,
+    XenbusStateInitialising  = 1,
 
     /*
      * InitWait: Finished early initialisation but waiting for information
      * from the peer or hotplug scripts.
      */
-    xenbusStateInitWait      = 2,
+    XenbusStateInitWait      = 2,
 
     /*
      * Initialised: Waiting for a connection from the peer.
      */
-    xenbusStateInitialised   = 3,
+    XenbusStateInitialised   = 3,
 
-    xenbusStateConnected     = 4,
+    XenbusStateConnected     = 4,
 
     /*
      * Closing: The device is being closed due to an error or an unplug event.
      */
-    xenbusStateClosing       = 5,
+    XenbusStateClosing       = 5,
 
-    xenbusStateClosed        = 6,
+    XenbusStateClosed        = 6,
 
     /*
      * Reconfiguring: The device is being reconfigured.
      */
-    xenbusStateReconfiguring = 7,
+    XenbusStateReconfiguring = 7,
 
-    xenbusStateReconfigured  = 8
+    XenbusStateReconfigured  = 8
 };
-typedef enum xenbus_state xenbusState;
+typedef enum cruxbus_state XenbusState;
 
-#endif /* _XEN_PUBLIC_IO_XENBUS_H */
+#endif /* _CRUX_PUBLIC_IO_CRUXBUS_H */
 
 /*
  * Local variables:

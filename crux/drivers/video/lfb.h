@@ -1,5 +1,5 @@
 /*
- * xen/drivers/video/lfb.h
+ * crux/drivers/video/lfb.h
  *
  * Cross-platform framebuffer library
  *
@@ -17,10 +17,10 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _XEN_LFB_H
-#define _XEN_LFB_H
+#ifndef _CRUX_LFB_H
+#define _CRUX_LFB_H
 
-#include <xen/init.h>
+#include <crux/init.h>
 
 struct lfb_prop {
     const struct font_desc *font;

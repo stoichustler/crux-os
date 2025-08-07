@@ -1,8 +1,8 @@
-#include <xen/init.h>
-#include <xen/percpu.h>
-#include <xen/sections.h>
-#include <xen/random.h>
-#include <xen/time.h>
+#include <crux/init.h>
+#include <crux/percpu.h>
+#include <crux/sections.h>
+#include <crux/random.h>
+#include <crux/time.h>
 #include <asm/random.h>
 
 static DEFINE_PER_CPU(unsigned int, seed);

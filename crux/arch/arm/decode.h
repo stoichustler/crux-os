@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/decode.h
+ * crux/arch/arm/decode.h
  *
  * Instruction decoder
  *

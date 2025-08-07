@@ -1,16 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#include <xen/bitops.h>
-#include <xen/errno.h>
-#include <xen/grant_table.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/init.h>
-#include <xen/ioreq.h>
-#include <xen/lib.h>
-#include <xen/livepatch.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/wait.h>
+#include <crux/bitops.h>
+#include <crux/errno.h>
+#include <crux/grant_table.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/init.h>
+#include <crux/ioreq.h>
+#include <crux/lib.h>
+#include <crux/livepatch.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/wait.h>
 
 #include <asm/arm64/sve.h>
 #include <asm/cpuerrata.h>
@@ -84,7 +84,7 @@ static void noreturn idle_loop(void)
 
 static void ctxt_switch_from(struct vcpu *p)
 {
-    /* When the idle VCPU is running, xen will always stay in hypervisor
+    /* When the idle VCPU is running, Xen will always stay in hypervisor
      * mode. Therefore we don't need to save the context of an idle VCPU.
      */
     if ( is_idle_vcpu(p) )
@@ -168,7 +168,7 @@ static void ctxt_switch_to(struct vcpu *n)
 {
     register_t vpidr;
 
-    /* When the idle VCPU is running, xen will always stay in hypervisor
+    /* When the idle VCPU is running, Xen will always stay in hypervisor
      * mode. Therefore we don't need to restore the context of an idle VCPU.
      */
     if ( is_idle_vcpu(n) )
@@ -458,7 +458,7 @@ unsigned long hypercall_create_continuation(
 
  bad_fmt:
     va_end(args);
-    gprintk(XENLOG_ERR, "Bad hypercall continuation format '%c'\n", *p);
+    gprintk(CRUXLOG_ERR, "Bad hypercall continuation format '%c'\n", *p);
     ASSERT_UNREACHABLE();
     domain_crash(current->domain);
     return 0;
@@ -483,7 +483,7 @@ struct domain *alloc_domain_struct(void)
 {
     struct domain *d;
     BUILD_BUG_ON(sizeof(*d) > PAGE_SIZE);
-    d = alloc_xenheap_pages(0, 0);
+    d = alloc_cruxheap_pages(0, 0);
     if ( d == NULL )
         return NULL;
 
@@ -493,7 +493,7 @@ struct domain *alloc_domain_struct(void)
 
 void free_domain_struct(struct domain *d)
 {
-    free_xenheap_page(d);
+    free_cruxheap_page(d);
 }
 
 void dump_pageframe_info(struct domain *d)
@@ -516,7 +516,7 @@ struct vcpu *alloc_vcpu_struct(const struct domain *d)
     struct vcpu *v;
 
     BUILD_BUG_ON(sizeof(*v) > MAX_PAGES_PER_VCPU * PAGE_SIZE);
-    v = alloc_xenheap_pages(get_order_from_bytes(sizeof(*v)), 0);
+    v = alloc_cruxheap_pages(get_order_from_bytes(sizeof(*v)), 0);
     if ( v != NULL )
     {
         unsigned int i;
@@ -530,7 +530,7 @@ struct vcpu *alloc_vcpu_struct(const struct domain *d)
 
 void free_vcpu_struct(struct vcpu *v)
 {
-    free_xenheap_pages(v, get_order_from_bytes(sizeof(*v)));
+    free_cruxheap_pages(v, get_order_from_bytes(sizeof(*v)));
 }
 
 int arch_vcpu_create(struct vcpu *v)
@@ -539,7 +539,7 @@ int arch_vcpu_create(struct vcpu *v)
 
     BUILD_BUG_ON( sizeof(struct cpu_info) > STACK_SIZE );
 
-    v->arch.stack = alloc_xenheap_pages(STACK_ORDER, MEMF_node(vcpu_to_node(v)));
+    v->arch.stack = alloc_cruxheap_pages(STACK_ORDER, MEMF_node(vcpu_to_node(v)));
     if ( v->arch.stack == NULL )
         return -ENOMEM;
 
@@ -570,7 +570,7 @@ int arch_vcpu_create(struct vcpu *v)
     v->arch.hcr_el2 = get_default_hcr_flags();
 
     v->arch.mdcr_el2 = HDCR_TDRA | HDCR_TDOSA | HDCR_TDA;
-    if ( !(v->domain->options & XEN_DOMCTL_CDF_vpmu) )
+    if ( !(v->domain->options & CRUX_DOMCTL_CDF_vpmu) )
         v->arch.mdcr_el2 |= HDCR_TPM | HDCR_TPMCR;
 
     if ( (rc = vcpu_vgic_init(v)) != 0 )
@@ -599,7 +599,7 @@ void arch_vcpu_destroy(struct vcpu *v)
         sve_context_free(v);
     vcpu_timer_destroy(v);
     vcpu_vgic_free(v);
-    free_xenheap_pages(v->arch.stack, STACK_ORDER);
+    free_cruxheap_pages(v->arch.stack, STACK_ORDER);
 }
 
 void vcpu_switch_to_aarch64_mode(struct vcpu *v)
@@ -607,18 +607,18 @@ void vcpu_switch_to_aarch64_mode(struct vcpu *v)
     v->arch.hcr_el2 |= HCR_RW;
 }
 
-int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
+int arch_sanitise_domain_config(struct crux_domctl_createdomain *config)
 {
     unsigned int max_vcpus;
-    unsigned int flags_required = (XEN_DOMCTL_CDF_hvm | XEN_DOMCTL_CDF_hap);
-    unsigned int flags_optional = (XEN_DOMCTL_CDF_iommu | XEN_DOMCTL_CDF_vpmu |
-                                   XEN_DOMCTL_CDF_xs_domain |
-                                   XEN_DOMCTL_CDF_trap_unmapped_accesses );
+    unsigned int flags_required = (CRUX_DOMCTL_CDF_hvm | CRUX_DOMCTL_CDF_hap);
+    unsigned int flags_optional = (CRUX_DOMCTL_CDF_iommu | CRUX_DOMCTL_CDF_vpmu |
+                                   CRUX_DOMCTL_CDF_xs_domain |
+                                   CRUX_DOMCTL_CDF_trap_unmapped_accesses );
     unsigned int sve_vl_bits = sve_decode_vl(config->arch.sve_vl);
 
     if ( (config->flags & ~flags_optional) != flags_required )
     {
-        dprintk(XENLOG_INFO, "Unsupported configuration %#x\n",
+        dprintk(CRUXLOG_INFO, "Unsupported configuration %#x\n",
                 config->flags);
         return -EINVAL;
     }
@@ -630,13 +630,13 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
 
         if ( !zcr_max_bits )
         {
-            dprintk(XENLOG_INFO, "SVE is unsupported on this machine.\n");
+            dprintk(CRUXLOG_INFO, "SVE is unsupported on this machine.\n");
             return -EINVAL;
         }
 
         if ( sve_vl_bits > zcr_max_bits )
         {
-            dprintk(XENLOG_INFO,
+            dprintk(CRUXLOG_INFO,
                     "Requested SVE vector length (%u) > supported length (%u)\n",
                     sve_vl_bits, zcr_max_bits);
             return -EINVAL;
@@ -644,24 +644,24 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
     }
 
     /* The P2M table must always be shared between the CPU and the IOMMU */
-    if ( config->iommu_opts & XEN_DOMCTL_IOMMU_no_sharept )
+    if ( config->iommu_opts & CRUX_DOMCTL_IOMMU_no_sharept )
     {
-        dprintk(XENLOG_INFO,
-                "Unsupported iommu option: XEN_DOMCTL_IOMMU_no_sharept\n");
+        dprintk(CRUXLOG_INFO,
+                "Unsupported iommu option: CRUX_DOMCTL_IOMMU_no_sharept\n");
         return -EINVAL;
     }
 
     /* Fill in the native GIC version, passed back to the toolstack. */
-    if ( config->arch.gic_version == XEN_DOMCTL_CONFIG_GIC_NATIVE )
+    if ( config->arch.gic_version == CRUX_DOMCTL_CONFIG_GIC_NATIVE )
     {
         switch ( gic_hw_version() )
         {
         case GIC_V2:
-            config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V2;
+            config->arch.gic_version = CRUX_DOMCTL_CONFIG_GIC_V2;
             break;
 
         case GIC_V3:
-            config->arch.gic_version = XEN_DOMCTL_CONFIG_GIC_V3;
+            config->arch.gic_version = CRUX_DOMCTL_CONFIG_GIC_V3;
             break;
 
         default:
@@ -670,32 +670,32 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
         }
     }
 
-    /* max_vcpus depends on the GIC version, and xen's compiled limit. */
+    /* max_vcpus depends on the GIC version, and Xen's compiled limit. */
     max_vcpus = min(vgic_max_vcpus(config->arch.gic_version), MAX_VIRT_CPUS);
 
     if ( max_vcpus == 0 )
     {
-        dprintk(XENLOG_INFO, "Unsupported GIC version\n");
+        dprintk(CRUXLOG_INFO, "Unsupported GIC version\n");
         return -EINVAL;
     }
 
     if ( config->max_vcpus > max_vcpus )
     {
-        dprintk(XENLOG_INFO, "Requested vCPUs (%u) exceeds max (%u)\n",
+        dprintk(CRUXLOG_INFO, "Requested vCPUs (%u) exceeds max (%u)\n",
                 config->max_vcpus, max_vcpus);
         return -EINVAL;
     }
 
-    if ( config->arch.tee_type != XEN_DOMCTL_CONFIG_TEE_NONE &&
+    if ( config->arch.tee_type != CRUX_DOMCTL_CONFIG_TEE_NONE &&
          config->arch.tee_type != tee_get_type() )
     {
-        dprintk(XENLOG_INFO, "Unsupported TEE type\n");
+        dprintk(CRUXLOG_INFO, "Unsupported TEE type\n");
         return -EINVAL;
     }
 
     if ( config->altp2m.opts )
     {
-        dprintk(XENLOG_INFO, "Altp2m not supported\n");
+        dprintk(CRUXLOG_INFO, "Altp2m not supported\n");
         return -EINVAL;
     }
 
@@ -703,7 +703,7 @@ int arch_sanitise_domain_config(struct xen_domctl_createdomain *config)
 }
 
 int arch_domain_create(struct domain *d,
-                       struct xen_domctl_createdomain *config,
+                       struct crux_domctl_createdomain *config,
                        unsigned int flags)
 {
     unsigned int count = 0;
@@ -723,19 +723,19 @@ int arch_domain_create(struct domain *d,
         goto fail;
 
     rc = -ENOMEM;
-    if ( (d->shared_info = alloc_xenheap_pages(0, 0)) == NULL )
+    if ( (d->shared_info = alloc_cruxheap_pages(0, 0)) == NULL )
         goto fail;
 
     clear_page(d->shared_info);
-    share_xen_page_with_guest(virt_to_page(d->shared_info), d, SHARE_rw);
+    share_crux_page_with_guest(virt_to_page(d->shared_info), d, SHARE_rw);
 
     switch ( config->arch.gic_version )
     {
-    case XEN_DOMCTL_CONFIG_GIC_V2:
+    case CRUX_DOMCTL_CONFIG_GIC_V2:
         d->arch.vgic.version = GIC_V2;
         break;
 
-    case XEN_DOMCTL_CONFIG_GIC_V3:
+    case CRUX_DOMCTL_CONFIG_GIC_V3:
         d->arch.vgic.version = GIC_V3;
         break;
 
@@ -850,9 +850,9 @@ void arch_domain_destroy(struct domain *d)
     p2m_final_teardown(d);
     domain_vgic_free(d);
     domain_vuart_free(d);
-    free_xenheap_page(d->shared_info);
+    free_cruxheap_page(d->shared_info);
 #ifdef CONFIG_ACPI
-    free_xenheap_pages(d->arch.efi_acpi_table,
+    free_cruxheap_pages(d->arch.efi_acpi_table,
                        get_order_from_bytes(d->arch.efi_acpi_len));
 #endif
     domain_io_free(d);
@@ -976,7 +976,7 @@ int arch_set_info_guest(
     return 0;
 }
 
-int arch_initialise_vcpu(struct vcpu *v, XEN_GUEST_HANDLE_PARAM(void) arg)
+int arch_initialise_vcpu(struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     ASSERT_UNREACHABLE();
     return -EOPNOTSUPP;
@@ -1038,7 +1038,7 @@ static int relinquish_memory(struct domain *d, struct page_list_head *list)
 enum {
     PROG_pci = 1,
     PROG_tee,
-    PROG_xen,
+    PROG_crux,
     PROG_page,
     PROG_mapping,
     PROG_p2m_root,
@@ -1070,7 +1070,7 @@ int domain_relinquish_resources(struct domain *d)
 
         /*
          * Release the resources allocated for vpl011 which were
-         * allocated via a DOMCTL call XEN_DOMCTL_vuart_op.
+         * allocated via a DOMCTL call CRUX_DOMCTL_vuart_op.
          */
         domain_vpl011_deinit(d);
 
@@ -1089,8 +1089,8 @@ int domain_relinquish_resources(struct domain *d)
         if (ret )
             return ret;
 
-    PROGRESS(xen):
-        ret = relinquish_memory(d, &d->xenpage_list);
+    PROGRESS(crux):
+        ret = relinquish_memory(d, &d->cruxpage_list);
         if ( ret )
             return ret;
 
@@ -1139,7 +1139,7 @@ void arch_dump_domain_info(struct domain *d)
 }
 
 
-long do_vcpu_op(int cmd, unsigned int vcpuid, XEN_GUEST_HANDLE_PARAM(void) arg)
+long do_vcpu_op(int cmd, unsigned int vcpuid, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     struct domain *d = current->domain;
     struct vcpu *v;

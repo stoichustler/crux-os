@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vgic-v2.c
+ * crux/arch/arm/vgic-v2.c
  *
  * ARM Virtual Generic Interrupt Controller support v2
  *
@@ -8,13 +8,13 @@
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/bitops.h>
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/softirq.h>
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/bitops.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/softirq.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 
 #include <asm/current.h>
 
@@ -134,7 +134,7 @@ static void vgic_store_itargetsr(struct domain *d, struct vgic_irq_rank *rank,
          */
         if ( !new_target || (new_target > d->max_vcpus) )
         {
-            gprintk(XENLOG_WARNING,
+            gprintk(CRUXLOG_WARNING,
                    "No valid vCPU found for vIRQ%u in the target list (%#x). Skip it\n",
                    virq, new_mask);
             continue;
@@ -329,20 +329,20 @@ static int vgic_v2_distr_mmio_read(struct vcpu *v, mmio_info_t *info,
 
     case VREG32(GICD_ICPIDR2):
         if ( dabt.size != DABT_WORD ) goto bad_width;
-        printk(XENLOG_G_ERR "%pv: vGICD: unhandled read from ICPIDR2\n", v);
+        printk(CRUXLOG_G_ERR "%pv: vGICD: unhandled read from ICPIDR2\n", v);
         return 0;
 
     case VRANGE32(0xFEC, 0xFFC):
         goto read_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR "%pv: vGICD: unhandled read r%d offset %#08x\n",
+        printk(CRUXLOG_G_ERR "%pv: vGICD: unhandled read r%d offset %#08x\n",
                v, dabt.reg, gicd_reg);
         return 0;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR "%pv: vGICD: bad read width %d r%d offset %#08x\n",
+    printk(CRUXLOG_G_ERR "%pv: vGICD: bad read width %d r%d offset %#08x\n",
            v, dabt.size, dabt.reg, gicd_reg);
     return 0;
 
@@ -353,14 +353,14 @@ read_as_zero:
     return 1;
 
 read_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: RAZ on implemention defined register offset %#08x\n",
            v, gicd_reg);
     *r = 0;
     return 1;
 
 read_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: RAZ on reserved register offset %#08x\n",
            v, gicd_reg);
     *r = 0;
@@ -393,7 +393,7 @@ static bool vgic_v2_to_sgi(struct vcpu *v, register_t sgir)
         sgi_mode = SGI_TARGET_SELF;
         break;
     default:
-        printk(XENLOG_G_DEBUG
+        printk(CRUXLOG_G_DEBUG
                "%pv: vGICD: unhandled GICD_SGIR write %"PRIregister" with wrong mode\n",
                v, sgir);
         return false;
@@ -491,13 +491,13 @@ static int vgic_v2_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
         if ( dabt.size != DABT_WORD ) goto bad_width;
         if ( r == 0 )
             goto write_ignore_32;
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled word write %#"PRIregister" to ISACTIVER%d\n",
                v, r, gicd_reg - GICD_ISACTIVER);
         return 0;
 
     case VRANGE32(GICD_ICACTIVER, GICD_ICACTIVERN):
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled word write %#"PRIregister" to ICACTIVER%d\n",
                v, r, gicd_reg - GICD_ICACTIVER);
         goto write_ignore_32;
@@ -581,14 +581,14 @@ static int vgic_v2_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
 
     case VRANGE32(GICD_CPENDSGIR, GICD_CPENDSGIRN):
         if ( dabt.size != DABT_BYTE && dabt.size != DABT_WORD ) goto bad_width;
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled %s write %#"PRIregister" to ICPENDSGIR%d\n",
                v, dabt.size ? "word" : "byte", r, gicd_reg - GICD_CPENDSGIR);
         return 0;
 
     case VRANGE32(GICD_SPENDSGIR, GICD_SPENDSGIRN):
         if ( dabt.size != DABT_BYTE && dabt.size != DABT_WORD ) goto bad_width;
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled %s write %#"PRIregister" to ISPENDSGIR%d\n",
                v, dabt.size ? "word" : "byte", r, gicd_reg - GICD_SPENDSGIR);
         return 0;
@@ -608,14 +608,14 @@ static int vgic_v2_distr_mmio_write(struct vcpu *v, mmio_info_t *info,
         /* Implementation defined identification registers */
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGICD: unhandled write r%d=%"PRIregister" offset %#08x\n",
                v, dabt.reg, r, gicd_reg);
         return 0;
     }
 
 bad_width:
-    printk(XENLOG_G_ERR
+    printk(CRUXLOG_G_ERR
            "%pv: vGICD: bad write width %d r%d=%"PRIregister" offset %#08x\n",
            v, dabt.size, dabt.reg, r, gicd_reg);
     return 0;
@@ -626,13 +626,13 @@ write_ignore:
     return 1;
 
 write_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: WI on implementation defined register offset %#08x\n",
            v, gicd_reg);
     return 1;
 
 write_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGICD: WI on implementation defined register offset %#08x\n",
            v, gicd_reg);
     return 1;
@@ -743,7 +743,7 @@ int vgic_v2_init(struct domain *d, unsigned int *mmio_count)
 {
     if ( !vgic_v2_hw.enabled )
     {
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "d%d: vGICv2 is not supported on this platform.\n",
                d->domain_id);
         return -ENODEV;

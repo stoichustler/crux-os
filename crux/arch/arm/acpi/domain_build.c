@@ -9,16 +9,16 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/compile.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/fdt-kernel.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/acpi.h>
-#include <xen/event.h>
-#include <xen/iocap.h>
-#include <xen/device_tree.h>
-#include <xen/libfdt/libfdt.h>
+#include <crux/compile.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/fdt-kernel.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/acpi.h>
+#include <crux/event.h>
+#include <crux/iocap.h>
+#include <crux/device_tree.h>
+#include <crux/libfdt/libfdt.h>
 #include <acpi/actables.h>
 #include <asm/domain_build.h>
 
@@ -54,7 +54,7 @@ static int __init acpi_iomem_deny_access(struct domain *d)
     }
     else
     {
-        printk("Failed to get SPCR table, xen console may be unavailable\n");
+        printk("Failed to get SPCR table, Xen console may be unavailable\n");
     }
 
     /* Deny MMIO access for GIC regions */
@@ -93,15 +93,15 @@ static int __init acpi_make_hypervisor_node(const struct kernel_info *kinfo,
                                             struct membank tbl_add[])
 {
     const char compat[] =
-        "xen,xen-" XEN_VERSION_STRING "\0"
-        "xen,xen";
+        "crux,crux-" CRUX_VERSION_STRING "\0"
+        "crux,crux";
     int res;
     /* Convenience alias */
     void *fdt = kinfo->fdt;
 
     dt_dprintk("Create hypervisor node\n");
 
-    /* See linux Documentation/devicetree/bindings/arm/xen.txt */
+    /* See linux Documentation/devicetree/bindings/arm/crux.txt */
     res = fdt_begin_node(fdt, "hypervisor");
     if ( res )
         return res;
@@ -203,7 +203,7 @@ static void __init acpi_map_other_tables(struct domain *d)
                                p2m_mmio_direct_c);
         if ( res )
         {
-             panic(XENLOG_ERR "Unable to map ACPI region 0x%"PRIx64
+             panic(CRUXLOG_ERR "Unable to map ACPI region 0x%"PRIx64
                    " - 0x%"PRIx64" in domain\n",
                    addr & PAGE_MASK, PAGE_ALIGN(addr + size) - 1);
         }
@@ -505,7 +505,7 @@ int __init prepare_acpi(struct domain *d, struct kernel_info *kinfo)
         return rc;
 
     order = get_order_from_bytes(d->arch.efi_acpi_len);
-    d->arch.efi_acpi_table = alloc_xenheap_pages(order, 0);
+    d->arch.efi_acpi_table = alloc_cruxheap_pages(order, 0);
     if ( d->arch.efi_acpi_table == NULL )
     {
         printk("unable to allocate memory!\n");
@@ -557,7 +557,7 @@ int __init prepare_acpi(struct domain *d, struct kernel_info *kinfo)
                           p2m_mmio_direct_c);
     if ( rc != 0 )
     {
-        printk(XENLOG_ERR "Unable to map EFI/ACPI table 0x%"PRIx64
+        printk(CRUXLOG_ERR "Unable to map EFI/ACPI table 0x%"PRIx64
                " - 0x%"PRIx64" in domain %d\n",
                d->arch.efi_acpi_gpa & PAGE_MASK,
                PAGE_ALIGN(d->arch.efi_acpi_gpa + d->arch.efi_acpi_len) - 1,

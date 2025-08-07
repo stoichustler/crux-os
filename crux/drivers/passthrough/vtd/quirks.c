@@ -16,19 +16,19 @@
  * Author: Allen Kay <allen.m.kay@intel.com>
  */
 
-#include <xen/irq.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/xmalloc.h>
-#include <xen/domain_page.h>
-#include <xen/iommu.h>
-#include <xen/numa.h>
-#include <xen/softirq.h>
-#include <xen/time.h>
-#include <xen/pci.h>
-#include <xen/pci_ids.h>
-#include <xen/pci_regs.h>
-#include <xen/keyhandler.h>
+#include <crux/irq.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/xmalloc.h>
+#include <crux/domain_page.h>
+#include <crux/iommu.h>
+#include <crux/numa.h>
+#include <crux/softirq.h>
+#include <crux/time.h>
+#include <crux/pci.h>
+#include <crux/pci_ids.h>
+#include <crux/pci_regs.h>
+#include <crux/keyhandler.h>
 #include <asm/msi.h>
 #include <asm/intel-family.h>
 #include <asm/irq.h>
@@ -64,7 +64,7 @@ static u8 *__read_mostly igd_reg_va;
 static spinlock_t igd_lock;
 
 /*
- * QUIRK to workaround xen boot issue on Calpella/Ironlake OEM BIOS
+ * QUIRK to workaround Xen boot issue on Calpella/Ironlake OEM BIOS
  * not enabling VT-d properly in IGD.  The workaround is to not enabling
  * IGD VT-d translation if VT is not enabled in IGD.
  */
@@ -130,7 +130,7 @@ bool is_azalia_tlb_enabled(const struct acpi_drhd_unit *drhd)
     vtisochctrl = pci_conf_read32(sbdf, 0x188);
     if ( vtisochctrl == 0xffffffff )
     {
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " Cannot access VTISOCHCTRL at this time\n");
         return true;
     }
@@ -141,7 +141,7 @@ bool is_azalia_tlb_enabled(const struct acpi_drhd_unit *drhd)
      */
     if ( vtisochctrl & 1 )
     {
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " Inconsistency between chipset registers and ACPI tables\n");
         return true;
     }
@@ -157,7 +157,7 @@ bool is_azalia_tlb_enabled(const struct acpi_drhd_unit *drhd)
     if ( !vtisochctrl )
         return false;
 
-    printk(XENLOG_WARNING VTDPREFIX
+    printk(CRUXLOG_WARNING VTDPREFIX
            " Recommended TLB entries for ISOCH unit is 16; firmware set %u\n",
            vtisochctrl);
 
@@ -181,7 +181,7 @@ static void __init snb_errata_init(void)
  */
 
 /*
- * map IGD MMIO+0x2000 page to allow xen access to IGD 3D register.
+ * map IGD MMIO+0x2000 page to allow Xen access to IGD 3D register.
  */
 static void __init map_igd_reg(void)
 {
@@ -255,7 +255,7 @@ static void snb_vtd_ops_preamble(struct vtd_iommu *iommu)
     {
         if ( NOW() > start_time + snb_igd_timeout )
         {
-            dprintk(XENLOG_INFO VTDPREFIX,
+            dprintk(CRUXLOG_INFO VTDPREFIX,
                     "snb_vtd_ops_preamble: failed to disable idle handshake\n");
             break;
         }
@@ -354,13 +354,13 @@ static void __init tylersburg_intremap_quirk(void)
         case 0x34038086: case 0x34068086:
             if ( rev >= 0x22 )
                 continue;
-            printk(XENLOG_WARNING VTDPREFIX
+            printk(CRUXLOG_WARNING VTDPREFIX
                    "Disabling IOMMU due to Intel 5500/5520 chipset errata #47 and #53\n");
             iommu_enable = false;
             break;
 
         case 0x34058086:
-            printk(XENLOG_WARNING VTDPREFIX
+            printk(CRUXLOG_WARNING VTDPREFIX
                    "Disabling IOMMU due to Intel X58 chipset %s\n",
                    rev < 0x22 ? "errata #62 and #69" : "erratum #69");
             iommu_enable = false;
@@ -380,7 +380,7 @@ void __init platform_quirks_init(void)
     /* Mobile 4 Series Chipset neglects to set RWBF capability. */
     if ( ioh_id == 0x2a408086 )
     {
-        dprintk(XENLOG_INFO VTDPREFIX, "DMAR: Forcing write-buffer flush\n");
+        dprintk(CRUXLOG_INFO VTDPREFIX, "DMAR: Forcing write-buffer flush\n");
         rwbf_quirk = 1;
     }
 
@@ -519,7 +519,7 @@ void pci_vtd_quirk(const struct pci_dev *pdev)
     case 0x3c28: /* Sandybridge */
         val = pci_conf_read32(pdev->sbdf, 0x1AC);
         pci_conf_write32(pdev->sbdf, 0x1AC, val | (1U << 31));
-        printk(XENLOG_INFO "Masked VT-d error signaling on %pp\n", &pdev->sbdf);
+        printk(CRUXLOG_INFO "Masked VT-d error signaling on %pp\n", &pdev->sbdf);
         break;
 
     /* Tylersburg (EP)/Boxboro (MP) chipsets (NHM-EP/EX, WSM-EP/EX) */
@@ -552,7 +552,7 @@ void pci_vtd_quirk(const struct pci_dev *pdev)
             ff = pcie_aer_get_firmware_first(pdev);
         if ( !pos )
         {
-            printk(XENLOG_WARNING "%pp without AER capability?\n", &pdev->sbdf);
+            printk(CRUXLOG_WARNING "%pp without AER capability?\n", &pdev->sbdf);
             break;
         }
 
@@ -575,7 +575,7 @@ void pci_vtd_quirk(const struct pci_dev *pdev)
         val = pci_conf_read32(pdev->sbdf, 0x20c);
         pci_conf_write32(pdev->sbdf, 0x20c, val | (1 << 4));
 
-        printk(XENLOG_INFO "%s UR signaling on %pp\n", action, &pdev->sbdf);
+        printk(CRUXLOG_INFO "%s UR signaling on %pp\n", action, &pdev->sbdf);
         break;
 
     case 0x0040: case 0x0044: case 0x0048: /* Nehalem/Westmere */
@@ -600,14 +600,14 @@ void pci_vtd_quirk(const struct pci_dev *pdev)
             {
                 __set_bit(0x1c8 * 8 + 20, va);
                 iounmap(va);
-                printk(XENLOG_INFO "Masked UR signaling on %pp\n", &pdev->sbdf);
+                printk(CRUXLOG_INFO "Masked UR signaling on %pp\n", &pdev->sbdf);
             }
             else
-                printk(XENLOG_ERR "Could not map %"PRIpaddr" for %pp\n",
+                printk(CRUXLOG_ERR "Could not map %"PRIpaddr" for %pp\n",
                        pa, &pdev->sbdf);
         }
         else
-            printk(XENLOG_WARNING "Bogus DMIBAR %#"PRIx64" on %pp\n",
+            printk(CRUXLOG_WARNING "Bogus DMIBAR %#"PRIx64" on %pp\n",
                    bar, &pdev->sbdf);
         break;
     }
@@ -624,7 +624,7 @@ void __init quirk_iommu_caps(struct vtd_iommu *iommu)
      * There are issues changing the walk length under in-flight DMA, which
      * has manifested as incompatibility between EPT/IOMMU sharing and the
      * workaround for CVE-2018-12207 / XSA-304.  Hide the superpages
-     * capabilities in the IOMMU, which will prevent xen from sharing the EPT
+     * capabilities in the IOMMU, which will prevent Xen from sharing the EPT
      * and IOMMU pagetables.
      *
      * Detection of SandyBridge unfortunately has to be done by processor

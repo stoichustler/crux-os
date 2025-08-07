@@ -1,5 +1,5 @@
-#include <xen/init.h>
-#include <xen/lib.h>
+#include <crux/init.h>
+#include <crux/lib.h>
 
 typedef void (*ctor_func_t)(void);
 extern const ctor_func_t __ctors_start[], __ctors_end[];

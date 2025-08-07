@@ -4,7 +4,7 @@
 /*                                            */
 /**********************************************/
 
-#include <xen/types.h>
+#include <crux/types.h>
 #include "font.h"
 
 #define FONTDATAMAX (256*8)

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/acpi.h>
-#include <xen/param.h>
+#include <crux/acpi.h>
+#include <crux/param.h>
 
 #include <asm/io_apic.h>
 
@@ -702,7 +702,7 @@ static int __init cf_check parse_ivrs_ioapic(const char *str)
         idx = get_next_ioapic_sbdf_index();
         if ( idx == MAX_IO_APICS )
         {
-            printk(XENLOG_ERR "Error: %s: Too many IO APICs.\n", __func__);
+            printk(CRUXLOG_ERR "Error: %s: Too many IO APICs.\n", __func__);
             return -EINVAL;
         }
     }
@@ -819,7 +819,7 @@ static u16 __init parse_ivhd_device_special(
                 idx = get_next_ioapic_sbdf_index();
                 if ( idx == MAX_IO_APICS )
                 {
-                    printk(XENLOG_ERR "IVHD Error: Too many IO APICs.\n");
+                    printk(CRUXLOG_ERR "IVHD Error: Too many IO APICs.\n");
                     return 0;
                 }
 
@@ -832,7 +832,7 @@ static u16 __init parse_ivhd_device_special(
                 if ( nr_ioapic_entries[apic] &&
                      !ioapic_sbdf[idx].pin_2_idx )
                 {
-                    printk(XENLOG_ERR "IVHD Error: Out of memory\n");
+                    printk(CRUXLOG_ERR "IVHD Error: Out of memory\n");
                     return 0;
                 }
                 memset(ioapic_sbdf[idx].pin_2_idx, -1,
@@ -843,7 +843,7 @@ static u16 __init parse_ivhd_device_special(
         }
         if ( apic == nr_ioapics )
         {
-            printk(XENLOG_ERR "IVHD Error: Invalid IO-APIC %#x\n",
+            printk(CRUXLOG_ERR "IVHD Error: Invalid IO-APIC %#x\n",
                    special->handle);
             return 0;
         }
@@ -852,7 +852,7 @@ static u16 __init parse_ivhd_device_special(
         switch (hpet_sbdf.init)
         {
         case HPET_IVHD:
-            printk(XENLOG_WARNING "Only one IVHD HPET entry is supported.\n");
+            printk(CRUXLOG_WARNING "Only one IVHD HPET entry is supported.\n");
             break;
         case HPET_CMDL:
             AMD_IOMMU_DEBUG("IVHD: Command line override present for HPET %#x "
@@ -872,7 +872,7 @@ static u16 __init parse_ivhd_device_special(
         }
         break;
     default:
-        printk(XENLOG_ERR "Unrecognized IVHD special variety %#x\n",
+        printk(CRUXLOG_ERR "Unrecognized IVHD special variety %#x\n",
                special->variety);
         return 0;
     }
@@ -1128,7 +1128,7 @@ static int __init cf_check parse_ivrs_table(struct acpi_table_header *table)
         idx = ioapic_id_to_index(IO_APIC_ID(apic));
         if ( idx == MAX_IO_APICS )
         {
-            printk(XENLOG_ERR "IVHD Error: no information for IO-APIC %#x\n",
+            printk(CRUXLOG_ERR "IVHD Error: no information for IO-APIC %#x\n",
                    IO_APIC_ID(apic));
             if ( amd_iommu_perdev_intremap )
                 return -ENXIO;
@@ -1148,7 +1148,7 @@ static int __init cf_check parse_ivrs_table(struct acpi_table_header *table)
                    nr_ioapic_entries[apic] * sizeof(*ioapic_sbdf->pin_2_idx));
         else
         {
-            printk(XENLOG_ERR "IVHD Error: Out of memory\n");
+            printk(CRUXLOG_ERR "IVHD Error: Out of memory\n");
             error = -ENOMEM;
         }
     }
@@ -1158,7 +1158,7 @@ static int __init cf_check parse_ivrs_table(struct acpi_table_header *table)
         if ( amd_iommu_perdev_intremap )
             error = -ENXIO;
         printk("%sNo southbridge IO-APIC found in IVRS table\n",
-               amd_iommu_perdev_intremap ? XENLOG_ERR : XENLOG_WARNING);
+               amd_iommu_perdev_intremap ? CRUXLOG_ERR : CRUXLOG_WARNING);
     }
 
     return error;
@@ -1344,11 +1344,11 @@ get_supported_ivhd_type(struct acpi_table_header *table)
 
     if ( !blk )
     {
-        printk(XENLOG_ERR "Cannot find supported IVHD type.\n");
+        printk(CRUXLOG_ERR "Cannot find supported IVHD type.\n");
         return -ENODEV;
     }
 
-    AMD_IOMMU_DEBUG("using IVHD type %#x\n", blk->type);
+    AMD_IOMMU_DEBUG("Using IVHD type %#x\n", blk->type);
 
     return blk->type;
 }

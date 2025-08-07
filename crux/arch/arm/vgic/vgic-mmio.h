@@ -13,8 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef __XEN_ARM_VGIC_VGIC_MMIO_H__
-#define __XEN_ARM_VGIC_VGIC_MMIO_H__
+#ifndef __CRUX_ARM_VGIC_VGIC_MMIO_H__
+#define __CRUX_ARM_VGIC_VGIC_MMIO_H__
 
 struct vgic_register_region {
     unsigned int reg_offset;

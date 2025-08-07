@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/mmio.h
+ * crux/include/asm-arm/mmio.h
  *
  * ARM I/O handlers
  *
@@ -19,8 +19,8 @@
 #ifndef __ASM_ARM_MMIO_H__
 #define __ASM_ARM_MMIO_H__
 
-#include <xen/lib.h>
-#include <xen/rwlock.h>
+#include <crux/lib.h>
+#include <crux/rwlock.h>
 
 #include <asm/hsr.h>
 

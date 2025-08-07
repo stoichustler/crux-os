@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/platform.c
+ * crux/arch/arm/platform.c
  *
  * Helpers to execute platform specific code.
  *
@@ -9,8 +9,8 @@
  */
 
 #include <asm/platform.h>
-#include <xen/device_tree.h>
-#include <xen/init.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
 #include <asm/psci.h>
 
 extern const struct platform_desc _splatform[], _eplatform[];
@@ -52,11 +52,11 @@ void __init platform_init(void)
     if ( platform == _eplatform )
     {
         /* TODO: dump DT machine compatible node */
-        printk(XENLOG_INFO "platform: Generic System\n");
+        printk(CRUXLOG_INFO "Platform: Generic System\n");
         platform = NULL;
     }
     else
-        printk(XENLOG_INFO "platform: %s\n", platform->name);
+        printk(CRUXLOG_INFO "Platform: %s\n", platform->name);
 
     if ( platform && platform->init )
         res = platform->init();

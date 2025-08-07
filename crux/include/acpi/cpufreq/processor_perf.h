@@ -1,11 +1,11 @@
-#ifndef __XEN_PROCESSOR_PM_H__
-#define __XEN_PROCESSOR_PM_H__
+#ifndef __CRUX_PROCESSOR_PM_H__
+#define __CRUX_PROCESSOR_PM_H__
 
 #include <public/platform.h>
 #include <public/sysctl.h>
-#include <xen/acpi.h>
+#include <crux/acpi.h>
 
-#define XEN_PX_INIT 0x80000000U
+#define CRUX_PX_INIT 0x80000000U
 
 unsigned int powernow_register_driver(void);
 unsigned int get_measured_perf(unsigned int cpu, unsigned int flag);
@@ -31,11 +31,11 @@ int  cpufreq_del_cpu(unsigned int cpu);
 struct processor_performance {
     uint32_t state;
     uint32_t platform_limit;
-    struct xen_pct_register control_register;
-    struct xen_pct_register status_register;
+    struct crux_pct_register control_register;
+    struct crux_pct_register status_register;
     uint32_t state_count;
-    struct xen_processor_px *states;
-    struct xen_psd_package domain_info;
+    struct crux_processor_px *states;
+    struct crux_psd_package domain_info;
     uint32_t shared_type;
 };
 
@@ -64,4 +64,4 @@ struct pm_px {
 };
 
 int cpufreq_cpu_init(unsigned int cpu);
-#endif /* __XEN_PROCESSOR_PM_H__ */
+#endif /* __CRUX_PROCESSOR_PM_H__ */

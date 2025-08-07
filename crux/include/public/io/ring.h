@@ -7,8 +7,8 @@
  * Tim Deegan and Andrew Warfield November 2004.
  */
 
-#ifndef __XEN_PUBLIC_IO_RING_H__
-#define __XEN_PUBLIC_IO_RING_H__
+#ifndef __CRUX_PUBLIC_IO_RING_H__
+#define __CRUX_PUBLIC_IO_RING_H__
 
 /*
  * When #include'ing this header, you need to provide the following
@@ -22,23 +22,23 @@
  * - memcpy
  * - grant_ref_t
  * These declarations are provided by string.h of the standard headers,
- * and grant_table.h from the xen public headers.
+ * and grant_table.h from the Xen public headers.
  */
 
-#include "../xen.h"
-#include "../xen-compat.h"
+#include "../crux.h"
+#include "../crux-compat.h"
 
 /* Some PV I/O interfaces need a compatibility variant. */
-#if __XEN_INTERFACE_VERSION__ < 0x00041300
-#define XENPV_FLEX_ARRAY_DIM  1 /* variable size */
+#if __CRUX_INTERFACE_VERSION__ < 0x00041300
+#define CRUXPV_FLEX_ARRAY_DIM  1 /* variable size */
 #else
-#define XENPV_FLEX_ARRAY_DIM  XEN_FLEX_ARRAY_DIM
+#define CRUXPV_FLEX_ARRAY_DIM  CRUX_FLEX_ARRAY_DIM
 #endif
 
-#if __XEN_INTERFACE_VERSION__ < 0x00030208
-#define xen_mb()  mb()
-#define xen_rmb() rmb()
-#define xen_wmb() wmb()
+#if __CRUX_INTERFACE_VERSION__ < 0x00030208
+#define crux_mb()  mb()
+#define crux_rmb() rmb()
+#define crux_wmb() wmb()
 #endif
 
 typedef unsigned int RING_IDX;
@@ -87,7 +87,7 @@ typedef unsigned int RING_IDX;
  * the front half:
  *
  *     mytag_front_ring_t ring;
- *     XEN_FRONT_RING_INIT(&ring, (mytag_sring_t *)shared_page, PAGE_SIZE);
+ *     CRUX_FRONT_RING_INIT(&ring, (mytag_sring_t *)shared_page, PAGE_SIZE);
  *
  * Initializing the back follows similarly (note that only the front
  * initializes the shared ring):
@@ -118,7 +118,7 @@ struct __name##_sring {                                                 \
         uint8_t pvt_pad[4];                                             \
     } pvt;                                                              \
     uint8_t __pad[44];                                                  \
-    union __name##_sring_entry ring[XENPV_FLEX_ARRAY_DIM];              \
+    union __name##_sring_entry ring[CRUXPV_FLEX_ARRAY_DIM];              \
 };                                                                      \
                                                                         \
 /* "Front" end's private variables */                                   \
@@ -174,7 +174,7 @@ typedef struct __name##_back_ring __name##_back_ring_t
 
 #define FRONT_RING_INIT(_r, _s, __size) FRONT_RING_ATTACH(_r, _s, 0, __size)
 
-#define XEN_FRONT_RING_INIT(r, s, size) do {                            \
+#define CRUX_FRONT_RING_INIT(r, s, size) do {                            \
     SHARED_RING_INIT(s);                                                \
     FRONT_RING_INIT(r, s, size);                                        \
 } while (0)
@@ -203,11 +203,11 @@ typedef struct __name##_back_ring __name##_back_ring_t
     (RING_FREE_REQUESTS(_r) == 0)
 
 /* Test if there are outstanding messages to be processed on a ring. */
-#define XEN_RING_NR_UNCONSUMED_RESPONSES(_r)                            \
+#define CRUX_RING_NR_UNCONSUMED_RESPONSES(_r)                            \
     ((_r)->sring->rsp_prod - (_r)->rsp_cons)
 
 #ifdef __GNUC__
-#define XEN_RING_NR_UNCONSUMED_REQUESTS(_r) ({                          \
+#define CRUX_RING_NR_UNCONSUMED_REQUESTS(_r) ({                          \
     unsigned int req = (_r)->sring->req_prod - (_r)->req_cons;          \
     unsigned int rsp = RING_SIZE(_r) -                                  \
         ((_r)->req_cons - (_r)->rsp_prod_pvt);                          \
@@ -215,25 +215,25 @@ typedef struct __name##_back_ring __name##_back_ring_t
 })
 #else
 /* Same as above, but without the nice GCC ({ ... }) syntax. */
-#define XEN_RING_NR_UNCONSUMED_REQUESTS(_r)                             \
+#define CRUX_RING_NR_UNCONSUMED_REQUESTS(_r)                             \
     ((((_r)->sring->req_prod - (_r)->req_cons) <                        \
       (RING_SIZE(_r) - ((_r)->req_cons - (_r)->rsp_prod_pvt))) ?        \
      ((_r)->sring->req_prod - (_r)->req_cons) :                         \
      (RING_SIZE(_r) - ((_r)->req_cons - (_r)->rsp_prod_pvt)))
 #endif
 
-#ifdef XEN_RING_HAS_UNCONSUMED_IS_BOOL
+#ifdef CRUX_RING_HAS_UNCONSUMED_IS_BOOL
 /*
  * These variants should only be used in case no caller is abusing them for
  * obtaining the number of unconsumed responses/requests.
  */
 #define RING_HAS_UNCONSUMED_RESPONSES(_r) \
-    (!!XEN_RING_NR_UNCONSUMED_RESPONSES(_r))
+    (!!CRUX_RING_NR_UNCONSUMED_RESPONSES(_r))
 #define RING_HAS_UNCONSUMED_REQUESTS(_r)  \
-    (!!XEN_RING_NR_UNCONSUMED_REQUESTS(_r))
+    (!!CRUX_RING_NR_UNCONSUMED_REQUESTS(_r))
 #else
-#define RING_HAS_UNCONSUMED_RESPONSES(_r) XEN_RING_NR_UNCONSUMED_RESPONSES(_r)
-#define RING_HAS_UNCONSUMED_REQUESTS(_r)  XEN_RING_NR_UNCONSUMED_REQUESTS(_r)
+#define RING_HAS_UNCONSUMED_RESPONSES(_r) CRUX_RING_NR_UNCONSUMED_RESPONSES(_r)
+#define RING_HAS_UNCONSUMED_REQUESTS(_r)  CRUX_RING_NR_UNCONSUMED_REQUESTS(_r)
 #endif
 
 /* Direct access to individual ring elements, by index. */
@@ -273,12 +273,12 @@ typedef struct __name##_back_ring __name##_back_ring_t
     (((_prod) - (_r)->rsp_cons) > RING_SIZE(_r))
 
 #define RING_PUSH_REQUESTS(_r) do {                                     \
-    xen_wmb(); /* back sees requests /before/ updated producer index */ \
+    crux_wmb(); /* back sees requests /before/ updated producer index */ \
     (_r)->sring->req_prod = (_r)->req_prod_pvt;                         \
 } while (0)
 
 #define RING_PUSH_RESPONSES(_r) do {                                    \
-    xen_wmb(); /* front sees resps /before/ updated producer index */   \
+    crux_wmb(); /* front sees resps /before/ updated producer index */   \
     (_r)->sring->rsp_prod = (_r)->rsp_prod_pvt;                         \
 } while (0)
 
@@ -315,9 +315,9 @@ typedef struct __name##_back_ring __name##_back_ring_t
 #define RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(_r, _notify) do {           \
     RING_IDX __old = (_r)->sring->req_prod;                             \
     RING_IDX __new = (_r)->req_prod_pvt;                                \
-    xen_wmb(); /* back sees requests /before/ updated producer index */ \
+    crux_wmb(); /* back sees requests /before/ updated producer index */ \
     (_r)->sring->req_prod = __new;                                      \
-    xen_mb(); /* back sees new requests /before/ we check req_event */  \
+    crux_mb(); /* back sees new requests /before/ we check req_event */  \
     (_notify) = ((RING_IDX)(__new - (_r)->sring->req_event) <           \
                  (RING_IDX)(__new - __old));                            \
 } while (0)
@@ -325,9 +325,9 @@ typedef struct __name##_back_ring __name##_back_ring_t
 #define RING_PUSH_RESPONSES_AND_CHECK_NOTIFY(_r, _notify) do {          \
     RING_IDX __old = (_r)->sring->rsp_prod;                             \
     RING_IDX __new = (_r)->rsp_prod_pvt;                                \
-    xen_wmb(); /* front sees resps /before/ updated producer index */   \
+    crux_wmb(); /* front sees resps /before/ updated producer index */   \
     (_r)->sring->rsp_prod = __new;                                      \
-    xen_mb(); /* front sees new resps /before/ we check rsp_event */    \
+    crux_mb(); /* front sees new resps /before/ we check rsp_event */    \
     (_notify) = ((RING_IDX)(__new - (_r)->sring->rsp_event) <           \
                  (RING_IDX)(__new - __old));                            \
 } while (0)
@@ -336,7 +336,7 @@ typedef struct __name##_back_ring __name##_back_ring_t
     (_work_to_do) = RING_HAS_UNCONSUMED_REQUESTS(_r);                   \
     if (_work_to_do) break;                                             \
     (_r)->sring->req_event = (_r)->req_cons + 1;                        \
-    xen_mb();                                                           \
+    crux_mb();                                                           \
     (_work_to_do) = RING_HAS_UNCONSUMED_REQUESTS(_r);                   \
 } while (0)
 
@@ -344,22 +344,22 @@ typedef struct __name##_back_ring __name##_back_ring_t
     (_work_to_do) = RING_HAS_UNCONSUMED_RESPONSES(_r);                  \
     if (_work_to_do) break;                                             \
     (_r)->sring->rsp_event = (_r)->rsp_cons + 1;                        \
-    xen_mb();                                                           \
+    crux_mb();                                                           \
     (_work_to_do) = RING_HAS_UNCONSUMED_RESPONSES(_r);                  \
 } while (0)
 
 
 /*
- * DEFINE_XEN_FLEX_RING_AND_INTF defines two monodirectional rings and
+ * DEFINE_CRUX_FLEX_RING_AND_INTF defines two monodirectional rings and
  * functions to check if there is data on the ring, and to read and
  * write to them.
  *
- * DEFINE_XEN_FLEX_RING is similar to DEFINE_XEN_FLEX_RING_AND_INTF, but
+ * DEFINE_CRUX_FLEX_RING is similar to DEFINE_CRUX_FLEX_RING_AND_INTF, but
  * does not define the indexes page. As different protocols can have
  * extensions to the basic format, this macro allow them to define their
  * own struct.
  *
- * XEN_FLEX_RING_SIZE
+ * CRUX_FLEX_RING_SIZE
  *   Convenience macro to calculate the size of one of the two rings
  *   from the overall order.
  *
@@ -386,21 +386,21 @@ typedef struct __name##_back_ring __name##_back_ring_t
  * $NAME_queued
  *   Function to calculate how many bytes are currently on the ring,
  *   ready to be read. It can also be used to calculate how much free
- *   space is currently on the ring (XEN_FLEX_RING_SIZE() -
+ *   space is currently on the ring (CRUX_FLEX_RING_SIZE() -
  *   $NAME_queued()).
  */
 
-#ifndef XEN_PAGE_SHIFT
+#ifndef CRUX_PAGE_SHIFT
 /* The PAGE_SIZE for ring protocols and hypercall interfaces is always
  * 4K, regardless of the architecture, and page granularity chosen by
  * operating systems.
  */
-#define XEN_PAGE_SHIFT 12
+#define CRUX_PAGE_SHIFT 12
 #endif
-#define XEN_FLEX_RING_SIZE(order)                                             \
-    (1UL << ((order) + XEN_PAGE_SHIFT - 1))
+#define CRUX_FLEX_RING_SIZE(order)                                             \
+    (1UL << ((order) + CRUX_PAGE_SHIFT - 1))
 
-#define DEFINE_XEN_FLEX_RING(name)                                            \
+#define DEFINE_CRUX_FLEX_RING(name)                                            \
 static inline RING_IDX name##_mask(RING_IDX idx, RING_IDX ring_size)          \
 {                                                                             \
     return idx & (ring_size - 1);                                             \
@@ -476,7 +476,7 @@ struct name##_data {                                                          \
     unsigned char *out; /* half of the allocation */                          \
 }
 
-#define DEFINE_XEN_FLEX_RING_AND_INTF(name)                                   \
+#define DEFINE_CRUX_FLEX_RING_AND_INTF(name)                                   \
 struct name##_data_intf {                                                     \
     RING_IDX in_cons, in_prod;                                                \
                                                                               \
@@ -487,11 +487,11 @@ struct name##_data_intf {                                                     \
     uint8_t pad2[56];                                                         \
                                                                               \
     RING_IDX ring_order;                                                      \
-    grant_ref_t ref[XEN_FLEX_ARRAY_DIM];                                      \
+    grant_ref_t ref[CRUX_FLEX_ARRAY_DIM];                                      \
 };                                                                            \
-DEFINE_XEN_FLEX_RING(name)
+DEFINE_CRUX_FLEX_RING(name)
 
-#endif /* __XEN_PUBLIC_IO_RING_H__ */
+#endif /* __CRUX_PUBLIC_IO_RING_H__ */
 
 /*
  * Local variables:

@@ -5,41 +5,41 @@
 
 EMIT_FILE;
 
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/domain.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/domain.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
 #include <compat/vcpu.h>
 
-#define xen_vcpu_set_periodic_timer vcpu_set_periodic_timer
+#define crux_vcpu_set_periodic_timer vcpu_set_periodic_timer
 CHECK_vcpu_set_periodic_timer;
-#undef xen_vcpu_set_periodic_timer
+#undef crux_vcpu_set_periodic_timer
 
-#define xen_vcpu_info vcpu_info
+#define crux_vcpu_info vcpu_info
 CHECK_SIZE_(struct, vcpu_info);
-#undef xen_vcpu_info
+#undef crux_vcpu_info
 
-#define xen_vcpu_register_vcpu_info vcpu_register_vcpu_info
+#define crux_vcpu_register_vcpu_info vcpu_register_vcpu_info
 CHECK_vcpu_register_vcpu_info;
-#undef xen_vcpu_register_vcpu_info
+#undef crux_vcpu_register_vcpu_info
 
 #ifdef CONFIG_HVM
 
 #include <compat/hvm/hvm_vcpu.h>
 
-#define xen_vcpu_hvm_context vcpu_hvm_context
-#define xen_vcpu_hvm_x86_32 vcpu_hvm_x86_32
-#define xen_vcpu_hvm_x86_64 vcpu_hvm_x86_64
+#define crux_vcpu_hvm_context vcpu_hvm_context
+#define crux_vcpu_hvm_x86_32 vcpu_hvm_x86_32
+#define crux_vcpu_hvm_x86_64 vcpu_hvm_x86_64
 CHECK_vcpu_hvm_context;
-#undef xen_vcpu_hvm_x86_64
-#undef xen_vcpu_hvm_x86_32
-#undef xen_vcpu_hvm_context
+#undef crux_vcpu_hvm_x86_64
+#undef crux_vcpu_hvm_x86_32
+#undef crux_vcpu_hvm_context
 
 #endif
 
 int compat_common_vcpu_op(int cmd, struct vcpu *v,
-                          XEN_GUEST_HANDLE_PARAM(void) arg)
+                          CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     int rc = 0;
     struct domain *d = current->domain;

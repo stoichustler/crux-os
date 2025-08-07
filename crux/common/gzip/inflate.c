@@ -108,7 +108,7 @@
 static char rcsid[] = "#Id: inflate.c,v 0.14 1993/06/10 13:27:04 jloup Exp #";
 #endif
 
-#ifndef __XEN__
+#ifndef __CRUX__
 
 #if defined(STDC_HEADERS) || defined(HAVE_STDLIB_H)
 #  include <sys/types.h>
@@ -117,7 +117,7 @@ static char rcsid[] = "#Id: inflate.c,v 0.14 1993/06/10 13:27:04 jloup Exp #";
 
 #include "gzip.h"
 
-#endif /* !__XEN__ */
+#endif /* !__CRUX__ */
 
 /*
  * Huffman code lookup table entry--this entry is four bytes for machines

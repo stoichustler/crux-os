@@ -21,26 +21,26 @@
 #
 *****************************************************************************/
 
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/event.h>
-#include <xen/irq.h>
-#include <xen/iocap.h>
-#include <xen/compat.h>
-#include <xen/guest_access.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/event.h>
+#include <crux/irq.h>
+#include <crux/iocap.h>
+#include <crux/compat.h>
+#include <crux/guest_access.h>
 #include <asm/current.h>
-#include <public/xen.h>
-#include <xen/cpumask.h>
+#include <public/crux.h>
+#include <crux/cpumask.h>
 #include <asm/processor.h>
-#include <xen/percpu.h>
-#include <xen/domain.h>
-#include <xen/acpi.h>
-#include <xen/xvmalloc.h>
+#include <crux/percpu.h>
+#include <crux/domain.h>
+#include <crux/acpi.h>
+#include <crux/xvmalloc.h>
 
 #include <public/sysctl.h>
 #include <acpi/cpufreq/cpufreq.h>
-#include <xen/pmstat.h>
+#include <crux/pmstat.h>
 
 static DEFINE_PER_CPU_READ_MOSTLY(struct pm_px *, cpufreq_statistic_data);
 
@@ -216,7 +216,7 @@ static void cpufreq_statistic_reset(unsigned int cpu)
 /*
  * Get PM statistic info
  */
-int do_get_pm_info(struct xen_sysctl_get_pmstat *op)
+int do_get_pm_info(struct crux_sysctl_get_pmstat *op)
 {
     int ret = 0;
     const struct processor_pminfo *pmpt;
@@ -228,17 +228,17 @@ int do_get_pm_info(struct xen_sysctl_get_pmstat *op)
     switch ( op->type & PMSTAT_CATEGORY_MASK )
     {
     case PMSTAT_CX:
-        if ( !(xen_processor_pmbits & XEN_PROCESSOR_PM_CX) )
+        if ( !(crux_processor_pmbits & CRUX_PROCESSOR_PM_CX) )
             return -ENODEV;
         break;
     case PMSTAT_PX:
-        if ( !(xen_processor_pmbits & XEN_PROCESSOR_PM_PX) )
+        if ( !(crux_processor_pmbits & CRUX_PROCESSOR_PM_PX) )
             return -ENODEV;
         if ( !cpufreq_driver.init )
             return -ENODEV;
         if ( hwp_active() )
             return -EOPNOTSUPP;
-        if ( !pmpt || !(pmpt->init & XEN_PX_INIT) )
+        if ( !pmpt || !(pmpt->init & CRUX_PX_INIT) )
             return -EINVAL;
         break;
     default:

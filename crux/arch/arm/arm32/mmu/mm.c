@@ -1,21 +1,21 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt-xen.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/pfn.h>
-#include <xen/static-memory.h>
-#include <xen/static-shmem.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt-crux.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/pfn.h>
+#include <crux/static-memory.h>
+#include <crux/static-shmem.h>
 #include <asm/fixmap.h>
 #include <asm/setup.h>
 
-static unsigned long opt_xenheap_megabytes __initdata;
-integer_param("xenheap_megabytes", opt_xenheap_megabytes);
+static unsigned long opt_cruxheap_megabytes __initdata;
+integer_param("cruxheap_megabytes", opt_cruxheap_megabytes);
 
 /*
- * Set up the direct-mapped xenheap: up to 1GB of contiguous,
+ * Set up the direct-mapped cruxheap: up to 1GB of contiguous,
  * always-mapped memory. Base must be 32MB aligned and size a multiple of 32MB.
  */
 static void __init setup_directmap_mappings(unsigned long base_mfn,
@@ -23,13 +23,13 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
 {
     int rc;
 
-    rc = map_pages_to_xen(XENHEAP_VIRT_START, _mfn(base_mfn), nr_mfns,
+    rc = map_pages_to_crux(CRUXHEAP_VIRT_START, _mfn(base_mfn), nr_mfns,
                           PAGE_HYPERVISOR_RW | _PAGE_BLOCK);
     if ( rc )
         panic("Unable to setup the directmap mappings.\n");
 
     /* Record where the directmap is, for translation routines. */
-    directmap_virt_end = XENHEAP_VIRT_START + nr_mfns * PAGE_SIZE;
+    directmap_virt_end = CRUXHEAP_VIRT_START + nr_mfns * PAGE_SIZE;
 }
 
 /*
@@ -37,7 +37,7 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
  * required size and alignment, and return the end address of the region
  * if found otherwise 0.
  */
-static paddr_t __init fit_xenheap_in_static_heap(uint32_t size, paddr_t align)
+static paddr_t __init fit_cruxheap_in_static_heap(uint32_t size, paddr_t align)
 {
     const struct membanks *reserved_mem = bootinfo_get_reserved_mem();
     unsigned int i;
@@ -61,7 +61,7 @@ static paddr_t __init fit_xenheap_in_static_heap(uint32_t size, paddr_t align)
 
         if ( aligned_start > bank_start )
             /*
-             * Allocate the xenheap as high as possible to keep low-memory
+             * Allocate the cruxheap as high as possible to keep low-memory
              * available (assuming the admin supplied region below 4GB)
              * for other use (e.g. domain memory allocation).
              */
@@ -75,7 +75,7 @@ void __init setup_mm(void)
 {
     const struct membanks *mem = bootinfo_get_mem();
     paddr_t ram_start = INVALID_PADDR, ram_end = 0, ram_size = 0, e;
-    unsigned long heap_pages, xenheap_pages, domheap_pages;
+    unsigned long heap_pages, cruxheap_pages, domheap_pages;
     unsigned int i;
     const uint32_t ctr = READ_CP32(CTR);
 
@@ -120,48 +120,48 @@ void __init setup_mm(void)
 
     /*
      * If the user has not requested otherwise via the command line
-     * then locate the xenheap using these constraints:
+     * then locate the cruxheap using these constraints:
      *
      *  - must be contiguous
      *  - must be 32 MiB aligned
-     *  - must not include xen itself or the boot modules
+     *  - must not include Xen itself or the boot modules
      *  - must be at most 1GB or 1/32 the total RAM in the system (or static
           heap if enabled) if less
      *  - must be at least 32M
      *
-     * We try to allocate the largest xenheap possible within these
+     * We try to allocate the largest cruxheap possible within these
      * constraints.
      */
-    if ( opt_xenheap_megabytes )
-        xenheap_pages = opt_xenheap_megabytes << (20-PAGE_SHIFT);
+    if ( opt_cruxheap_megabytes )
+        cruxheap_pages = opt_cruxheap_megabytes << (20-PAGE_SHIFT);
     else
     {
-        xenheap_pages = (heap_pages/32 + 0x1fffUL) & ~0x1fffUL;
-        xenheap_pages = max(xenheap_pages, 32UL<<(20-PAGE_SHIFT));
-        xenheap_pages = min(xenheap_pages, 1UL<<(30-PAGE_SHIFT));
+        cruxheap_pages = (heap_pages/32 + 0x1fffUL) & ~0x1fffUL;
+        cruxheap_pages = max(cruxheap_pages, 32UL<<(20-PAGE_SHIFT));
+        cruxheap_pages = min(cruxheap_pages, 1UL<<(30-PAGE_SHIFT));
     }
 
     do
     {
         e = using_static_heap ?
-            fit_xenheap_in_static_heap(pfn_to_paddr(xenheap_pages), MB(32)) :
+            fit_cruxheap_in_static_heap(pfn_to_paddr(cruxheap_pages), MB(32)) :
             consider_modules(ram_start, ram_end,
-                             pfn_to_paddr(xenheap_pages),
+                             pfn_to_paddr(cruxheap_pages),
                              32<<20, 0);
         if ( e )
             break;
 
-        xenheap_pages >>= 1;
-    } while ( !opt_xenheap_megabytes && xenheap_pages > 32<<(20-PAGE_SHIFT) );
+        cruxheap_pages >>= 1;
+    } while ( !opt_cruxheap_megabytes && cruxheap_pages > 32<<(20-PAGE_SHIFT) );
 
     if ( ! e )
-        panic("Not enough space for xenheap\n");
+        panic("Not enough space for cruxheap\n");
 
-    domheap_pages = heap_pages - xenheap_pages;
+    domheap_pages = heap_pages - cruxheap_pages;
 
-    printk("xen heap: %"PRIpaddr"-%"PRIpaddr" (%lu pages%s)\n",
-           e - (pfn_to_paddr(xenheap_pages)), e, xenheap_pages,
-           opt_xenheap_megabytes ? ", from command-line" : "");
+    printk("Xen heap: %"PRIpaddr"-%"PRIpaddr" (%lu pages%s)\n",
+           e - (pfn_to_paddr(cruxheap_pages)), e, cruxheap_pages,
+           opt_cruxheap_megabytes ? ", from command-line" : "");
     printk("Dom heap: %lu pages\n", domheap_pages);
 
     /*
@@ -169,14 +169,14 @@ void __init setup_mm(void)
      * directmap mappings. So populate the boot allocator first.
      *
      * This requires us to set directmap_mfn_{start, end} first so the
-     * direct-mapped xenheap region can be avoided.
+     * direct-mapped Xenheap region can be avoided.
      */
-    directmap_mfn_start = _mfn((e >> PAGE_SHIFT) - xenheap_pages);
-    directmap_mfn_end = mfn_add(directmap_mfn_start, xenheap_pages);
+    directmap_mfn_start = _mfn((e >> PAGE_SHIFT) - cruxheap_pages);
+    directmap_mfn_end = mfn_add(directmap_mfn_start, cruxheap_pages);
 
     populate_boot_allocator();
 
-    setup_directmap_mappings(mfn_x(directmap_mfn_start), xenheap_pages);
+    setup_directmap_mappings(mfn_x(directmap_mfn_start), cruxheap_pages);
 
     /* Frame table covers all of RAM region, including holes */
     setup_frametable_mappings(ram_start, ram_end);
@@ -189,8 +189,8 @@ void __init setup_mm(void)
         panic("CPU%u: Unable to prepare the domheap page-tables\n",
               smp_processor_id());
 
-    /* Add xenheap memory that was not already added to the boot allocator. */
-    init_xenheap_pages(mfn_to_maddr(directmap_mfn_start),
+    /* Add cruxheap memory that was not already added to the boot allocator. */
+    init_cruxheap_pages(mfn_to_maddr(directmap_mfn_start),
                        mfn_to_maddr(directmap_mfn_end));
 
     init_staticmem_pages();

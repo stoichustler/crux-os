@@ -11,7 +11,7 @@ Modified by Paul Burton <solution@earthlink.net> 12/96 to include new parameter
 supported by FIGlet and FIGWin.  May also be slightly modified for better use
 of new full-width/kern/smush alternatives, but default output is NOT changed.
 
-Modified by Keir Fraser <kaf24@cl.cam.ac.uk> for xen build system.
+Modified by Keir Fraser <kaf24@cl.cam.ac.uk> for crux build system.
 
  $@
  $@

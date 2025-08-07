@@ -1,4 +1,4 @@
-#include <xen/smp.h>
+#include <crux/smp.h>
 
 /*
  * FIXME: make pcpu_info[] dynamically allocated when necessary

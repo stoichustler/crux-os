@@ -7,20 +7,20 @@
  * Copyright (c) 2003-2004, K A Fraser.
  */
 
-#ifndef __XEN_PUBLIC_EVENT_CHANNEL_H__
-#define __XEN_PUBLIC_EVENT_CHANNEL_H__
+#ifndef __CRUX_PUBLIC_EVENT_CHANNEL_H__
+#define __CRUX_PUBLIC_EVENT_CHANNEL_H__
 
-#include "xen.h"
+#include "crux.h"
 
 /*
  * `incontents 150 evtchn Event Channels
  *
- * Event channels are the basic primitive provided by xen for event
- * notifications. An event is the xen equivalent of a hardware
+ * Event channels are the basic primitive provided by Xen for event
+ * notifications. An event is the Xen equivalent of a hardware
  * interrupt. They essentially store one bit of information, the event
  * of interest is signalled by transitioning this bit from 0 to 1.
  *
- * Notifications are received by a guest via an upcall from xen,
+ * Notifications are received by a guest via an upcall from Xen,
  * indicating when an event arrives (setting the bit). Further
  * notifications are masked until the bit is cleared again (therefore,
  * guests must check the value of the bit after re-enabling event
@@ -57,13 +57,13 @@
 #define EVTCHNOP_init_control    11
 #define EVTCHNOP_expand_array    12
 #define EVTCHNOP_set_priority    13
-#ifdef __XEN__
+#ifdef __CRUX__
 #define EVTCHNOP_reset_cont      14
 #endif
 /* ` } */
 
 typedef uint32_t evtchn_port_t;
-DEFINE_XEN_GUEST_HANDLE(evtchn_port_t);
+DEFINE_CRUX_GUEST_HANDLE(evtchn_port_t);
 
 /*
  * EVTCHNOP_alloc_unbound: Allocate a port in domain <dom> and mark as
@@ -115,7 +115,7 @@ typedef struct evtchn_bind_interdomain evtchn_bind_interdomain_t;
  * vcpu.
  * NOTES:
  *  1. Virtual IRQs are classified as per-vcpu, per-domain or global. See the
- *     VIRQ list in xen.h for the classification of each VIRQ.
+ *     VIRQ list in crux.h for the classification of each VIRQ.
  *  2. Per-domain and global VIRQs must be allocated on vCPU0 but can
  *     subsequently be re-bound via EVTCHNOP_bind_vcpu.
  *  3. Per-vcpu VIRQs may be bound to at most one event channel per vcpu.
@@ -320,13 +320,13 @@ struct evtchn_op {
     } u;
 };
 typedef struct evtchn_op evtchn_op_t;
-DEFINE_XEN_GUEST_HANDLE(evtchn_op_t);
+DEFINE_CRUX_GUEST_HANDLE(evtchn_op_t);
 
 /*
  * 2-level ABI
  */
 
-#define EVTCHN_2L_NR_CHANNELS (sizeof(xen_ulong_t) * sizeof(xen_ulong_t) * 64)
+#define EVTCHN_2L_NR_CHANNELS (sizeof(crux_ulong_t) * sizeof(crux_ulong_t) * 64)
 
 /*
  * FIFO ABI
@@ -358,7 +358,7 @@ struct evtchn_fifo_control_block {
 };
 typedef struct evtchn_fifo_control_block evtchn_fifo_control_block_t;
 
-#endif /* __XEN_PUBLIC_EVENT_CHANNEL_H__ */
+#endif /* __CRUX_PUBLIC_EVENT_CHANNEL_H__ */
 
 /*
  * Local variables:

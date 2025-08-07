@@ -90,7 +90,7 @@ endif
 configfiles=$(wildcard $(srctree)/kernel/configs/$@ $(srctree)/arch/$(SRCARCH)/configs/$@)
 
 # Don't try to remake this file included by Config.mk.
-$(XEN_ROOT)/.config: ;
+$(CRUX_ROOT)/.config: ;
 
 %.config: $(obj)/conf
 	$(if $(call configfiles),, $(error No configuration exists for this target on this architecture))
@@ -101,8 +101,8 @@ PHONY += kvmconfig
 kvmconfig: kvm_guest.config
 	@:
 
-PHONY += xenconfig
-xenconfig: xen.config
+PHONY += cruxconfig
+cruxconfig: crux.config
 	@:
 
 PHONY += tinyconfig
@@ -138,7 +138,7 @@ help:
 	@echo  '  olddefconfig	  - Same as oldconfig but sets new symbols to their'
 	@echo  '                    default value without prompting'
 	@echo  '  kvmconfig	      - Enable additional options for kvm guest kernel support'
-	@echo  '  xenconfig       - Enable additional options for xen dom0 and guest kernel support'
+	@echo  '  cruxconfig       - Enable additional options for crux dom0 and guest kernel support'
 	@echo  '  tinyconfig	  - Configure the tiniest possible kernel'
 	@echo  '  testconfig	  - Run Kconfig unit tests (requires python3 and pytest)'
 

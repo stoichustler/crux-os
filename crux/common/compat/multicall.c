@@ -4,9 +4,9 @@
 
 EMIT_FILE;
 
-#include <xen/types.h>
-#include <xen/hypercall.h>
-#include <xen/trace.h>
+#include <crux/types.h>
+#include <crux/hypercall.h>
+#include <crux/trace.h>
 
 #define COMPAT
 typedef int ret_t;
@@ -28,12 +28,12 @@ static inline void xlat_multicall_entry(struct mc_state *mcs)
 #define do_multicall_call    compat_multicall_call
 #define call                 compat_call
 #define do_multicall(l, n)   compat_multicall(_##l, n)
-#define _XEN_GUEST_HANDLE(t) XEN_GUEST_HANDLE(t)
-#define _XEN_GUEST_HANDLE_PARAM(t) XEN_GUEST_HANDLE(t)
+#define _CRUX_GUEST_HANDLE(t) CRUX_GUEST_HANDLE(t)
+#define _CRUX_GUEST_HANDLE_PARAM(t) CRUX_GUEST_HANDLE(t)
 
 static void __trace_multicall_call(multicall_entry_t *call)
 {
-    xen_ulong_t args[ARRAY_SIZE(call->args)];
+    crux_ulong_t args[ARRAY_SIZE(call->args)];
     unsigned int i;
 
     for ( i = 0; i < ARRAY_SIZE(args); i++ )

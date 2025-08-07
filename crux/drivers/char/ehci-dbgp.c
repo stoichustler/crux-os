@@ -5,13 +5,13 @@
  * Linux; see the Linux source for authorship and copyrights.
  */
 
-#include <xen/byteorder.h>
-#include <xen/console.h>
-#include <xen/delay.h>
-#include <xen/errno.h>
-#include <xen/param.h>
-#include <xen/pci.h>
-#include <xen/serial.h>
+#include <crux/byteorder.h>
+#include <crux/console.h>
+#include <crux/delay.h>
+#include <crux/errno.h>
+#include <crux/param.h>
+#include <crux/pci.h>
+#include <crux/serial.h>
 
 #include <asm/io.h>
 #include <asm/fixmap.h>
@@ -1397,7 +1397,7 @@ static int ehci_dbgp_check_release(struct ehci_dbgp *dbgp)
      * so as to allow for reuse of the USB device, which means it is time
      * to shutdown the USB debug port.
      */
-    printk(XENLOG_INFO "Releasing EHCI debug port at %02x:%02x.%u\n",
+    printk(CRUXLOG_INFO "Releasing EHCI debug port at %02x:%02x.%u\n",
            dbgp->bus, dbgp->slot, dbgp->func);
 
     if ( dbgp->timer.function )
@@ -1527,7 +1527,7 @@ void __init ehci_dbgp_init(void)
         if ( !dbgp->cap )
             return;
 
-        dbgp_printk("using EHCI debug port on %02x:%02x.%u\n",
+        dbgp_printk("Using EHCI debug port on %02x:%02x.%u\n",
                     bus, slot, func);
     }
     else

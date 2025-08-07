@@ -2,8 +2,8 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/ctype.h>
-#include <xen/lib.h>
+#include <crux/ctype.h>
+#include <crux/lib.h>
 
 /**
  * simple_strtoull - convert a string to an unsigned long long

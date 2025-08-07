@@ -16,11 +16,11 @@
  * - scnprintf and vscnprintf
  */
 
-#include <xen/ctype.h>
-#include <xen/symbols.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/livepatch.h>
+#include <crux/ctype.h>
+#include <crux/symbols.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/livepatch.h>
 #include <asm/div64.h>
 #include <asm/page.h>
 
@@ -258,7 +258,7 @@ static char *print_domain(char *str, const char *end, const struct domain *d)
     switch ( d->domain_id )
     {
     case DOMID_IO:   name = "[IO]";   break;
-    case DOMID_XEN:  name = "[XEN]";  break;
+    case DOMID_CRUX:  name = "[CRUX]";  break;
     case DOMID_COW:  name = "[COW]";  break;
     case DOMID_IDLE: name = "[IDLE]"; break;
         /*
@@ -312,7 +312,7 @@ static char *pointer(char *str, const char *end, const char **fmt_ptr,
 {
     const char *fmt = *fmt_ptr, *s;
 
-    /* Custom %p suffixes. See XEN_ROOT/docs/misc/printk-formats.txt */
+    /* Custom %p suffixes. See CRUX_ROOT/docs/misc/printk-formats.txt */
     switch ( fmt[1] )
     {
     case 'b': /* Bitmap as hex, or list */
@@ -770,7 +770,7 @@ EXPORT_SYMBOL(scnprintf);
  * -ENOMEM is returned on failure and @bufp is not touched.
  * On success, 0 is returned. The buffer passed back is
  * guaranteed to be null terminated. The memory is allocated
- * from xenheap, so the buffer should be freed with xfree().
+ * from cruxheap, so the buffer should be freed with xfree().
  */
 int xvasprintf(char **bufp, const char *fmt, va_list args)
 {
@@ -801,7 +801,7 @@ int xvasprintf(char **bufp, const char *fmt, va_list args)
  * -ENOMEM is returned on failure and @bufp is not touched.
  * On success, 0 is returned. The buffer passed back is
  * guaranteed to be null terminated. The memory is allocated
- * from xenheap, so the buffer should be freed with xfree().
+ * from cruxheap, so the buffer should be freed with xfree().
  */
 int xasprintf(char **bufp, const char *fmt, ...)
 {

@@ -10,7 +10,7 @@
  *    Fix handling for CPU hotplug -- affected CPUs
  *  Feb 2008 - Liu Jinsong <jinsong.liu@intel.com>
  *    1. Merge cpufreq.c and freq_table.c of linux 2.6.23
- *    And poring to xen hypervisor
+ *    And poring to Xen hypervisor
  *    2. some Px statistic interface funcdtions
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,15 +19,15 @@
  *
  */
 
-#include <xen/errno.h>
-#include <xen/cpumask.h>
-#include <xen/types.h>
-#include <xen/spinlock.h>
-#include <xen/percpu.h>
-#include <xen/types.h>
-#include <xen/sched.h>
-#include <xen/timer.h>
-#include <xen/trace.h>
+#include <crux/errno.h>
+#include <crux/cpumask.h>
+#include <crux/types.h>
+#include <crux/spinlock.h>
+#include <crux/percpu.h>
+#include <crux/types.h>
+#include <crux/sched.h>
+#include <crux/timer.h>
+#include <crux/trace.h>
 #include <acpi/cpufreq/cpufreq.h>
 #include <public/sysctl.h>
 

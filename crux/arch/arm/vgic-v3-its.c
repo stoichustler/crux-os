@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/vgic-v3-its.c
+ * crux/arch/arm/vgic-v3-its.c
  *
  * ARM Interrupt Translation Service (ITS) emulation
  *
@@ -18,16 +18,16 @@
  *                 d->pend_lpi_tree_lock (protects the radix tree)
  */
 
-#include <xen/bitops.h>
-#include <xen/config.h>
-#include <xen/domain_page.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/softirq.h>
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/bitops.h>
+#include <crux/config.h>
+#include <crux/domain_page.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/softirq.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 #include <asm/current.h>
 #include <asm/mmio.h>
 #include <asm/gic_v3_defs.h>
@@ -663,7 +663,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
         its_unmap_device(its, devid);
 
     /*
-     * There is no easy and clean way for xen to know the ITS device ID of a
+     * There is no easy and clean way for Xen to know the ITS device ID of a
      * particular (PCI) device, so we have to rely on the guest telling
      * us about it. For *now* we are just using the device ID *Dom0* uses,
      * because the driver there has the actual knowledge.
@@ -886,7 +886,7 @@ out_unlock:
 
 static void dump_its_command(uint64_t *command)
 {
-    gdprintk(XENLOG_WARNING, "  cmd 0x%02lx: %016lx %016lx %016lx %016lx\n",
+    gdprintk(CRUXLOG_WARNING, "  cmd 0x%02lx: %016lx %016lx %016lx %016lx\n",
              its_cmd_get_command(command),
              command[0], command[1], command[2], command[3]);
 }
@@ -943,7 +943,7 @@ static int vgic_its_handle_cmds(struct domain *d, struct virt_its *its)
             ret = its_handle_mapti(its, command);
             break;
         case GITS_CMD_MOVALL:
-            gdprintk(XENLOG_G_INFO, "vGITS: ignoring MOVALL command\n");
+            gdprintk(CRUXLOG_G_INFO, "vGITS: ignoring MOVALL command\n");
             break;
         case GITS_CMD_MOVI:
             ret = its_handle_movi(its, command);
@@ -952,7 +952,7 @@ static int vgic_its_handle_cmds(struct domain *d, struct virt_its *its)
             /* We handle ITS commands synchronously, so we ignore SYNC. */
             break;
         default:
-            gdprintk(XENLOG_WARNING, "vGITS: unhandled ITS command\n");
+            gdprintk(CRUXLOG_WARNING, "vGITS: unhandled ITS command\n");
             dump_its_command(command);
             break;
         }
@@ -962,7 +962,7 @@ static int vgic_its_handle_cmds(struct domain *d, struct virt_its *its)
 
         if ( ret )
         {
-            gdprintk(XENLOG_WARNING,
+            gdprintk(CRUXLOG_WARNING,
                      "vGITS: ITS command error %d while handling command\n",
                      ret);
             dump_its_command(command);
@@ -1052,7 +1052,7 @@ static int vgic_v3_its_mmio_read(struct vcpu *v, mmio_info_t *info,
 
         /*
          * Lockless access, to avoid waiting for the whole command queue to be
-         * finished completely. xen updates its->creadr atomically after each
+         * finished completely. Xen updates its->creadr atomically after each
          * command has been handled, this allows other VCPUs to monitor the
          * progress.
          */
@@ -1095,7 +1095,7 @@ static int vgic_v3_its_mmio_read(struct vcpu *v, mmio_info_t *info,
         goto read_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGITS: unhandled read r%d offset %#04lx\n",
                v, info->dabt.reg, (unsigned long)info->gpa & 0xffff);
         return 0;
@@ -1110,21 +1110,21 @@ read_as_zero_64:
     return 1;
 
 read_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGITS: RAZ on implementation defined register offset %#04lx\n",
            v, info->gpa & 0xffff);
     *r = 0;
     return 1;
 
 read_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGITS: RAZ on reserved register offset %#04lx\n",
            v, info->gpa & 0xffff);
     *r = 0;
     return 1;
 
 bad_width:
-    printk(XENLOG_G_ERR "vGITS: bad read width %d r%d offset %#04lx\n",
+    printk(CRUXLOG_G_ERR "vGITS: bad read width %d r%d offset %#04lx\n",
            info->dabt.size, info->dabt.reg, (unsigned long)info->gpa & 0xffff);
 
     return 0;
@@ -1162,7 +1162,7 @@ static bool vgic_v3_verify_its_status(struct virt_its *its, bool status)
          !(its->baser_dev & GITS_VALID_BIT) ||
          !(its->baser_coll & GITS_VALID_BIT) )
     {
-        printk(XENLOG_G_WARNING "d%d tried to enable ITS without having the tables configured.\n",
+        printk(CRUXLOG_G_WARNING "d%d tried to enable ITS without having the tables configured.\n",
                its->d->domain_id);
         return false;
     }
@@ -1279,7 +1279,7 @@ static int vgic_v3_its_mmio_write(struct vcpu *v, mmio_info_t *info,
         if ( its->enabled )
         {
             spin_unlock(&its->its_lock);
-            gdprintk(XENLOG_WARNING,
+            gdprintk(CRUXLOG_WARNING,
                      "vGITS: tried to change CBASER with the ITS enabled.\n");
             return 1;
         }
@@ -1304,7 +1304,7 @@ static int vgic_v3_its_mmio_write(struct vcpu *v, mmio_info_t *info,
 
         if ( its->enabled )
             if ( vgic_its_handle_cmds(d, its) )
-                gdprintk(XENLOG_WARNING, "error handling ITS commands\n");
+                gdprintk(CRUXLOG_WARNING, "error handling ITS commands\n");
 
         spin_unlock(&its->vcmd_lock);
 
@@ -1328,7 +1328,7 @@ static int vgic_v3_its_mmio_write(struct vcpu *v, mmio_info_t *info,
         if ( its->enabled )
         {
             spin_unlock(&its->its_lock);
-            gdprintk(XENLOG_WARNING, "vGITS: tried to change BASER with the ITS enabled.\n");
+            gdprintk(CRUXLOG_WARNING, "vGITS: tried to change BASER with the ITS enabled.\n");
 
             return 1;
         }
@@ -1366,7 +1366,7 @@ static int vgic_v3_its_mmio_write(struct vcpu *v, mmio_info_t *info,
         if ( its->enabled )
         {
             spin_unlock(&its->its_lock);
-            gdprintk(XENLOG_INFO, "vGITS: tried to change BASER with the ITS enabled.\n");
+            gdprintk(CRUXLOG_INFO, "vGITS: tried to change BASER with the ITS enabled.\n");
             return 1;
         }
 
@@ -1403,7 +1403,7 @@ static int vgic_v3_its_mmio_write(struct vcpu *v, mmio_info_t *info,
         goto write_impl_defined;
 
     default:
-        printk(XENLOG_G_ERR
+        printk(CRUXLOG_G_ERR
                "%pv: vGITS: unhandled write r%d offset %#04lx\n",
                v, info->dabt.reg, (unsigned long)info->gpa & 0xffff);
         return 0;
@@ -1421,19 +1421,19 @@ write_ignore_32:
     return 1;
 
 write_impl_defined:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGITS: WI on implementation defined register offset %#04lx\n",
            v, info->gpa & 0xffff);
     return 1;
 
 write_reserved:
-    printk(XENLOG_G_DEBUG
+    printk(CRUXLOG_G_DEBUG
            "%pv: vGITS: WI on implementation defined register offset %#04lx\n",
            v, info->gpa & 0xffff);
     return 1;
 
 bad_width:
-    printk(XENLOG_G_ERR "vGITS: bad write width %d r%d offset %#08lx\n",
+    printk(CRUXLOG_G_ERR "vGITS: bad write width %d r%d offset %#08lx\n",
            info->dabt.size, info->dabt.reg, (unsigned long)info->gpa & 0xffff);
 
     return 0;
@@ -1489,7 +1489,7 @@ static int vgic_v3_its_init_virtual(struct domain *d, paddr_t guest_addr,
 
         if ( ret < 0 )
         {
-            printk(XENLOG_G_ERR
+            printk(CRUXLOG_G_ERR
                     "GICv3: Map ITS translation register for %pd failed.\n",
                     its->d);
             return ret;

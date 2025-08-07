@@ -18,9 +18,9 @@
 
 #include <asm/atomic.h>
 #include <asm/mmio.h>
-#include <xen/list.h>
-#include <xen/mm.h>
-#include <xen/spinlock.h>
+#include <crux/list.h>
+#include <crux/mm.h>
+#include <crux/spinlock.h>
 
 #define VGIC_V3_MAX_CPUS        255
 #define VGIC_V2_MAX_CPUS        8

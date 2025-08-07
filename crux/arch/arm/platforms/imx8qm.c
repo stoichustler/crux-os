@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/platforms/imx8qm.c
+ * crux/arch/arm/platforms/imx8qm.c
  *
  * i.MX 8QM setup
  *
@@ -11,7 +11,7 @@
  * Peng Fan <peng.fan@nxp.com>
  */
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <asm/platform.h>
 #include <asm/smccc.h>
 
@@ -57,7 +57,7 @@ static bool imx8qm_is_sip_time_call_ok(uint32_t subfunction_id)
     case IMX_SIP_TIME_SF_WDOG_SET_PRETIME:
         return true;
     default:
-        gprintk(XENLOG_WARNING, "imx8qm: smc: time: Unknown subfunction id %x\n",
+        gprintk(CRUXLOG_WARNING, "imx8qm: smc: time: Unknown subfunction id %x\n",
                 subfunction_id);
         return false;
     }
@@ -71,7 +71,7 @@ static bool imx8qm_smc(struct cpu_user_regs *regs)
 
     if ( !cpus_have_const_cap(ARM_SMCCC_1_1) )
     {
-        printk_once(XENLOG_WARNING
+        printk_once(CRUXLOG_WARNING
                     "imx8qm: smc: no SMCCC 1.1 support. Disabling firmware calls\n");
 
         return false;
@@ -80,7 +80,7 @@ static bool imx8qm_smc(struct cpu_user_regs *regs)
     /* Only hardware domain may use the SIP calls */
     if ( !is_hardware_domain(current->domain) )
     {
-        gprintk(XENLOG_WARNING, "imx8qm: smc: No access\n");
+        gprintk(CRUXLOG_WARNING, "imx8qm: smc: No access\n");
         return false;
     }
 
@@ -93,14 +93,14 @@ static bool imx8qm_smc(struct cpu_user_regs *regs)
         if ( imx8qm_is_sip_time_call_ok(subfunction_id) )
             goto allow_call;
         return false;
-    /* xen doesn't have suspend support */
+    /* crux doesn't have suspend support */
     case IMX_SIP_FID(IMX_SIP_F_WAKEUP_SRC):
         return false;
     case IMX_SIP_FID(IMX_SIP_F_OTP_WRITE):
         /* subfunction_id is the fuse number, no sensible check possible */
         goto allow_call;
     default:
-        gprintk(XENLOG_WARNING, "imx8qm: smc: Unknown function id %x\n",
+        gprintk(CRUXLOG_WARNING, "imx8qm: smc: Unknown function id %x\n",
                 function_id);
         return false;
     }

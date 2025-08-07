@@ -186,7 +186,7 @@ then
 
         out_file="${OBJTREE_PATH}/${OBJ_FILE}.cppcheck.txt"
 
-        # Select the right target platform, ARCH is generated from xen Makefile
+        # Select the right target platform, ARCH is generated from crux Makefile
         case ${ARCH} in
             arm64)
                 # arm64 has efi code compiled with -fshort-wchar

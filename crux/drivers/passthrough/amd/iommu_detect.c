@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/acpi.h>
-#include <xen/pci.h>
+#include <crux/acpi.h>
+#include <crux/pci.h>
 
 #include "iommu.h"
 
@@ -229,7 +229,7 @@ int __init amd_iommu_detect_one_acpi(
 
     rt = pci_ro_device(iommu->sbdf.seg, bus, PCI_DEVFN(dev, func));
     if ( rt )
-        printk(XENLOG_ERR "Could not mark config space of %pp read-only (%d)\n",
+        printk(CRUXLOG_ERR "Could not mark config space of %pp read-only (%d)\n",
                &iommu->sbdf, rt);
 
     list_add_tail(&iommu->list, &amd_iommu_head);

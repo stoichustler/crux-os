@@ -3,7 +3,7 @@
 #ifndef ASM__RISCV__EARLY_PRINTK_H
 #define ASM__RISCV__EARLY_PRINTK_H
 
-#include <xen/early_printk.h>
+#include <crux/early_printk.h>
 
 #ifdef CONFIG_EARLY_PRINTK
 void early_printk(const char *str);

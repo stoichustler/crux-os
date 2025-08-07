@@ -1,18 +1,18 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootinfo.h>
-#include <xen/bug.h>
-#include <xen/compiler.h>
-#include <xen/domain_page.h>
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/macros.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/sections.h>
-#include <xen/sizes.h>
-#include <xen/vmap.h>
+#include <crux/bootinfo.h>
+#include <crux/bug.h>
+#include <crux/compiler.h>
+#include <crux/domain_page.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/macros.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/sections.h>
+#include <crux/sizes.h>
+#include <crux/vmap.h>
 
 #include <asm/early_printk.h>
 #include <asm/csr.h>
@@ -28,13 +28,13 @@ struct mmu_desc {
     pte_t *pgtbl_base;
 };
 
-unsigned long __ro_after_init phys_offset; /* = load_start - XEN_VIRT_START */
+unsigned long __ro_after_init phys_offset; /* = load_start - CRUX_VIRT_START */
 
 #define LOAD_TO_LINK(addr) ((unsigned long)(addr) - phys_offset)
 
 /*
- * It is expected that xen won't be more then XEN_VIRT_SIZE.
- * The check in xen.lds.S guarantees that.
+ * It is expected that Xen won't be more then CRUX_VIRT_SIZE.
+ * The check in crux.lds.S guarantees that.
  *
  * Root page table is shared with the initial mapping and is declared
  * separately (look at stage1_pgtbl_root), so it isn't taken into account
@@ -43,28 +43,28 @@ unsigned long __ro_after_init phys_offset; /* = load_start - XEN_VIRT_START */
  * An amount of page tables between root page table and L0 page table
  * (in the case of Sv39 it covers L1 table):
  *   (CONFIG_PAGING_LEVELS - 2) are needed for an identity mapping and
- *   the same amount are needed for xen.
+ *   the same amount are needed for Xen.
  *
  * An amount of L0 page tables:
- *   (512 entries of one L0 page table covers 2MB == 1<<XEN_PT_LEVEL_SHIFT(1))
- *   XEN_VIRT_SIZE >> XEN_PT_LEVEL_SHIFT(1) are needed for xen and
+ *   (512 entries of one L0 page table covers 2MB == 1<<CRUX_PT_LEVEL_SHIFT(1))
+ *   CRUX_VIRT_SIZE >> CRUX_PT_LEVEL_SHIFT(1) are needed for Xen and
  *   one L0 is needed for identity mapping.
  */
 #define PGTBL_INITIAL_COUNT ((CONFIG_PAGING_LEVELS - 2) * 2 + \
-                             (XEN_VIRT_SIZE >> XEN_PT_LEVEL_SHIFT(1)) + 1)
+                             (CRUX_VIRT_SIZE >> CRUX_PT_LEVEL_SHIFT(1)) + 1)
 
 /*
  * Modifying these checks may require updating PGTBL_INITIAL_COUNT.
  *
- * If XEN_VIRT_{START,SIZE} are not properly aligned and XEN_VIRT_SIZE > GB(1),
+ * If CRUX_VIRT_{START,SIZE} are not properly aligned and CRUX_VIRT_SIZE > GB(1),
  * additional L1 and L0 page tables are required.
  */
 static void __init __maybe_unused build_assertions(void)
 {
-    BUILD_BUG_ON(!IS_ALIGNED(XEN_VIRT_START, GB(1)));
-    BUILD_BUG_ON(!IS_ALIGNED(XEN_VIRT_SIZE, MB(2)));
+    BUILD_BUG_ON(!IS_ALIGNED(CRUX_VIRT_START, GB(1)));
+    BUILD_BUG_ON(!IS_ALIGNED(CRUX_VIRT_SIZE, MB(2)));
 
-    BUILD_BUG_ON(XEN_VIRT_SIZE > GB(1));
+    BUILD_BUG_ON(CRUX_VIRT_SIZE > GB(1));
 }
 
 pte_t __section(".bss.page_aligned") __aligned(PAGE_SIZE)
@@ -74,7 +74,7 @@ pte_t __section(".bss.page_aligned") __aligned(PAGE_SIZE)
 stage1_pgtbl_nonroot[PGTBL_INITIAL_COUNT * PAGETABLE_ENTRIES];
 
 pte_t __section(".bss.page_aligned") __aligned(PAGE_SIZE)
-xen_fixmap[PAGETABLE_ENTRIES];
+crux_fixmap[PAGETABLE_ENTRIES];
 
 #define HANDLE_PGTBL(curr_lvl_num)                                          \
     index = pt_index(curr_lvl_num, page_addr);                              \
@@ -88,7 +88,7 @@ xen_fixmap[PAGETABLE_ENTRIES];
         /* Allocate new L{0-3} page table */                                \
         if ( mmu_desc->pgtbl_count == PGTBL_INITIAL_COUNT )                 \
         {                                                                   \
-            early_printk("(XEN) No initial table available\n");             \
+            early_printk("(CRUX) No initial table available\n");             \
             /* panic(), BUG() or ASSERT() aren't ready now. */              \
             die();                                                          \
         }                                                                   \
@@ -109,23 +109,23 @@ static void __init setup_initial_mapping(struct mmu_desc *mmu_desc,
     unsigned long page_addr;
     bool is_identity_mapping = map_start == pa_start;
 
-    if ( (unsigned long)_start % XEN_PT_LEVEL_SIZE(0) )
+    if ( (unsigned long)_start % CRUX_PT_LEVEL_SIZE(0) )
     {
-        early_printk("(XEN) xen should be loaded at 4k boundary\n");
+        early_printk("(CRUX) Xen should be loaded at 4k boundary\n");
         die();
     }
 
-    if ( (map_start & ~XEN_PT_LEVEL_MAP_MASK(0)) ||
-         (pa_start & ~XEN_PT_LEVEL_MAP_MASK(0)) )
+    if ( (map_start & ~CRUX_PT_LEVEL_MAP_MASK(0)) ||
+         (pa_start & ~CRUX_PT_LEVEL_MAP_MASK(0)) )
     {
-        early_printk("(XEN) map and pa start addresses should be aligned\n");
+        early_printk("(CRUX) map and pa start addresses should be aligned\n");
         /* panic(), BUG() or ASSERT() aren't ready now. */
         die();
     }
 
     for ( page_addr = map_start;
           page_addr < map_end;
-          page_addr += XEN_PT_LEVEL_SIZE(0) )
+          page_addr += CRUX_PT_LEVEL_SIZE(0) )
     {
         pgtbl = mmu_desc->pgtbl_base;
 
@@ -181,18 +181,18 @@ static bool __init check_pgtbl_mode_support(struct mmu_desc *mmu_desc,
     bool is_mode_supported = false;
     unsigned int index;
     unsigned int page_table_level = (mmu_desc->num_levels - 1);
-    unsigned level_map_mask = XEN_PT_LEVEL_MAP_MASK(page_table_level);
+    unsigned level_map_mask = CRUX_PT_LEVEL_MAP_MASK(page_table_level);
 
     unsigned long aligned_load_start = load_start & level_map_mask;
-    unsigned long aligned_page_size = XEN_PT_LEVEL_SIZE(page_table_level);
-    unsigned long xen_size = (unsigned long)(_end - _start);
+    unsigned long aligned_page_size = CRUX_PT_LEVEL_SIZE(page_table_level);
+    unsigned long crux_size = (unsigned long)(_end - _start);
 
-    if ( (load_start + xen_size) > (aligned_load_start + aligned_page_size) )
+    if ( (load_start + crux_size) > (aligned_load_start + aligned_page_size) )
     {
-        early_printk("please place xen to be in range of PAGE_SIZE "
-                     "where PAGE_SIZE is XEN_PT_LEVEL_SIZE( {L3 | L2 | L1} ) "
+        early_printk("please place Xen to be in range of PAGE_SIZE "
+                     "where PAGE_SIZE is CRUX_PT_LEVEL_SIZE( {L3 | L2 | L1} ) "
                      "depending on expected SATP_MODE \n"
-                     "XEN_PT_LEVEL_SIZE is defined in <asm/page.h>\n");
+                     "CRUX_PT_LEVEL_SIZE is defined in <asm/page.h>\n");
         die();
     }
 
@@ -233,7 +233,7 @@ void __init setup_fixmap_mappings(void)
      * for Sv39 has 3 page tables so the x = 2 (L2 -> L1 -> L0) ).
      *
      * In this cycle we want to find L1 page table because as L0 page table
-     * xen_fixmap[] will be used.
+     * crux_fixmap[] will be used.
      */
     for ( i = HYP_PT_ROOT_LEVEL; i-- > 1; )
     {
@@ -245,7 +245,7 @@ void __init setup_fixmap_mappings(void)
 
     BUG_ON(pte_is_valid(*pte));
 
-    tmp = paddr_to_pte(virt_to_maddr(&xen_fixmap), PTE_TABLE);
+    tmp = paddr_to_pte(virt_to_maddr(&crux_fixmap), PTE_TABLE);
     write_pte(pte, tmp);
 
     RISCV_FENCE(rw, rw);
@@ -260,7 +260,7 @@ void __init setup_fixmap_mappings(void)
 /*
  * setup_initial_pagetables:
  *
- * Build the page tables for xen that map the following:
+ * Build the page tables for Xen that map the following:
  *  1. Calculate page table's level numbers.
  *  2. Init mmu description structure.
  *  3. Check that linker addresses range doesn't overlap
@@ -277,7 +277,7 @@ void __init setup_initial_pagetables(void)
 
     /*
      * Access to _start, _end is always PC-relative thereby when access
-     * them we will get load adresses of start and end of xen.
+     * them we will get load adresses of start and end of Xen.
      * To get linker addresses LOAD_TO_LINK() is required to use.
      */
     unsigned long load_start    = (unsigned long)_start;
@@ -295,7 +295,7 @@ void __init setup_initial_pagetables(void)
     if ( (linker_start != load_start) &&
          (linker_start <= load_end) && (load_start <= linker_end) )
     {
-        early_printk("(XEN) linker and load address ranges overlap\n");
+        early_printk("(CRUX) linker and load address ranges overlap\n");
         die();
     }
 
@@ -317,7 +317,7 @@ void __init setup_initial_pagetables(void)
     if ( linker_start == load_start )
         return;
 
-    ident_start = (unsigned long)turn_on_mmu & XEN_PT_LEVEL_MAP_MASK(0);
+    ident_start = (unsigned long)turn_on_mmu & CRUX_PT_LEVEL_MAP_MASK(0);
     ident_end = ident_start + PAGE_SIZE;
 
     setup_initial_mapping(&mmu_desc,
@@ -330,16 +330,16 @@ void __init remove_identity_mapping(void)
 {
     unsigned int i;
     pte_t *pgtbl;
-    unsigned int index, xen_index;
+    unsigned int index, crux_index;
     unsigned long ident_start =
-        virt_to_maddr(turn_on_mmu) & XEN_PT_LEVEL_MAP_MASK(0);
+        virt_to_maddr(turn_on_mmu) & CRUX_PT_LEVEL_MAP_MASK(0);
 
     for ( pgtbl = stage1_pgtbl_root, i = CONFIG_PAGING_LEVELS; i; i-- )
     {
         index = pt_index(i - 1, ident_start);
-        xen_index = pt_index(i - 1, XEN_VIRT_START);
+        crux_index = pt_index(i - 1, CRUX_VIRT_START);
 
-        if ( index != xen_index )
+        if ( index != crux_index )
         {
             pgtbl[index].pte = 0;
             break;
@@ -358,7 +358,7 @@ unsigned long __init calc_phys_offset(void)
 {
     volatile unsigned long load_start = (unsigned long)_start;
 
-    phys_offset = load_start - XEN_VIRT_START;
+    phys_offset = load_start - CRUX_VIRT_START;
     return phys_offset;
 }
 
@@ -372,7 +372,7 @@ void arch_dump_shared_mem_info(void)
     BUG_ON("unimplemented");
 }
 
-int xenmem_add_to_physmap_one(struct domain *d, unsigned int space,
+int cruxmem_add_to_physmap_one(struct domain *d, unsigned int space,
                               union add_to_physmap_extra extra,
                               unsigned long idx, gfn_t gfn)
 {
@@ -381,8 +381,8 @@ int xenmem_add_to_physmap_one(struct domain *d, unsigned int space,
     return 0;
 }
 
-void share_xen_page_with_guest(struct page_info *page, struct domain *d,
-                               enum XENSHARE_flags flags)
+void share_crux_page_with_guest(struct page_info *page, struct domain *d,
+                               enum CRUXSHARE_flags flags)
 {
     BUG_ON("unimplemented");
 }
@@ -390,7 +390,7 @@ void share_xen_page_with_guest(struct page_info *page, struct domain *d,
 void * __init early_fdt_map(paddr_t fdt_paddr)
 {
     /* We are using 2MB superpage for mapping the FDT */
-    paddr_t base_paddr = fdt_paddr & XEN_PT_LEVEL_MAP_MASK(1);
+    paddr_t base_paddr = fdt_paddr & CRUX_PT_LEVEL_MAP_MASK(1);
     paddr_t offset;
     void *fdt_virt;
     uint32_t size;
@@ -410,13 +410,13 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
     /* The FDT is mapped using 2MB superpage */
     BUILD_BUG_ON(BOOT_FDT_VIRT_START % MB(2));
 
-    rc = map_pages_to_xen(BOOT_FDT_VIRT_START, maddr_to_mfn(base_paddr),
+    rc = map_pages_to_crux(BOOT_FDT_VIRT_START, maddr_to_mfn(base_paddr),
                           MB(2) >> PAGE_SHIFT,
                           PAGE_HYPERVISOR_RO);
     if ( rc )
         panic("Unable to map the device-tree.\n");
 
-    offset = fdt_paddr % XEN_PT_LEVEL_SIZE(1);
+    offset = fdt_paddr % CRUX_PT_LEVEL_SIZE(1);
     fdt_virt = (void *)BOOT_FDT_VIRT_START + offset;
 
     if ( fdt_magic(fdt_virt) != FDT_MAGIC )
@@ -428,7 +428,7 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
 
     if ( (offset + size) > MB(2) )
     {
-        rc = map_pages_to_xen(BOOT_FDT_VIRT_START + MB(2),
+        rc = map_pages_to_crux(BOOT_FDT_VIRT_START + MB(2),
                               maddr_to_mfn(base_paddr + MB(2)),
                               MB(2) >> PAGE_SHIFT,
                               PAGE_HYPERVISOR_RO);
@@ -465,12 +465,12 @@ static void __init setup_frametable_mappings(paddr_t ps, paddr_t pe)
 
     /*
      * align base_mfn and frametable_size to MB(2) to have superpage mapping
-     * in map_pages_to_xen()
+     * in map_pages_to_crux()
      */
     frametable_size = ROUNDUP(frametable_size, MB(2));
     base_mfn = alloc_boot_pages(PFN_DOWN(frametable_size), PFN_DOWN(MB(2)));
 
-    if ( map_pages_to_xen(FRAMETABLE_VIRT_START, base_mfn,
+    if ( map_pages_to_crux(FRAMETABLE_VIRT_START, base_mfn,
                           PFN_DOWN(frametable_size),
                           PAGE_HYPERVISOR_RW) )
         panic("frametable mappings failed: %#lx -> %#lx\n",
@@ -489,7 +489,7 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
 
     mfn_t base_mfn_t = _mfn(base_mfn);
     unsigned long base_addr = mfn_to_maddr(base_mfn_t);
-    unsigned long high_bits_mask = XEN_PT_LEVEL_MAP_MASK(HYP_PT_ROOT_LEVEL);
+    unsigned long high_bits_mask = CRUX_PT_LEVEL_MAP_MASK(HYP_PT_ROOT_LEVEL);
     int res;
 
     /* First call sets the directmap physical and virtual offset. */
@@ -514,7 +514,7 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
         panic("can't add directmap mapping at %#lx below directmap start %#lx\n",
               base_mfn, mfn_x(directmap_mfn_start));
 
-    if ( (res = map_pages_to_xen((vaddr_t)mfn_to_virt(base_mfn),
+    if ( (res = map_pages_to_crux((vaddr_t)mfn_to_virt(base_mfn),
                           base_mfn_t, nr_mfns,
                           PAGE_HYPERVISOR_RW)) )
         panic("Directmap mappings for [%#"PRIpaddr", %#"PRIpaddr") failed: %d\n",
@@ -538,7 +538,7 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
  * VA <-> PA translations. Also aligns DIRECTMAP_VIRT_START to a GB boundary
  * (for Sv39; for other MMU mode boundaries will be bigger ) by masking the
  * bits of the RAM start address to enable the use of superpages in
- * map_pages_to_xen().
+ * map_pages_to_crux().
  *
  * The frametable is mapped starting from physical address RAM_START, so an
  * additional offset is applied in setup_frametable_mappings() to initialize

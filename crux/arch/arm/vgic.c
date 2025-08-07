@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vgic.c
+ * crux/arch/arm/vgic.c
  *
  * ARM Virtual Generic Interrupt Controller support
  *
@@ -8,14 +8,14 @@
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/bitops.h>
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/domain_page.h>
-#include <xen/softirq.h>
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/perfc.h>
+#include <crux/bitops.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/domain_page.h>
+#include <crux/softirq.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/perfc.h>
 
 #include <asm/event.h>
 #include <asm/current.h>
@@ -103,7 +103,7 @@ int domain_vgic_register(struct domain *d, unsigned int *mmio_count)
         break;
 #endif
     default:
-        printk(XENLOG_G_ERR "d%d: Unknown vGIC version %u\n",
+        printk(CRUXLOG_G_ERR "d%d: Unknown vGIC version %u\n",
                d->domain_id, d->arch.vgic.version);
         return -ENODEV;
     }
@@ -184,7 +184,7 @@ void domain_vgic_free(struct domain *d)
         {
             ret = release_guest_irq(d, p->irq);
             if ( ret )
-                dprintk(XENLOG_G_WARNING, "d%u: Failed to release virq %u ret = %d\n",
+                dprintk(CRUXLOG_G_WARNING, "d%u: Failed to release virq %u ret = %d\n",
                         d->domain_id, p->irq, ret);
         }
     }
@@ -267,7 +267,7 @@ bool vgic_migrate_irq(struct vcpu *old, struct vcpu *new, unsigned int irq)
     /* migration already in progress, no need to do anything */
     if ( test_bit(GIC_IRQ_GUEST_MIGRATING, &p->status) )
     {
-        gprintk(XENLOG_WARNING, "irq %u migration failed: requested while in progress\n", irq);
+        gprintk(CRUXLOG_WARNING, "irq %u migration failed: requested while in progress\n", irq);
         spin_unlock_irqrestore(&old->arch.vgic.lock, flags);
         return false;
     }
@@ -486,7 +486,7 @@ bool vgic_to_sgi(struct vcpu *v, register_t sgir, enum gic_sgi_mode irqmode,
             if ( vcpuid >= d->max_vcpus || d->vcpu[vcpuid] == NULL ||
                  !is_vcpu_online(d->vcpu[vcpuid]) )
             {
-                gprintk(XENLOG_WARNING,
+                gprintk(CRUXLOG_WARNING,
                         "vGIC: write %#"PRIregister", target->list=%#x, bad target vcpu%u\n",
                         sgir, target->list, vcpuid);
                 continue;
@@ -508,7 +508,7 @@ bool vgic_to_sgi(struct vcpu *v, register_t sgir, enum gic_sgi_mode irqmode,
         vgic_inject_irq(d, current, virq, true);
         break;
     default:
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "vGICD: GICD_SGIR write %#"PRIregister" with unhandled mode %d\n",
                 sgir, irqmode);
         return false;
@@ -706,11 +706,11 @@ unsigned int vgic_max_vcpus(unsigned int domctl_vgic_version)
 {
     switch ( domctl_vgic_version )
     {
-    case XEN_DOMCTL_CONFIG_GIC_V2:
+    case CRUX_DOMCTL_CONFIG_GIC_V2:
         return 8;
 
 #ifdef CONFIG_GICV3
-    case XEN_DOMCTL_CONFIG_GIC_V3:
+    case CRUX_DOMCTL_CONFIG_GIC_V3:
         return 4096;
 #endif
 
@@ -735,7 +735,7 @@ void vgic_check_inflight_irqs_pending(struct vcpu *v, unsigned int rank, uint32_
         p = irq_to_pending(v_target, irq);
 
         if ( p && !list_empty(&p->inflight) )
-            printk(XENLOG_G_WARNING
+            printk(CRUXLOG_G_WARNING
                    "%pv trying to clear pending interrupt %u.\n",
                    v, irq);
 

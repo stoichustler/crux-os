@@ -1,7 +1,7 @@
 /******************************************************************************
  * common/softirq.c
  * 
- * Softirqs in xen are only executed in an outermost activation (e.g., never 
+ * Softirqs in Xen are only executed in an outermost activation (e.g., never 
  * within an interrupt activation). This simplifies some things and generally 
  * seems a good thing.
  * 
@@ -9,12 +9,12 @@
  * Copyright (c) 1992, Linus Torvalds
  */
 
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/preempt.h>
-#include <xen/sched.h>
-#include <xen/rcupdate.h>
-#include <xen/softirq.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/preempt.h>
+#include <crux/sched.h>
+#include <crux/rcupdate.h>
+#include <crux/softirq.h>
 
 #ifndef __ARCH_IRQ_STAT
 irq_cpustat_t irq_stat[NR_CPUS];

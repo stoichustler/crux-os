@@ -2,7 +2,7 @@
 #ifndef __ASM_GENERIC_DIV64
 #define __ASM_GENERIC_DIV64
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 #if BITS_PER_LONG == 64
 

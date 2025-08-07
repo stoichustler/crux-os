@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/rk3566.c
+ * crux/arch/arm/platforms/rk3566.c
  *
  * Rockchip rk3566 SoC
  *

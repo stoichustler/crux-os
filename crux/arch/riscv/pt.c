@@ -1,12 +1,12 @@
-#include <xen/bug.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/pmap.h>
-#include <xen/spinlock.h>
+#include <crux/bug.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/pmap.h>
+#include <crux/spinlock.h>
 
 #include <asm/fixmap.h>
 #include <asm/flushtlb.h>
@@ -33,14 +33,14 @@ static bool pt_check_entry(pte_t entry, mfn_t mfn, pte_attr_t flags)
         /* We don't allow modifying an invalid entry. */
         if ( !pte_is_valid(entry) )
         {
-            dprintk(XENLOG_ERR, "Modifying invalid entry is not allowed\n");
+            dprintk(CRUXLOG_ERR, "Modifying invalid entry is not allowed\n");
             return false;
         }
 
         /* We don't allow modifying a table entry */
         if ( pte_is_table(entry) )
         {
-            dprintk(XENLOG_ERR, "Modifying a table entry is not allowed\n");
+            dprintk(CRUXLOG_ERR, "Modifying a table entry is not allowed\n");
             return false;
         }
     }
@@ -58,10 +58,10 @@ static bool pt_check_entry(pte_t entry, mfn_t mfn, pte_attr_t flags)
         if ( pte_is_valid(entry) )
         {
             if ( pte_is_mapping(entry) )
-                dprintk(XENLOG_ERR, "Changing MFN for valid PTE is not allowed (%#"PRI_mfn" -> %#"PRI_mfn")\n",
+                dprintk(CRUXLOG_ERR, "Changing MFN for valid PTE is not allowed (%#"PRI_mfn" -> %#"PRI_mfn")\n",
                         mfn_x(mfn_from_pte(entry)), mfn_x(mfn));
             else
-                dprintk(XENLOG_ERR, "Trying to replace table with mapping\n");
+                dprintk(CRUXLOG_ERR, "Trying to replace table with mapping\n");
             return false;
         }
     }
@@ -74,7 +74,7 @@ static bool pt_check_entry(pte_t entry, mfn_t mfn, pte_attr_t flags)
         /* We don't allow removing a table */
         if ( pte_is_table(entry) )
         {
-            dprintk(XENLOG_ERR, "Removing a table is not allowed\n");
+            dprintk(CRUXLOG_ERR, "Removing a table is not allowed\n");
             return false;
         }
     }
@@ -143,10 +143,10 @@ static bool create_table(pte_t *entry)
     return true;
 }
 
-#define XEN_TABLE_MAP_NONE 0
-#define XEN_TABLE_MAP_NOMEM 1
-#define XEN_TABLE_SUPER_PAGE 2
-#define XEN_TABLE_NORMAL 3
+#define CRUX_TABLE_MAP_NONE 0
+#define CRUX_TABLE_MAP_NOMEM 1
+#define CRUX_TABLE_SUPER_PAGE 2
+#define CRUX_TABLE_NORMAL 3
 
 /*
  * Take the currently mapped table, find the corresponding entry,
@@ -156,10 +156,10 @@ static bool create_table(pte_t *entry)
  * be allocated when not present.
  *
  * Return values:
- *  XEN_TABLE_MAP_NONE: a table allocation isn't permitted.
- *  XEN_TABLE_MAP_NOMEM: allocating a new page failed.
- *  XEN_TABLE_NORMAL: next level or leaf mapped normally.
- *  XEN_TABLE_SUPER_PAGE: The next entry points to a superpage.
+ *  CRUX_TABLE_MAP_NONE: a table allocation isn't permitted.
+ *  CRUX_TABLE_MAP_NOMEM: allocating a new page failed.
+ *  CRUX_TABLE_NORMAL: next level or leaf mapped normally.
+ *  CRUX_TABLE_SUPER_PAGE: The next entry points to a superpage.
  */
 static int pt_next_level(bool alloc_tbl, pte_t **table, unsigned int offset)
 {
@@ -171,21 +171,21 @@ static int pt_next_level(bool alloc_tbl, pte_t **table, unsigned int offset)
     if ( !pte_is_valid(*entry) )
     {
         if ( !alloc_tbl )
-            return XEN_TABLE_MAP_NONE;
+            return CRUX_TABLE_MAP_NONE;
 
         if ( !create_table(entry) )
-            return XEN_TABLE_MAP_NOMEM;
+            return CRUX_TABLE_MAP_NOMEM;
     }
 
     if ( pte_is_mapping(*entry) )
-        return XEN_TABLE_SUPER_PAGE;
+        return CRUX_TABLE_SUPER_PAGE;
 
     mfn = mfn_from_pte(*entry);
 
     unmap_table(*table);
     *table = map_table(mfn);
 
-    return XEN_TABLE_NORMAL;
+    return CRUX_TABLE_NORMAL;
 }
 
 /*
@@ -214,19 +214,19 @@ static pte_t *_pt_walk(vaddr_t va, unsigned int *pte_level)
      * to a page.
      *
      * Two cases are possible:
-     * - ret == XEN_TABLE_SUPER_PAGE means that the entry was found;
-     *   (Despite the name) XEN_TABLE_SUPER_PAGE also covers 4K mappings. If
+     * - ret == CRUX_TABLE_SUPER_PAGE means that the entry was found;
+     *   (Despite the name) CRUX_TABLE_SUPER_PAGE also covers 4K mappings. If
      *   pt_next_level() is called for page table level 0, it results in the
      *   entry being a pointer to a leaf node, thereby returning
-     *   XEN_TABLE_SUPER_PAGE, despite of the fact this leaf covers 4k mapping.
-     * - ret == XEN_TABLE_MAP_NONE means that requested `va` wasn't actually
+     *   CRUX_TABLE_SUPER_PAGE, despite of the fact this leaf covers 4k mapping.
+     * - ret == CRUX_TABLE_MAP_NONE means that requested `va` wasn't actually
      *   mapped.
      */
     for ( level = HYP_PT_ROOT_LEVEL; ; --level )
     {
         int ret = pt_next_level(false, &table, offsets[level]);
 
-        if ( ret == XEN_TABLE_MAP_NONE || ret == XEN_TABLE_SUPER_PAGE )
+        if ( ret == CRUX_TABLE_MAP_NONE || ret == CRUX_TABLE_SUPER_PAGE )
             break;
 
         ASSERT(level);
@@ -288,25 +288,25 @@ static int pt_update_entry(mfn_t root, vaddr_t virt,
         for ( ; level > *target; level-- )
         {
             rc = pt_next_level(alloc_tbl, &table, offsets[level]);
-            if ( rc == XEN_TABLE_MAP_NOMEM )
+            if ( rc == CRUX_TABLE_MAP_NOMEM )
             {
                 rc = -ENOMEM;
                 goto out;
             }
 
-            if ( rc == XEN_TABLE_MAP_NONE )
+            if ( rc == CRUX_TABLE_MAP_NONE )
             {
                 rc = 0;
                 goto out;
             }
 
-            if ( rc != XEN_TABLE_NORMAL )
+            if ( rc != CRUX_TABLE_NORMAL )
                 break;
         }
 
         if ( level != *target )
         {
-            dprintk(XENLOG_ERR,
+            dprintk(CRUXLOG_ERR,
                     "%s: Shattering superpage is not supported\n", __func__);
             rc = -EOPNOTSUPP;
             goto out;
@@ -385,8 +385,8 @@ static int pt_mapping_level(unsigned long vfn, mfn_t mfn, unsigned long nr,
 
     for ( i = HYP_PT_ROOT_LEVEL; i != 0; i-- )
     {
-        if ( !(mask & (BIT(XEN_PT_LEVEL_ORDER(i), UL) - 1)) &&
-             (nr >= BIT(XEN_PT_LEVEL_ORDER(i), UL)) )
+        if ( !(mask & (BIT(CRUX_PT_LEVEL_ORDER(i), UL) - 1)) &&
+             (nr >= BIT(CRUX_PT_LEVEL_ORDER(i), UL)) )
         {
             level = i;
             break;
@@ -425,14 +425,14 @@ static int pt_update(vaddr_t virt, mfn_t mfn,
     if ( (flags & PTE_VALID) && (flags & PTE_WRITABLE) &&
          (flags & PTE_EXECUTABLE) )
     {
-        dprintk(XENLOG_ERR,
+        dprintk(CRUXLOG_ERR,
                 "Mappings should not be both Writeable and Executable\n");
         return -EINVAL;
     }
 
     if ( !IS_ALIGNED(virt, PAGE_SIZE) )
     {
-        dprintk(XENLOG_ERR,
+        dprintk(CRUXLOG_ERR,
                 "The virtual address is not aligned to the page-size\n");
         return -EINVAL;
     }
@@ -472,7 +472,7 @@ static int pt_update(vaddr_t virt, mfn_t mfn,
         if ( rc )
             break;
 
-        order = XEN_PT_LEVEL_ORDER(level);
+        order = CRUX_PT_LEVEL_ORDER(level);
 
         vfn += 1UL << order;
         if ( !mfn_eq(mfn, INVALID_MFN) )
@@ -503,13 +503,13 @@ static int pt_update(vaddr_t virt, mfn_t mfn,
     return rc;
 }
 
-int map_pages_to_xen(unsigned long virt,
+int map_pages_to_crux(unsigned long virt,
                      mfn_t mfn,
                      unsigned long nr_mfns,
                      pte_attr_t flags)
 {
     /*
-     * Ensure that flags has PTE_VALID bit as map_pages_to_xen() is supposed
+     * Ensure that flags has PTE_VALID bit as map_pages_to_crux() is supposed
      * to create a mapping.
      *
      * Ensure that we have a valid MFN before proceeding.
@@ -523,7 +523,7 @@ int map_pages_to_xen(unsigned long virt,
     return pt_update(virt, mfn, nr_mfns, flags);
 }
 
-int destroy_xen_mappings(unsigned long s, unsigned long e)
+int destroy_crux_mappings(unsigned long s, unsigned long e)
 {
     ASSERT(IS_ALIGNED(s, PAGE_SIZE));
     ASSERT(IS_ALIGNED(e, PAGE_SIZE));
@@ -539,14 +539,14 @@ int __init populate_pt_range(unsigned long virt, unsigned long nr_mfns)
 /* Map a 4k page in a fixmap entry */
 void set_fixmap(unsigned int map, mfn_t mfn, pte_attr_t flags)
 {
-    if ( map_pages_to_xen(FIXMAP_ADDR(map), mfn, 1, flags | PTE_SMALL) != 0 )
+    if ( map_pages_to_crux(FIXMAP_ADDR(map), mfn, 1, flags | PTE_SMALL) != 0 )
         BUG();
 }
 
 /* Remove a mapping from a fixmap entry */
 void clear_fixmap(unsigned int map)
 {
-    if ( destroy_xen_mappings(FIXMAP_ADDR(map),
+    if ( destroy_crux_mappings(FIXMAP_ADDR(map),
                               FIXMAP_ADDR(map) + PAGE_SIZE) != 0 )
         BUG();
 }

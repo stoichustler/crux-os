@@ -7,7 +7,7 @@
  *     to use__*xchg_generic()
  * - drop casts in write_atomic() as they are unnecessary
  * - drop introduction of WRITE_ONCE() and READ_ONCE().
- *   xen provides ACCESS_ONCE()
+ *   Xen provides ACCESS_ONCE()
  * - remove zero-length array access in read_atomic()
  * - drop defines similar to pattern
  *   #define atomic_add_return_relaxed   atomic_add_return_relaxed
@@ -22,7 +22,7 @@
 #ifndef ASM__RISCV__ATOMIC_H
 #define ASM__RISCV__ATOMIC_H
 
-#include <xen/atomic.h>
+#include <crux/atomic.h>
 
 #include <asm/cmpxchg.h>
 #include <asm/fence.h>
@@ -140,7 +140,7 @@ void atomic##prefix##_##op(c_type i, atomic##prefix##_t *v) \
 }                                                           \
 
 /*
- * Only CONFIG_GENERIC_ATOMIC64=y was ported to xen that is the reason why
+ * Only CONFIG_GENERIC_ATOMIC64=y was ported to Xen that is the reason why
  * last argument for ATOMIC_OP isn't used.
  */
 #define ATOMIC_OPS(op, asm_op, unary_op)                    \
@@ -183,7 +183,7 @@ c_type atomic##prefix##_##op##_return(c_type i, atomic##prefix##_t *v)  \
 }
 
 /*
- * Only CONFIG_GENERIC_ATOMIC64=y was ported to xen that is the reason why
+ * Only CONFIG_GENERIC_ATOMIC64=y was ported to Xen that is the reason why
  * last argument of ATOMIC_FETCH_OP, ATOMIC_OP_RETURN isn't used.
  */
 #define ATOMIC_OPS(op, asm_op, unary_op)                        \

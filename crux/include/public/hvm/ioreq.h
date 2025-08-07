@@ -66,13 +66,13 @@ typedef struct buf_ioreq buf_ioreq_t;
 
 #define IOREQ_BUFFER_SLOT_NUM     511 /* 8 bytes each, plus 2 4-byte indexes */
 struct buffered_iopage {
-#ifdef __XEN__
+#ifdef __CRUX__
     union bufioreq_pointers {
         struct {
 #endif
             uint32_t read_pointer;
             uint32_t write_pointer;
-#ifdef __XEN__
+#ifdef __CRUX__
         };
         uint64_t full;
     } ptrs;
@@ -87,10 +87,10 @@ typedef struct buffered_iopage buffered_iopage_t;
  */
 
 /*
- * Version 0 (default): Traditional (obsolete) xen locations.
+ * Version 0 (default): Traditional (obsolete) Xen locations.
  *
  * These are now only used for compatibility with VMs migrated
- * from older xen versions.
+ * from older Xen versions.
  */
 #define ACPI_PM1A_EVT_BLK_ADDRESS_V0 0x1f40
 #define ACPI_PM1A_CNT_BLK_ADDRESS_V0 (ACPI_PM1A_EVT_BLK_ADDRESS_V0 + 0x04)

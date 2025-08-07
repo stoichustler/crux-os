@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#include <xen/shutdown.h>
+#include <crux/shutdown.h>
 
 #include <asm/sbi.h>
 

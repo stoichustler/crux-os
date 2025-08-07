@@ -4,10 +4,10 @@
  * linear frame buffer handling.
  */
 
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/xvmalloc.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/xvmalloc.h>
 
 #include "lfb.h"
 #include "font.h"
@@ -160,7 +160,7 @@ int __init lfb_init(struct lfb_prop *lfbp)
     return 0;
 
 fail:
-    printk(XENLOG_ERR "Couldn't allocate enough memory to drive the framebuffer\n");
+    printk(CRUXLOG_ERR "Couldn't allocate enough memory to drive the framebuffer\n");
     lfb_free();
 
     return -ENOMEM;

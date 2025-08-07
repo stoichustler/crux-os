@@ -4,19 +4,19 @@
  *
  * Copyright (C) 2011 Citrix Systems, Inc.
  */
-#include <xen/byteorder.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/fdt-kernel.h>
-#include <xen/guest_access.h>
-#include <xen/gunzip.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/vmap.h>
+#include <crux/byteorder.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/fdt-kernel.h>
+#include <crux/guest_access.h>
+#include <crux/gunzip.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/vmap.h>
 
 #include <asm/domain_build.h>
 #include <asm/setup.h>
@@ -147,7 +147,7 @@ static void __init kernel_zimage_load(struct kernel_info *info)
 
     place_modules(info, load_addr, load_addr + len);
 
-    printk("loading zImage from %"PRIpaddr" to %"PRIpaddr"-%"PRIpaddr"\n",
+    printk("Loading zImage from %"PRIpaddr" to %"PRIpaddr"-%"PRIpaddr"\n",
            paddr, load_addr, load_addr + len);
 
     kernel = ioremap_wc(paddr, len);
@@ -212,7 +212,7 @@ int __init kernel_uimage_probe(struct kernel_info *info,
     /* Only gzip compression is supported. */
     if ( uimage.comp && uimage.comp != IH_COMP_GZIP )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Unsupported uImage compression type %"PRIu8"\n", uimage.comp);
         return -EOPNOTSUPP;
     }
@@ -221,27 +221,27 @@ int __init kernel_uimage_probe(struct kernel_info *info,
     info->entry = be32_to_cpu(uimage.ep);
 
     /*
-     * While uboot considers 0x0 to be a valid load/start address, for xen
+     * While uboot considers 0x0 to be a valid load/start address, for Xen
      * to maintain parity with zImage, we consider 0x0 to denote position
-     * independent image. That means xen is free to load such an image at
+     * independent image. That means Xen is free to load such an image at
      * any valid address.
      */
     if ( info->zimage.start == 0 )
-        printk(XENLOG_INFO
-               "No load address provided. xen will decide where to load it.\n");
+        printk(CRUXLOG_INFO
+               "No load address provided. Xen will decide where to load it.\n");
     else
-        printk(XENLOG_INFO
+        printk(CRUXLOG_INFO
                "Provided load address: %"PRIpaddr" and entry address: %"PRIpaddr"\n",
                info->zimage.start, info->entry);
 
     /*
      * If the image supports position independent execution, then user cannot
-     * provide an entry point as xen will load such an image at any appropriate
+     * provide an entry point as Xen will load such an image at any appropriate
      * memory address. Thus, we need to return error.
      */
     if ( (info->zimage.start == 0) && (info->entry != 0) )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Entry point cannot be non zero for PIE image.\n");
         return -EINVAL;
     }
@@ -280,15 +280,15 @@ int __init kernel_uimage_probe(struct kernel_info *info,
         info->arch.type = DOMAIN_64BIT;
         break;
     default:
-        printk(XENLOG_ERR "Unsupported uImage arch type %d\n", uimage.arch);
+        printk(CRUXLOG_ERR "Unsupported uImage arch type %d\n", uimage.arch);
         return -EINVAL;
     }
 
     /*
      * If there is a uImage header, then we do not parse zImage or zImage64
      * header. In other words if the user provides a uImage header on top of
-     * zImage or zImage64 header, xen uses the attributes of uImage header only.
-     * Thus, xen uses uimage.load attribute to determine the load address and
+     * zImage or zImage64 header, Xen uses the attributes of uImage header only.
+     * Thus, Xen uses uimage.load attribute to determine the load address and
      * zimage.text_offset is ignored.
      */
     info->zimage.text_offset = 0;

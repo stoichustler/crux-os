@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
-#include <xen/acpi.h>
-#include <xen/domain.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/pmstat.h>
-#include <xen/sched.h>
+#include <crux/acpi.h>
+#include <crux/domain.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/pmstat.h>
+#include <crux/sched.h>
 
 #include <acpi/cpufreq/cpufreq.h>
 #include <public/platform.h>
@@ -77,7 +77,7 @@ static int read_scaling_available_governors(char *scaling_available_governors,
     return 0;
 }
 
-static int get_cpufreq_para(struct xen_sysctl_pm_op *op)
+static int get_cpufreq_para(struct crux_sysctl_pm_op *op)
 {
     uint32_t ret = 0;
     const struct processor_pminfo *pmpt;
@@ -190,7 +190,7 @@ static int get_cpufreq_para(struct xen_sysctl_pm_op *op)
     return ret;
 }
 
-static int set_cpufreq_gov(struct xen_sysctl_pm_op *op)
+static int set_cpufreq_gov(struct crux_sysctl_pm_op *op)
 {
     struct cpufreq_policy new_policy, *old_policy;
 
@@ -207,7 +207,7 @@ static int set_cpufreq_gov(struct xen_sysctl_pm_op *op)
     return __cpufreq_set_policy(old_policy, &new_policy);
 }
 
-static int set_cpufreq_para(struct xen_sysctl_pm_op *op)
+static int set_cpufreq_para(struct crux_sysctl_pm_op *op)
 {
     int ret = 0;
     struct cpufreq_policy *policy;
@@ -291,7 +291,7 @@ static int set_cpufreq_para(struct xen_sysctl_pm_op *op)
     return ret;
 }
 
-static int set_cpufreq_cppc(struct xen_sysctl_pm_op *op)
+static int set_cpufreq_cppc(struct crux_sysctl_pm_op *op)
 {
     struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_policy, op->cpuid);
 
@@ -304,14 +304,14 @@ static int set_cpufreq_cppc(struct xen_sysctl_pm_op *op)
     return set_hwp_para(policy, &op->u.set_cppc);
 }
 
-int do_pm_op(struct xen_sysctl_pm_op *op)
+int do_pm_op(struct crux_sysctl_pm_op *op)
 {
     int ret = 0;
     const struct processor_pminfo *pmpt;
 
     switch ( op->cmd )
     {
-    case XEN_SYSCTL_pm_op_set_sched_opt_smt:
+    case CRUX_SYSCTL_pm_op_set_sched_opt_smt:
     {
         uint32_t saved_value = sched_smt_power_savings;
 
@@ -322,8 +322,8 @@ int do_pm_op(struct xen_sysctl_pm_op *op)
         return 0;
     }
 
-    case XEN_SYSCTL_pm_op_get_max_cstate:
-        BUILD_BUG_ON(XEN_SYSCTL_CX_UNLIMITED != UINT_MAX);
+    case CRUX_SYSCTL_pm_op_get_max_cstate:
+        BUILD_BUG_ON(CRUX_SYSCTL_CX_UNLIMITED != UINT_MAX);
         if ( op->cpuid == 0 )
             op->u.get_max_cstate = acpi_get_cstate_limit();
         else if ( op->cpuid == 1 )
@@ -332,7 +332,7 @@ int do_pm_op(struct xen_sysctl_pm_op *op)
             ret = -EINVAL;
         return ret;
 
-    case XEN_SYSCTL_pm_op_set_max_cstate:
+    case CRUX_SYSCTL_pm_op_set_max_cstate:
         if ( op->cpuid == 0 )
             acpi_set_cstate_limit(op->u.set_max_cstate);
         else if ( op->cpuid == 1 )
@@ -349,9 +349,9 @@ int do_pm_op(struct xen_sysctl_pm_op *op)
     switch ( op->cmd & PM_PARA_CATEGORY_MASK )
     {
     case CPUFREQ_PARA:
-        if ( !(xen_processor_pmbits & XEN_PROCESSOR_PM_PX) )
+        if ( !(crux_processor_pmbits & CRUX_PROCESSOR_PM_PX) )
             return -ENODEV;
-        if ( !pmpt || !(pmpt->init & XEN_PX_INIT) )
+        if ( !pmpt || !(pmpt->init & CRUX_PX_INIT) )
             return -EINVAL;
         break;
     }
@@ -378,11 +378,11 @@ int do_pm_op(struct xen_sysctl_pm_op *op)
         op->u.get_avgfreq = cpufreq_driver_getavg(op->cpuid, USR_GETAVG);
         break;
 
-    case XEN_SYSCTL_pm_op_enable_turbo:
+    case CRUX_SYSCTL_pm_op_enable_turbo:
         ret = cpufreq_update_turbo(op->cpuid, CPUFREQ_TURBO_ENABLED);
         break;
 
-    case XEN_SYSCTL_pm_op_disable_turbo:
+    case CRUX_SYSCTL_pm_op_disable_turbo:
         ret = cpufreq_update_turbo(op->cpuid, CPUFREQ_TURBO_DISABLED);
         break;
 

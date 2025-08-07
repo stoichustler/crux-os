@@ -2,10 +2,10 @@
 #ifndef ASM__RISCV__PMAP_H
 #define ASM__RISCV__PMAP_H
 
-#include <xen/bug.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/page-size.h>
+#include <crux/bug.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/page-size.h>
 
 #include <asm/fixmap.h>
 #include <asm/flushtlb.h>
@@ -13,7 +13,7 @@
 
 static inline void __init arch_pmap_map(unsigned int slot, mfn_t mfn)
 {
-    pte_t *entry = &xen_fixmap[slot];
+    pte_t *entry = &crux_fixmap[slot];
     pte_t pte;
 
     ASSERT(!pte_is_valid(*entry));
@@ -28,7 +28,7 @@ static inline void __init arch_pmap_unmap(unsigned int slot)
 {
     pte_t pte = {};
 
-    write_pte(&xen_fixmap[slot], pte);
+    write_pte(&crux_fixmap[slot], pte);
 
     flush_tlb_one_local(FIXMAP_ADDR(slot));
 }

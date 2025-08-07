@@ -19,7 +19,7 @@
  * Authors: Dipankar Sarma <dipankar@in.ibm.com>
  *          Manfred Spraul <manfred@colorfullife.com>
  * 
- * Modifications for xen: Jose Renato Santos
+ * Modifications for Xen: Jose Renato Santos
  * Copyright (C) Hewlett-Packard, 2006
  *
  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
@@ -31,21 +31,21 @@
  * For detailed explanation of Read-Copy Update mechanism see -
  * http://lse.sourceforge.net/locking/rcupdate.html
  */
-#include <xen/types.h>
-#include <xen/kernel.h>
-#include <xen/init.h>
-#include <xen/param.h>
-#include <xen/sections.h>
-#include <xen/spinlock.h>
-#include <xen/smp.h>
-#include <xen/rcupdate.h>
-#include <xen/sched.h>
+#include <crux/types.h>
+#include <crux/kernel.h>
+#include <crux/init.h>
+#include <crux/param.h>
+#include <crux/sections.h>
+#include <crux/spinlock.h>
+#include <crux/smp.h>
+#include <crux/rcupdate.h>
+#include <crux/sched.h>
 #include <asm/atomic.h>
-#include <xen/bitops.h>
-#include <xen/percpu.h>
-#include <xen/softirq.h>
-#include <xen/cpu.h>
-#include <xen/stop_machine.h>
+#include <crux/bitops.h>
+#include <crux/percpu.h>
+#include <crux/softirq.h>
+#include <crux/cpu.h>
+#include <crux/stop_machine.h>
 
 DEFINE_PER_CPU(unsigned int, rcu_lock_cnt);
 
@@ -100,7 +100,7 @@ struct rcu_data {
  * If a CPU with RCU callbacks queued goes idle, when the grace period is
  * not finished yet, how can we make sure that the callbacks will eventually
  * be executed? In Linux (2.6.21, the first "tickless idle" Linux kernel),
- * the periodic timer tick would not be stopped for such CPU. Here in xen,
+ * the periodic timer tick would not be stopped for such CPU. Here in Xen,
  * we (may) don't even have a periodic timer tick, so we need to use a
  * special purpose timer.
  *

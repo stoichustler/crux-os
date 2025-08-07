@@ -1,11 +1,11 @@
-#include <xen/cpumask.h>
-#include <xen/cpu.h>
-#include <xen/event.h>
-#include <xen/init.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/stop_machine.h>
-#include <xen/rcupdate.h>
+#include <crux/cpumask.h>
+#include <crux/cpu.h>
+#include <crux/event.h>
+#include <crux/init.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/stop_machine.h>
+#include <crux/rcupdate.h>
 
 unsigned int __read_mostly nr_cpu_ids = NR_CPUS;
 #ifndef nr_cpumask_bits

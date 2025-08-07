@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/tee/tee.h
+ * crux/include/asm-arm/tee/tee.h
  *
  * Generic part of TEE mediator subsystem
  *
@@ -14,8 +14,8 @@
 #ifndef __ARCH_ARM_TEE_TEE_H__
 #define __ARCH_ARM_TEE_TEE_H__
 
-#include <xen/lib.h>
-#include <xen/types.h>
+#include <crux/lib.h>
+#include <crux/types.h>
 
 #include <asm/regs.h>
 
@@ -59,8 +59,8 @@ struct tee_mediator_desc {
     const struct tee_mediator_ops *ops;
 
     /*
-     * ID of TEE. Corresponds to xen_arch_domainconfig.tee_type.
-     * Should be one of XEN_DOMCTL_CONFIG_TEE_xxx
+     * ID of TEE. Corresponds to crux_arch_domainconfig.tee_type.
+     * Should be one of CRUX_DOMCTL_CONFIG_TEE_xxx
      */
     uint16_t tee_type;
 };
@@ -90,7 +90,7 @@ static inline bool tee_handle_call(struct cpu_user_regs *regs)
 
 static inline int tee_domain_init(struct domain *d, uint16_t tee_type)
 {
-    if ( likely(tee_type == XEN_DOMCTL_CONFIG_TEE_NONE) )
+    if ( likely(tee_type == CRUX_DOMCTL_CONFIG_TEE_NONE) )
         return 0;
 
     return -ENODEV;
@@ -108,7 +108,7 @@ static inline int tee_domain_teardown(struct domain *d)
 
 static inline uint16_t tee_get_type(void)
 {
-    return XEN_DOMCTL_CONFIG_TEE_NONE;
+    return CRUX_DOMCTL_CONFIG_TEE_NONE;
 }
 
 static inline void init_tee_secondary(void)

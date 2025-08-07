@@ -1,29 +1,29 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/init.h>
-#include <xen/bootinfo.h>
-#include <xen/compile.h>
-#include <xen/dom0less-build.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/fdt-kernel.h>
-#include <xen/lib.h>
-#include <xen/llc-coloring.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/domain_page.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
+#include <crux/init.h>
+#include <crux/bootinfo.h>
+#include <crux/compile.h>
+#include <crux/dom0less-build.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/fdt-kernel.h>
+#include <crux/lib.h>
+#include <crux/llc-coloring.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/domain_page.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
 #include <asm/irq.h>
 #include <asm/regs.h>
-#include <xen/errno.h>
-#include <xen/err.h>
-#include <xen/device_tree.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/guest_access.h>
-#include <xen/iocap.h>
-#include <xen/acpi.h>
-#include <xen/vmap.h>
-#include <xen/warning.h>
-#include <xen/static-shmem.h>
+#include <crux/errno.h>
+#include <crux/err.h>
+#include <crux/device_tree.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/guest_access.h>
+#include <crux/iocap.h>
+#include <crux/acpi.h>
+#include <crux/vmap.h>
+#include <crux/warning.h>
+#include <crux/static-shmem.h>
 #include <asm/device.h>
 #include <asm/setup.h>
 #include <asm/tee/tee.h>
@@ -34,12 +34,12 @@
 #include <asm/arm64/sve.h>
 #include <asm/cpufeature.h>
 #include <asm/domain_build.h>
-#include <xen/event.h>
+#include <crux/event.h>
 
-#include <xen/irq.h>
-#include <xen/grant_table.h>
+#include <crux/irq.h>
+#include <crux/grant_table.h>
 #include <asm/grant_table.h>
-#include <xen/serial.h>
+#include <crux/serial.h>
 
 static unsigned int __initdata opt_dom0_max_vcpus;
 integer_param("dom0_max_vcpus", opt_dom0_max_vcpus);
@@ -74,7 +74,7 @@ int __init parse_arch_dom0_param(const char *s, const char *e)
         if ( (val >= INT_MIN) && (val <= INT_MAX) )
             opt_dom0_sve = val;
         else
-            printk(XENLOG_INFO "'sve=%lld' value out of range!\n", val);
+            printk(CRUXLOG_INFO "'sve=%lld' value out of range!\n", val);
 
         return 0;
 #else
@@ -91,7 +91,7 @@ int __init parse_arch_dom0_param(const char *s, const char *e)
 
 //#define DEBUG_11_ALLOCATION
 #ifdef DEBUG_11_ALLOCATION
-# define D11PRINT(fmt, args...) printk(XENLOG_DEBUG fmt, ##args)
+# define D11PRINT(fmt, args...) printk(CRUXLOG_DEBUG fmt, ##args)
 #else
 # define D11PRINT(fmt, args...) do {} while ( 0 )
 #endif
@@ -295,7 +295,7 @@ static void __init allocate_memory_11(struct domain *d,
      */
     BUG_ON(!is_domain_direct_mapped(d));
 
-    printk("allocating 1:1 mappings totalling %ldMB for dom0:\n",
+    printk("Allocating 1:1 mappings totalling %ldMB for dom0:\n",
            /* Don't want format this as PRIpaddr (16 digit hex) */
            (unsigned long)(kinfo->unassigned_mem >> 20));
 
@@ -326,7 +326,7 @@ static void __init allocate_memory_11(struct domain *d,
         panic("Unable to allocate first memory bank\n");
 
     /* Try to allocate memory from above the lowmem region */
-    printk(XENLOG_INFO "No bank has been allocated below %u-bit.\n",
+    printk(CRUXLOG_INFO "No bank has been allocated below %u-bit.\n",
            lowmem_bitsize);
     lowmem = false;
 
@@ -406,7 +406,7 @@ static void __init allocate_memory_11(struct domain *d,
  * When PCI passthrough is available we want to keep the
  * "linux,pci-domain" in sync for every host bridge.
  *
- * xen may not have a driver for all the host bridges. So we have
+ * Xen may not have a driver for all the host bridges. So we have
  * to write an heuristic to detect whether a device node describes
  * a host bridge.
  *
@@ -438,13 +438,13 @@ static int __init handle_linux_pci_domain(struct kernel_info *kinfo,
         res = pci_get_new_domain_nr();
         if ( res < 0 )
         {
-            printk(XENLOG_DEBUG "Can't assign PCI segment to %s\n",
+            printk(CRUXLOG_DEBUG "Can't assign PCI segment to %s\n",
                    node->full_name);
             return -FDT_ERR_NOTFOUND;
         }
 
         segment = res;
-        printk(XENLOG_DEBUG "Assigned segment %d to %s\n",
+        printk(CRUXLOG_DEBUG "Assigned segment %d to %s\n",
                segment, node->full_name);
     }
 
@@ -465,7 +465,7 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
 
     /*
      * We always skip the IOMMU device when creating DT for hwdom if there is
-     * an appropriate driver for it in xen (device_get_class(iommu_node)
+     * an appropriate driver for it in Xen (device_get_class(iommu_node)
      * returns DEVICE_IOMMU).
      * We should also skip the IOMMU specific properties of the master device
      * behind that IOMMU in order to avoid exposing an half complete IOMMU
@@ -487,10 +487,10 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
         /*
          * In chosen node:
          *
-         * * remember xen,dom0-bootargs if we don't already have
+         * * remember crux,dom0-bootargs if we don't already have
          *   bootargs (from module #1, above).
-         * * remove bootargs,  xen,dom0-bootargs, xen,xen-bootargs,
-         *   xen,static-heap, linux,initrd-start and linux,initrd-end.
+         * * remove bootargs,  crux,dom0-bootargs, crux,crux-bootargs,
+         *   crux,static-heap, linux,initrd-start and linux,initrd-end.
          * * remove stdout-path.
          * * remove bootargs, linux,uefi-system-table,
          *   linux,uefi-mmap-start, linux,uefi-mmap-size,
@@ -499,8 +499,8 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
          */
         if ( dt_node_path_is_equal(node, "/chosen") )
         {
-            if ( dt_property_name_is_equal(prop, "xen,static-heap") ||
-                 dt_property_name_is_equal(prop, "xen,xen-bootargs") ||
+            if ( dt_property_name_is_equal(prop, "crux,static-heap") ||
+                 dt_property_name_is_equal(prop, "crux,crux-bootargs") ||
                  dt_property_name_is_equal(prop, "linux,initrd-start") ||
                  dt_property_name_is_equal(prop, "linux,initrd-end") ||
                  dt_property_name_is_equal(prop, "stdout-path") ||
@@ -511,7 +511,7 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
                  dt_property_name_is_equal(prop, "linux,uefi-mmap-desc-ver"))
                 continue;
 
-            if ( dt_property_name_is_equal(prop, "xen,dom0-bootargs") )
+            if ( dt_property_name_is_equal(prop, "crux,dom0-bootargs") )
             {
                 had_dom0_bootargs = 1;
                 bootargs = prop->value;
@@ -525,11 +525,11 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
             }
         }
 
-        /* Don't expose the property "xen,passthrough" to the guest */
-        if ( dt_property_name_is_equal(prop, "xen,passthrough") )
+        /* Don't expose the property "crux,passthrough" to the guest */
+        if ( dt_property_name_is_equal(prop, "crux,passthrough") )
             continue;
 
-        /* Remember and skip the status property as xen may modify it later */
+        /* Remember and skip the status property as Xen may modify it later */
         if ( dt_property_name_is_equal(prop, "status") )
         {
             status = prop;
@@ -769,7 +769,7 @@ static int __init handle_pci_range(const struct dt_device_node *dev,
 
     if ( (addr != (paddr_t)addr) || (((paddr_t)~0 - addr) < len) )
     {
-        printk(XENLOG_ERR "%s: [0x%"PRIx64", 0x%"PRIx64"] exceeds the maximum allowed PA width (%u bits)",
+        printk(CRUXLOG_ERR "%s: [0x%"PRIx64", 0x%"PRIx64"] exceeds the maximum allowed PA width (%u bits)",
                dt_node_full_name(dev), addr, (addr + len), PADDR_BITS);
         return -ERANGE;
     }
@@ -779,7 +779,7 @@ static int __init handle_pci_range(const struct dt_device_node *dev,
     res = rangeset_remove_range(mem_holes, PFN_DOWN(start), PFN_DOWN(end - 1));
     if ( res )
     {
-        printk(XENLOG_ERR "Failed to remove: %#"PRIpaddr"->%#"PRIpaddr"\n",
+        printk(CRUXLOG_ERR "Failed to remove: %#"PRIpaddr"->%#"PRIpaddr"\n",
                start, end);
         return res;
     }
@@ -797,8 +797,8 @@ static int __init handle_pci_range(const struct dt_device_node *dev,
  * - Host RAM
  * - PCI aperture
  * - Static shared memory regions, which are described by special property
- *   "xen,shared-mem"
- * - xen,reg mappings
+ *   "crux,shared-mem"
+ * - crux,reg mappings
  */
 static int __init find_memory_holes(const struct kernel_info *kinfo,
                                     struct membanks *ext_regions)
@@ -821,7 +821,7 @@ static int __init find_memory_holes(const struct kernel_info *kinfo,
     res = rangeset_add_range(mem_holes, PFN_DOWN(start), PFN_DOWN(end));
     if ( res )
     {
-        printk(XENLOG_ERR "Failed to add: %#"PRIpaddr"->%#"PRIpaddr"\n",
+        printk(CRUXLOG_ERR "Failed to add: %#"PRIpaddr"->%#"PRIpaddr"\n",
                start, end);
         goto out;
     }
@@ -847,7 +847,7 @@ static int __init find_memory_holes(const struct kernel_info *kinfo,
             res = dt_device_get_paddr(np, i, &addr, &size);
             if ( res )
             {
-                printk(XENLOG_ERR "Unable to retrieve address %u for %s\n",
+                printk(CRUXLOG_ERR "Unable to retrieve address %u for %s\n",
                        i, dt_node_full_name(np));
                 goto out;
             }
@@ -858,7 +858,7 @@ static int __init find_memory_holes(const struct kernel_info *kinfo,
                                         PFN_DOWN(end - 1));
             if ( res )
             {
-                printk(XENLOG_ERR "Failed to remove: %#"PRIpaddr"->%#"PRIpaddr"\n",
+                printk(CRUXLOG_ERR "Failed to remove: %#"PRIpaddr"->%#"PRIpaddr"\n",
                        start, end);
                 goto out;
             }
@@ -880,9 +880,9 @@ static int __init find_memory_holes(const struct kernel_info *kinfo,
         }
     }
 
-    if ( kinfo->xen_reg_assigned )
+    if ( kinfo->crux_reg_assigned )
     {
-        res = rangeset_subtract(mem_holes, kinfo->xen_reg_assigned);
+        res = rangeset_subtract(mem_holes, kinfo->crux_reg_assigned);
         if ( res )
             goto out;
     }
@@ -935,7 +935,7 @@ static int __init find_domU_holes(const struct kernel_info *kinfo,
         res = rangeset_add_range(mem_holes, PFN_DOWN(start), PFN_DOWN(bankend));
         if ( res )
         {
-            printk(XENLOG_ERR "Failed to add: %#"PRIx64"->%#"PRIx64"\n",
+            printk(CRUXLOG_ERR "Failed to add: %#"PRIx64"->%#"PRIx64"\n",
                    start, start + size - 1);
             goto out;
         }
@@ -946,9 +946,9 @@ static int __init find_domU_holes(const struct kernel_info *kinfo,
     if ( res )
         goto out;
 
-    if ( kinfo->xen_reg_assigned )
+    if ( kinfo->crux_reg_assigned )
     {
-        res = rangeset_subtract(mem_holes, kinfo->xen_reg_assigned);
+        res = rangeset_subtract(mem_holes, kinfo->crux_reg_assigned);
         if ( res )
             goto out;
     }
@@ -1011,9 +1011,9 @@ static int __init find_host_extended_regions(const struct kernel_info *kinfo,
         IS_ENABLED(CONFIG_GRANT_TABLE)
         ? membanks_xzalloc(1, MEMORY)
         : NULL;
-    struct membanks *xen_reg =
-        kinfo->xen_reg_assigned
-        ? membanks_xzalloc(count_ranges(kinfo->xen_reg_assigned), MEMORY)
+    struct membanks *crux_reg =
+        kinfo->crux_reg_assigned
+        ? membanks_xzalloc(count_ranges(kinfo->crux_reg_assigned), MEMORY)
         : NULL;
 
     /*
@@ -1022,7 +1022,7 @@ static int __init find_host_extended_regions(const struct kernel_info *kinfo,
      * 2) Remove reserved memory
      * 3) Grant table assigned to domain
      * 4) Remove static shared memory (when the feature is enabled)
-     * 5) Remove xen,reg
+     * 5) Remove crux,reg
      */
     const struct membanks *mem_banks[] = {
         kernel_info_get_mem_const(kinfo),
@@ -1031,22 +1031,22 @@ static int __init find_host_extended_regions(const struct kernel_info *kinfo,
 #ifdef CONFIG_STATIC_SHM
         bootinfo_get_shmem(),
 #endif
-        xen_reg,
+        crux_reg,
     };
 
     dt_dprintk("Find unallocated memory for extended regions\n");
 
-    if ( kinfo->xen_reg_assigned )
+    if ( kinfo->crux_reg_assigned )
     {
-        if ( !xen_reg )
+        if ( !crux_reg )
         {
             res = -ENOMEM;
             goto out;
         }
 
-        rangeset_report_ranges(kinfo->xen_reg_assigned, 0,
+        rangeset_report_ranges(kinfo->crux_reg_assigned, 0,
                                PFN_DOWN((1ULL << p2m_ipa_bits) - 1),
-                               rangeset_to_membank, xen_reg);
+                               rangeset_to_membank, crux_reg);
     }
 
 #ifdef CONFIG_GRANT_TABLE
@@ -1065,7 +1065,7 @@ static int __init find_host_extended_regions(const struct kernel_info *kinfo,
                                   ext_regions, add_ext_regions);
 
  out:
-    xfree(xen_reg);
+    xfree(crux_reg);
     xfree(gnttab);
 
     return res;
@@ -1076,8 +1076,8 @@ int __init make_hypervisor_node(struct domain *d,
                                 int addrcells, int sizecells)
 {
     const char compat[] =
-        "xen,xen-" XEN_VERSION_STRING "\0"
-        "xen,xen";
+        "crux,crux-" CRUX_VERSION_STRING "\0"
+        "crux,crux";
     __be32 *reg, *cells;
     gic_interrupt_t intr;
     int res;
@@ -1095,7 +1095,7 @@ int __init make_hypervisor_node(struct domain *d,
         (sizecells != 1 && sizecells != 2))
         panic("Cannot cope with this size\n");
 
-    /* See linux Documentation/devicetree/bindings/arm/xen.txt */
+    /* See linux Documentation/devicetree/bindings/arm/crux.txt */
     res = fdt_begin_node(fdt, "hypervisor");
     if ( res )
         return res;
@@ -1107,12 +1107,12 @@ int __init make_hypervisor_node(struct domain *d,
 
     if ( !opt_ext_regions )
     {
-        printk(XENLOG_INFO "%pd: extended regions support is disabled\n", d);
+        printk(CRUXLOG_INFO "%pd: extended regions support is disabled\n", d);
         nr_ext_regions = 0;
     }
     else if ( is_32bit_domain(d) )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "%pd: extended regions not supported for 32-bit guests\n", d);
         nr_ext_regions = 0;
     }
@@ -1135,7 +1135,7 @@ int __init make_hypervisor_node(struct domain *d,
         }
 
         if ( res )
-            printk(XENLOG_WARNING "%pd: failed to allocate extended regions\n",
+            printk(CRUXLOG_WARNING "%pd: failed to allocate extended regions\n",
                    d);
         nr_ext_regions = ext_regions->nr_banks;
     }
@@ -1245,7 +1245,7 @@ int __init make_cpus_node(const struct domain *d, void *fdt)
 
     if ( !cpus )
     {
-        dprintk(XENLOG_ERR, "Missing /cpus node in the device tree?\n");
+        dprintk(CRUXLOG_ERR, "Missing /cpus node in the device tree?\n");
         return -ENOENT;
     }
 
@@ -1268,7 +1268,7 @@ int __init make_cpus_node(const struct domain *d, void *fdt)
 
     if ( !compatible )
     {
-        dprintk(XENLOG_ERR, "Can't find cpu in the device tree?\n");
+        dprintk(CRUXLOG_ERR, "Can't find cpu in the device tree?\n");
         return -ENOENT;
     }
 
@@ -1301,7 +1301,7 @@ int __init make_cpus_node(const struct domain *d, void *fdt)
         mpidr_aff = vcpuid_to_vaffinity(cpu);
         if ( (mpidr_aff & ~GENMASK_ULL(23, 0)) != 0 )
         {
-            printk(XENLOG_ERR "Unable to handle MPIDR AFFINITY 0x%"PRIx64"\n",
+            printk(CRUXLOG_ERR "Unable to handle MPIDR AFFINITY 0x%"PRIx64"\n",
                    mpidr_aff);
             return -EINVAL;
         }
@@ -1365,7 +1365,7 @@ static int __init make_gic_node(const struct domain *d, void *fdt,
     const char *name;
 
     /*
-     * xen currently supports only a single GIC. Discard any secondary
+     * Xen currently supports only a single GIC. Discard any secondary
      * GIC entries.
      */
     if ( node != dt_interrupt_controller )
@@ -1449,8 +1449,8 @@ int __init make_timer_node(const struct kernel_info *kinfo)
     dev = dt_find_matching_node(NULL, timer_ids);
     if ( !dev )
     {
-        dprintk(XENLOG_ERR, "Missing timer node in the device tree?\n");
-        return -FDT_ERR_XEN(ENOENT);
+        dprintk(CRUXLOG_ERR, "Missing timer node in the device tree?\n");
+        return -FDT_ERR_CRUX(ENOENT);
     }
 
     res = fdt_begin_node(fdt, "timer");
@@ -1465,7 +1465,7 @@ int __init make_timer_node(const struct kernel_info *kinfo)
         return res;
 
     /*
-     * The timer IRQ is emulated by xen.
+     * The timer IRQ is emulated by Xen.
      * It always exposes an active-low level-sensitive interrupt.
      */
 
@@ -1511,7 +1511,7 @@ int __init make_timer_node(const struct kernel_info *kinfo)
 
 /*
  * This function is used as part of the device tree generation for Dom0
- * on ACPI systems, and DomUs started directly from xen based on device
+ * on ACPI systems, and DomUs started directly from Xen based on device
  * tree information.
  */
 int __init make_chosen_node(const struct kernel_info *kinfo)
@@ -1561,11 +1561,11 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
 {
     static const struct dt_device_match skip_matches[] __initconst =
     {
-        DT_MATCH_COMPATIBLE("xen,domain"),
-        DT_MATCH_COMPATIBLE("xen,domain-shared-memory-v1"),
-        DT_MATCH_COMPATIBLE("xen,evtchn-v1"),
-        DT_MATCH_COMPATIBLE("xen,xen"),
-        DT_MATCH_COMPATIBLE("xen,multiboot-module"),
+        DT_MATCH_COMPATIBLE("crux,domain"),
+        DT_MATCH_COMPATIBLE("crux,domain-shared-memory-v1"),
+        DT_MATCH_COMPATIBLE("crux,evtchn-v1"),
+        DT_MATCH_COMPATIBLE("crux,crux"),
+        DT_MATCH_COMPATIBLE("crux,multiboot-module"),
         DT_MATCH_COMPATIBLE("multiboot,module"),
         DT_MATCH_COMPATIBLE("arm,psci"),
         DT_MATCH_COMPATIBLE("arm,psci-0.2"),
@@ -1576,7 +1576,7 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
         DT_MATCH_COMPATIBLE("arm,armv8-pmuv3"),
         DT_MATCH_PATH("/cpus"),
         DT_MATCH_TYPE("memory"),
-        /* The memory mapped timer is not supported by xen. */
+        /* The memory mapped timer is not supported by Xen. */
         DT_MATCH_COMPATIBLE("arm,armv7-timer-mem"),
         { /* sentinel */ },
     };
@@ -1616,22 +1616,22 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
 
     /*
      * Replace these nodes with our own. Note that the original may be
-     * used_by DOMID_XEN so this check comes first.
+     * used_by DOMID_CRUX so this check comes first.
      */
     if ( device_get_class(node) == DEVICE_INTERRUPT_CONTROLLER )
         return make_gic_node(d, kinfo->fdt, node);
     if ( dt_match_node(timer_matches, node) )
         return make_timer_node(kinfo);
 
-    /* Skip nodes used by xen */
-    if ( dt_device_used_by(node) == DOMID_XEN )
+    /* Skip nodes used by Xen */
+    if ( dt_device_used_by(node) == DOMID_CRUX )
     {
-        dt_dprintk("  Skip it (used by xen)\n");
+        dt_dprintk("  Skip it (used by Xen)\n");
         return 0;
     }
 
     /*
-     * Even if the IOMMU device is not used by xen, it should not be
+     * Even if the IOMMU device is not used by Xen, it should not be
      * passthrough to DOM0
      */
     if ( device_get_class(node) == DEVICE_IOMMU )
@@ -1659,11 +1659,11 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
     }
 
     /*
-     * xen is using some path for its own purpose. Warn if a node
+     * Xen is using some path for its own purpose. Warn if a node
      * already exists with the same path.
      */
     if ( dt_match_node(reserved_matches, node) )
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "WARNING: Path %s is reserved, skip the node as we may re-use the path.\n",
                path);
 
@@ -1823,7 +1823,7 @@ void __init evtchn_allocate(struct domain *d)
 
     d->arch.evtchn_irq = res;
 
-    printk("allocating PPI %u for event channel interrupt\n",
+    printk("Allocating PPI %u for event channel interrupt\n",
            d->arch.evtchn_irq);
 
     /* Set the value of domain param HVM_PARAM_CALLBACK_IRQ */
@@ -1840,7 +1840,7 @@ static void __init find_gnttab_region(struct domain *d,
                                       struct kernel_info *kinfo)
 {
     /*
-     * The region used by xen on the memory will never be mapped in DOM0
+     * The region used by Xen on the memory will never be mapped in DOM0
      * memory layout. Therefore it can be used for the grant table.
      *
      * Only use the text section as it's always present and will contain
@@ -1853,13 +1853,13 @@ static void __init find_gnttab_region(struct domain *d,
     /*
      * The gnttab region must be under 4GB in order to work with DOM0
      * using short page table.
-     * In practice it's always the case because xen is always located
+     * In practice it's always the case because Xen is always located
      * below 4GB, but be safe.
      */
     BUG_ON((kinfo->gnttab_start + kinfo->gnttab_size) > GB(4));
 #endif
 
-    printk("grant table range: %#"PRIpaddr"-%#"PRIpaddr"\n",
+    printk("Grant table range: %#"PRIpaddr"-%#"PRIpaddr"\n",
            kinfo->gnttab_start, kinfo->gnttab_start + kinfo->gnttab_size);
 }
 
@@ -1876,7 +1876,7 @@ int __init construct_domain(struct domain *d, struct kernel_info *kinfo)
     /* if aarch32 mode is not supported at EL1 do not allow 32-bit domain */
     if ( !(cpu_has_el1_32) && kinfo->arch.type == DOMAIN_32BIT )
     {
-        printk("platform does not support 32-bit domain\n");
+        printk("Platform does not support 32-bit domain\n");
         return -EINVAL;
     }
 
@@ -1962,7 +1962,7 @@ static int __init construct_dom0(struct domain *d)
     /* Sanity! */
     BUG_ON(d->domain_id != 0);
 
-    printk("### loading dom0\n");
+    printk("*** LOADING DOMAIN 0 ***\n");
 
     /* The ordering of operands is to work around a clang5 issue. */
     if ( CONFIG_DOM0_MEM[0] && !dom0_mem_set )
@@ -2041,25 +2041,25 @@ int __init construct_hwdom(struct kernel_info *kinfo,
 void __init create_dom0(void)
 {
     struct domain *dom0;
-    struct xen_domctl_createdomain dom0_cfg = {
-        .flags = XEN_DOMCTL_CDF_hvm | XEN_DOMCTL_CDF_hap |
-                 XEN_DOMCTL_CDF_trap_unmapped_accesses,
+    struct crux_domctl_createdomain dom0_cfg = {
+        .flags = CRUX_DOMCTL_CDF_hvm | CRUX_DOMCTL_CDF_hap |
+                 CRUX_DOMCTL_CDF_trap_unmapped_accesses,
         .max_evtchn_port = -1,
         .max_grant_frames = gnttab_dom0_frames(),
         .max_maptrack_frames = -1,
-        .grant_opts = XEN_DOMCTL_GRANT_version(opt_gnttab_max_version),
+        .grant_opts = CRUX_DOMCTL_GRANT_version(opt_gnttab_max_version),
     };
     unsigned int flags = CDF_privileged | CDF_hardware;
     int rc;
 
     /* The vGIC for DOM0 is exactly emulating the hardware GIC */
-    dom0_cfg.arch.gic_version = XEN_DOMCTL_CONFIG_GIC_NATIVE;
+    dom0_cfg.arch.gic_version = CRUX_DOMCTL_CONFIG_GIC_NATIVE;
     dom0_cfg.arch.nr_spis = VGIC_DEF_NR_SPIS;
     dom0_cfg.arch.tee_type = tee_get_type();
     dom0_cfg.max_vcpus = dom0_max_vcpus();
 
     if ( iommu_enabled )
-        dom0_cfg.flags |= XEN_DOMCTL_CDF_iommu;
+        dom0_cfg.flags |= CRUX_DOMCTL_CDF_iommu;
 
     if ( opt_dom0_sve )
     {

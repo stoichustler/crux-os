@@ -1,4 +1,4 @@
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <asm/processor.h>
 #include <asm/cpufeature.h>
 #include <asm/vfp.h>

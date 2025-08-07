@@ -6,15 +6,15 @@
  * Copyright (C) 2014-2016 ARM Ltd.
  */
 
-#include <xen/byteorder.h>
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/llc-coloring.h>
-#include <xen/mm.h>
-#include <xen/smp.h>
-#include <xen/stop_machine.h>
-#include <xen/virtual_region.h>
-#include <xen/vmap.h>
+#include <crux/byteorder.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/llc-coloring.h>
+#include <crux/mm.h>
+#include <crux/smp.h>
+#include <crux/stop_machine.h>
+#include <crux/virtual_region.h>
+#include <crux/vmap.h>
 
 #include <asm/alternative.h>
 #include <asm/atomic.h>
@@ -116,7 +116,7 @@ static int __apply_alternatives(const struct alt_region *region,
     u32 *updptr;
     alternative_cb_t alt_cb;
 
-    printk(XENLOG_INFO "alternatives: Patching with alt table %p -> %p\n",
+    printk(CRUXLOG_INFO "alternatives: Patching with alt table %p -> %p\n",
            region->begin, region->end);
 
     for ( alt = region->begin; alt < region->end; alt++ )
@@ -160,7 +160,7 @@ static int __apply_alternatives(const struct alt_region *region,
  * We might be patching the stop_machine state machine, so implement a
  * really simple polling protocol here.
  */
-static int __apply_alternatives_multi_stop(void *xenmap)
+static int __apply_alternatives_multi_stop(void *cruxmap)
 {
     static int patched = 0;
 
@@ -181,7 +181,7 @@ static int __apply_alternatives_multi_stop(void *xenmap)
         region.begin = __alt_instructions;
         region.end = __alt_instructions_end;
 
-        ret = __apply_alternatives(&region, xenmap - (void *)_start);
+        ret = __apply_alternatives(&region, cruxmap - (void *)_start);
         /* The patching is not expected to fail during boot. */
         BUG_ON(ret != 0);
 
@@ -192,23 +192,23 @@ static int __apply_alternatives_multi_stop(void *xenmap)
     return 0;
 }
 
-static void __init *xen_remap_colored(mfn_t xen_mfn, paddr_t xen_size)
+static void __init *crux_remap_colored(mfn_t crux_mfn, paddr_t crux_size)
 {
     unsigned int i;
-    void *xenmap;
-    mfn_t *xen_colored_mfns, mfn;
+    void *cruxmap;
+    mfn_t *crux_colored_mfns, mfn;
 
-    xen_colored_mfns = xmalloc_array(mfn_t, xen_size >> PAGE_SHIFT);
-    if ( !xen_colored_mfns )
+    crux_colored_mfns = xmalloc_array(mfn_t, crux_size >> PAGE_SHIFT);
+    if ( !crux_colored_mfns )
         panic("Can't allocate LLC colored MFNs\n");
 
-    for_each_xen_colored_mfn ( xen_mfn, mfn, i )
-        xen_colored_mfns[i] = mfn;
+    for_each_crux_colored_mfn ( crux_mfn, mfn, i )
+        crux_colored_mfns[i] = mfn;
 
-    xenmap = vmap(xen_colored_mfns, xen_size >> PAGE_SHIFT);
-    xfree(xen_colored_mfns);
+    cruxmap = vmap(crux_colored_mfns, crux_size >> PAGE_SHIFT);
+    xfree(crux_colored_mfns);
 
-    return xenmap;
+    return cruxmap;
 }
 
 /*
@@ -218,32 +218,32 @@ static void __init *xen_remap_colored(mfn_t xen_mfn, paddr_t xen_size)
 void __init apply_alternatives_all(void)
 {
     int ret;
-    mfn_t xen_mfn = virt_to_mfn(_start);
-    paddr_t xen_size = _end - _start;
-    unsigned int xen_order = get_order_from_bytes(xen_size);
-    void *xenmap;
+    mfn_t crux_mfn = virt_to_mfn(_start);
+    paddr_t crux_size = _end - _start;
+    unsigned int crux_order = get_order_from_bytes(crux_size);
+    void *cruxmap;
 
     ASSERT(system_state != SYS_STATE_active);
 
     /*
-     * The text and inittext section are read-only. So re-map xen to
+     * The text and inittext section are read-only. So re-map Xen to
      * be able to patch the code.
      */
     if ( llc_coloring_enabled )
-        xenmap = xen_remap_colored(xen_mfn, xen_size);
+        cruxmap = crux_remap_colored(crux_mfn, crux_size);
     else
-        xenmap = vmap_contig(xen_mfn, 1U << xen_order);
+        cruxmap = vmap_contig(crux_mfn, 1U << crux_order);
 
-    /* Re-mapping xen is not expected to fail during boot. */
-    BUG_ON(!xenmap);
+    /* Re-mapping Xen is not expected to fail during boot. */
+    BUG_ON(!cruxmap);
 
 	/* better not try code patching on a live SMP system */
-    ret = stop_machine_run(__apply_alternatives_multi_stop, xenmap, NR_CPUS);
+    ret = stop_machine_run(__apply_alternatives_multi_stop, cruxmap, NR_CPUS);
 
     /* stop_machine_run should never fail at this stage of the boot */
     BUG_ON(ret);
 
-    vunmap(xenmap);
+    vunmap(cruxmap);
 }
 
 #ifdef CONFIG_LIVEPATCH

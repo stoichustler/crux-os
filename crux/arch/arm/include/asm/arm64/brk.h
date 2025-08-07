@@ -11,7 +11,7 @@
 
 /*
  * #imm16 values used for BRK instruction generation
- * 0x001: xen-mode BUG() and WARN() traps
+ * 0x001: crux-mode BUG() and WARN() traps
  * 0x002: for triggering a fault on purpose (reserved)
  */
 #define BRK_BUG_FRAME_IMM   1

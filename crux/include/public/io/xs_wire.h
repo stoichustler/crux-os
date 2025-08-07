@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Details of the "wire" protocol between xen Store Daemon and client
+ * Details of the "wire" protocol between Xen Store Daemon and client
  * library or guest kernel.
  *
  * Copyright (C) 2005 Rusty Russell IBM Corporation
@@ -96,48 +96,48 @@ enum xs_watch_type
 };
 
 /*
- * `incontents 150 xenstore_struct xenStore wire protocol.
+ * `incontents 150 cruxstore_struct XenStore wire protocol.
  *
  * Inter-domain shared memory communications. */
-#define XENSTORE_RING_SIZE 1024
-typedef uint32_t XENSTORE_RING_IDX;
-#define MASK_XENSTORE_IDX(idx) ((idx) & (XENSTORE_RING_SIZE-1))
-struct xenstore_domain_interface {
-    char req[XENSTORE_RING_SIZE]; /* Requests to xenstore daemon. */
-    char rsp[XENSTORE_RING_SIZE]; /* Replies and async watch events. */
-    XENSTORE_RING_IDX req_cons, req_prod;
-    XENSTORE_RING_IDX rsp_cons, rsp_prod;
+#define CRUXSTORE_RING_SIZE 1024
+typedef uint32_t CRUXSTORE_RING_IDX;
+#define MASK_CRUXSTORE_IDX(idx) ((idx) & (CRUXSTORE_RING_SIZE-1))
+struct cruxstore_domain_interface {
+    char req[CRUXSTORE_RING_SIZE]; /* Requests to cruxstore daemon. */
+    char rsp[CRUXSTORE_RING_SIZE]; /* Replies and async watch events. */
+    CRUXSTORE_RING_IDX req_cons, req_prod;
+    CRUXSTORE_RING_IDX rsp_cons, rsp_prod;
     uint32_t server_features; /* Bitmap of features supported by the server */
     uint32_t connection;
     uint32_t error;
     uint32_t evtchn_port;
 };
 
-/* Violating this is very bad.  See docs/misc/xenstore.txt. */
-#define XENSTORE_PAYLOAD_MAX 4096
+/* Violating this is very bad.  See docs/misc/cruxstore.txt. */
+#define CRUXSTORE_PAYLOAD_MAX 4096
 
 /* Violating these just gets you an error back */
-#define XENSTORE_ABS_PATH_MAX 3072
-#define XENSTORE_REL_PATH_MAX 2048
+#define CRUXSTORE_ABS_PATH_MAX 3072
+#define CRUXSTORE_REL_PATH_MAX 2048
 
 /* The ability to reconnect a ring */
-#define XENSTORE_SERVER_FEATURE_RECONNECTION 1
+#define CRUXSTORE_SERVER_FEATURE_RECONNECTION 1
 /* The presence of the "error" field in the ring page */
-#define XENSTORE_SERVER_FEATURE_ERROR        2
+#define CRUXSTORE_SERVER_FEATURE_ERROR        2
 
 /* Valid values for the connection field */
-#define XENSTORE_CONNECTED 0 /* the steady-state */
-#define XENSTORE_RECONNECT 1 /* reconnect in progress */
+#define CRUXSTORE_CONNECTED 0 /* the steady-state */
+#define CRUXSTORE_RECONNECT 1 /* reconnect in progress */
 
 /* Valid values for the error field */
-#define XENSTORE_ERROR_NONE    0 /* No error */
-#define XENSTORE_ERROR_COMM    1 /* Communication problem */
-#define XENSTORE_ERROR_RINGIDX 2 /* Invalid ring index */
-#define XENSTORE_ERROR_PROTO   3 /* Protocol violation (payload too long) */
+#define CRUXSTORE_ERROR_NONE    0 /* No error */
+#define CRUXSTORE_ERROR_COMM    1 /* Communication problem */
+#define CRUXSTORE_ERROR_RINGIDX 2 /* Invalid ring index */
+#define CRUXSTORE_ERROR_PROTO   3 /* Protocol violation (payload too long) */
 
 /*
- * The evtchn_port field is the domain's event channel for xenstored to signal.
- * It is filled in by xen for dom0less/Hyperlaunch domains.  It is only used
+ * The evtchn_port field is the domain's event channel for cruxstored to signal.
+ * It is filled in by Xen for dom0less/Hyperlaunch domains.  It is only used
  * when non-zero.  Otherwise the event channel from XS_INTRODUCE is used.
  */
 

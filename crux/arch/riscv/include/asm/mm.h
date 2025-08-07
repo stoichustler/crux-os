@@ -3,14 +3,14 @@
 #ifndef ASM__RISCV__MM_H
 #define ASM__RISCV__MM_H
 
-#include <public/xen.h>
-#include <xen/bug.h>
-#include <xen/const.h>
-#include <xen/mm-frame.h>
-#include <xen/pdx.h>
-#include <xen/pfn.h>
-#include <xen/sections.h>
-#include <xen/types.h>
+#include <public/crux.h>
+#include <crux/bug.h>
+#include <crux/const.h>
+#include <crux/mm-frame.h>
+#include <crux/pdx.h>
+#include <crux/pfn.h>
+#include <crux/sections.h>
+#include <crux/types.h>
 
 #include <asm/page.h>
 #include <asm/page-bits.h>
@@ -57,34 +57,34 @@ static inline void *maddr_to_virt(paddr_t ma)
 
 /*
  * virt_to_maddr() is expected to work with virtual addresses from either
- * the directmap region or xen's linkage (XEN_VIRT_START) region.
+ * the directmap region or Xen's linkage (CRUX_VIRT_START) region.
  * Therefore, it is sufficient to check only these regions and assert if `va`
- * is not within the directmap or xen's linkage region.
+ * is not within the directmap or Xen's linkage region.
  */
 static inline unsigned long virt_to_maddr(unsigned long va)
 {
-    const unsigned long xen_size = (unsigned long)(_end - _start);
-    const unsigned long xen_virt_start = _AC(XEN_VIRT_START, UL);
-    const unsigned long xen_virt_end = xen_virt_start + xen_size - 1;
+    const unsigned long crux_size = (unsigned long)(_end - _start);
+    const unsigned long crux_virt_start = _AC(CRUX_VIRT_START, UL);
+    const unsigned long crux_virt_end = crux_virt_start + crux_size - 1;
 
     if ((va >= DIRECTMAP_VIRT_START) &&
         (va <= DIRECTMAP_VIRT_END))
         return directmapoff_to_maddr(va - directmap_virt_start);
 
-    ASSERT((va >= xen_virt_start) && (va <= xen_virt_end));
+    ASSERT((va >= crux_virt_start) && (va <= crux_virt_end));
 
     /*
-    * The .init* sections will be freed when xen completes booting,
+    * The .init* sections will be freed when Xen completes booting,
     * so the [__init_begin, __init_end) range must be excluded.
     */
     ASSERT((system_state < SYS_STATE_active) || !is_init_section(va));
 
-    /* phys_offset = load_start - XEN_VIRT_START */
+    /* phys_offset = load_start - CRUX_VIRT_START */
     return phys_offset + va;
 }
 #define virt_to_maddr(va) virt_to_maddr((unsigned long)(va))
 
-/* Convert between xen-heap virtual addresses and machine frame numbers. */
+/* Convert between Xen-heap virtual addresses and machine frame numbers. */
 #define __virt_to_mfn(va)  mfn_x(maddr_to_mfn(virt_to_maddr(va)))
 #define __mfn_to_virt(mfn) maddr_to_virt(mfn_to_maddr(_mfn(mfn)))
 
@@ -172,7 +172,7 @@ static inline void *page_to_virt(const struct page_info *pg)
     return mfn_to_virt(mfn_x(page_to_mfn(pg)));
 }
 
-/* Convert between xen-heap virtual addresses and page-info structures. */
+/* Convert between Xen-heap virtual addresses and page-info structures. */
 static inline struct page_info *virt_to_page(const void *v)
 {
     unsigned long va = (unsigned long)v;
@@ -221,14 +221,14 @@ static inline unsigned long domain_get_maximum_gpfn(struct domain *d)
     return 0;
 }
 
-static inline long arch_memory_op(int op, XEN_GUEST_HANDLE_PARAM(void) arg)
+static inline long arch_memory_op(int op, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     BUG_ON("unimplemented");
     return 0;
 }
 
 /*
- * On RISCV, all the RAM is currently direct mapped in xen.
+ * On RISCV, all the RAM is currently direct mapped in Xen.
  * Hence return always true.
  */
 static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)
@@ -257,9 +257,9 @@ static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)
 /* Cleared when the owning guest 'frees' this page. */
 #define _PGC_allocated    PG_shift(1)
 #define PGC_allocated     PG_mask(1, 1)
-/* Page is xen heap? */
-#define _PGC_xen_heap     PG_shift(2)
-#define PGC_xen_heap      PG_mask(1, 2)
+/* Page is Xen heap? */
+#define _PGC_crux_heap     PG_shift(2)
+#define PGC_crux_heap      PG_mask(1, 2)
 /* Page is broken? */
 #define _PGC_broken       PG_shift(7)
 #define PGC_broken        PG_mask(1, 7)
@@ -278,11 +278,11 @@ static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)
 #define _PGC_extra        PG_shift(10)
 #define PGC_extra         PG_mask(1, 10)
 
-#define is_xen_heap_page(page) ((page)->count_info & PGC_xen_heap)
-#define is_xen_heap_mfn(mfn) \
-    (mfn_valid(mfn) && is_xen_heap_page(mfn_to_page(mfn)))
+#define is_crux_heap_page(page) ((page)->count_info & PGC_crux_heap)
+#define is_crux_heap_mfn(mfn) \
+    (mfn_valid(mfn) && is_crux_heap_page(mfn_to_page(mfn)))
 
-#define is_xen_fixed_mfn(mfn)                                   \
+#define is_crux_fixed_mfn(mfn)                                   \
     ((mfn_to_maddr(mfn) >= virt_to_maddr((vaddr_t)_start)) &&   \
      (mfn_to_maddr(mfn) <= virt_to_maddr((vaddr_t)_end - 1)))
 

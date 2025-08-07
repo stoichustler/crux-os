@@ -19,8 +19,8 @@
 #ifndef __ARCH_ARM_ARM64_INSN
 #define __ARCH_ARM_ARM64_INSN
 
-#include <xen/types.h>
-#include <xen/stdbool.h>
+#include <crux/types.h>
+#include <crux/stdbool.h>
 
 enum aarch64_insn_hint_op {
 	AARCH64_INSN_HINT_NOP	= 0x0 << 5,

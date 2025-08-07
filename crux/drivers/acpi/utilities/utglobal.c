@@ -43,8 +43,8 @@
 
 #define DEFINE_ACPI_GLOBALS
 
-#include <xen/init.h>
-#include <xen/lib.h>
+#include <crux/init.h>
+#include <crux/lib.h>
 #include <asm/processor.h>
 #include <acpi/acpi.h>
 

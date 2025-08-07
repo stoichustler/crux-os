@@ -11,14 +11,14 @@
  * Copyright (c) 2021-2024 Vates SAS.
  */
 
-#include <xen/compiler.h>
-#include <xen/const.h>
-#include <xen/cpumask.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/sections.h>
-#include <xen/smp.h>
+#include <crux/compiler.h>
+#include <crux/const.h>
+#include <crux/cpumask.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/sections.h>
+#include <crux/smp.h>
 
 #include <asm/processor.h>
 #include <asm/sbi.h>
@@ -51,7 +51,7 @@ struct sbiret sbi_ecall(unsigned long ext, unsigned long fid,
     return ret;
 }
 
-static int sbi_err_map_xen_errno(int err)
+static int sbi_err_map_crux_errno(int err)
 {
     switch ( err )
     {
@@ -158,7 +158,7 @@ static int sbi_rfence_v02_real(unsigned long fid,
 
     if ( ret.error )
     {
-        result = sbi_err_map_xen_errno(ret.error);
+        result = sbi_err_map_crux_errno(ret.error);
         printk("%s: hbase=%lu hmask=%#lx failed (error %ld)\n",
                __func__, hbase, hmask, ret.error);
     }
@@ -258,6 +258,20 @@ int sbi_remote_sfence_vma(const cpumask_t *cpu_mask, vaddr_t start,
                       cpu_mask, start, size, 0, 0);
 }
 
+int sbi_remote_hfence_gvma(const cpumask_t *cpu_mask, vaddr_t start,
+                           size_t size)
+{
+    return sbi_rfence(SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA,
+                      cpu_mask, start, size, 0, 0);
+}
+
+int sbi_remote_hfence_gvma_vmid(const cpumask_t *cpu_mask, vaddr_t start,
+                                size_t size, unsigned long vmid)
+{
+    return sbi_rfence(SBI_EXT_RFENCE_REMOTE_HFENCE_GVMA_VMID,
+                      cpu_mask, start, size, vmid, 0);
+}
+
 /* This function must always succeed. */
 #define sbi_get_spec_version()  \
     sbi_ext_base_func(SBI_EXT_BASE_GET_SPEC_VERSION)
@@ -277,7 +291,7 @@ int sbi_probe_extension(long extid)
     if ( !ret.error && ret.value )
         return ret.value;
 
-    return sbi_err_map_xen_errno(ret.error);
+    return sbi_err_map_crux_errno(ret.error);
 }
 
 static bool sbi_spec_is_0_1(void)

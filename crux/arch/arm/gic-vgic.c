@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/gic-vgic.c
+ * crux/arch/arm/gic-vgic.c
  *
  * ARM Generic Interrupt Controller virtualization support
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/errno.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/errno.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 #include <asm/domain.h>
 #include <asm/gic.h>
 #include <asm/vgic.h>
@@ -86,7 +86,7 @@ void gic_raise_inflight_irq(struct vcpu *v, unsigned int virtual_irq)
     }
 #ifdef GIC_DEBUG
     else
-        gdprintk(XENLOG_DEBUG, "trying to inject irq=%u into %pv, when it is still lr_pending\n",
+        gdprintk(CRUXLOG_DEBUG, "trying to inject irq=%u into %pv, when it is still lr_pending\n",
                  virtual_irq, v);
 #endif
 }
@@ -191,7 +191,7 @@ static void gic_update_one_lr(struct vcpu *v, int i)
                 gic_hw_ops->write_lr(i, &lr_val);
             }
             else
-                gdprintk(XENLOG_WARNING, "unable to inject hw irq=%d into %pv: already active in LR%d\n",
+                gdprintk(CRUXLOG_WARNING, "unable to inject hw irq=%d into %pv: already active in LR%d\n",
                          irq, v, i);
         }
     }
@@ -200,7 +200,7 @@ static void gic_update_one_lr(struct vcpu *v, int i)
         int q __attribute__ ((unused)) = test_and_clear_bit(GIC_IRQ_GUEST_QUEUED, &p->status);
 #ifdef GIC_DEBUG
         if ( q )
-            gdprintk(XENLOG_DEBUG, "trying to inject irq=%d into %pv, when it is already pending in LR%d\n",
+            gdprintk(CRUXLOG_DEBUG, "trying to inject irq=%d into %pv, when it is already pending in LR%d\n",
                     irq, v, i);
 #endif
     }

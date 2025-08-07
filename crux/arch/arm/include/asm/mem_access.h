@@ -17,7 +17,7 @@
 #ifndef _ASM_ARM_MEM_ACCESS_H
 #define _ASM_ARM_MEM_ACCESS_H
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 static inline
 bool p2m_mem_access_emulate_check(struct vcpu *v,

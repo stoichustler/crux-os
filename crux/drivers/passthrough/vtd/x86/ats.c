@@ -16,11 +16,11 @@
  * Author: Allen Kay <allen.m.kay@intel.com>
  */
 
-#include <xen/sched.h>
-#include <xen/iommu.h>
-#include <xen/time.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/sched.h>
+#include <crux/iommu.h>
+#include <crux/time.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include <asm/msi.h>
 #include "../iommu.h"
 #include "../dmar.h"
@@ -158,7 +158,7 @@ int dev_invalidate_iotlb(struct vtd_iommu *iommu, u16 did,
             rc = qinval_device_iotlb_sync(iommu, pdev, did, sbit, addr);
             break;
         default:
-            dprintk(XENLOG_WARNING VTDPREFIX, "invalid vt-d flush type\n");
+            dprintk(CRUXLOG_WARNING VTDPREFIX, "invalid vt-d flush type\n");
             return -EOPNOTSUPP;
         }
 

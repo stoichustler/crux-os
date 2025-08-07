@@ -4,11 +4,11 @@
  * Copyright (c) 2013, Citrix Systems
  */
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/hypercall.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/hypercall.h>
 #include <public/domctl.h>
 #include <asm/arm64/sve.h>
 #include <asm/cpufeature.h>
@@ -51,12 +51,12 @@ static long set_address_size(struct domain *d, uint32_t address_size)
     }
 }
 
-long subarch_do_domctl(struct xen_domctl *domctl, struct domain *d,
-                       XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+long subarch_do_domctl(struct crux_domctl *domctl, struct domain *d,
+                       CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     switch ( domctl->cmd )
     {
-    case XEN_DOMCTL_set_address_size:
+    case CRUX_DOMCTL_set_address_size:
         return set_address_size(d, domctl->u.address_size.size);
 
     default:

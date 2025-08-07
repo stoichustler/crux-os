@@ -16,7 +16,7 @@
  * operations. While this is strictly not necessary, we don't want to
  * take any risk.
  *
- * For xen page-tables the ISB will discard any instructions fetched
+ * For Xen page-tables the ISB will discard any instructions fetched
  * from the old mappings.
  *
  * For the Stage-2 page-tables the ISB ensures the completion of the DSB
@@ -79,13 +79,13 @@ TLB_HELPER(flush_all_guests_tlb_local, alle1, nsh)
 TLB_HELPER(flush_all_guests_tlb, alle1is, ish)
 
 /* Flush all hypervisor mappings from the TLB of the local processor. */
-TLB_HELPER(flush_xen_tlb_local, alle2, nsh)
+TLB_HELPER(flush_crux_tlb_local, alle2, nsh)
 
 /* Flush TLB of local processor for address va. */
-TLB_HELPER_VA(__flush_xen_tlb_one_local, vae2)
+TLB_HELPER_VA(__flush_crux_tlb_one_local, vae2)
 
 /* Flush TLB of all processors in the inner-shareable domain for address va. */
-TLB_HELPER_VA(__flush_xen_tlb_one, vae2is)
+TLB_HELPER_VA(__flush_crux_tlb_one, vae2is)
 
 #undef TLB_HELPER
 #undef TLB_HELPER_VA

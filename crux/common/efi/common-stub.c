@@ -1,6 +1,6 @@
-#include <xen/bug.h>
-#include <xen/efi.h>
-#include <xen/errno.h>
+#include <crux/bug.h>
+#include <crux/efi.h>
+#include <crux/errno.h>
 
 bool efi_enabled(unsigned int feature)
 {
@@ -21,12 +21,12 @@ unsigned long efi_get_time(void)
 void efi_halt_system(void) { }
 void efi_reset_system(bool warm) { }
 
-int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
+int efi_get_info(uint32_t idx, union cruxpf_efi_info *info)
 {
     return -ENOSYS;
 }
 
-int efi_runtime_call(struct xenpf_efi_runtime_call *op)
+int efi_runtime_call(struct cruxpf_efi_runtime_call *op)
 {
     return -ENOSYS;
 }

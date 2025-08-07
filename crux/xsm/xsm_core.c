@@ -10,12 +10,12 @@
  *  as published by the Free Software Foundation.
  */
 
-#include <xen/init.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/param.h>
+#include <crux/init.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/param.h>
 
-#include <xen/hypercall.h>
+#include <crux/hypercall.h>
 #include <xsm/xsm.h>
 
 #ifdef CONFIG_XSM
@@ -91,7 +91,7 @@ static int __init xsm_core_init(const void *policy_buffer, size_t policy_size)
 
     if ( xsm_ops_registered != XSM_OPS_UNREGISTERED )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Could not init XSM, xsm_ops register already attempted\n");
         return -EIO;
     }
@@ -131,7 +131,7 @@ static int __init xsm_core_init(const void *policy_buffer, size_t policy_size)
     if ( xsm_ops_registered != XSM_OPS_REGISTERED )
     {
         xsm_ops_registered = XSM_OPS_REG_FAILED;
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Could not init XSM, xsm_ops register failed\n");
         return -EFAULT;
     }
@@ -154,7 +154,7 @@ int __init xsm_multiboot_init(struct boot_info *bi)
         if ( ret )
         {
             bootstrap_unmap();
-            printk(XENLOG_ERR "Error %d initializing XSM policy\n", ret);
+            printk(CRUXLOG_ERR "Error %d initializing XSM policy\n", ret);
             return -EINVAL;
         }
     }
@@ -180,7 +180,7 @@ int __init xsm_dt_init(void)
         ret = xsm_dt_policy_init(&policy_buffer, &policy_size);
         if ( ret )
         {
-            printk(XENLOG_ERR "Error %d initializing XSM policy\n", ret);
+            printk(CRUXLOG_ERR "Error %d initializing XSM policy\n", ret);
             return -EINVAL;
         }
     }
@@ -197,7 +197,7 @@ int __init xsm_dt_init(void)
  * A XSM module has a special header
  * ------------------------------------------------
  * uint magic | uint target_len | uchar target[8] |
- * 0xf97cff8c |        8        |    "xenFlask"   |
+ * 0xf97cff8c |        8        |    "XenFlask"   |
  * ------------------------------------------------
  * 0xf97cff8c is policy magic number (XSM_MAGIC).
  * Here we only check the "magic" of the module.
@@ -218,13 +218,13 @@ bool __init has_xsm_magic(paddr_t start)
 
 #endif
 
-long do_xsm_op(XEN_GUEST_HANDLE_PARAM(void) op)
+long do_xsm_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return xsm_do_xsm_op(op);
 }
 
 #ifdef CONFIG_COMPAT
-int compat_xsm_op(XEN_GUEST_HANDLE_PARAM(void) op)
+int compat_xsm_op(CRUX_GUEST_HANDLE_PARAM(void) op)
 {
     return xsm_do_compat_op(op);
 }

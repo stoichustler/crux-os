@@ -1,12 +1,12 @@
 /*
- *  xen/drivers/cpufreq/cpufreq_misc_gov.c
+ *  crux/drivers/cpufreq/cpufreq_misc_gov.c
  *
  *  Copyright (C)  2001 Russell King
  *            (C)  2002 - 2004 Dominik Brodowski <linux@brodo.de>
  *
  *     Nov 2008 Liu Jinsong <jinsong.liu@intel.com>
  *     Porting cpufreq_userspace.c, cpufreq_performance.c, and 
- *     cpufreq_powersave.c from Liunx 2.6.23 to xen hypervisor
+ *     cpufreq_powersave.c from Liunx 2.6.23 to Xen hypervisor
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -14,10 +14,10 @@
  *
  */
 
-#include <xen/cpu.h>
-#include <xen/init.h>
-#include <xen/percpu.h>
-#include <xen/sched.h>
+#include <crux/cpu.h>
+#include <crux/init.h>
+#include <crux/percpu.h>
+#include <crux/sched.h>
 #include <acpi/cpufreq/cpufreq.h>
 
 /*

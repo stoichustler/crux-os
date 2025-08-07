@@ -1,6 +1,6 @@
 #include "efi.h"
-#include <xen/init.h>
-#include <xen/mm.h>
+#include <crux/init.h>
+#include <crux/mm.h>
 
 #ifdef CONFIG_ARM
 /*
@@ -10,7 +10,7 @@
  *   - estimate required EBMALLOC_SIZE value,
  *   - where (in which section) ebmalloc_mem[] should live; if in
  *     .bss.page_aligned, as it is right now, then whole BSS zeroing
- *     have to be disabled in xen/arch/arm/arm64/head.S; though BSS
+ *     have to be disabled in crux/arch/arm/arm64/head.S; though BSS
  *     should be initialized somehow before use of variables living there,
  *   - use ebmalloc() in ARM/common EFI boot code,
  *   - call free_ebmalloc_unused_mem() somewhere in init code.
@@ -59,7 +59,7 @@ void __init free_ebmalloc_unused_mem(void)
     if ( !efi_boot_mem_unused(&start, &end) )
         return;
 
-    destroy_xen_mappings(start, end);
+    destroy_crux_mappings(start, end);
 
 #ifdef CONFIG_X86
     /*
@@ -67,8 +67,8 @@ void __init free_ebmalloc_unused_mem(void)
      * we make it here. Don't free the range a 2nd time.
      */
 #else
-    init_xenheap_pages(__pa(start), __pa(end));
+    init_cruxheap_pages(__pa(start), __pa(end));
 #endif
 
-    printk(XENLOG_INFO "freed %lukB unused BSS memory\n", (end - start) >> 10);
+    printk(CRUXLOG_INFO "Freed %lukB unused BSS memory\n", (end - start) >> 10);
 }

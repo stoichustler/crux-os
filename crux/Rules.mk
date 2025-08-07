@@ -1,5 +1,5 @@
 #
-# See docs/misc/xen-makefiles/makefiles.rst on variables that can be used in
+# See docs/misc/crux-makefiles/makefiles.rst on variables that can be used in
 # Makefile and are consumed by Rules.mk
 #
 
@@ -19,7 +19,7 @@ ifneq ($(firstword $(subst /, ,$(obj))),tools)
 include $(objtree)/include/config/auto.conf
 endif
 
-include $(XEN_ROOT)/Config.mk
+include $(CRUX_ROOT)/Config.mk
 include $(srctree)/scripts/Kbuild.include
 
 # Initialise some variables
@@ -45,7 +45,7 @@ include $(firstword $(wildcard $(srcdir)/build.mk) $(srcdir)/Makefile)
 # Linking
 
 quiet_cmd_ld = LD      $@
-cmd_ld = $(LD) $(XEN_LDFLAGS) -r -o $@ $(filter-out %.a,$(real-prereqs)) \
+cmd_ld = $(LD) $(CRUX_LDFLAGS) -r -o $@ $(filter-out %.a,$(real-prereqs)) \
                --start-group $(filter %.a,$(real-prereqs)) --end-group
 
 # Archive
@@ -170,7 +170,7 @@ obj-bin-y :=
 endif
 
 # Always build obj-bin files as binary even if they come from C source. 
-$(obj-bin-y): XEN_CFLAGS := $(filter-out -flto,$(XEN_CFLAGS))
+$(obj-bin-y): CRUX_CFLAGS := $(filter-out -flto,$(CRUX_CFLAGS))
 
 # To be use with e.g. $(a_flags) or $(c_flags) to produce CPP flags
 cpp_flags = $(filter-out -Wa$(comma)% -flto,$(1))
@@ -178,8 +178,8 @@ cpp_flags = $(filter-out -Wa$(comma)% -flto,$(1))
 # Calculation of flags, first the generic flags, then the arch specific flags,
 # and last the flags modified for a target or a directory.
 
-c_flags = -MMD -MP -MF $(depfile) $(XEN_CFLAGS)
-a_flags = -MMD -MP -MF $(depfile) $(XEN_AFLAGS)
+c_flags = -MMD -MP -MF $(depfile) $(CRUX_CFLAGS)
+a_flags = -MMD -MP -MF $(depfile) $(CRUX_AFLAGS)
 
 include $(srctree)/arch/$(SRCARCH)/Rules.mk
 
@@ -191,7 +191,7 @@ a_flags += $(CFLAGS-y) $(AFLAGS-y)
 
 quiet_cmd_cc_builtin = CC      $@
 cmd_cc_builtin = \
-    $(CC) $(XEN_CFLAGS) -c -x c /dev/null -o $@
+    $(CC) $(CRUX_CFLAGS) -c -x c /dev/null -o $@
 
 # To build objects in subdirs, we need to descend into the directories
 $(subdir-builtin): $(obj)/%/built_in.o: $(obj)/% ;
@@ -202,7 +202,7 @@ cmd_ld_builtin = \
     $(LD_LTO) -r -o $@ $(real-prereqs)
 else
 cmd_ld_builtin = \
-    $(LD) $(XEN_LDFLAGS) -r -o $@ $(real-prereqs)
+    $(LD) $(CRUX_LDFLAGS) -r -o $@ $(real-prereqs)
 endif
 
 $(obj)/built_in.o: $(obj-y) FORCE
@@ -218,7 +218,7 @@ $(obj)/built_in_bin.o: $(obj-bin-y)
 ifeq ($(strip $(obj-bin-y)),)
 	$(CC) $(a_flags) -c -x assembler /dev/null -o $@
 else
-	$(LD) $(XEN_LDFLAGS) -r -o $@ $(filter $(obj-bin-y),$^)
+	$(LD) $(CRUX_LDFLAGS) -r -o $@ $(filter $(obj-bin-y),$^)
 endif
 
 # Force execution of pattern rules (for which PHONY cannot be directly used).

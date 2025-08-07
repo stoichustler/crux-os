@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/cpu.h>
-#include <xen/cpumask.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/sizes.h>
-#include <xen/smp.h>
-#include <xen/spinlock.h>
-#include <xen/vmap.h>
-#include <xen/warning.h>
-#include <xen/notifier.h>
+#include <crux/cpu.h>
+#include <crux/cpumask.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/sizes.h>
+#include <crux/smp.h>
+#include <crux/spinlock.h>
+#include <crux/vmap.h>
+#include <crux/warning.h>
+#include <crux/notifier.h>
 #include <asm/cpufeature.h>
 #include <asm/cpuerrata.h>
 #include <asm/insn.h>
@@ -100,7 +100,7 @@ install_bp_hardening_vec(const struct arm_cpu_capabilities *entry,
     if ( !entry->matches(entry) )
         return true;
 
-    printk(XENLOG_INFO "CPU%u will %s on exception entry\n",
+    printk(CRUXLOG_INFO "CPU%u will %s on exception entry\n",
            smp_processor_id(), desc);
 
     spin_lock(&bp_lock);
@@ -309,7 +309,7 @@ install_bp_hardening_vecs(const struct arm_cpu_capabilities *entry,
     if ( !entry->matches(entry) )
         return;
 
-    printk(XENLOG_INFO "CPU%u will %s on guest exit\n",
+    printk(CRUXLOG_INFO "CPU%u will %s on guest exit\n",
            smp_processor_id(), desc);
     this_cpu(bp_harden_vecs) = hyp_vecs;
 }
@@ -725,7 +725,7 @@ static int cpu_errata_callback(struct notifier_block *nfb,
         /*
          * At CPU_STARTING phase no notifier shall return an error, because the
          * system is designed with the assumption that starting a CPU cannot
-         * fail at this point. If an error happens here it will cause xen to hit
+         * fail at this point. If an error happens here it will cause Xen to hit
          * the BUG_ON() in notify_cpu_starting(). In future, either this
          * notifier/enabling capabilities should be fixed to always return
          * success/void or notify_cpu_starting() and other common code should be
@@ -756,7 +756,7 @@ static int __init cpu_errata_notifier_init(void)
  * the callback should execute only after the secondary CPUs are initially
  * booted (in hotplug scenarios when the system state is not boot). On boot,
  * the enabling of errata workarounds will be triggered by the boot CPU from
- * start_xen().
+ * start_crux().
  */
 __initcall(cpu_errata_notifier_init);
 

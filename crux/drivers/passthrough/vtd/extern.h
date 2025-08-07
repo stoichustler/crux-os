@@ -21,7 +21,7 @@
 #define DRIVERS__PASSTHROUGH__VTD__EXTERN_H
 
 #include "dmar.h"
-#include <xen/keyhandler.h>
+#include <crux/keyhandler.h>
 
 #define VTDPREFIX "[VT-D]"
 

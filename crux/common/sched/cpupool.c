@@ -11,19 +11,19 @@
  * (C) 2009, Juergen Gross, Fujitsu Technology Solutions
  */
 
-#include <xen/cpu.h>
-#include <xen/cpumask.h>
-#include <xen/guest_access.h>
-#include <xen/hypfs.h>
-#include <xen/init.h>
-#include <xen/keyhandler.h>
-#include <xen/lib.h>
-#include <xen/list.h>
-#include <xen/param.h>
-#include <xen/percpu.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/warning.h>
+#include <crux/cpu.h>
+#include <crux/cpumask.h>
+#include <crux/guest_access.h>
+#include <crux/hypfs.h>
+#include <crux/init.h>
+#include <crux/keyhandler.h>
+#include <crux/lib.h>
+#include <crux/list.h>
+#include <crux/param.h>
+#include <crux/percpu.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/warning.h>
 
 #include "private.h"
 
@@ -74,7 +74,7 @@ static const char *sched_gran_get_name(enum sched_gran mode)
 
 static void sched_gran_print(enum sched_gran mode, unsigned int gran)
 {
-    printk("scheduling granularity: %s, %u CPU%s per sched-resource\n",
+    printk("Scheduling granularity: %s, %u CPU%s per sched-resource\n",
            sched_gran_get_name(mode), gran, gran == 1 ? "" : "s");
 }
 
@@ -820,7 +820,7 @@ static void cpupool_cpu_remove_forced(unsigned int cpu)
 /*
  * do cpupool related sysctl operations
  */
-int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
+int cpupool_do_sysctl(struct crux_sysctl_cpupool_op *op)
 {
     int ret = 0;
     struct cpupool *c;
@@ -828,11 +828,11 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
     switch ( op->op )
     {
 
-    case XEN_SYSCTL_CPUPOOL_OP_CREATE:
+    case CRUX_SYSCTL_CPUPOOL_OP_CREATE:
     {
         unsigned int poolid;
 
-        poolid = (op->cpupool_id == XEN_SYSCTL_CPUPOOL_PAR_ANY) ?
+        poolid = (op->cpupool_id == CRUX_SYSCTL_CPUPOOL_PAR_ANY) ?
             CPUPOOLID_NONE: op->cpupool_id;
         c = cpupool_create(poolid, op->sched_id);
         if ( IS_ERR(c) )
@@ -845,7 +845,7 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_DESTROY:
+    case CRUX_SYSCTL_CPUPOOL_OP_DESTROY:
     {
         c = cpupool_get_by_id(op->cpupool_id);
         ret = -ENOENT;
@@ -856,7 +856,7 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_INFO:
+    case CRUX_SYSCTL_CPUPOOL_OP_INFO:
     {
         c = cpupool_get_next_by_id(op->cpupool_id);
         ret = -ENOENT;
@@ -865,12 +865,12 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
         op->cpupool_id = c->cpupool_id;
         op->sched_id = c->sched->sched_id;
         op->n_dom = c->n_dom;
-        ret = cpumask_to_xenctl_bitmap(&op->cpumap, c->cpu_valid);
+        ret = cpumask_to_cruxctl_bitmap(&op->cpumap, c->cpu_valid);
         cpupool_put(c);
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_ADDCPU:
+    case CRUX_SYSCTL_CPUPOOL_OP_ADDCPU:
     {
         unsigned int cpu;
         const cpumask_t *cpus;
@@ -885,7 +885,7 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
         ret = -ENOENT;
         if ( c == NULL )
             goto addcpu_out;
-        if ( cpu == XEN_SYSCTL_CPUPOOL_PAR_ANY )
+        if ( cpu == CRUX_SYSCTL_CPUPOOL_PAR_ANY )
         {
             for_each_cpu ( cpu, &cpupool_free_cpus )
             {
@@ -917,7 +917,7 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_RMCPU:
+    case CRUX_SYSCTL_CPUPOOL_OP_RMCPU:
     {
         unsigned int cpu;
 
@@ -926,14 +926,14 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
         if ( c == NULL )
             break;
         cpu = op->cpu;
-        if ( cpu == XEN_SYSCTL_CPUPOOL_PAR_ANY )
+        if ( cpu == CRUX_SYSCTL_CPUPOOL_PAR_ANY )
             cpu = cpumask_last(c->cpu_valid);
         ret = (cpu < nr_cpu_ids) ? cpupool_unassign_cpu(c, cpu) : -EINVAL;
         cpupool_put(c);
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_MOVEDOMAIN:
+    case CRUX_SYSCTL_CPUPOOL_OP_MOVEDOMAIN:
     {
         struct domain *d;
 
@@ -968,9 +968,9 @@ int cpupool_do_sysctl(struct xen_sysctl_cpupool_op *op)
     }
     break;
 
-    case XEN_SYSCTL_CPUPOOL_OP_FREEINFO:
+    case CRUX_SYSCTL_CPUPOOL_OP_FREEINFO:
     {
-        ret = cpumask_to_xenctl_bitmap(
+        ret = cpumask_to_cruxctl_bitmap(
             &op->cpumap, &cpupool_free_cpus);
     }
     break;
@@ -1098,7 +1098,7 @@ static struct notifier_block cpu_nfb = {
 static HYPFS_DIR_INIT(cpupool_pooldir, "%u");
 
 static int cf_check cpupool_dir_read(
-    const struct hypfs_entry *entry, XEN_GUEST_HANDLE_PARAM(void) uaddr)
+    const struct hypfs_entry *entry, CRUX_GUEST_HANDLE_PARAM(void) uaddr)
 {
     int ret = 0;
     struct cpupool *c;
@@ -1175,7 +1175,7 @@ static struct hypfs_entry *cf_check cpupool_dir_findentry(
 }
 
 static int cf_check cpupool_gran_read(
-    const struct hypfs_entry *entry, XEN_GUEST_HANDLE_PARAM(void) uaddr)
+    const struct hypfs_entry *entry, CRUX_GUEST_HANDLE_PARAM(void) uaddr)
 {
     const struct hypfs_dyndir_id *data;
     const struct cpupool *cpupool;
@@ -1209,7 +1209,7 @@ static unsigned int cf_check hypfs_gran_getsize(const struct hypfs_entry *entry)
 }
 
 static int cf_check cpupool_gran_write(
-    struct hypfs_entry_leaf *leaf, XEN_GUEST_HANDLE_PARAM(const_void) uaddr,
+    struct hypfs_entry_leaf *leaf, CRUX_GUEST_HANDLE_PARAM(const_void) uaddr,
     unsigned int ulen)
 {
     const struct hypfs_dyndir_id *data;
@@ -1256,7 +1256,7 @@ static const struct hypfs_funcs cpupool_gran_funcs = {
     .findentry = hypfs_leaf_findentry,
 };
 
-static HYPFS_VARSIZE_INIT(cpupool_gran, XEN_HYPFS_TYPE_STRING, "sched-gran",
+static HYPFS_VARSIZE_INIT(cpupool_gran, CRUX_HYPFS_TYPE_STRING, "sched-gran",
                           SCHED_GRAN_NAME_LEN, &cpupool_gran_funcs);
 static char granstr[SCHED_GRAN_NAME_LEN] = {
     [0 ... SCHED_GRAN_NAME_LEN - 2] = '?',

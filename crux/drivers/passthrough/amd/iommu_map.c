@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/acpi.h>
+#include <crux/acpi.h>
 
 #include "iommu.h"
 
@@ -192,7 +192,7 @@ int amd_iommu_set_root_page_table(struct amd_iommu_dte *dte,
          */
         if ( res != old )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Dom%d: unexpected DTE %016lx_%016lx (expected %016lx_%016lx)\n",
                    domain_id,
                    (uint64_t)(res >> 64), (uint64_t)res,
@@ -725,7 +725,7 @@ int cf_check amd_iommu_get_reserved_device_memory(
         if ( func(0, 0, sbdf.sbdf, ctxt) )
         {
             /*
-             * When the caller processes a XENMEM_RDM_ALL request, don't report
+             * When the caller processes a CRUXMEM_RDM_ALL request, don't report
              * multiple times the same range(s) for perhaps many devices with
              * the same alias ID.
              */

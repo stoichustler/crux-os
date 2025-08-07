@@ -15,19 +15,19 @@
  *
  * Copyright (C) Ashok Raj <ashok.raj@intel.com>
  * Copyright (C) Shaohua Li <shaohua.li@intel.com>
- * Copyright (C) Allen Kay <allen.m.kay@intel.com> - adapted to xen
+ * Copyright (C) Allen Kay <allen.m.kay@intel.com> - adapted to crux
  */
 
-#include <xen/init.h>
-#include <xen/bitmap.h>
-#include <xen/errno.h>
-#include <xen/kernel.h>
-#include <xen/acpi.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/xmalloc.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/init.h>
+#include <crux/bitmap.h>
+#include <crux/errno.h>
+#include <crux/kernel.h>
+#include <crux/acpi.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/xmalloc.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include <asm/atomic.h>
 #include <asm/e820.h>
 #include <asm/string.h>
@@ -287,7 +287,7 @@ static int __init scope_device_count(const void *start, const void *end)
         scope = start;
         if ( scope->length < MIN_SCOPE_LEN )
         {
-            printk(XENLOG_WARNING VTDPREFIX "Invalid device scope\n");
+            printk(CRUXLOG_WARNING VTDPREFIX "Invalid device scope\n");
             return -EINVAL;
         }
 
@@ -425,7 +425,7 @@ static int __init acpi_parse_dev_scope(
 
         default:
             if ( iommu_verbose )
-                printk(XENLOG_WARNING VTDPREFIX "Unknown scope type %#x\n",
+                printk(CRUXLOG_WARNING VTDPREFIX "Unknown scope type %#x\n",
                        acpi_scope->entry_type);
             start += acpi_scope->length;
             gfx_only = false;
@@ -452,7 +452,7 @@ static int __init acpi_dmar_check_length(
 {
     if ( h->length >= min_len )
         return 0;
-    printk(XENLOG_ERR VTDPREFIX "Invalid ACPI DMAR entry length: %#x\n",
+    printk(CRUXLOG_ERR VTDPREFIX "Invalid ACPI DMAR entry length: %#x\n",
            h->length);
     return -EINVAL;
 }
@@ -501,7 +501,7 @@ acpi_parse_one_drhd(struct acpi_dmar_header *header)
         /* Only allow one INCLUDE_ALL */
         if ( drhd->segment == 0 && include_all )
         {
-            printk(XENLOG_WARNING VTDPREFIX
+            printk(CRUXLOG_WARNING VTDPREFIX
                    "Only one INCLUDE_ALL device scope is allowed\n");
             ret = -EINVAL;
         }
@@ -538,7 +538,7 @@ acpi_parse_one_drhd(struct acpi_dmar_header *header)
             f = PCI_FUNC(dmaru->scope.devices[i]);
 
             if ( !pci_device_detect(drhd->segment, b, d, f) )
-                printk(XENLOG_WARNING VTDPREFIX
+                printk(CRUXLOG_WARNING VTDPREFIX
                        " Non-existent device (%pp) in this DRHD's scope!\n",
                        &PCI_SBDF(drhd->segment, b, d, f));
         }
@@ -575,7 +575,7 @@ static int __init register_one_rmrr(struct acpi_rmrr_unit *rmrru)
 
         if ( pci_device_detect(rmrru->segment, b, d, f) == 0 )
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     " Non-existent device (%pp) is reported"
                     " in RMRR [%"PRIx64", %"PRIx64"]'s scope!\n",
                     &PCI_SBDF(rmrru->segment, b, d, f),
@@ -591,7 +591,7 @@ static int __init register_one_rmrr(struct acpi_rmrr_unit *rmrru)
 
     if ( ignore )
     {
-        dprintk(XENLOG_WARNING VTDPREFIX,
+        dprintk(CRUXLOG_WARNING VTDPREFIX,
                 " Ignore RMRR [%"PRIx64",%"PRIx64"] as no device"
                 " under its scope is PCI discoverable!\n",
                 rmrru->base_address, rmrru->end_address);
@@ -599,7 +599,7 @@ static int __init register_one_rmrr(struct acpi_rmrr_unit *rmrru)
     }
     else if ( rmrru->base_address > rmrru->end_address )
     {
-        dprintk(XENLOG_WARNING VTDPREFIX,
+        dprintk(CRUXLOG_WARNING VTDPREFIX,
                 " RMRR [%"PRIx64",%"PRIx64"] is incorrect!\n",
                 rmrru->base_address, rmrru->end_address);
         ret = -EFAULT;
@@ -631,7 +631,7 @@ acpi_parse_one_rmrr(struct acpi_dmar_header *header)
     list_for_each_entry(rmrru, &acpi_rmrr_units, list)
        if ( base_addr <= rmrru->end_address && rmrru->base_address <= end_addr )
        {
-           printk(XENLOG_ERR VTDPREFIX
+           printk(CRUXLOG_ERR VTDPREFIX
                   "Overlapping RMRRs [%"PRIx64",%"PRIx64"] and [%"PRIx64",%"PRIx64"]\n",
                   rmrru->base_address, rmrru->end_address,
                   base_addr, end_addr);
@@ -707,7 +707,7 @@ acpi_parse_one_atsr(struct acpi_dmar_header *header)
         /* Only allow one ALL_PORTS */
         if ( atsr->segment == 0 && all_ports )
         {
-            printk(XENLOG_WARNING VTDPREFIX
+            printk(CRUXLOG_WARNING VTDPREFIX
                    "Only one ALL_PORTS device scope is allowed\n");
             ret = -EINVAL;
         }
@@ -769,7 +769,7 @@ static int __init register_one_satc(struct acpi_satc_unit *satcu)
 
         if ( !pci_device_detect(satcu->segment, b, d, f) )
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     " Non-existent device (%pp) is reported in SATC scope!\n",
                     &PCI_SBDF(satcu->segment, b, d, f));
             ignore = true;
@@ -783,7 +783,7 @@ static int __init register_one_satc(struct acpi_satc_unit *satcu)
 
     if ( ignore )
     {
-        dprintk(XENLOG_WARNING VTDPREFIX,
+        dprintk(CRUXLOG_WARNING VTDPREFIX,
                 " Ignore SATC for seg %04x as no device under its scope is PCI discoverable\n",
                 satcu->segment);
         return 1;
@@ -852,7 +852,7 @@ static int __init cf_check acpi_parse_dmar(struct acpi_table_header *table)
 
     if ( !dmar->width )
     {
-        printk(XENLOG_WARNING VTDPREFIX "Zero: Invalid DMAR width\n");
+        printk(CRUXLOG_WARNING VTDPREFIX "Zero: Invalid DMAR width\n");
         ret = -EINVAL;
         goto out;
     }
@@ -899,7 +899,7 @@ static int __init cf_check acpi_parse_dmar(struct acpi_table_header *table)
             break;
 
         default:
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     "Ignore unknown DMAR structure type (%#x)\n",
                     entry_header->type);
             break;
@@ -912,7 +912,7 @@ static int __init cf_check acpi_parse_dmar(struct acpi_table_header *table)
 
     if ( ret )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "Failed to parse ACPI DMAR.  Disabling VT-d.\n");
         disable_all_dmar_units();
     }
@@ -953,13 +953,13 @@ static int __init add_one_user_rmrr(unsigned long base_pfn,
     bool overlap;
 
     if ( iommu_verbose )
-        printk(XENLOG_DEBUG VTDPREFIX
+        printk(CRUXLOG_DEBUG VTDPREFIX
                "Adding RMRR for %d device ([0]: %#x) range "ERMRRU_FMT"\n",
                dev_count, sbdf[0], ERMRRU_ARG);
 
     if ( base_pfn > end_pfn )
     {
-        printk(XENLOG_ERR VTDPREFIX
+        printk(CRUXLOG_ERR VTDPREFIX
                "Invalid RMRR Range "ERMRRU_FMT"\n",
                ERMRRU_ARG);
         return 0;
@@ -971,7 +971,7 @@ static int __init add_one_user_rmrr(unsigned long base_pfn,
         if ( pfn_to_paddr(base_pfn) <= rmrru->end_address &&
              rmrru->base_address <= pfn_to_paddr(end_pfn) )
         {
-            printk(XENLOG_ERR VTDPREFIX
+            printk(CRUXLOG_ERR VTDPREFIX
                    "Overlapping RMRRs: "ERMRRU_FMT" and [%lx-%lx]\n",
                    ERMRRU_ARG,
                    paddr_to_pfn(rmrru->base_address),
@@ -989,7 +989,7 @@ static int __init add_one_user_rmrr(unsigned long base_pfn,
     {
         if ( !mfn_valid(_mfn(base_iter)) )
         {
-            printk(XENLOG_ERR VTDPREFIX
+            printk(CRUXLOG_ERR VTDPREFIX
                    "Invalid pfn in RMRR range "ERMRRU_FMT"\n",
                    ERMRRU_ARG);
             break;
@@ -1019,7 +1019,7 @@ static int __init add_one_user_rmrr(unsigned long base_pfn,
     }
     if ( seg != PCI_SEG(sbdf[0]) )
     {
-        printk(XENLOG_ERR VTDPREFIX
+        printk(CRUXLOG_ERR VTDPREFIX
                "Segments are not equal for RMRR range "ERMRRU_FMT"\n",
                ERMRRU_ARG);
         scope_devices_free(&rmrr->scope);
@@ -1035,7 +1035,7 @@ static int __init add_one_user_rmrr(unsigned long base_pfn,
 
     if ( register_one_rmrr(rmrr) )
     {
-        printk(XENLOG_ERR VTDPREFIX
+        printk(CRUXLOG_ERR VTDPREFIX
                "Could not register RMMR range "ERMRRU_FMT"\n",
                ERMRRU_ARG);
         scope_devices_free(&rmrr->scope);
@@ -1062,7 +1062,7 @@ static int __init add_user_rmrr(void)
     return 0;
 }
 
-static int __init cf_check add_one_extra_rmrr(xen_pfn_t start, xen_ulong_t nr, u32 id, void *ctxt)
+static int __init cf_check add_one_extra_rmrr(crux_pfn_t start, crux_ulong_t nr, u32 id, void *ctxt)
 {
     u32 sbdf_array[] = { id };
     return add_one_user_rmrr(start, start+nr, 1, sbdf_array);
@@ -1088,7 +1088,7 @@ int __init acpi_dmar_init(void)
     if ( ACPI_SUCCESS(acpi_get_table_phys(ACPI_SIG_DMAR, 0,
                                           &dmar_addr, &dmar_len)) )
     {
-        map_pages_to_xen((unsigned long)__va(dmar_addr), maddr_to_mfn(dmar_addr),
+        map_pages_to_crux((unsigned long)__va(dmar_addr), maddr_to_mfn(dmar_addr),
                          PFN_UP(dmar_addr + dmar_len) - PFN_DOWN(dmar_addr),
                          PAGE_HYPERVISOR);
         dmar_table = __va(dmar_addr);
@@ -1180,7 +1180,7 @@ int cf_check intel_iommu_get_reserved_device_memory(
 }
 
 /*
- * Parse rmrr xen command line options and add parsed devices and regions into
+ * Parse rmrr Xen command line options and add parsed devices and regions into
  * acpi_rmrr_unit list to mapped as RMRRs parsed from ACPI.
  * Format:
  * rmrr=start<-end>=[s1]bdf1[,[s1]bdf2[,...]];start<-end>=[s2]bdf1[,[s2]bdf2[,...]]
@@ -1215,7 +1215,7 @@ static int __init cf_check parse_rmrr_param(const char *str)
 
         if ( (end - start) >= MAX_USER_RMRR_PAGES )
         {
-            printk(XENLOG_ERR VTDPREFIX
+            printk(CRUXLOG_ERR VTDPREFIX
                     "RMRR range "ERMRRU_FMT" exceeds "\
                     __stringify(MAX_USER_RMRR_PAGES)" pages\n",
                     start, end);

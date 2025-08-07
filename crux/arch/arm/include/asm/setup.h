@@ -3,8 +3,8 @@
 
 #include <public/version.h>
 #include <asm/p2m.h>
-#include <xen/bootinfo.h>
-#include <xen/device_tree.h>
+#include <crux/bootinfo.h>
+#include <crux/device_tree.h>
 
 #if defined(CONFIG_MMU)
 # include <asm/mmu/setup.h>

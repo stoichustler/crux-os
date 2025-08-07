@@ -10,14 +10,14 @@
  * Copyright (c) 1992, Linus Torvalds
  * 
  * Authors:
- *    Keir Fraser <keir@xen.org>
+ *    Keir Fraser <keir@crux.org>
  */
 
-#include <xen/init.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/tasklet.h>
-#include <xen/cpu.h>
+#include <crux/init.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/tasklet.h>
+#include <crux/cpu.h>
 
 /* Some subsystems call into us before we are initialised. We ignore them. */
 static bool tasklets_initialised;

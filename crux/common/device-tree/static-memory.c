@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/sched.h>
-#include <xen/static-memory.h>
+#include <crux/sched.h>
+#include <crux/static-memory.h>
 
 #include <asm/setup.h>
 
@@ -27,7 +27,7 @@ static bool __init append_static_memory_to_bank(struct domain *d,
     res = guest_physmap_add_pages(d, sgfn, smfn, nr_pages);
     if ( res )
     {
-        dprintk(XENLOG_ERR, "Failed to map pages to DOMU: %d", res);
+        dprintk(CRUXLOG_ERR, "Failed to map pages to DOMU: %d", res);
         return false;
     }
 
@@ -48,7 +48,7 @@ static mfn_t __init acquire_static_memory_bank(struct domain *d,
     ASSERT(IS_ALIGNED(*pbase, PAGE_SIZE) && IS_ALIGNED(*psize, PAGE_SIZE));
     if ( PFN_DOWN(*psize) > UINT_MAX )
     {
-        printk(XENLOG_ERR "%pd: static memory size too large: %#"PRIpaddr,
+        printk(CRUXLOG_ERR "%pd: static memory size too large: %#"PRIpaddr,
                d, *psize);
         return INVALID_MFN;
     }
@@ -57,7 +57,7 @@ static mfn_t __init acquire_static_memory_bank(struct domain *d,
     res = acquire_domstatic_pages(d, smfn, PFN_DOWN(*psize), 0);
     if ( res )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "%pd: failed to acquire static memory: %d.\n", d, res);
         return INVALID_MFN;
     }
@@ -71,7 +71,7 @@ static int __init parse_static_mem_prop(const struct dt_device_node *node,
 {
     const struct dt_property *prop;
 
-    prop = dt_find_property(node, "xen,static-mem", NULL);
+    prop = dt_find_property(node, "crux,static-mem", NULL);
 
     *addr_cells = dt_n_addr_cells(node);
     *size_cells = dt_n_size_cells(node);
@@ -104,7 +104,7 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
     /*
      * The static memory will be mapped in the guest at the usual guest memory
      * addresses (GUEST_RAM0_BASE, GUEST_RAM1_BASE) defined by
-     * xen/include/public/arch-arm.h.
+     * crux/include/public/arch-arm.h.
      */
     gbank = 0;
     gsize = ramsize[gbank];
@@ -118,7 +118,7 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
         if ( mfn_eq(smfn, INVALID_MFN) )
             goto fail;
 
-        printk(XENLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
+        printk(CRUXLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
                d, bank, pbase, pbase + psize);
 
         while ( 1 )
@@ -145,7 +145,7 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
              */
             else if ( (gbank + 1) >= GUEST_RAM_BANKS )
             {
-                printk(XENLOG_ERR "Exhausted all possible guest banks.\n");
+                printk(CRUXLOG_ERR "Exhausted all possible guest banks.\n");
                 goto fail;
             }
             else
@@ -169,12 +169,12 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
      * The property 'memory' should match the amount of memory given to the
      * guest.
      * Currently, it is only possible to either acquire static memory or let
-     * xen allocate. *Mixing* is not supported.
+     * Xen allocate. *Mixing* is not supported.
      */
     if ( kinfo->unassigned_mem )
     {
-        printk(XENLOG_ERR
-               "Size of \"memory\" property doesn't match up with the sum-up of \"xen,static-mem\". Unsupported configuration.\n");
+        printk(CRUXLOG_ERR
+               "Size of \"memory\" property doesn't match up with the sum-up of \"crux,static-mem\". Unsupported configuration.\n");
         goto fail;
     }
 
@@ -202,8 +202,8 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
 
     if ( parse_static_mem_prop(node, &addr_cells, &size_cells, &length, &cell) )
     {
-        printk(XENLOG_ERR
-               "%pd: failed to parse \"xen,static-mem\" property.\n", d);
+        printk(CRUXLOG_ERR
+               "%pd: failed to parse \"crux,static-mem\" property.\n", d);
         goto fail;
     }
     reg_cells = addr_cells + size_cells;
@@ -211,7 +211,7 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
 
     if ( nr_banks > mem->max_banks )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "%pd: exceed max number of supported guest memory banks.\n", d);
         goto fail;
     }
@@ -223,7 +223,7 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
         if ( mfn_eq(smfn, INVALID_MFN) )
             goto fail;
 
-        printk(XENLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
+        printk(CRUXLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
                d, bank, pbase, pbase + psize);
 
         /* One guest memory bank is matched with one physical memory bank. */
@@ -241,12 +241,12 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
      * The property 'memory' should match the amount of memory given to
      * the guest.
      * Currently, it is only possible to either acquire static memory or
-     * let xen allocate. *Mixing* is not supported.
+     * let Xen allocate. *Mixing* is not supported.
      */
     if ( kinfo->unassigned_mem != 0 )
     {
-        printk(XENLOG_ERR
-               "Size of \"memory\" property doesn't match up with the sum-up of \"xen,static-mem\".\n");
+        printk(CRUXLOG_ERR
+               "Size of \"memory\" property doesn't match up with the sum-up of \"crux,static-mem\".\n");
         goto fail;
     }
 

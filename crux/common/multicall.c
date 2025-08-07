@@ -2,16 +2,16 @@
  * multicall.c
  */
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/event.h>
-#include <xen/multicall.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/perfc.h>
-#include <xen/trace.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/event.h>
+#include <crux/multicall.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/perfc.h>
+#include <crux/trace.h>
 #include <asm/current.h>
 #include <asm/hardirq.h>
 
@@ -34,7 +34,7 @@ static void trace_multicall_call(multicall_entry_t *call)
 }
 
 ret_t do_multicall(
-    XEN_GUEST_HANDLE_PARAM(multicall_entry_t) call_list, unsigned long nr_calls)
+    CRUX_GUEST_HANDLE_PARAM(multicall_entry_t) call_list, unsigned long nr_calls)
 {
     struct vcpu *curr = current;
     struct mc_state *mcs = &curr->mc_state;
@@ -44,7 +44,7 @@ ret_t do_multicall(
 
     if ( unlikely(__test_and_set_bit(_MCSF_in_multicall, &mcs->flags)) )
     {
-        gdprintk(XENLOG_INFO, "Multicall reentry is disallowed.\n");
+        gdprintk(CRUXLOG_INFO, "Multicall reentry is disallowed.\n");
         return -EINVAL;
     }
 

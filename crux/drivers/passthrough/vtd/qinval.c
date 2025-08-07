@@ -18,11 +18,11 @@
  */
 
 
-#include <xen/sched.h>
-#include <xen/iommu.h>
-#include <xen/time.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/sched.h>
+#include <crux/iommu.h>
+#include <crux/time.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include "iommu.h"
 #include "dmar.h"
 #include "vtd.h"
@@ -58,7 +58,7 @@ static unsigned int qinval_next_index(struct vtd_iommu *iommu)
     while ( ((tail + 1) & (qi_entry_nr - 1)) ==
             (dmar_readl(iommu->reg, DMAR_IQH_REG) / sizeof(struct qinval_entry)) )
     {
-        printk_once(XENLOG_ERR VTDPREFIX " IOMMU#%u: no QI slot available\n",
+        printk_once(CRUXLOG_ERR VTDPREFIX " IOMMU#%u: no QI slot available\n",
                     iommu->index);
         cpu_relax();
     }
@@ -192,7 +192,7 @@ static int __must_check queue_invalidate_wait(struct vtd_iommu *iommu,
             if ( timeout && NOW() > timeout )
             {
                 threshold |= threshold << 1;
-                printk(XENLOG_WARNING VTDPREFIX
+                printk(CRUXLOG_WARNING VTDPREFIX
                        " IOMMU#%u: QI%s wait descriptor taking too long\n",
                        iommu->index, flush_dev_iotlb ? " dev" : "");
                 print_qi_regs(iommu);
@@ -202,7 +202,7 @@ static int __must_check queue_invalidate_wait(struct vtd_iommu *iommu,
         }
 
         if ( !timeout )
-            printk(XENLOG_WARNING VTDPREFIX
+            printk(CRUXLOG_WARNING VTDPREFIX
                    " IOMMU#%u: QI%s wait descriptor took %lums\n",
                    iommu->index, flush_dev_iotlb ? " dev" : "",
                    (NOW() - start) / 10000000);
@@ -397,7 +397,7 @@ int enable_qinval(struct vtd_iommu *iommu)
     if ( !ecap_queued_inval(iommu->ecap) || !iommu_qinval )
         return -ENOENT;
 
-    /* Return if already enabled by xen */
+    /* Return if already enabled by Xen */
     sts = dmar_readl(iommu->reg, DMAR_GSTS_REG);
     if ( (sts & DMA_GSTS_QIES) && iommu->qinval_maddr )
         return 0;
@@ -419,7 +419,7 @@ int enable_qinval(struct vtd_iommu *iommu)
             qi_entry_nr = (PAGE_SIZE << qi_pg_order) /
                           sizeof(struct qinval_entry);
 
-            dprintk(XENLOG_INFO VTDPREFIX,
+            dprintk(CRUXLOG_INFO VTDPREFIX,
                     "QI: using %u-entry ring(s)\n", qi_entry_nr);
         }
 
@@ -429,7 +429,7 @@ int enable_qinval(struct vtd_iommu *iommu)
                                 iommu->node);
         if ( iommu->qinval_maddr == 0 )
         {
-            dprintk(XENLOG_WARNING VTDPREFIX,
+            dprintk(CRUXLOG_WARNING VTDPREFIX,
                     "Cannot allocate memory for qi_ctrl->qinval_maddr\n");
             return -ENOMEM;
         }

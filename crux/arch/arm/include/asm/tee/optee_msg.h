@@ -5,8 +5,8 @@
 #ifndef _OPTEE_MSG_H
 #define _OPTEE_MSG_H
 
-#include <xen/bitops.h>
-#include <xen/types.h>
+#include <crux/bitops.h>
+#include <crux/types.h>
 
 /*
  * This file defines the OP-TEE message protocol used to communicate

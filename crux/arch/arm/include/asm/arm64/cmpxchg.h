@@ -1,7 +1,7 @@
 #ifndef __ASM_ARM64_CMPXCHG_H
 #define __ASM_ARM64_CMPXCHG_H
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 extern void __bad_xchg(volatile void *ptr, int size);
 

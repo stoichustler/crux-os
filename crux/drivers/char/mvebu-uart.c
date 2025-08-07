@@ -1,5 +1,5 @@
 /*
- * xen/drivers/char/mvebu3700-uart.c
+ * crux/drivers/char/mvebu3700-uart.c
  *
  * Driver for Marvell MVEBU UART.
  *
@@ -18,11 +18,11 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/errno.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/serial.h>
-#include <xen/vmap.h>
+#include <crux/errno.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/serial.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 
 /* Register offsets */
@@ -256,7 +256,7 @@ static int __init mvebu_uart_init(struct dt_device_node *dev, const void *data)
     /* Register with generic serial driver. */
     serial_register_uart(SERHND_DTUART, &mvebu3700_uart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

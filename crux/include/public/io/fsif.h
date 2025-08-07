@@ -7,8 +7,8 @@
  * Copyright (c) 2007, Grzegorz Milos, <gm281@cam.ac.uk>.
  */
 
-#ifndef __XEN_PUBLIC_IO_FSIF_H__
-#define __XEN_PUBLIC_IO_FSIF_H__
+#ifndef __CRUX_PUBLIC_IO_FSIF_H__
+#define __CRUX_PUBLIC_IO_FSIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -40,7 +40,7 @@ struct fsif_read_request {
     int32_t pad;
     uint64_t len;
     uint64_t offset;
-    grant_ref_t grefs[XENPV_FLEX_ARRAY_DIM];
+    grant_ref_t grefs[CRUXPV_FLEX_ARRAY_DIM];
 };
 
 struct fsif_write_request {
@@ -48,7 +48,7 @@ struct fsif_write_request {
     int32_t pad;
     uint64_t len;
     uint64_t offset;
-    grant_ref_t grefs[XENPV_FLEX_ARRAY_DIM];
+    grant_ref_t grefs[CRUXPV_FLEX_ARRAY_DIM];
 };
 
 struct fsif_stat_request {

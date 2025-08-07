@@ -10,16 +10,16 @@
  *
  */
 
-#include <xen/bitops.h>
-#include <xen/kernel.h>
-#include <xen/lib.h>
-#include <xen/percpu.h>
-#include <xen/spinlock.h>
+#include <crux/bitops.h>
+#include <crux/kernel.h>
+#include <crux/lib.h>
+#include <crux/percpu.h>
+#include <crux/spinlock.h>
 
 #define __noreturn    noreturn
-#define pr_err(...) printk(XENLOG_ERR __VA_ARGS__)
-struct xen_ubsan { int in_ubsan; };
-static DEFINE_PER_CPU(struct xen_ubsan[1], in_ubsan);
+#define pr_err(...) printk(CRUXLOG_ERR __VA_ARGS__)
+struct crux_ubsan { int in_ubsan; };
+static DEFINE_PER_CPU(struct crux_ubsan[1], in_ubsan);
 #undef current
 #define current this_cpu(in_ubsan)
 #define dump_stack dump_execution_state

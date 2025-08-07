@@ -3,8 +3,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/page-defs.h>
-#include <xen/mm-frame.h>
+#include <crux/page-defs.h>
+#include <crux/mm-frame.h>
 
 /*
  * WARNING!  Unlike the x86 pagetable code, where l1 is the lowest level and
@@ -170,11 +170,11 @@ static inline bool lpae_is_superpage(lpae_t pte, unsigned int level)
     }
 
 /*
- * Standard entry type that we'll use to build xen's own pagetables.
+ * Standard entry type that we'll use to build Xen's own pagetables.
  * We put the same permissions at every level, because they're ignored
  * by the walker in non-leaf entries.
  */
-lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr);
+lpae_t mfn_to_crux_entry(mfn_t mfn, unsigned int attr);
 
 #endif /* __ASSEMBLY__ */
 
@@ -215,39 +215,39 @@ lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr);
  * On 32-bit the zeroeth level does not exist, therefore the total is
  * 39-bits. The ARMv7-A architecture actually specifies a 40-bit input
  * address space for the p2m, with an 8K (1024-entry) top-level table.
- * However xen only supports 16GB of RAM on 32-bit ARM systems and
+ * However Xen only supports 16GB of RAM on 32-bit ARM systems and
  * therefore 39-bits are sufficient.
  */
 
-#define XEN_PT_LPAE_SHIFT         LPAE_SHIFT_GS(PAGE_SHIFT)
-#define XEN_PT_LPAE_ENTRIES       LPAE_ENTRIES_GS(PAGE_SHIFT)
-#define XEN_PT_LPAE_ENTRY_MASK    LPAE_ENTRY_MASK_GS(PAGE_SHIFT)
+#define CRUX_PT_LPAE_SHIFT         LPAE_SHIFT_GS(PAGE_SHIFT)
+#define CRUX_PT_LPAE_ENTRIES       LPAE_ENTRIES_GS(PAGE_SHIFT)
+#define CRUX_PT_LPAE_ENTRY_MASK    LPAE_ENTRY_MASK_GS(PAGE_SHIFT)
 
-#define XEN_PT_LEVEL_SHIFT(lvl)   LEVEL_SHIFT_GS(PAGE_SHIFT, lvl)
-#define XEN_PT_LEVEL_ORDER(lvl)   LEVEL_ORDER_GS(PAGE_SHIFT, lvl)
-#define XEN_PT_LEVEL_SIZE(lvl)    LEVEL_SIZE_GS(PAGE_SHIFT, lvl)
-#define XEN_PT_LEVEL_MASK(lvl)    (~(XEN_PT_LEVEL_SIZE(lvl) - 1))
+#define CRUX_PT_LEVEL_SHIFT(lvl)   LEVEL_SHIFT_GS(PAGE_SHIFT, lvl)
+#define CRUX_PT_LEVEL_ORDER(lvl)   LEVEL_ORDER_GS(PAGE_SHIFT, lvl)
+#define CRUX_PT_LEVEL_SIZE(lvl)    LEVEL_SIZE_GS(PAGE_SHIFT, lvl)
+#define CRUX_PT_LEVEL_MASK(lvl)    (~(CRUX_PT_LEVEL_SIZE(lvl) - 1))
 
 /* Convenience aliases */
-#define THIRD_SHIFT         XEN_PT_LEVEL_SHIFT(3)
-#define THIRD_ORDER         XEN_PT_LEVEL_ORDER(3)
-#define THIRD_SIZE          XEN_PT_LEVEL_SIZE(3)
-#define THIRD_MASK          XEN_PT_LEVEL_MASK(3)
+#define THIRD_SHIFT         CRUX_PT_LEVEL_SHIFT(3)
+#define THIRD_ORDER         CRUX_PT_LEVEL_ORDER(3)
+#define THIRD_SIZE          CRUX_PT_LEVEL_SIZE(3)
+#define THIRD_MASK          CRUX_PT_LEVEL_MASK(3)
 
-#define SECOND_SHIFT        XEN_PT_LEVEL_SHIFT(2)
-#define SECOND_ORDER        XEN_PT_LEVEL_ORDER(2)
-#define SECOND_SIZE         XEN_PT_LEVEL_SIZE(2)
-#define SECOND_MASK         XEN_PT_LEVEL_MASK(2)
+#define SECOND_SHIFT        CRUX_PT_LEVEL_SHIFT(2)
+#define SECOND_ORDER        CRUX_PT_LEVEL_ORDER(2)
+#define SECOND_SIZE         CRUX_PT_LEVEL_SIZE(2)
+#define SECOND_MASK         CRUX_PT_LEVEL_MASK(2)
 
-#define FIRST_SHIFT         XEN_PT_LEVEL_SHIFT(1)
-#define FIRST_ORDER         XEN_PT_LEVEL_ORDER(1)
-#define FIRST_SIZE          XEN_PT_LEVEL_SIZE(1)
-#define FIRST_MASK          XEN_PT_LEVEL_MASK(1)
+#define FIRST_SHIFT         CRUX_PT_LEVEL_SHIFT(1)
+#define FIRST_ORDER         CRUX_PT_LEVEL_ORDER(1)
+#define FIRST_SIZE          CRUX_PT_LEVEL_SIZE(1)
+#define FIRST_MASK          CRUX_PT_LEVEL_MASK(1)
 
-#define ZEROETH_SHIFT       XEN_PT_LEVEL_SHIFT(0)
-#define ZEROETH_ORDER       XEN_PT_LEVEL_ORDER(0)
-#define ZEROETH_SIZE        XEN_PT_LEVEL_SIZE(0)
-#define ZEROETH_MASK        XEN_PT_LEVEL_MASK(0)
+#define ZEROETH_SHIFT       CRUX_PT_LEVEL_SHIFT(0)
+#define ZEROETH_ORDER       CRUX_PT_LEVEL_ORDER(0)
+#define ZEROETH_SIZE        CRUX_PT_LEVEL_SIZE(0)
+#define ZEROETH_MASK        CRUX_PT_LEVEL_MASK(0)
 
 /* Calculate the offsets into the pagetables for a given VA */
 #define zeroeth_linear_offset(va) ((va) >> ZEROETH_SHIFT)
@@ -255,7 +255,7 @@ lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr);
 #define second_linear_offset(va) ((va) >> SECOND_SHIFT)
 #define third_linear_offset(va) ((va) >> THIRD_SHIFT)
 
-#define TABLE_OFFSET(offs) (_AT(unsigned int, offs) & XEN_PT_LPAE_ENTRY_MASK)
+#define TABLE_OFFSET(offs) (_AT(unsigned int, offs) & CRUX_PT_LPAE_ENTRY_MASK)
 #define first_table_offset(va)  TABLE_OFFSET(first_linear_offset(va))
 #define second_table_offset(va) TABLE_OFFSET(second_linear_offset(va))
 #define third_table_offset(va)  TABLE_OFFSET(third_linear_offset(va))
@@ -275,12 +275,12 @@ lpae_t mfn_to_xen_entry(mfn_t mfn, unsigned int attr);
  */
 #define DEFINE_BOOT_PAGE_TABLES(name, nr)                                     \
 lpae_t __aligned(PAGE_SIZE) __section(".data.page_aligned")                   \
-    name[XEN_PT_LPAE_ENTRIES * (nr)]
+    name[CRUX_PT_LPAE_ENTRIES * (nr)]
 
 #define DEFINE_BOOT_PAGE_TABLE(name) DEFINE_BOOT_PAGE_TABLES(name, 1)
 
 #define DEFINE_PAGE_TABLES(name, nr)                    \
-lpae_t __aligned(PAGE_SIZE) name[XEN_PT_LPAE_ENTRIES * (nr)]
+lpae_t __aligned(PAGE_SIZE) name[CRUX_PT_LPAE_ENTRIES * (nr)]
 
 #define DEFINE_PAGE_TABLE(name) DEFINE_PAGE_TABLES(name, 1)
 

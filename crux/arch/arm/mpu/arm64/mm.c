@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bug.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/types.h>
 #include <asm/mpu.h>
 #include <asm/sysregs.h>
 #include <asm/system.h>

@@ -15,10 +15,10 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/sched.h>
-#include <xen/shared.h>
-#include <xen/spinlock.h>
-#include <xen/time.h>
+#include <crux/sched.h>
+#include <crux/shared.h>
+#include <crux/spinlock.h>
+#include <crux/time.h>
 #include <asm/div64.h>
 #include <asm/domain.h>
 

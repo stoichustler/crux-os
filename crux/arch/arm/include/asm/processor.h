@@ -2,7 +2,7 @@
 #define __ASM_ARM_PROCESSOR_H
 
 #ifndef __ASSEMBLY__
-#include <xen/types.h>
+#include <crux/types.h>
 #endif
 #include <public/arch-arm.h>
 

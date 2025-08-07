@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/pci.h>
+#include <crux/init.h>
+#include <crux/pci.h>
 #include <asm/device.h>
 #include <asm/pci.h>
 

@@ -1,5 +1,5 @@
-#ifndef _XEN_GUEST_WALK_H
-#define _XEN_GUEST_WALK_H
+#ifndef _CRUX_GUEST_WALK_H
+#define _CRUX_GUEST_WALK_H
 
 /* Walk the guest's page tables in software. */
 bool guest_walk_tables(const struct vcpu *v,
@@ -7,7 +7,7 @@ bool guest_walk_tables(const struct vcpu *v,
                        paddr_t *ipa,
                        unsigned int *perms);
 
-#endif /* _XEN_GUEST_WALK_H */
+#endif /* _CRUX_GUEST_WALK_H */
 
 /*
  * Local variables:

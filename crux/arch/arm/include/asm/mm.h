@@ -1,10 +1,10 @@
 #ifndef __ARCH_ARM_MM__
 #define __ARCH_ARM_MM__
 
-#include <xen/kernel.h>
+#include <crux/kernel.h>
 #include <asm/page.h>
-#include <public/xen.h>
-#include <xen/pdx.h>
+#include <public/crux.h>
+#include <crux/pdx.h>
 
 #if defined(CONFIG_ARM_32)
 # include <asm/arm32/mm.h>
@@ -14,8 +14,8 @@
 # error "unknown ARM variant"
 #endif
 
-/* Align xen to a 2 MiB boundary. */
-#define XEN_PADDR_ALIGN (1 << 21)
+/* Align Xen to a 2 MiB boundary. */
+#define CRUX_PADDR_ALIGN (1 << 21)
 
 /*
  * Per-page-frame information.
@@ -113,25 +113,25 @@ struct page_info
 #define PGT_count_mask    PG_mask(3, 3)
 
 /*
- * Stored in bits [28:0] (arm32) or [60:0] (arm64) GFN if page is xenheap page.
+ * Stored in bits [28:0] (arm32) or [60:0] (arm64) GFN if page is cruxheap page.
  */
 #define PGT_gfn_width     PG_shift(3)
 #define PGT_gfn_mask      ((1UL<<PGT_gfn_width)-1)
 
-#define PGT_INVALID_XENHEAP_GFN   _gfn(PGT_gfn_mask)
+#define PGT_INVALID_CRUXHEAP_GFN   _gfn(PGT_gfn_mask)
 
 /*
  * An arch-specific initialization pattern is needed for the type_info field
- * as it's GFN portion can contain the valid GFN if page is xenheap page.
+ * as it's GFN portion can contain the valid GFN if page is cruxheap page.
  */
-#define PGT_TYPE_INFO_INITIALIZER   gfn_x(PGT_INVALID_XENHEAP_GFN)
+#define PGT_TYPE_INFO_INITIALIZER   gfn_x(PGT_INVALID_CRUXHEAP_GFN)
 
  /* Cleared when the owning guest 'frees' this page. */
 #define _PGC_allocated    PG_shift(1)
 #define PGC_allocated     PG_mask(1, 1)
-  /* Page is xen heap? */
-#define _PGC_xen_heap     PG_shift(2)
-#define PGC_xen_heap      PG_mask(1, 2)
+  /* Page is Xen heap? */
+#define _PGC_crux_heap     PG_shift(2)
+#define PGC_crux_heap      PG_mask(1, 2)
 #ifdef CONFIG_STATIC_MEMORY
 /* Page is static memory */
 #define _PGC_static    PG_shift(3)
@@ -171,12 +171,12 @@ struct page_info
 #define PGC_need_scrub    PGC_allocated
 
 #ifdef CONFIG_ARM_64
-#define is_xen_heap_page(page) ((page)->count_info & PGC_xen_heap)
-#define is_xen_heap_mfn(mfn) \
-    (mfn_valid(mfn) && is_xen_heap_page(mfn_to_page(mfn)))
+#define is_crux_heap_page(page) ((page)->count_info & PGC_crux_heap)
+#define is_crux_heap_mfn(mfn) \
+    (mfn_valid(mfn) && is_crux_heap_page(mfn_to_page(mfn)))
 #endif
 
-#define is_xen_fixed_mfn(mfn)                                   \
+#define is_crux_fixed_mfn(mfn)                                   \
     ((mfn_to_maddr(mfn) >= virt_to_maddr(&_start)) &&           \
      (mfn_to_maddr(mfn) <= virt_to_maddr((vaddr_t)_end - 1)))
 
@@ -263,11 +263,11 @@ static inline uint64_t gvirt_to_maddr(vaddr_t va, paddr_t *pa,
     return 0;
 }
 
-/* Convert between xen-heap virtual addresses and machine addresses. */
+/* Convert between Xen-heap virtual addresses and machine addresses. */
 #define __pa(x)             (virt_to_maddr(x))
 #define __va(x)             (maddr_to_virt(x))
 
-/* Convert between xen-heap virtual addresses and machine frame numbers. */
+/* Convert between Xen-heap virtual addresses and machine frame numbers. */
 #define __virt_to_mfn(va) (virt_to_maddr(va) >> PAGE_SHIFT)
 #define __mfn_to_virt(mfn) (maddr_to_virt((paddr_t)(mfn) << PAGE_SHIFT))
 
@@ -304,12 +304,12 @@ struct page_info *get_page_from_gva(struct vcpu *v, vaddr_t va,
 #define SHARED_M2P_ENTRY         (~0UL - 1UL)
 #define SHARED_M2P(_e)           ((_e) == SHARED_M2P_ENTRY)
 
-/* xen always owns P2M on ARM */
+/* Xen always owns P2M on ARM */
 #define set_gpfn_from_mfn(mfn, pfn) do { (void) (mfn), (void)(pfn); } while (0)
 #define mfn_to_gfn(d, mfn) ((void)(d), _gfn(mfn_x(mfn)))
 
 /* Arch-specific portion of memory_op hypercall. */
-long arch_memory_op(int op, XEN_GUEST_HANDLE_PARAM(void) arg);
+long arch_memory_op(int op, CRUX_GUEST_HANDLE_PARAM(void) arg);
 
 #define domain_set_alloc_bitsize(d) ((void)0)
 #define domain_clamp_alloc_bitsize(d, b) (b)
@@ -343,21 +343,21 @@ unsigned int arch_get_dma_bitsize(void);
  * that requirement (risk of deadlock, lock inversion, etc) it is important
  * to make sure that all non-protected updates to this field are atomic.
  */
-static inline gfn_t page_get_xenheap_gfn(const struct page_info *p)
+static inline gfn_t page_get_cruxheap_gfn(const struct page_info *p)
 {
     gfn_t gfn_ = _gfn(ACCESS_ONCE(p->u.inuse.type_info) & PGT_gfn_mask);
 
-    ASSERT(is_xen_heap_page(p));
+    ASSERT(is_crux_heap_page(p));
 
-    return gfn_eq(gfn_, PGT_INVALID_XENHEAP_GFN) ? INVALID_GFN : gfn_;
+    return gfn_eq(gfn_, PGT_INVALID_CRUXHEAP_GFN) ? INVALID_GFN : gfn_;
 }
 
-static inline void page_set_xenheap_gfn(struct page_info *p, gfn_t gfn)
+static inline void page_set_cruxheap_gfn(struct page_info *p, gfn_t gfn)
 {
-    gfn_t gfn_ = gfn_eq(gfn, INVALID_GFN) ? PGT_INVALID_XENHEAP_GFN : gfn;
+    gfn_t gfn_ = gfn_eq(gfn, INVALID_GFN) ? PGT_INVALID_CRUXHEAP_GFN : gfn;
     unsigned long x, nx, y = p->u.inuse.type_info;
 
-    ASSERT(is_xen_heap_page(p));
+    ASSERT(is_crux_heap_page(p));
 
     do {
         x = y;

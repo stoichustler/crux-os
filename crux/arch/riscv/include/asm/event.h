@@ -2,7 +2,7 @@
 #ifndef ASM__RISCV__EVENT_H
 #define ASM__RISCV__EVENT_H
 
-#include <xen/lib.h>
+#include <crux/lib.h>
 
 void vcpu_mark_events_pending(struct vcpu *v);
 

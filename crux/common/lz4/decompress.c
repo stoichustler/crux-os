@@ -44,7 +44,7 @@ static const uint8_t dec32table[] = {0, 3, 2, 3, 0, 0, 0, 0};
 static const int8_t dec64table[] = {0, 0, 0, -1, 0, 1, 2, 3};
 #endif
 
-#if defined(__XEN__) || defined(__MINIOS__)
+#if defined(__CRUX__) || defined(__MINIOS__)
 
 static int __init lz4_uncompress(const unsigned char *source, unsigned char *dest,
 				 int osize)
@@ -165,7 +165,7 @@ _output_error:
 	return (int) (-(ip - source));
 }
 
-#else /* defined(__XEN__) || defined(__MINIOS__) */
+#else /* defined(__CRUX__) || defined(__MINIOS__) */
 
 static int lz4_uncompress_unknownoutputsize(const unsigned char *source,
 				unsigned char *dest, int isize,
@@ -300,7 +300,7 @@ _output_error:
 
 #endif
 
-#if defined(__XEN__) || defined(__MINIOS__)
+#if defined(__CRUX__) || defined(__MINIOS__)
 
 int __init lz4_decompress(const unsigned char *src, size_t *src_len,
 			  unsigned char *dest, size_t actual_dest_len)
@@ -318,7 +318,7 @@ exit_0:
 	return ret;
 }
 
-#else /* defined(__XEN__) || defined(__MINIOS__) */
+#else /* defined(__CRUX__) || defined(__MINIOS__) */
 
 int lz4_decompress_unknownoutputsize(const unsigned char *src, size_t src_len,
 		 unsigned char *dest, size_t *dest_len)

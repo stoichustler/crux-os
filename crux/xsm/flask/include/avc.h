@@ -4,15 +4,15 @@
  * Author : Stephen Smalley, <sds@epoch.ncsc.mil>
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _FLASK_AVC_H_
 #define _FLASK_AVC_H_
 
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/percpu.h>
-#include <xen/spinlock.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/percpu.h>
+#include <crux/spinlock.h>
 
 #include "flask.h"
 #include "av_permissions.h"
@@ -92,8 +92,8 @@ int avc_has_perm(u32 ssid, u32 tsid, u16 tclass, u32 requested,
                                              struct avc_audit_data *auditdata);
 
 /* Exported to selinuxfs */
-struct xen_flask_hash_stats;
-int avc_get_hash_stats(struct xen_flask_hash_stats *arg);
+struct crux_flask_hash_stats;
+int avc_get_hash_stats(struct crux_flask_hash_stats *arg);
 extern unsigned int avc_cache_threshold;
 
 #ifdef CONFIG_XSM_FLASK_AVC_STATS

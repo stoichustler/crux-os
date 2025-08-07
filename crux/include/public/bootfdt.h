@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * xen Device Tree boot information
+ * Xen Device Tree boot information
  *
- * Information for configuring xen domains created at boot time.
+ * Information for configuring Xen domains created at boot time.
  */
 
-#ifndef __XEN_PUBLIC_BOOTFDT_H__
-#define __XEN_PUBLIC_BOOTFDT_H__
+#ifndef __CRUX_PUBLIC_BOOTFDT_H__
+#define __CRUX_PUBLIC_BOOTFDT_H__
 
 /*
  * Domain Capabilities specified in the "capabilities" property.  Use of
@@ -23,9 +23,9 @@
  * backends to other domains.
  */
 #define DOMAIN_CAPS_HARDWARE (1U << 1)
-/* xenstore domain. */
-#define DOMAIN_CAPS_XENSTORE (1U << 2)
+/* Xenstore domain. */
+#define DOMAIN_CAPS_CRUXSTORE (1U << 2)
 #define DOMAIN_CAPS_MASK     (DOMAIN_CAPS_CONTROL | DOMAIN_CAPS_HARDWARE | \
-                              DOMAIN_CAPS_XENSTORE)
+                              DOMAIN_CAPS_CRUXSTORE)
 
-#endif /* __XEN_PUBLIC_BOOTFDT_H__ */
+#endif /* __CRUX_PUBLIC_BOOTFDT_H__ */

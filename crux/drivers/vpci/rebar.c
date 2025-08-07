@@ -5,8 +5,8 @@
  * Author: Jiqian Chen <Jiqian.Chen@amd.com>
  */
 
-#include <xen/sched.h>
-#include <xen/vpci.h>
+#include <crux/sched.h>
+#include <crux/vpci.h>
 
 static void cf_check rebar_ctrl_write(const struct pci_dev *pdev,
                                       unsigned int reg,
@@ -27,14 +27,14 @@ static void cf_check rebar_ctrl_write(const struct pci_dev *pdev,
          * forbids resizing a BAR with memory decoding enabled.
          */
         if ( size != bar->size )
-            gprintk(XENLOG_ERR,
+            gprintk(CRUXLOG_ERR,
                     "%pp: refuse to resize BAR#%u with memory decoding enabled\n",
                     &pdev->sbdf, index);
         return;
     }
 
     if ( !((size >> PCI_REBAR_CTRL_SIZE_BIAS) & bar->resizable_sizes) )
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "%pp: new BAR#%u size %#lx is not supported by hardware\n",
                 &pdev->sbdf, index, size);
 
@@ -61,7 +61,7 @@ static int cf_check init_rebar(struct pci_dev *pdev)
 
     if ( !is_hardware_domain(pdev->domain) )
     {
-        printk(XENLOG_ERR "%pp: resizable BARs unsupported for unpriv %pd\n",
+        printk(CRUXLOG_ERR "%pp: resizable BARs unsupported for unpriv %pd\n",
                &pdev->sbdf, pdev->domain);
         return -EOPNOTSUPP;
     }
@@ -78,7 +78,7 @@ static int cf_check init_rebar(struct pci_dev *pdev)
         index = ctrl & PCI_REBAR_CTRL_BAR_IDX;
         if ( index >= PCI_HEADER_NORMAL_NR_BARS )
         {
-            printk(XENLOG_ERR "%pd %pp: too big BAR number %u in REBAR_CTRL\n",
+            printk(CRUXLOG_ERR "%pd %pp: too big BAR number %u in REBAR_CTRL\n",
                    pdev->domain, &pdev->sbdf, index);
             continue;
         }
@@ -86,7 +86,7 @@ static int cf_check init_rebar(struct pci_dev *pdev)
         bar = &pdev->vpci->header.bars[index];
         if ( bar->type != VPCI_BAR_MEM64_LO && bar->type != VPCI_BAR_MEM32 )
         {
-            printk(XENLOG_ERR "%pd %pp: BAR%u is not in memory space\n",
+            printk(CRUXLOG_ERR "%pd %pp: BAR%u is not in memory space\n",
                    pdev->domain, &pdev->sbdf, index);
             continue;
         }
@@ -95,7 +95,7 @@ static int cf_check init_rebar(struct pci_dev *pdev)
                                rebar_offset + PCI_REBAR_CTRL(i), 4, bar);
         if ( rc )
         {
-            printk(XENLOG_ERR "%pd %pp: BAR%u fail to add reg of REBAR_CTRL rc=%d\n",
+            printk(CRUXLOG_ERR "%pd %pp: BAR%u fail to add reg of REBAR_CTRL rc=%d\n",
                    pdev->domain, &pdev->sbdf, index, rc);
             /*
              * Ideally we would hide the ReBar capability on error, but code

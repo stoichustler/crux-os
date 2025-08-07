@@ -19,7 +19,7 @@
 #ifndef DRIVERS__PASSTHROUGH__VTD__IOMMU_H
 #define DRIVERS__PASSTHROUGH__VTD__IOMMU_H
 
-#include <xen/iommu.h>
+#include <crux/iommu.h>
 #include <asm/msi.h>
 
 /*
@@ -516,7 +516,7 @@ struct vtd_iommu {
     do  \
     {   \
         if ( iommu_debug )  \
-            dprintk(XENLOG_WARNING VTDPREFIX, fmt, ## args);    \
+            dprintk(CRUXLOG_WARNING VTDPREFIX, fmt, ## args);    \
     } while(0)
 
 /* Register-based invalidation isn't supported by VT-d version 6 and beyond. */

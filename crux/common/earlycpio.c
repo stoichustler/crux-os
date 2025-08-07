@@ -25,10 +25,10 @@
  * separate file or part of the same file.
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/string.h>
-#include <xen/earlycpio.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/string.h>
+#include <crux/earlycpio.h>
 
 #define ALIGN(x, a) ((x + (a) - 1) & ~((a) - 1))
 #define PTR_ALIGN(p, a)         ((typeof(p))ALIGN((unsigned long)(p), (a)))

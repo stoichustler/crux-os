@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/tee/optee.c
+ * crux/arch/arm/tee/optee.c
  *
  * OP-TEE mediator. It sits in between OP-TEE and guests and performs
  * actual calls to OP-TEE when some guest tries to interact with
@@ -24,12 +24,12 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/device_tree.h>
-#include <xen/domain_page.h>
-#include <xen/err.h>
-#include <xen/guest_access.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
+#include <crux/device_tree.h>
+#include <crux/domain_page.h>
+#include <crux/err.h>
+#include <crux/guest_access.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
 
 #include <asm/event.h>
 #include <asm/smccc.h>
@@ -87,7 +87,7 @@
 
 /*
  * Limits the number of shared buffers that guest can have at once.
- * This is to prevent case, when guests tricks XEN into exhausting
+ * This is to prevent case, when guests tricks CRUX into exhausting
  * own memory by allocating zillions of one-byte buffers. Value is
  * chosen arbitrary.
  */
@@ -101,7 +101,7 @@
 
 enum optee_call_state {
     OPTEE_CALL_NORMAL,
-    OPTEE_CALL_XEN_RPC,
+    OPTEE_CALL_CRUX_RPC,
 };
 
 static unsigned int __read_mostly max_optee_threads;
@@ -113,9 +113,9 @@ static unsigned int __read_mostly max_optee_threads;
 struct optee_std_call {
     struct list_head list;
     /* Page where shadowed copy of call arguments is stored */
-    struct page_info *xen_arg_pg;
-    /* Above page mapped into XEN */
-    struct optee_msg_arg *xen_arg;
+    struct page_info *crux_arg_pg;
+    /* Above page mapped into CRUX */
+    struct optee_msg_arg *crux_arg;
     /* Address of original call arguments */
     paddr_t guest_arg_ipa;
     int optee_thread_id;
@@ -132,8 +132,8 @@ struct optee_std_call {
 struct shm_rpc {
     struct list_head list;
     struct page_info *guest_page;
-    struct page_info *xen_arg_pg;
-    struct optee_msg_arg *xen_arg;
+    struct page_info *crux_arg_pg;
+    struct optee_msg_arg *crux_arg;
     gfn_t gfn;
     uint64_t cookie;
 };
@@ -191,13 +191,13 @@ static bool optee_probe(void)
     if ( resp.a0 == OPTEE_SMC_RETURN_OK )
     {
         max_optee_threads = resp.a1;
-        printk(XENLOG_INFO
+        printk(CRUXLOG_INFO
                "OP-TEE supports %u simultaneous threads per guest.\n",
                max_optee_threads);
     }
     else
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "Can't read number of threads supported by OP-TEE: %x\n",
                (uint32_t)resp.a0);
         return false;
@@ -247,7 +247,7 @@ static int optee_domain_init(struct domain *d)
                   &resp);
     if ( resp.a0 != OPTEE_SMC_RETURN_OK )
     {
-        printk(XENLOG_WARNING "%pd: Unable to create OPTEE client: rc = 0x%X\n",
+        printk(CRUXLOG_WARNING "%pd: Unable to create OPTEE client: rc = 0x%X\n",
                d, (uint32_t)resp.a0);
 
         xfree(ctx);
@@ -332,28 +332,28 @@ static void free_std_call(struct optee_domain *ctx,
     spin_unlock(&ctx->lock);
 
     ASSERT(!call->in_flight);
-    ASSERT(!call->xen_arg);
+    ASSERT(!call->crux_arg);
 
-    if ( call->xen_arg_pg )
-        free_domheap_page(call->xen_arg_pg);
+    if ( call->crux_arg_pg )
+        free_domheap_page(call->crux_arg_pg);
 
     xfree(call);
 }
 
-static void map_xen_arg(struct optee_std_call *call)
+static void map_crux_arg(struct optee_std_call *call)
 {
-    ASSERT(!call->xen_arg);
+    ASSERT(!call->crux_arg);
 
-    call->xen_arg = __map_domain_page(call->xen_arg_pg);
+    call->crux_arg = __map_domain_page(call->crux_arg_pg);
 }
 
-static void unmap_xen_arg(struct optee_std_call *call)
+static void unmap_crux_arg(struct optee_std_call *call)
 {
-    if ( !call->xen_arg )
+    if ( !call->crux_arg )
         return;
 
-    unmap_domain_page(call->xen_arg);
-    call->xen_arg = NULL;
+    unmap_domain_page(call->crux_arg);
+    call->crux_arg = NULL;
 }
 
 static struct optee_std_call *get_std_call(struct optee_domain *ctx,
@@ -368,13 +368,13 @@ static struct optee_std_call *get_std_call(struct optee_domain *ctx,
         {
             if ( call->in_flight )
             {
-                gdprintk(XENLOG_WARNING,
+                gdprintk(CRUXLOG_WARNING,
                          "Guest tries to execute call which is already in flight.\n");
                 goto out;
             }
             call->in_flight = true;
             spin_unlock(&ctx->lock);
-            map_xen_arg(call);
+            map_crux_arg(call);
 
             return call;
         }
@@ -389,7 +389,7 @@ out:
 static void put_std_call(struct optee_domain *ctx, struct optee_std_call *call)
 {
     ASSERT(call->in_flight);
-    unmap_xen_arg(call);
+    unmap_crux_arg(call);
     spin_lock(&ctx->lock);
     call->in_flight = false;
     spin_unlock(&ctx->lock);
@@ -404,8 +404,8 @@ static struct shm_rpc *allocate_and_pin_shm_rpc(struct optee_domain *ctx,
     if ( !shm_rpc )
         return ERR_PTR(-ENOMEM);
 
-    shm_rpc->xen_arg_pg = alloc_domheap_page(NULL, 0);
-    if ( !shm_rpc->xen_arg_pg )
+    shm_rpc->crux_arg_pg = alloc_domheap_page(NULL, 0);
+    if ( !shm_rpc->crux_arg_pg )
     {
         xfree(shm_rpc);
         return ERR_PTR(-ENOMEM);
@@ -426,7 +426,7 @@ static struct shm_rpc *allocate_and_pin_shm_rpc(struct optee_domain *ctx,
         if ( shm_rpc_tmp->cookie == cookie )
         {
             spin_unlock(&ctx->lock);
-            gdprintk(XENLOG_WARNING,
+            gdprintk(CRUXLOG_WARNING,
                      "Guest tries to use the same RPC SHM cookie %"PRIx64"\n",
                      cookie);
             goto err;
@@ -439,7 +439,7 @@ static struct shm_rpc *allocate_and_pin_shm_rpc(struct optee_domain *ctx,
     return shm_rpc;
 
 err:
-    free_domheap_page(shm_rpc->xen_arg_pg);
+    free_domheap_page(shm_rpc->crux_arg_pg);
 
     if ( shm_rpc->guest_page )
         put_page(shm_rpc->guest_page);
@@ -469,7 +469,7 @@ static void free_shm_rpc(struct optee_domain *ctx, uint64_t cookie)
     if ( !found )
         return;
 
-    free_domheap_page(shm_rpc->xen_arg_pg);
+    free_domheap_page(shm_rpc->crux_arg_pg);
 
     ASSERT(shm_rpc->guest_page);
     put_page(shm_rpc->guest_page);
@@ -542,7 +542,7 @@ static struct optee_shm_buf *allocate_optee_shm_buf(struct optee_domain *ctx,
         if ( optee_shm_buf_tmp->cookie == cookie )
         {
             spin_unlock(&ctx->lock);
-            gdprintk(XENLOG_WARNING,
+            gdprintk(CRUXLOG_WARNING,
                      "Guest tries to use the same SHM buffer cookie %"PRIx64"\n",
                      cookie);
             err_code = -EINVAL;
@@ -627,7 +627,7 @@ static void free_optee_shm_buf_pg_list(struct optee_domain *ctx,
     if ( found )
         free_pg_list(optee_shm_buf);
     else
-        gdprintk(XENLOG_ERR,
+        gdprintk(CRUXLOG_ERR,
                  "Can't find pagelist for SHM buffer with cookie %"PRIx64" to free it\n",
                  cookie);
 }
@@ -714,7 +714,7 @@ static int translate_noncontig(struct optee_domain *ctx,
     unsigned int order;
     unsigned int idx = 0;
     gfn_t gfn;
-    struct page_info *guest_pg, *xen_pgs;
+    struct page_info *guest_pg, *crux_pgs;
     struct optee_shm_buf *optee_shm_buf;
     /*
      * This is memory layout for page list. Basically list consists of 4k pages,
@@ -726,12 +726,12 @@ static int translate_noncontig(struct optee_domain *ctx,
     struct {
         uint64_t pages_list[PAGELIST_ENTRIES_PER_PAGE];
         uint64_t next_page_data;
-    } *guest_data, *xen_data;
+    } *guest_data, *crux_data;
 
     /*
      * Special case: a buffer with buf_ptr == 0x0 is considered as a
      * NULL pointer by OP-TEE. No translation is needed. This can lead
-     * to an issue as IPA 0x0 is a valid address for xen. See the
+     * to an issue as IPA 0x0 is a valid address for Xen. See the
      * comment near optee_domain_init()
      */
     if ( !param->u.tmem.buf_ptr )
@@ -768,15 +768,15 @@ static int translate_noncontig(struct optee_domain *ctx,
      * - There is a plan to implement preemption in the code below, which
      *   will allow use to increase default MAX_SHM_BUFFER_PG value.
      */
-    xen_pgs = alloc_domheap_pages(NULL, order, 0);
-    if ( !xen_pgs )
+    crux_pgs = alloc_domheap_pages(NULL, order, 0);
+    if ( !crux_pgs )
         return -ENOMEM;
 
     optee_shm_buf = allocate_optee_shm_buf(ctx, param->u.tmem.shm_ref,
-                                           pg_count, xen_pgs, order);
+                                           pg_count, crux_pgs, order);
     if ( IS_ERR(optee_shm_buf) )
     {
-        free_domheap_pages(xen_pgs, order);
+        free_domheap_pages(crux_pgs, order);
         return PTR_ERR(optee_shm_buf);
     }
 
@@ -784,7 +784,7 @@ static int translate_noncontig(struct optee_domain *ctx,
                        ~(OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1));
 
     /*
-     * We are initializing guest_pg, guest_data and xen_data with NULL
+     * We are initializing guest_pg, guest_data and crux_data with NULL
      * to make GCC 4.8 happy, as it can't infer that those variables
      * will be initialized with correct values in the loop below.
      *
@@ -794,7 +794,7 @@ static int translate_noncontig(struct optee_domain *ctx,
      * at beginning of the function.
      */
     guest_pg = NULL;
-    xen_data = NULL;
+    crux_data = NULL;
     guest_data = NULL;
     while ( pg_count )
     {
@@ -807,7 +807,7 @@ static int translate_noncontig(struct optee_domain *ctx,
                 goto free_shm_buf;
 
             guest_data = __map_domain_page(guest_pg);
-            xen_data = __map_domain_page(xen_pgs);
+            crux_data = __map_domain_page(crux_pgs);
         }
 
         /* Only 4kB pages are supported right now */
@@ -817,18 +817,18 @@ static int translate_noncontig(struct optee_domain *ctx,
             goto err_unmap;
 
         optee_shm_buf->pages[optee_shm_buf->page_cnt++] = page;
-        xen_data->pages_list[idx] = page_to_maddr(page);
+        crux_data->pages_list[idx] = page_to_maddr(page);
         idx++;
 
         if ( idx == PAGELIST_ENTRIES_PER_PAGE )
         {
             /* Roll over to the next page */
-            xen_data->next_page_data = page_to_maddr(xen_pgs + 1);
-            xen_pgs++;
+            crux_data->next_page_data = page_to_maddr(crux_pgs + 1);
+            crux_pgs++;
 
             gfn = gaddr_to_gfn(guest_data->next_page_data);
 
-            unmap_domain_page(xen_data);
+            unmap_domain_page(crux_data);
             unmap_domain_page(guest_data);
             put_page(guest_pg);
 
@@ -840,7 +840,7 @@ static int translate_noncontig(struct optee_domain *ctx,
     if ( idx )
     {
         unmap_domain_page(guest_data);
-        unmap_domain_page(xen_data);
+        unmap_domain_page(crux_data);
         put_page(guest_pg);
     }
     param->u.tmem.buf_ptr = page_to_maddr(optee_shm_buf->pg_list) | offset;
@@ -849,7 +849,7 @@ static int translate_noncontig(struct optee_domain *ctx,
 
 err_unmap:
     unmap_domain_page(guest_data);
-    unmap_domain_page(xen_data);
+    unmap_domain_page(crux_data);
     put_page(guest_pg);
 free_shm_buf:
     free_optee_shm_buf(ctx, optee_shm_buf->cookie);
@@ -864,9 +864,9 @@ static int translate_params(struct optee_domain *ctx,
     uint32_t attr;
     int ret = 0;
 
-    for ( i = 0; i < call->xen_arg->num_params; i++ )
+    for ( i = 0; i < call->crux_arg->num_params; i++ )
     {
-        attr = call->xen_arg->params[i].attr;
+        attr = call->crux_arg->params[i].attr;
 
         switch ( attr & OPTEE_MSG_ATTR_TYPE_MASK )
         {
@@ -875,15 +875,15 @@ static int translate_params(struct optee_domain *ctx,
         case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
             if ( attr & OPTEE_MSG_ATTR_NONCONTIG )
             {
-                ret = translate_noncontig(ctx, call, call->xen_arg->params + i);
+                ret = translate_noncontig(ctx, call, call->crux_arg->params + i);
                 if ( ret )
                     goto out;
             }
             else
             {
-                if ( call->xen_arg->params[i].u.tmem.buf_ptr )
+                if ( call->crux_arg->params[i].u.tmem.buf_ptr )
                 {
-                    gdprintk(XENLOG_WARNING, "Guest tries to use old tmem arg\n");
+                    gdprintk(CRUXLOG_WARNING, "Guest tries to use old tmem arg\n");
                     ret = -EINVAL;
                     goto out;
                 }
@@ -903,11 +903,11 @@ static int translate_params(struct optee_domain *ctx,
 out:
     if ( ret )
     {
-        call->xen_arg->ret_origin = TEEC_ORIGIN_COMMS;
+        call->crux_arg->ret_origin = TEEC_ORIGIN_COMMS;
         if ( ret == -ENOMEM )
-            call->xen_arg->ret = TEEC_ERROR_OUT_OF_MEMORY;
+            call->crux_arg->ret = TEEC_ERROR_OUT_OF_MEMORY;
         else
-            call->xen_arg->ret = TEEC_ERROR_BAD_PARAMETERS;
+            call->crux_arg->ret = TEEC_ERROR_BAD_PARAMETERS;
     }
 
     return ret;
@@ -936,17 +936,17 @@ static bool copy_std_request(struct cpu_user_regs *regs,
 
     BUILD_BUG_ON(OPTEE_MSG_NONCONTIG_PAGE_SIZE > PAGE_SIZE);
 
-    call->xen_arg_pg = alloc_domheap_page(NULL, 0);
-    if ( !call->xen_arg_pg )
+    call->crux_arg_pg = alloc_domheap_page(NULL, 0);
+    if ( !call->crux_arg_pg )
     {
         set_user_reg(regs, 0, OPTEE_SMC_RETURN_ENOMEM);
         return false;
     }
 
-    map_xen_arg(call);
+    map_crux_arg(call);
 
     if ( access_guest_memory_by_gpa(current->domain, call->guest_arg_ipa,
-                                    call->xen_arg,
+                                    call->crux_arg,
                                     OPTEE_MSG_NONCONTIG_PAGE_SIZE, false) )
     {
         set_user_reg(regs, 0, OPTEE_SMC_RETURN_EBADADDR);
@@ -994,34 +994,34 @@ static void copy_std_request_back(struct optee_domain *ctx,
 
     guest_arg = __map_domain_page(page);
 
-    guest_arg->ret = call->xen_arg->ret;
-    guest_arg->ret_origin = call->xen_arg->ret_origin;
-    guest_arg->session = call->xen_arg->session;
+    guest_arg->ret = call->crux_arg->ret;
+    guest_arg->ret_origin = call->crux_arg->ret_origin;
+    guest_arg->session = call->crux_arg->session;
 
-    for ( i = 0; i < call->xen_arg->num_params; i++ )
+    for ( i = 0; i < call->crux_arg->num_params; i++ )
     {
-        attr = call->xen_arg->params[i].attr;
+        attr = call->crux_arg->params[i].attr;
 
         switch ( attr & OPTEE_MSG_ATTR_TYPE_MASK )
         {
         case OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT:
         case OPTEE_MSG_ATTR_TYPE_TMEM_INOUT:
             guest_arg->params[i].u.tmem.size =
-                call->xen_arg->params[i].u.tmem.size;
+                call->crux_arg->params[i].u.tmem.size;
             continue;
         case OPTEE_MSG_ATTR_TYPE_RMEM_OUTPUT:
         case OPTEE_MSG_ATTR_TYPE_RMEM_INOUT:
             guest_arg->params[i].u.rmem.size =
-                call->xen_arg->params[i].u.rmem.size;
+                call->crux_arg->params[i].u.rmem.size;
             continue;
         case OPTEE_MSG_ATTR_TYPE_VALUE_OUTPUT:
         case OPTEE_MSG_ATTR_TYPE_VALUE_INOUT:
             guest_arg->params[i].u.value.a =
-                call->xen_arg->params[i].u.value.a;
+                call->crux_arg->params[i].u.value.a;
             guest_arg->params[i].u.value.b =
-                call->xen_arg->params[i].u.value.b;
+                call->crux_arg->params[i].u.value.b;
             guest_arg->params[i].u.value.c =
-                call->xen_arg->params[i].u.value.c;
+                call->crux_arg->params[i].u.value.c;
             continue;
         case OPTEE_MSG_ATTR_TYPE_NONE:
         case OPTEE_MSG_ATTR_TYPE_RMEM_INPUT:
@@ -1092,43 +1092,43 @@ static int handle_rpc_return(struct optee_domain *ctx,
              * will overwrite it with actual result. So we can just
              * continue the call.
              */
-            gprintk(XENLOG_ERR, "Can't find SHM-RPC with cookie %"PRIx64"\n",
+            gprintk(CRUXLOG_ERR, "Can't find SHM-RPC with cookie %"PRIx64"\n",
                     cookie);
 
             return -ERESTART;
         }
 
-        shm_rpc->xen_arg = __map_domain_page(shm_rpc->xen_arg_pg);
+        shm_rpc->crux_arg = __map_domain_page(shm_rpc->crux_arg_pg);
 
         if ( access_guest_memory_by_gpa(current->domain,
                         gfn_to_gaddr(shm_rpc->gfn),
-                        shm_rpc->xen_arg,
-                        OPTEE_MSG_GET_ARG_SIZE(shm_rpc->xen_arg->num_params),
+                        shm_rpc->crux_arg,
+                        OPTEE_MSG_GET_ARG_SIZE(shm_rpc->crux_arg->num_params),
                         true) )
         {
             /*
              * We were unable to propagate request to guest, so let's return
              * back to OP-TEE.
              */
-            shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
+            shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
             ret = -ERESTART;
         }
 
         /* Save the buffer type in case we will want to free it */
-        if ( shm_rpc->xen_arg->cmd == OPTEE_RPC_CMD_SHM_ALLOC )
-            call->rpc_buffer_type = shm_rpc->xen_arg->params[0].u.value.a;
+        if ( shm_rpc->crux_arg->cmd == OPTEE_RPC_CMD_SHM_ALLOC )
+            call->rpc_buffer_type = shm_rpc->crux_arg->params[0].u.value.a;
 
         /*
          * OP-TEE is signalling that it has freed the buffer that it
          * requested before. This is the right time for us to do the
          * same.
          */
-        if ( shm_rpc->xen_arg->cmd == OPTEE_RPC_CMD_SHM_FREE )
+        if ( shm_rpc->crux_arg->cmd == OPTEE_RPC_CMD_SHM_FREE )
         {
-            free_optee_shm_buf(ctx, shm_rpc->xen_arg->params[0].u.value.b);
+            free_optee_shm_buf(ctx, shm_rpc->crux_arg->params[0].u.value.b);
             call->rpc_data_cookie = 0;
         }
-        unmap_domain_page(shm_rpc->xen_arg);
+        unmap_domain_page(shm_rpc->crux_arg);
     }
     else if ( call->rpc_op == OPTEE_SMC_RPC_FUNC_FREE )
     {
@@ -1187,25 +1187,25 @@ static void do_call_with_arg(struct optee_domain *ctx,
     copy_std_request_back(ctx, regs, call);
     set_user_reg(regs, 0, res.a0);
 
-    switch ( call->xen_arg->cmd )
+    switch ( call->crux_arg->cmd )
     {
     case OPTEE_MSG_CMD_REGISTER_SHM:
-        if ( call->xen_arg->ret == 0 )
+        if ( call->crux_arg->ret == 0 )
             /* OP-TEE registered buffer, we don't need pg_list anymore */
             free_optee_shm_buf_pg_list(ctx,
-                                       call->xen_arg->params[0].u.tmem.shm_ref);
+                                       call->crux_arg->params[0].u.tmem.shm_ref);
         else
             /* OP-TEE failed to register buffer, we need to unpin guest pages */
-            free_optee_shm_buf(ctx, call->xen_arg->params[0].u.tmem.shm_ref);
+            free_optee_shm_buf(ctx, call->crux_arg->params[0].u.tmem.shm_ref);
         break;
     case OPTEE_MSG_CMD_UNREGISTER_SHM:
-        if ( call->xen_arg->ret == 0 )
+        if ( call->crux_arg->ret == 0 )
             /* Now we can unpin guest pages */
-            free_optee_shm_buf(ctx, call->xen_arg->params[0].u.rmem.shm_ref);
+            free_optee_shm_buf(ctx, call->crux_arg->params[0].u.rmem.shm_ref);
         break;
     default:
         /* Free any temporary shared buffers */
-        free_shm_buffers(ctx, call->xen_arg);
+        free_shm_buffers(ctx, call->crux_arg);
     }
 
     put_std_call(ctx, call);
@@ -1231,7 +1231,7 @@ static void handle_std_call(struct optee_domain *ctx,
                             struct cpu_user_regs *regs)
 {
     register_t a1, a2;
-    paddr_t xen_addr;
+    paddr_t crux_addr;
     size_t arg_size;
     struct optee_std_call *call = allocate_std_call(ctx);
 
@@ -1248,20 +1248,20 @@ static void handle_std_call(struct optee_domain *ctx,
     if ( !copy_std_request(regs, call) )
         goto err;
 
-    arg_size = OPTEE_MSG_GET_ARG_SIZE(call->xen_arg->num_params);
+    arg_size = OPTEE_MSG_GET_ARG_SIZE(call->crux_arg->num_params);
     if ( arg_size > OPTEE_MSG_NONCONTIG_PAGE_SIZE )
     {
-        call->xen_arg->ret = TEEC_ERROR_BAD_PARAMETERS;
-        call->xen_arg->ret_origin = TEEC_ORIGIN_COMMS;
+        call->crux_arg->ret = TEEC_ERROR_BAD_PARAMETERS;
+        call->crux_arg->ret_origin = TEEC_ORIGIN_COMMS;
         /* Make sure that copy_std_request_back() will stay within the buffer */
-        call->xen_arg->num_params = 0;
+        call->crux_arg->num_params = 0;
 
         copy_std_request_back(ctx, regs, call);
 
         goto err;
     }
 
-    switch ( call->xen_arg->cmd )
+    switch ( call->crux_arg->cmd )
     {
     case OPTEE_MSG_CMD_OPEN_SESSION:
     case OPTEE_MSG_CMD_CLOSE_SESSION:
@@ -1272,7 +1272,7 @@ static void handle_std_call(struct optee_domain *ctx,
         if( translate_params(ctx, call) )
         {
             /*
-             * translate_params() sets xen_arg->ret value to non-zero.
+             * translate_params() sets crux_arg->ret value to non-zero.
              * So, technically, SMC was successful, but there was an error
              * during handling standard call encapsulated into this SMC.
              */
@@ -1281,8 +1281,8 @@ static void handle_std_call(struct optee_domain *ctx,
             goto err;
         }
 
-        xen_addr = page_to_maddr(call->xen_arg_pg);
-        uint64_to_regpair(&a1, &a2, xen_addr);
+        crux_addr = page_to_maddr(call->crux_arg_pg);
+        uint64_to_regpair(&a1, &a2, crux_addr);
 
         do_call_with_arg(ctx, call, regs, OPTEE_SMC_CALL_WITH_ARG, a1, a2,
                          OPTEE_SMC_SHM_CACHED, 0, 0);
@@ -1316,16 +1316,16 @@ static bool issue_rpc_cmd_free(struct optee_domain *ctx,
     register_t r1, r2;
 
     /* In case if guest will forget to update it with meaningful value */
-    shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
-    shm_rpc->xen_arg->cmd = OPTEE_RPC_CMD_SHM_FREE;
-    shm_rpc->xen_arg->num_params = 1;
-    shm_rpc->xen_arg->params[0].attr = OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
-    shm_rpc->xen_arg->params[0].u.value.a = call->rpc_buffer_type;
-    shm_rpc->xen_arg->params[0].u.value.b = cookie;
+    shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
+    shm_rpc->crux_arg->cmd = OPTEE_RPC_CMD_SHM_FREE;
+    shm_rpc->crux_arg->num_params = 1;
+    shm_rpc->crux_arg->params[0].attr = OPTEE_MSG_ATTR_TYPE_VALUE_INPUT;
+    shm_rpc->crux_arg->params[0].u.value.a = call->rpc_buffer_type;
+    shm_rpc->crux_arg->params[0].u.value.b = cookie;
 
     if ( access_guest_memory_by_gpa(current->domain,
                                     gfn_to_gaddr(shm_rpc->gfn),
-                                    shm_rpc->xen_arg,
+                                    shm_rpc->crux_arg,
                                     OPTEE_MSG_GET_ARG_SIZE(1),
                                     true) )
     {
@@ -1338,15 +1338,15 @@ static bool issue_rpc_cmd_free(struct optee_domain *ctx,
          * OPTEE_RPC_CMD_SHM_FREE request, so it will not know that it
          * can release allocated buffer.
          */
-        shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
-        shm_rpc->xen_arg->num_params = 0;
+        shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
+        shm_rpc->crux_arg->num_params = 0;
 
         return false;
     }
 
     uint64_to_regpair(&r1, &r2, shm_rpc->cookie);
 
-    call->state = OPTEE_CALL_XEN_RPC;
+    call->state = OPTEE_CALL_CRUX_RPC;
     call->rpc_op = OPTEE_SMC_RPC_FUNC_CMD;
     call->rpc_params[0] = r1;
     call->rpc_params[1] = r2;
@@ -1359,8 +1359,8 @@ static bool issue_rpc_cmd_free(struct optee_domain *ctx,
     return true;
 }
 
-/* Handles return from xen-issued RPC */
-static void handle_xen_rpc_return(struct optee_domain *ctx,
+/* Handles return from Xen-issued RPC */
+static void handle_crux_rpc_return(struct optee_domain *ctx,
                                   struct cpu_user_regs *regs,
                                   struct optee_std_call *call,
                                   struct shm_rpc *shm_rpc)
@@ -1381,8 +1381,8 @@ static void handle_xen_rpc_return(struct optee_domain *ctx,
      * We are not checking return value from a guest because we assume
      * that OPTEE_RPC_CMD_SHM_FREE never fails.
      */
-    shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
-    shm_rpc->xen_arg->num_params = 0;
+    shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
+    shm_rpc->crux_arg->num_params = 0;
 }
 
 /*
@@ -1399,15 +1399,15 @@ static bool handle_rpc_cmd_alloc(struct optee_domain *ctx,
                                  struct optee_std_call *call,
                                  struct shm_rpc *shm_rpc)
 {
-    if ( shm_rpc->xen_arg->ret || shm_rpc->xen_arg->num_params != 1 )
+    if ( shm_rpc->crux_arg->ret || shm_rpc->crux_arg->num_params != 1 )
         return true;
 
-    if ( shm_rpc->xen_arg->params[0].attr != (OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT |
+    if ( shm_rpc->crux_arg->params[0].attr != (OPTEE_MSG_ATTR_TYPE_TMEM_OUTPUT |
                                               OPTEE_MSG_ATTR_NONCONTIG) )
     {
-        gdprintk(XENLOG_WARNING,
+        gdprintk(CRUXLOG_WARNING,
                  "Invalid attrs for shared mem buffer: %"PRIx64"\n",
-                 shm_rpc->xen_arg->params[0].attr);
+                 shm_rpc->crux_arg->params[0].attr);
         return true;
     }
 
@@ -1415,10 +1415,10 @@ static bool handle_rpc_cmd_alloc(struct optee_domain *ctx,
     if ( call->rpc_data_cookie )
         free_optee_shm_buf_pg_list(ctx, call->rpc_data_cookie);
 
-    if ( !translate_noncontig(ctx, call, &shm_rpc->xen_arg->params[0]) )
+    if ( !translate_noncontig(ctx, call, &shm_rpc->crux_arg->params[0]) )
     {
         call->rpc_data_cookie =
-            shm_rpc->xen_arg->params[0].u.tmem.shm_ref;
+            shm_rpc->crux_arg->params[0].u.tmem.shm_ref;
     }
     else
     {
@@ -1428,7 +1428,7 @@ static bool handle_rpc_cmd_alloc(struct optee_domain *ctx,
          * to free it, before reporting an error to OP-TEE.
          */
         return !issue_rpc_cmd_free(ctx, regs, call, shm_rpc,
-                                   shm_rpc->xen_arg->params[0].u.tmem.shm_ref);
+                                   shm_rpc->crux_arg->params[0].u.tmem.shm_ref);
     }
 
     return true;
@@ -1448,42 +1448,42 @@ static void handle_rpc_cmd(struct optee_domain *ctx, struct cpu_user_regs *regs,
 
     if ( !shm_rpc )
     {
-        gdprintk(XENLOG_ERR, "Can't find SHM-RPC with cookie %"PRIx64"\n",
+        gdprintk(CRUXLOG_ERR, "Can't find SHM-RPC with cookie %"PRIx64"\n",
                  cookie);
         return;
     }
 
-    shm_rpc->xen_arg = __map_domain_page(shm_rpc->xen_arg_pg);
+    shm_rpc->crux_arg = __map_domain_page(shm_rpc->crux_arg_pg);
 
     /* First, copy only header to read number of arguments */
     if ( access_guest_memory_by_gpa(current->domain,
                                     gfn_to_gaddr(shm_rpc->gfn),
-                                    shm_rpc->xen_arg,
+                                    shm_rpc->crux_arg,
                                     sizeof(struct optee_msg_arg),
                                     false) )
     {
-        shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
+        shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
         goto out;
     }
 
-    arg_size = OPTEE_MSG_GET_ARG_SIZE(shm_rpc->xen_arg->num_params);
+    arg_size = OPTEE_MSG_GET_ARG_SIZE(shm_rpc->crux_arg->num_params);
     if ( arg_size > OPTEE_MSG_NONCONTIG_PAGE_SIZE )
     {
-        shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
+        shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
         goto out;
     }
 
     /* Read the whole command structure */
     if ( access_guest_memory_by_gpa(current->domain, gfn_to_gaddr(shm_rpc->gfn),
-                                    shm_rpc->xen_arg, arg_size, false) )
+                                    shm_rpc->crux_arg, arg_size, false) )
     {
-        shm_rpc->xen_arg->ret = TEEC_ERROR_GENERIC;
+        shm_rpc->crux_arg->ret = TEEC_ERROR_GENERIC;
         goto out;
     }
 
     if ( call->state == OPTEE_CALL_NORMAL )
     {
-        switch (shm_rpc->xen_arg->cmd)
+        switch (shm_rpc->crux_arg->cmd)
         {
         case OPTEE_RPC_CMD_GET_TIME:
         case OPTEE_RPC_CMD_WAIT_QUEUE:
@@ -1493,7 +1493,7 @@ static void handle_rpc_cmd(struct optee_domain *ctx, struct cpu_user_regs *regs,
             if ( !handle_rpc_cmd_alloc(ctx, regs, call, shm_rpc) )
             {
                 /* We failed to translate buffer, report back to guest */
-                unmap_domain_page(shm_rpc->xen_arg);
+                unmap_domain_page(shm_rpc->crux_arg);
                 put_std_call(ctx, call);
 
                 return;
@@ -1507,11 +1507,11 @@ static void handle_rpc_cmd(struct optee_domain *ctx, struct cpu_user_regs *regs,
     }
     else
     {
-        handle_xen_rpc_return(ctx, regs, call, shm_rpc);
+        handle_crux_rpc_return(ctx, regs, call, shm_rpc);
     }
 
 out:
-    unmap_domain_page(shm_rpc->xen_arg);
+    unmap_domain_page(shm_rpc->crux_arg);
 
     do_call_with_arg(ctx, call, regs, OPTEE_SMC_CALL_RETURN_FROM_RPC, 0, 0,
                      get_user_reg(regs, 3), 0, 0);
@@ -1531,7 +1531,7 @@ static void handle_rpc_func_alloc(struct optee_domain *ctx,
 
     if ( ptr & (OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1) )
     {
-        gdprintk(XENLOG_WARNING, "domain returned invalid RPC command buffer\n");
+        gdprintk(CRUXLOG_WARNING, "Domain returned invalid RPC command buffer\n");
         /*
          * OP-TEE is waiting for a response to the RPC. We can't just
          * return error to the guest. We need to provide some invalid
@@ -1544,12 +1544,12 @@ static void handle_rpc_func_alloc(struct optee_domain *ctx,
     shm_rpc = allocate_and_pin_shm_rpc(ctx, gaddr_to_gfn(ptr), cookie);
     if ( IS_ERR(shm_rpc) )
     {
-        gdprintk(XENLOG_WARNING, "Failed to allocate shm_rpc object: %ld\n",
+        gdprintk(CRUXLOG_WARNING, "Failed to allocate shm_rpc object: %ld\n",
                  PTR_ERR(shm_rpc));
         ptr = 0;
     }
     else
-        ptr = page_to_maddr(shm_rpc->xen_arg_pg);
+        ptr = page_to_maddr(shm_rpc->crux_arg_pg);
 
 out:
     uint64_to_regpair(&r1, &r2, ptr);
@@ -1576,7 +1576,7 @@ static void handle_rpc(struct optee_domain *ctx, struct cpu_user_regs *regs)
     /*
      * This is to prevent race between new call with the same thread id.
      * OP-TEE can reuse thread id right after it finished handling the call,
-     * before XEN had chance to free old call context.
+     * before CRUX had chance to free old call context.
      */
     call->optee_thread_id = -1;
 
@@ -1731,7 +1731,7 @@ static const struct tee_mediator_ops optee_ops =
     .handle_call = optee_handle_call,
 };
 
-REGISTER_TEE_MEDIATOR(optee, "OP-TEE", XEN_DOMCTL_CONFIG_TEE_OPTEE, &optee_ops);
+REGISTER_TEE_MEDIATOR(optee, "OP-TEE", CRUX_DOMCTL_CONFIG_TEE_OPTEE, &optee_ops);
 
 /*
  * Local variables:

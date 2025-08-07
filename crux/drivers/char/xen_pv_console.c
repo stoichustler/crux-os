@@ -1,8 +1,8 @@
 /******************************************************************************
- * drivers/char/xen_pv_console.c
+ * drivers/char/crux_pv_console.c
  *
- * A frontend driver for xen's PV console.
- * Can be used when xen is running on top of xen in pv-in-pvh mode.
+ * A frontend driver for Xen's PV console.
+ * Can be used when Xen is running on top of Xen in pv-in-pvh mode.
  * (Linux's name for this is hvc console)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,9 @@
  * Copyright (c) 2017 Citrix Systems Ltd.
  */
 
-#include <xen/lib.h>
-#include <xen/hypercall.h>
-#include <xen/pv_console.h>
+#include <crux/lib.h>
+#include <crux/hypercall.h>
+#include <crux/pv_console.h>
 
 #include <asm/fixmap.h>
 #include <asm/guest.h>
@@ -31,7 +31,7 @@
 #include <public/hvm/params.h>
 #include <public/io/console.h>
 
-static struct xencons_interface *cons_ring;
+static struct cruxcons_interface *cons_ring;
 static evtchn_port_t cons_evtchn;
 static serial_rx_fn cons_rx_handler;
 static DEFINE_SPINLOCK(tx_lock);
@@ -43,25 +43,25 @@ void pv_console_init(void)
     long r;
     uint64_t raw_pfn = 0, raw_evtchn = 0;
 
-    if ( !xen_guest )
+    if ( !crux_guest )
     {
-        printk("PV console init failed: xen_guest mode is not active!\n");
+        printk("PV console init failed: crux_guest mode is not active!\n");
         return;
     }
 
-    r = xen_hypercall_hvm_get_param(HVM_PARAM_CONSOLE_PFN, &raw_pfn);
+    r = crux_hypercall_hvm_get_param(HVM_PARAM_CONSOLE_PFN, &raw_pfn);
     if ( r < 0 )
         goto error;
 
-    r = xen_hypercall_hvm_get_param(HVM_PARAM_CONSOLE_EVTCHN, &raw_evtchn);
+    r = crux_hypercall_hvm_get_param(HVM_PARAM_CONSOLE_EVTCHN, &raw_evtchn);
     if ( r < 0 )
         goto error;
 
     set_fixmap(FIX_PV_CONSOLE, raw_pfn << PAGE_SHIFT);
-    cons_ring = (struct xencons_interface *)fix_to_virt(FIX_PV_CONSOLE);
+    cons_ring = (struct cruxcons_interface *)fix_to_virt(FIX_PV_CONSOLE);
     cons_evtchn = raw_evtchn;
 
-    printk("initialised PV console at 0x%p with pfn %#lx and evtchn %#x\n",
+    printk("Initialised PV console at 0x%p with pfn %#lx and evtchn %#x\n",
             cons_ring, raw_pfn, cons_evtchn);
     pv_console = true;
 
@@ -81,12 +81,12 @@ void __init pv_console_init_postirq(void)
     if ( !cons_ring )
         return;
 
-    xen_hypercall_evtchn_unmask(cons_evtchn);
+    crux_hypercall_evtchn_unmask(cons_evtchn);
 }
 
 static void notify_daemon(void)
 {
-    xen_hypercall_evtchn_send(cons_evtchn);
+    crux_hypercall_evtchn_send(cons_evtchn);
 }
 
 evtchn_port_t pv_console_evtchn(void)
@@ -97,7 +97,7 @@ evtchn_port_t pv_console_evtchn(void)
 size_t pv_console_rx(void)
 {
     char c;
-    XENCONS_RING_IDX cons, prod;
+    CRUXCONS_RING_IDX cons, prod;
     size_t recv = 0;
 
     if ( !cons_ring )
@@ -116,7 +116,7 @@ size_t pv_console_rx(void)
 
     while ( cons != prod )
     {
-        c = cons_ring->in[MASK_XENCONS_IDX(cons++, cons_ring->in)];
+        c = cons_ring->in[MASK_CRUXCONS_IDX(cons++, cons_ring->in)];
         if ( cons_rx_handler )
             cons_rx_handler(c);
         recv++;
@@ -132,7 +132,7 @@ size_t pv_console_rx(void)
 
 static size_t pv_ring_puts(const char *buf, size_t nr)
 {
-    XENCONS_RING_IDX cons, prod;
+    CRUXCONS_RING_IDX cons, prod;
     size_t sent = 0, avail;
     bool put_r = false;
 
@@ -152,8 +152,8 @@ static size_t pv_ring_puts(const char *buf, size_t nr)
 
         if ( avail == 0 )
         {
-            /* Wait for xenconsoled to consume our output */
-            xen_hypercall_sched_op(SCHEDOP_yield, NULL);
+            /* Wait for cruxconsoled to consume our output */
+            crux_hypercall_sched_op(SCHEDOP_yield, NULL);
             continue;
         }
 
@@ -161,12 +161,12 @@ static size_t pv_ring_puts(const char *buf, size_t nr)
         {
             if ( put_r )
             {
-                cons_ring->out[MASK_XENCONS_IDX(prod++, cons_ring->out)] = '\r';
+                cons_ring->out[MASK_CRUXCONS_IDX(prod++, cons_ring->out)] = '\r';
                 put_r = false;
             }
             else
             {
-                cons_ring->out[MASK_XENCONS_IDX(prod++, cons_ring->out)] =
+                cons_ring->out[MASK_CRUXCONS_IDX(prod++, cons_ring->out)] =
                     buf[sent];
 
                 /* Send '\r' for every '\n' */

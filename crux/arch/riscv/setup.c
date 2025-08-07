@@ -1,20 +1,20 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/acpi.h>
-#include <xen/bug.h>
-#include <xen/bootinfo.h>
-#include <xen/compile.h>
-#include <xen/console.h>
-#include <xen/device_tree.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/serial.h>
-#include <xen/shutdown.h>
-#include <xen/smp.h>
-#include <xen/timer.h>
-#include <xen/vmap.h>
-#include <xen/xvmalloc.h>
+#include <crux/acpi.h>
+#include <crux/bug.h>
+#include <crux/bootinfo.h>
+#include <crux/compile.h>
+#include <crux/console.h>
+#include <crux/device_tree.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/serial.h>
+#include <crux/shutdown.h>
+#include <crux/smp.h>
+#include <crux/timer.h>
+#include <crux/vmap.h>
+#include <crux/xvmalloc.h>
 
 #include <public/version.h>
 
@@ -26,7 +26,7 @@
 #include <asm/setup.h>
 #include <asm/traps.h>
 
-/* xen stack for bringing up the first CPU. */
+/* Xen stack for bringing up the first CPU. */
 unsigned char __initdata cpu0_boot_stack[STACK_SIZE]
     __aligned(STACK_SIZE);
 
@@ -55,7 +55,7 @@ void __init copy_from_paddr(void *dst, paddr_t paddr, unsigned long len)
     }
 }
 
-/* Relocate the FDT in xen heap */
+/* Relocate the FDT in Xen heap */
 static void * __init relocate_fdt(paddr_t dtb_paddr, size_t dtb_size)
 {
     void *fdt = xvmalloc_array(uint8_t, dtb_size);
@@ -68,7 +68,7 @@ static void * __init relocate_fdt(paddr_t dtb_paddr, size_t dtb_size)
     return fdt;
 }
 
-void __init noreturn start_xen(unsigned long bootcpu_id,
+void __init noreturn start_crux(unsigned long bootcpu_id,
                                paddr_t dtb_addr)
 {
     const char *cmdline;
@@ -92,15 +92,15 @@ void __init noreturn start_xen(unsigned long bootcpu_id,
               "Please check your bootloader.\n",
               dtb_addr, BOOT_FDT_VIRT_SIZE);
 
-    /* Register xen's load address as a boot module. */
-    if ( !add_boot_module(BOOTMOD_XEN, virt_to_maddr(_start),
+    /* Register Xen's load address as a boot module. */
+    if ( !add_boot_module(BOOTMOD_CRUX, virt_to_maddr(_start),
                           _end - _start, false) )
-        panic("Failed to add BOOTMOD_XEN\n");
+        panic("Failed to add BOOTMOD_CRUX\n");
 
     fdt_size = boot_fdt_info(device_tree_flattened, dtb_addr);
 
     cmdline = boot_fdt_cmdline(device_tree_flattened);
-    printk("command line: %s\n", cmdline);
+    printk("Command line: %s\n", cmdline);
     cmdline_parse(cmdline);
 
     setup_mm();
@@ -133,7 +133,7 @@ void __init noreturn start_xen(unsigned long bootcpu_id,
 
     riscv_fill_hwcap();
 
-    preinit_xen_time();
+    preinit_crux_time();
 
     intc_preinit();
 

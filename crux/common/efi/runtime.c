@@ -1,13 +1,13 @@
 #include "efi.h"
 #include "runtime.h"
 
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/irq.h>
-#include <xen/sections.h>
-#include <xen/time.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/irq.h>
+#include <crux/sections.h>
+#include <crux/time.h>
 
-DEFINE_XEN_GUEST_HANDLE(CHAR16);
+DEFINE_CRUX_GUEST_HANDLE(CHAR16);
 
 struct efi_rs_state {
 #ifdef CONFIG_X86
@@ -122,7 +122,7 @@ struct efi_rs_state efi_rs_enter(void)
      * Stash MSR_S_CET and clobber ENDBR_EN.  This is necessary because
      * SHSTK_EN isn't configured until very late on the BSP.
      */
-    if ( cpu_has_xen_ibt )
+    if ( cpu_has_crux_ibt )
     {
         rdmsrl(MSR_S_CET, state.msr_s_cet);
         wrmsrl(MSR_S_CET, state.msr_s_cet & ~CET_ENDBR_EN);
@@ -195,7 +195,7 @@ void efi_halt_system(void)
     status = efi_rs->ResetSystem(EfiResetShutdown, EFI_SUCCESS, 0, NULL);
     efi_rs_leave(&state);
 
-    printk(XENLOG_WARNING "EFI: could not halt system (%#lx)\n", status);
+    printk(CRUXLOG_WARNING "EFI: could not halt system (%#lx)\n", status);
 }
 
 void efi_reset_system(bool warm)
@@ -209,7 +209,7 @@ void efi_reset_system(bool warm)
                                  EFI_SUCCESS, 0, NULL);
     efi_rs_leave(&state);
 
-    printk(XENLOG_WARNING "EFI: could not reset system (%#lx)\n", status);
+    printk(CRUXLOG_WARNING "EFI: could not reset system (%#lx)\n", status);
 }
 
 #endif /* CONFIG_ARM */
@@ -227,7 +227,7 @@ const CHAR16 *wmemchr(const CHAR16 *s, CHAR16 c, UINTN n)
 #endif /* COMPAT */
 
 #ifndef CONFIG_ARM /* TODO - disabled until implemented on ARM */
-int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
+int efi_get_info(uint32_t idx, union cruxpf_efi_info *info)
 {
     unsigned int i, n;
 
@@ -236,24 +236,24 @@ int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
 
     switch ( idx )
     {
-    case XEN_FW_EFI_VERSION:
+    case CRUX_FW_EFI_VERSION:
         info->version = efi_version;
         break;
-    case XEN_FW_EFI_RT_VERSION:
+    case CRUX_FW_EFI_RT_VERSION:
     {
         if ( !efi_enabled(EFI_RS) )
             return -EOPNOTSUPP;
         info->version = efi_rs->Hdr.Revision;
         break;
     }
-    case XEN_FW_EFI_CONFIG_TABLE:
+    case CRUX_FW_EFI_CONFIG_TABLE:
         info->cfg.addr = __pa(efi_ct);
         info->cfg.nent = efi_num_ct;
         break;
 
-    case XEN_FW_EFI_VENDOR:
+    case CRUX_FW_EFI_VENDOR:
     {
-        XEN_GUEST_HANDLE_PARAM(CHAR16) vendor_name =
+        CRUX_GUEST_HANDLE_PARAM(CHAR16) vendor_name =
             guest_handle_cast(info->vendor.name, CHAR16);
 
         if ( !efi_fw_vendor )
@@ -275,7 +275,7 @@ int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
         break;
     }
 
-    case XEN_FW_EFI_MEM_INFO:
+    case CRUX_FW_EFI_MEM_INFO:
         for ( i = 0; i < efi_memmap_size; i += efi_mdesc_size )
         {
             EFI_MEMORY_DESCRIPTOR *desc = efi_memmap + i;
@@ -295,7 +295,7 @@ int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
             }
         }
         return -ESRCH;
-    case XEN_FW_EFI_PCI_ROM: {
+    case CRUX_FW_EFI_PCI_ROM: {
         const struct efi_pci_rom *ent;
 
         for ( ent = efi_pci_roms; ent; ent = ent->next )
@@ -312,7 +312,7 @@ int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
         return -ESRCH;
     }
 
-    case XEN_FW_EFI_APPLE_PROPERTIES:
+    case CRUX_FW_EFI_APPLE_PROPERTIES:
         if ( !efi_apple_properties_len )
             return -ENODATA;
         info->apple_properties.address = efi_apple_properties_addr;
@@ -326,7 +326,7 @@ int efi_get_info(uint32_t idx, union xenpf_efi_info *info)
     return 0;
 }
 
-static long gwstrlen(XEN_GUEST_HANDLE_PARAM(CHAR16) str)
+static long gwstrlen(CRUX_GUEST_HANDLE_PARAM(CHAR16) str)
 {
     unsigned long len;
 
@@ -343,11 +343,11 @@ static long gwstrlen(XEN_GUEST_HANDLE_PARAM(CHAR16) str)
     return len;
 }
 
-static inline EFI_TIME *cast_time(struct xenpf_efi_time *time)
+static inline EFI_TIME *cast_time(struct cruxpf_efi_time *time)
 {
 #define chk_fld(F, f) \
     BUILD_BUG_ON(sizeof(cast_time(NULL)->F) != sizeof(time->f) || \
-                 offsetof(EFI_TIME, F) != offsetof(struct xenpf_efi_time, f))
+                 offsetof(EFI_TIME, F) != offsetof(struct cruxpf_efi_time, f))
     chk_fld(Year, year);
     chk_fld(Month, month);
     chk_fld(Day, day);
@@ -361,12 +361,12 @@ static inline EFI_TIME *cast_time(struct xenpf_efi_time *time)
     return (void *)time;
 }
 
-static inline EFI_GUID *cast_guid(struct xenpf_efi_guid *guid)
+static inline EFI_GUID *cast_guid(struct cruxpf_efi_guid *guid)
 {
 #define chk_fld(n) \
     BUILD_BUG_ON(sizeof(cast_guid(NULL)->Data##n) != sizeof(guid->data##n) || \
                  offsetof(EFI_GUID, Data##n) != \
-                 offsetof(struct xenpf_efi_guid, data##n))
+                 offsetof(struct cruxpf_efi_guid, data##n))
     chk_fld(1);
     chk_fld(2);
     chk_fld(3);
@@ -375,7 +375,7 @@ static inline EFI_GUID *cast_guid(struct xenpf_efi_guid *guid)
     return (void *)guid;
 }
 
-int efi_runtime_call(struct xenpf_efi_runtime_call *op)
+int efi_runtime_call(struct cruxpf_efi_runtime_call *op)
 {
     struct efi_rs_state state;
     unsigned long flags;
@@ -390,7 +390,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
 
     switch ( op->function )
     {
-    case XEN_EFI_get_time:
+    case CRUX_EFI_get_time:
     {
         EFI_TIME_CAPABILITIES caps;
 
@@ -410,12 +410,12 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
             op->u.get_time.resolution = caps.Resolution;
             op->u.get_time.accuracy = caps.Accuracy;
             if ( caps.SetsToZero )
-                op->misc = XEN_EFI_GET_TIME_SET_CLEARS_NS;
+                op->misc = CRUX_EFI_GET_TIME_SET_CLEARS_NS;
         }
     }
     break;
 
-    case XEN_EFI_set_time:
+    case CRUX_EFI_set_time:
         if ( op->misc )
             return -EINVAL;
 
@@ -428,7 +428,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
         efi_rs_leave(&state);
         break;
 
-    case XEN_EFI_get_wakeup_time:
+    case CRUX_EFI_get_wakeup_time:
     {
         BOOLEAN enabled, pending;
 
@@ -447,16 +447,16 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
         if ( !EFI_ERROR(status) )
         {
             if ( enabled )
-                op->misc |= XEN_EFI_GET_WAKEUP_TIME_ENABLED;
+                op->misc |= CRUX_EFI_GET_WAKEUP_TIME_ENABLED;
             if ( pending )
-                op->misc |= XEN_EFI_GET_WAKEUP_TIME_PENDING;
+                op->misc |= CRUX_EFI_GET_WAKEUP_TIME_PENDING;
         }
     }
     break;
 
-    case XEN_EFI_set_wakeup_time:
-        if ( op->misc & ~(XEN_EFI_SET_WAKEUP_TIME_ENABLE |
-                          XEN_EFI_SET_WAKEUP_TIME_ENABLE_ONLY) )
+    case CRUX_EFI_set_wakeup_time:
+        if ( op->misc & ~(CRUX_EFI_SET_WAKEUP_TIME_ENABLE |
+                          CRUX_EFI_SET_WAKEUP_TIME_ENABLE_ONLY) )
             return -EINVAL;
 
         state = efi_rs_enter();
@@ -464,9 +464,9 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
             return -EOPNOTSUPP;
         spin_lock_irqsave(&rtc_lock, flags);
         status = efi_rs->SetWakeupTime(!!(op->misc &
-                                          XEN_EFI_SET_WAKEUP_TIME_ENABLE),
+                                          CRUX_EFI_SET_WAKEUP_TIME_ENABLE),
                                        (op->misc &
-                                        XEN_EFI_SET_WAKEUP_TIME_ENABLE_ONLY) ?
+                                        CRUX_EFI_SET_WAKEUP_TIME_ENABLE_ONLY) ?
                                        NULL :
                                        cast_time(&op->u.set_wakeup_time));
         spin_unlock_irqrestore(&rtc_lock, flags);
@@ -475,7 +475,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
         op->misc = 0;
         break;
 
-    case XEN_EFI_get_next_high_monotonic_count:
+    case CRUX_EFI_get_next_high_monotonic_count:
         if ( op->misc )
             return -EINVAL;
 
@@ -487,7 +487,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
         efi_rs_leave(&state);
         break;
 
-    case XEN_EFI_get_variable:
+    case CRUX_EFI_get_variable:
     {
         CHAR16 *name;
         long len;
@@ -544,7 +544,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
     }
     break;
 
-    case XEN_EFI_set_variable:
+    case CRUX_EFI_set_variable:
     {
         CHAR16 *name;
         long len;
@@ -586,7 +586,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
     }
     break;
 
-    case XEN_EFI_get_next_variable_name:
+    case CRUX_EFI_get_next_variable_name:
     {
         union {
             CHAR16 *str;
@@ -633,7 +633,7 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
     }
     break;
 
-    case XEN_EFI_query_variable_info:
+    case CRUX_EFI_query_variable_info:
     {
         /*
          * Put OUT variables on the stack to make them 8 byte aligned when
@@ -645,10 +645,10 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
          */
         uint64_t max_store_size = 0, remain_store_size = 0, max_size = 0;
 
-        if ( op->misc & ~XEN_EFI_VARINFO_BOOT_SNAPSHOT )
+        if ( op->misc & ~CRUX_EFI_VARINFO_BOOT_SNAPSHOT )
             return -EINVAL;
 
-        if ( op->misc & XEN_EFI_VARINFO_BOOT_SNAPSHOT )
+        if ( op->misc & CRUX_EFI_VARINFO_BOOT_SNAPSHOT )
         {
             if ( (op->u.query_variable_info.attr
                   & ~EFI_VARIABLE_APPEND_WRITE) !=
@@ -692,8 +692,8 @@ int efi_runtime_call(struct xenpf_efi_runtime_call *op)
         break;
     }
 
-    case XEN_EFI_query_capsule_capabilities:
-    case XEN_EFI_update_capsule:
+    case CRUX_EFI_query_capsule_capabilities:
+    case CRUX_EFI_update_capsule:
         if ( op->misc )
             return -EINVAL;
 

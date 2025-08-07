@@ -4,7 +4,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 #define hyp_mode(r)     (0)
 

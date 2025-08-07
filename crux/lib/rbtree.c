@@ -20,8 +20,8 @@
   linux/lib/rbtree.c
 */
 
-#include <xen/types.h>
-#include <xen/rbtree.h>
+#include <crux/types.h>
+#include <crux/rbtree.h>
 
 /*
  * red-black trees properties:  http://en.wikipedia.org/wiki/Rbtree

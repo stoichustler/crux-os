@@ -2,15 +2,15 @@
 /******************************************************************************
  * callback.h
  *
- * Register guest OS callbacks with xen.
+ * Register guest OS callbacks with Xen.
  *
  * Copyright (c) 2006, Ian Campbell
  */
 
-#ifndef __XEN_PUBLIC_CALLBACK_H__
-#define __XEN_PUBLIC_CALLBACK_H__
+#ifndef __CRUX_PUBLIC_CALLBACK_H__
+#define __CRUX_PUBLIC_CALLBACK_H__
 
-#include "xen.h"
+#include "crux.h"
 
 /*
  * Prototype for this hypercall is:
@@ -22,7 +22,7 @@
 /* x86: Callback for event delivery. */
 #define CALLBACKTYPE_event                 0
 
-/* x86: Failsafe callback when guest state cannot be restored by xen. */
+/* x86: Failsafe callback when guest state cannot be restored by Xen. */
 #define CALLBACKTYPE_failsafe              1
 
 /* x86/64 hypervisor: Syscall by 64-bit guest app ('64-on-64-on-64'). */
@@ -67,10 +67,10 @@
 struct callback_register {
     uint16_t type;
     uint16_t flags;
-    xen_callback_t address;
+    crux_callback_t address;
 };
 typedef struct callback_register callback_register_t;
-DEFINE_XEN_GUEST_HANDLE(callback_register_t);
+DEFINE_CRUX_GUEST_HANDLE(callback_register_t);
 
 /*
  * Unregister a callback.
@@ -84,14 +84,14 @@ struct callback_unregister {
     uint16_t _unused;
 };
 typedef struct callback_unregister callback_unregister_t;
-DEFINE_XEN_GUEST_HANDLE(callback_unregister_t);
+DEFINE_CRUX_GUEST_HANDLE(callback_unregister_t);
 
-#if __XEN_INTERFACE_VERSION__ < 0x00030207
+#if __CRUX_INTERFACE_VERSION__ < 0x00030207
 #undef CALLBACKTYPE_sysenter
 #define CALLBACKTYPE_sysenter CALLBACKTYPE_sysenter_deprecated
 #endif
 
-#endif /* __XEN_PUBLIC_CALLBACK_H__ */
+#endif /* __CRUX_PUBLIC_CALLBACK_H__ */
 
 /*
  * Local variables:

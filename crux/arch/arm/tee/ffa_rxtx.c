@@ -3,11 +3,11 @@
  * Copyright (C) 2024  Linaro Limited
  */
 
-#include <xen/const.h>
-#include <xen/domain_page.h>
-#include <xen/mm.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
+#include <crux/const.h>
+#include <crux/domain_page.h>
+#include <crux/mm.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
 
 #include <asm/smccc.h>
 #include <asm/regs.h>
@@ -68,7 +68,7 @@ uint32_t ffa_handle_rxtx_map(uint32_t fid, register_t tx_addr,
 
     if ( page_count > FFA_MAX_RXTX_PAGE_COUNT )
     {
-        printk(XENLOG_ERR "ffa: RXTX_MAP: error: %u pages requested (limit %u)\n",
+        printk(CRUXLOG_ERR "ffa: RXTX_MAP: error: %u pages requested (limit %u)\n",
                page_count, FFA_MAX_RXTX_PAGE_COUNT);
         return FFA_RET_INVALID_PARAMETERS;
     }
@@ -283,12 +283,12 @@ void ffa_rxtx_destroy(void)
 
     if ( ffa_tx )
     {
-        free_xenheap_pages(ffa_tx, 0);
+        free_cruxheap_pages(ffa_tx, 0);
         ffa_tx = NULL;
     }
     if ( ffa_rx )
     {
-        free_xenheap_pages(ffa_rx, 0);
+        free_cruxheap_pages(ffa_rx, 0);
         ffa_rx = NULL;
     }
 
@@ -304,11 +304,11 @@ bool ffa_rxtx_init(void)
     if ( !ffa_fw_supports_fid(FFA_RXTX_MAP_64) )
         return false;
 
-    ffa_rx = alloc_xenheap_pages(get_order_from_pages(FFA_RXTX_PAGE_COUNT), 0);
+    ffa_rx = alloc_cruxheap_pages(get_order_from_pages(FFA_RXTX_PAGE_COUNT), 0);
     if ( !ffa_rx )
         return false;
 
-    ffa_tx = alloc_xenheap_pages(get_order_from_pages(FFA_RXTX_PAGE_COUNT), 0);
+    ffa_tx = alloc_cruxheap_pages(get_order_from_pages(FFA_RXTX_PAGE_COUNT), 0);
     if ( !ffa_tx )
         goto err;
 

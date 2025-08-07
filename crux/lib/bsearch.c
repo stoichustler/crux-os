@@ -10,4 +10,4 @@
  */
 
 #define BSEARCH_IMPLEMENTATION
-#include <xen/bsearch.h>
+#include <crux/bsearch.h>

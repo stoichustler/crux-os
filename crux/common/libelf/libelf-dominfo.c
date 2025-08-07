@@ -1,5 +1,5 @@
 /*
- * parse xen-specific information out of elf kernel binaries.
+ * parse crux-specific information out of elf kernel binaries.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,21 +26,21 @@
 #endif
 
 /* ------------------------------------------------------------------------ */
-/* xen features                                                             */
+/* crux features                                                             */
 
-static const char *const elf_xen_feature_names[] = {
-    [XENFEAT_writable_page_tables] = "writable_page_tables",
-    [XENFEAT_writable_descriptor_tables] = "writable_descriptor_tables",
-    [XENFEAT_auto_translated_physmap] = "auto_translated_physmap",
-    [XENFEAT_supervisor_mode_kernel] = "supervisor_mode_kernel",
-    [XENFEAT_pae_pgdir_above_4gb] = "pae_pgdir_above_4gb",
-    [XENFEAT_hvm_callback_vector] = "hvm_callback_vector",
-    [XENFEAT_dom0] = "dom0"
+static const char *const elf_crux_feature_names[] = {
+    [CRUXFEAT_writable_page_tables] = "writable_page_tables",
+    [CRUXFEAT_writable_descriptor_tables] = "writable_descriptor_tables",
+    [CRUXFEAT_auto_translated_physmap] = "auto_translated_physmap",
+    [CRUXFEAT_supervisor_mode_kernel] = "supervisor_mode_kernel",
+    [CRUXFEAT_pae_pgdir_above_4gb] = "pae_pgdir_above_4gb",
+    [CRUXFEAT_hvm_callback_vector] = "hvm_callback_vector",
+    [CRUXFEAT_dom0] = "dom0"
 };
-static const unsigned elf_xen_features =
-sizeof(elf_xen_feature_names) / sizeof(elf_xen_feature_names[0]);
+static const unsigned elf_crux_features =
+sizeof(elf_crux_feature_names) / sizeof(elf_crux_feature_names[0]);
 
-elf_errorstatus elf_xen_parse_features(const char *features,
+elf_errorstatus elf_crux_parse_features(const char *features,
                            uint32_t *supported,
                            uint32_t *required)
 {
@@ -67,32 +67,32 @@ elf_errorstatus elf_xen_parse_features(const char *features,
             feature[len] = features[pos + len];
         }
 
-        for ( i = 0; i < elf_xen_features; i++ )
+        for ( i = 0; i < elf_crux_features; i++ )
         {
-            if ( !elf_xen_feature_names[i] )
+            if ( !elf_crux_feature_names[i] )
                 continue;
             if ( feature[0] == '!' )
             {
                 /* required */
-                if ( !strcmp(feature + 1, elf_xen_feature_names[i]) )
+                if ( !strcmp(feature + 1, elf_crux_feature_names[i]) )
                 {
-                    elf_xen_feature_set(i, supported);
+                    elf_crux_feature_set(i, supported);
                     if ( required )
-                        elf_xen_feature_set(i, required);
+                        elf_crux_feature_set(i, required);
                     break;
                 }
             }
             else
             {
                 /* supported */
-                if ( !strcmp(feature, elf_xen_feature_names[i]) )
+                if ( !strcmp(feature, elf_crux_feature_names[i]) )
                 {
-                    elf_xen_feature_set(i, supported);
+                    elf_crux_feature_set(i, supported);
                     break;
                 }
             }
         }
-        if ( i == elf_xen_features && required && feature[0] == '!' )
+        if ( i == elf_crux_features && required && feature[0] == '!' )
             return -1;
     }
 
@@ -100,9 +100,9 @@ elf_errorstatus elf_xen_parse_features(const char *features,
 }
 
 /* ------------------------------------------------------------------------ */
-/* xen elf notes                                                            */
+/* crux elf notes                                                            */
 
-elf_errorstatus elf_xen_parse_note(struct elf_binary *elf,
+elf_errorstatus elf_crux_parse_note(struct elf_binary *elf,
                        struct elf_dom_parms *parms,
                        ELF_HANDLE_DECL(elf_note) note)
 {
@@ -115,25 +115,25 @@ elf_errorstatus elf_xen_parse_note(struct elf_binary *elf,
             ELFNOTE_NAME,
         } type;
     } note_desc[] = {
-        [XEN_ELFNOTE_ENTRY] = { "ENTRY", ELFNOTE_INT },
-        [XEN_ELFNOTE_HYPERCALL_PAGE] = { "HYPERCALL_PAGE", ELFNOTE_INT },
-        [XEN_ELFNOTE_VIRT_BASE] = { "VIRT_BASE", ELFNOTE_INT },
-        [XEN_ELFNOTE_INIT_P2M] = { "INIT_P2M", ELFNOTE_INT },
-        [XEN_ELFNOTE_PADDR_OFFSET] = { "PADDR_OFFSET", ELFNOTE_INT },
-        [XEN_ELFNOTE_HV_START_LOW] = { "HV_START_LOW", ELFNOTE_INT },
-        [XEN_ELFNOTE_XEN_VERSION] = { "XEN_VERSION", ELFNOTE_STRING },
-        [XEN_ELFNOTE_GUEST_OS] = { "GUEST_OS", ELFNOTE_STRING },
-        [XEN_ELFNOTE_GUEST_VERSION] = { "GUEST_VERSION", ELFNOTE_STRING },
-        [XEN_ELFNOTE_LOADER] = { "LOADER", ELFNOTE_STRING },
-        [XEN_ELFNOTE_PAE_MODE] = { "PAE_MODE", ELFNOTE_STRING },
-        [XEN_ELFNOTE_FEATURES] = { "FEATURES", ELFNOTE_STRING },
-        [XEN_ELFNOTE_SUPPORTED_FEATURES] = { "SUPPORTED_FEATURES", ELFNOTE_INT },
-        [XEN_ELFNOTE_BSD_SYMTAB] = { "BSD_SYMTAB", ELFNOTE_STRING },
-        [XEN_ELFNOTE_L1_MFN_VALID] = { "L1_MFN_VALID", ELFNOTE_NAME },
-        [XEN_ELFNOTE_SUSPEND_CANCEL] = { "SUSPEND_CANCEL", ELFNOTE_INT },
-        [XEN_ELFNOTE_MOD_START_PFN] = { "MOD_START_PFN", ELFNOTE_INT },
-        [XEN_ELFNOTE_PHYS32_ENTRY] = { "PHYS32_ENTRY", ELFNOTE_INT },
-        [XEN_ELFNOTE_PHYS32_RELOC] = { "PHYS32_RELOC", ELFNOTE_NAME },
+        [CRUX_ELFNOTE_ENTRY] = { "ENTRY", ELFNOTE_INT },
+        [CRUX_ELFNOTE_HYPERCALL_PAGE] = { "HYPERCALL_PAGE", ELFNOTE_INT },
+        [CRUX_ELFNOTE_VIRT_BASE] = { "VIRT_BASE", ELFNOTE_INT },
+        [CRUX_ELFNOTE_INIT_P2M] = { "INIT_P2M", ELFNOTE_INT },
+        [CRUX_ELFNOTE_PADDR_OFFSET] = { "PADDR_OFFSET", ELFNOTE_INT },
+        [CRUX_ELFNOTE_HV_START_LOW] = { "HV_START_LOW", ELFNOTE_INT },
+        [CRUX_ELFNOTE_CRUX_VERSION] = { "CRUX_VERSION", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_GUEST_OS] = { "GUEST_OS", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_GUEST_VERSION] = { "GUEST_VERSION", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_LOADER] = { "LOADER", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_PAE_MODE] = { "PAE_MODE", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_FEATURES] = { "FEATURES", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_SUPPORTED_FEATURES] = { "SUPPORTED_FEATURES", ELFNOTE_INT },
+        [CRUX_ELFNOTE_BSD_SYMTAB] = { "BSD_SYMTAB", ELFNOTE_STRING },
+        [CRUX_ELFNOTE_L1_MFN_VALID] = { "L1_MFN_VALID", ELFNOTE_NAME },
+        [CRUX_ELFNOTE_SUSPEND_CANCEL] = { "SUSPEND_CANCEL", ELFNOTE_INT },
+        [CRUX_ELFNOTE_MOD_START_PFN] = { "MOD_START_PFN", ELFNOTE_INT },
+        [CRUX_ELFNOTE_PHYS32_ENTRY] = { "PHYS32_ENTRY", ELFNOTE_INT },
+        [CRUX_ELFNOTE_PHYS32_RELOC] = { "PHYS32_RELOC", ELFNOTE_NAME },
     };
 /* *INDENT-ON* */
 
@@ -158,14 +158,14 @@ elf_errorstatus elf_xen_parse_note(struct elf_binary *elf,
             /* elf_strval will mark elf broken if it fails so no need to log */
             return 0;
         elf_msg(elf, "ELF: note: %s = \"%s\"\n", note_desc[type].name, str);
-        parms->elf_notes[type].type = XEN_ENT_STR;
+        parms->elf_notes[type].type = CRUX_ENT_STR;
         parms->elf_notes[type].data.str = str;
         break;
 
     case ELFNOTE_INT:
         val = elf_note_numeric(elf, note);
         elf_msg(elf, "ELF: note: %s = %#" PRIx64 "\n", note_desc[type].name, val);
-        parms->elf_notes[type].type = XEN_ENT_LONG;
+        parms->elf_notes[type].type = CRUX_ENT_LONG;
         parms->elf_notes[type].data.num = val;
         break;
 
@@ -178,68 +178,68 @@ elf_errorstatus elf_xen_parse_note(struct elf_binary *elf,
 
     switch ( type )
     {
-    case XEN_ELFNOTE_LOADER:
+    case CRUX_ELFNOTE_LOADER:
         safe_strcpy(parms->loader, str);
         break;
-    case XEN_ELFNOTE_GUEST_OS:
+    case CRUX_ELFNOTE_GUEST_OS:
         safe_strcpy(parms->guest_os, str);
         break;
-    case XEN_ELFNOTE_GUEST_VERSION:
+    case CRUX_ELFNOTE_GUEST_VERSION:
         safe_strcpy(parms->guest_ver, str);
         break;
-    case XEN_ELFNOTE_XEN_VERSION:
-        safe_strcpy(parms->xen_ver, str);
+    case CRUX_ELFNOTE_CRUX_VERSION:
+        safe_strcpy(parms->crux_ver, str);
         break;
-    case XEN_ELFNOTE_PAE_MODE:
+    case CRUX_ELFNOTE_PAE_MODE:
         if ( !strcmp(str, "yes") )
-            parms->pae = XEN_PAE_EXTCR3;
+            parms->pae = CRUX_PAE_EXTCR3;
         if ( strstr(str, "bimodal") )
-            parms->pae = XEN_PAE_BIMODAL;
+            parms->pae = CRUX_PAE_BIMODAL;
         break;
-    case XEN_ELFNOTE_BSD_SYMTAB:
+    case CRUX_ELFNOTE_BSD_SYMTAB:
         if ( !strcmp(str, "yes") )
             parms->bsd_symtab = 1;
         break;
 
-    case XEN_ELFNOTE_VIRT_BASE:
+    case CRUX_ELFNOTE_VIRT_BASE:
         parms->virt_base = val;
         break;
-    case XEN_ELFNOTE_ENTRY:
+    case CRUX_ELFNOTE_ENTRY:
         parms->virt_entry = val;
         break;
-    case XEN_ELFNOTE_INIT_P2M:
+    case CRUX_ELFNOTE_INIT_P2M:
         parms->p2m_base = val;
         break;
-    case XEN_ELFNOTE_MOD_START_PFN:
+    case CRUX_ELFNOTE_MOD_START_PFN:
         parms->unmapped_initrd = !!val;
         break;
-    case XEN_ELFNOTE_PADDR_OFFSET:
+    case CRUX_ELFNOTE_PADDR_OFFSET:
         parms->elf_paddr_offset = val;
         break;
-    case XEN_ELFNOTE_HYPERCALL_PAGE:
+    case CRUX_ELFNOTE_HYPERCALL_PAGE:
         parms->virt_hypercall = val;
         break;
-    case XEN_ELFNOTE_HV_START_LOW:
+    case CRUX_ELFNOTE_HV_START_LOW:
         parms->virt_hv_start_low = val;
         break;
 
-    case XEN_ELFNOTE_FEATURES:
-        if ( elf_xen_parse_features(str, parms->f_supported,
+    case CRUX_ELFNOTE_FEATURES:
+        if ( elf_crux_parse_features(str, parms->f_supported,
                                     parms->f_required) )
             return -1;
         break;
 
-    case XEN_ELFNOTE_SUPPORTED_FEATURES:
-        for ( i = 0; i < XENFEAT_NR_SUBMAPS; ++i )
+    case CRUX_ELFNOTE_SUPPORTED_FEATURES:
+        for ( i = 0; i < CRUXFEAT_NR_SUBMAPS; ++i )
             parms->f_supported[i] |= elf_note_numeric_array(
                 elf, note, sizeof(*parms->f_supported), i);
         break;
 
-    case XEN_ELFNOTE_PHYS32_ENTRY:
+    case CRUX_ELFNOTE_PHYS32_ENTRY:
         parms->phys_entry = val;
         break;
 
-    case XEN_ELFNOTE_PHYS32_RELOC:
+    case CRUX_ELFNOTE_PHYS32_RELOC:
         parms->phys_reloc = true;
 
         if ( descsz >= 4 )
@@ -269,13 +269,13 @@ elf_errorstatus elf_xen_parse_note(struct elf_binary *elf,
 
 #define ELF_NOTE_INVALID (~0U)
 
-static unsigned elf_xen_parse_notes(struct elf_binary *elf,
+static unsigned elf_crux_parse_notes(struct elf_binary *elf,
                                struct elf_dom_parms *parms,
                                elf_ptrval start,
                                elf_ptrval end,
                                unsigned *total_note_count)
 {
-    unsigned xen_elfnotes = 0;
+    unsigned crux_elfnotes = 0;
     ELF_HANDLE_DECL(elf_note) note;
     const char *note_name;
 
@@ -285,7 +285,7 @@ static unsigned elf_xen_parse_notes(struct elf_binary *elf,
           ELF_HANDLE_PTRVAL(note) < parms->elf_note_end;
           note = elf_note_next(elf, note) )
     {
-#ifdef __XEN__
+#ifdef __CRUX__
         process_pending_softirqs();
 #endif
 
@@ -298,19 +298,19 @@ static unsigned elf_xen_parse_notes(struct elf_binary *elf,
         note_name = elf_note_name(elf, note);
         if ( note_name == NULL )
             continue;
-        if ( strcmp(note_name, "xen") )
+        if ( strcmp(note_name, "Xen") )
             continue;
-        if ( elf_xen_parse_note(elf, parms, note) )
+        if ( elf_crux_parse_note(elf, parms, note) )
             return ELF_NOTE_INVALID;
-        xen_elfnotes++;
+        crux_elfnotes++;
     }
-    return xen_elfnotes;
+    return crux_elfnotes;
 }
 
 /* ------------------------------------------------------------------------ */
-/* __xen_guest section                                                      */
+/* __crux_guest section                                                      */
 
-elf_errorstatus elf_xen_parse_guest_info(struct elf_binary *elf,
+elf_errorstatus elf_crux_parse_guest_info(struct elf_binary *elf,
                              struct elf_dom_parms *parms)
 {
     elf_ptrval h;
@@ -364,14 +364,14 @@ elf_errorstatus elf_xen_parse_guest_info(struct elf_binary *elf,
             safe_strcpy(parms->guest_os, value);
         if ( !strcmp(name, "GUEST_VER") )
             safe_strcpy(parms->guest_ver, value);
-        if ( !strcmp(name, "XEN_VER") )
-            safe_strcpy(parms->xen_ver, value);
+        if ( !strcmp(name, "CRUX_VER") )
+            safe_strcpy(parms->crux_ver, value);
         if ( !strcmp(name, "PAE") )
         {
             if ( !strcmp(value, "yes[extended-cr3]") )
-                parms->pae = XEN_PAE_EXTCR3;
+                parms->pae = CRUX_PAE_EXTCR3;
             else if ( !strncmp(value, "yes", 3) )
-                parms->pae = XEN_PAE_YES;
+                parms->pae = CRUX_PAE_YES;
         }
         if ( !strcmp(name, "BSD_SYMTAB") )
             parms->bsd_symtab = 1;
@@ -388,7 +388,7 @@ elf_errorstatus elf_xen_parse_guest_info(struct elf_binary *elf,
 
         /* other */
         if ( !strcmp(name, "FEATURES") )
-            if ( elf_xen_parse_features(value, parms->f_supported,
+            if ( elf_crux_parse_features(value, parms->f_supported,
                                         parms->f_required) )
             {
                 ret = -1;
@@ -406,7 +406,7 @@ elf_errorstatus elf_xen_parse_guest_info(struct elf_binary *elf,
 /* ------------------------------------------------------------------------ */
 /* sanity checks                                                            */
 
-static elf_errorstatus elf_xen_note_check(struct elf_binary *elf,
+static elf_errorstatus elf_crux_note_check(struct elf_binary *elf,
                               struct elf_dom_parms *parms, bool hvm)
 {
     if ( (ELF_PTRVAL_INVALID(parms->elf_note_start)) &&
@@ -415,8 +415,8 @@ static elf_errorstatus elf_xen_note_check(struct elf_binary *elf,
         unsigned machine = elf_uval(elf, elf->ehdr, e_machine);
         if ( (machine == EM_386) || (machine == EM_X86_64) )
         {
-            elf_err(elf, "ERROR: Not a xen-ELF image: "
-                    "No ELF notes or '__xen_guest' section found\n");
+            elf_err(elf, "ERROR: Not a Xen-ELF image: "
+                    "No ELF notes or '__crux_guest' section found\n");
             return -1;
         }
         return 0;
@@ -435,7 +435,7 @@ static elf_errorstatus elf_xen_note_check(struct elf_binary *elf,
         return 0;
     }
 
-    /* Check the contents of the xen notes or guest string. */
+    /* Check the contents of the Xen notes or guest string. */
     if ( ((strlen(parms->loader) == 0) ||
           strncmp(parms->loader, "generic", 7)) &&
          ((strlen(parms->guest_os) == 0) ||
@@ -449,18 +449,18 @@ static elf_errorstatus elf_xen_note_check(struct elf_binary *elf,
         return -1;
     }
 
-    if ( (strlen(parms->xen_ver) == 0) ||
-         strncmp(parms->xen_ver, "xen-3.0", 7) )
+    if ( (strlen(parms->crux_ver) == 0) ||
+         strncmp(parms->crux_ver, "crux-3.0", 7) )
     {
-        elf_err(elf, "ERROR: xen will only load images built for xen v3.0 "
+        elf_err(elf, "ERROR: Xen will only load images built for Xen v3.0 "
                 "(Not '%.*s')\n",
-                (int)sizeof(parms->xen_ver), parms->xen_ver);
+                (int)sizeof(parms->crux_ver), parms->crux_ver);
         return -1;
     }
     return 0;
 }
 
-static elf_errorstatus elf_xen_addr_calc_check(struct elf_binary *elf,
+static elf_errorstatus elf_crux_addr_calc_check(struct elf_binary *elf,
                                    struct elf_dom_parms *parms, bool hvm)
 {
     uint64_t virt_offset;
@@ -485,7 +485,7 @@ static elf_errorstatus elf_xen_addr_calc_check(struct elf_binary *elf,
     }
 
     /*
-     * If we are using the legacy __xen_guest section then elf_pa_off
+     * If we are using the legacy __crux_guest section then elf_pa_off
      * defaults to v_start in order to maintain compatibility with
      * older hypervisors which set padd in the ELF header to
      * virt_base.
@@ -557,12 +557,12 @@ static elf_errorstatus elf_xen_addr_calc_check(struct elf_binary *elf,
 /* ------------------------------------------------------------------------ */
 /* glue it all together ...                                                 */
 
-elf_errorstatus elf_xen_parse(struct elf_binary *elf,
+elf_errorstatus elf_crux_parse(struct elf_binary *elf,
                   struct elf_dom_parms *parms, bool hvm)
 {
     ELF_HANDLE_DECL(elf_shdr) shdr;
     ELF_HANDLE_DECL(elf_phdr) phdr;
-    unsigned xen_elfnotes = 0;
+    unsigned crux_elfnotes = 0;
     unsigned i, count, more_notes;
     unsigned total_note_count = 0;
 
@@ -597,21 +597,21 @@ elf_errorstatus elf_xen_parse(struct elf_binary *elf,
         if (elf_uval(elf, phdr, p_offset) == 0)
              continue;
 
-        more_notes = elf_xen_parse_notes(elf, parms,
+        more_notes = elf_crux_parse_notes(elf, parms,
                                  elf_segment_start(elf, phdr),
                                  elf_segment_end(elf, phdr),
                                  &total_note_count);
         if ( more_notes == ELF_NOTE_INVALID )
             return -1;
 
-        xen_elfnotes += more_notes;
+        crux_elfnotes += more_notes;
     }
 
     /*
      * Fall back to any SHT_NOTE sections if no valid note segments
      * were found.
      */
-    if ( xen_elfnotes == 0 )
+    if ( crux_elfnotes == 0 )
     {
         count = elf_shdr_count(elf);
         for ( i = 1; i < count; i++ )
@@ -624,7 +624,7 @@ elf_errorstatus elf_xen_parse(struct elf_binary *elf,
             if ( elf_uval(elf, shdr, sh_type) != SHT_NOTE )
                 continue;
 
-            more_notes = elf_xen_parse_notes(elf, parms,
+            more_notes = elf_crux_parse_notes(elf, parms,
                                      elf_section_start(elf, shdr),
                                      elf_section_end(elf, shdr),
                                      &total_note_count);
@@ -632,32 +632,32 @@ elf_errorstatus elf_xen_parse(struct elf_binary *elf,
             if ( more_notes == ELF_NOTE_INVALID )
                 return -1;
 
-            if ( xen_elfnotes == 0 && more_notes > 0 )
+            if ( crux_elfnotes == 0 && more_notes > 0 )
                 elf_msg(elf, "ELF: using notes from SHT_NOTE section\n");
 
-            xen_elfnotes += more_notes;
+            crux_elfnotes += more_notes;
         }
 
     }
 
-    /* Finally fall back to the __xen_guest section for PV guests only. */
-    if ( xen_elfnotes == 0 && !hvm )
+    /* Finally fall back to the __crux_guest section for PV guests only. */
+    if ( crux_elfnotes == 0 && !hvm )
     {
-        shdr = elf_shdr_by_name(elf, "__xen_guest");
+        shdr = elf_shdr_by_name(elf, "__crux_guest");
         if ( ELF_HANDLE_VALID(shdr) )
         {
             parms->guest_info = elf_section_start(elf, shdr);
             parms->elf_note_start = ELF_INVALID_PTRVAL;
             parms->elf_note_end   = ELF_INVALID_PTRVAL;
-            elf_msg(elf, "ELF: __xen_guest: \"%s\"\n",
+            elf_msg(elf, "ELF: __crux_guest: \"%s\"\n",
                     elf_strfmt(elf, parms->guest_info));
-            elf_xen_parse_guest_info(elf, parms);
+            elf_crux_parse_guest_info(elf, parms);
         }
     }
 
-    if ( elf_xen_note_check(elf, parms, hvm) != 0 )
+    if ( elf_crux_note_check(elf, parms, hvm) != 0 )
         return -1;
-    if ( elf_xen_addr_calc_check(elf, parms, hvm) != 0 )
+    if ( elf_crux_addr_calc_check(elf, parms, hvm) != 0 )
         return -1;
     return 0;
 }

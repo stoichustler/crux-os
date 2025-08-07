@@ -20,9 +20,9 @@
 #ifndef DRIVERS__PASSTHROUGH__VTD__DMAR_H
 #define DRIVERS__PASSTHROUGH__VTD__DMAR_H
 
-#include <xen/list.h>
-#include <xen/iommu.h>
-#include <xen/kexec.h>
+#include <crux/list.h>
+#include <crux/iommu.h>
+#include <crux/kexec.h>
 
 /* This one is for interrupt remapping */
 struct acpi_ioapic_unit {
@@ -153,7 +153,7 @@ do {                                                               \
         if ( timeout && NOW() > timeout )                          \
         {                                                          \
             threshold |= threshold << 1;                           \
-            printk(XENLOG_WARNING VTDPREFIX                        \
+            printk(CRUXLOG_WARNING VTDPREFIX                        \
                    " IOMMU#%u: %s flush taking too long\n",        \
                    iommu->index, what);                            \
             timeout = 0;                                           \
@@ -162,7 +162,7 @@ do {                                                               \
     }                                                              \
                                                                    \
     if ( !timeout )                                                \
-        printk(XENLOG_WARNING VTDPREFIX                            \
+        printk(CRUXLOG_WARNING VTDPREFIX                            \
                " IOMMU#%u: %s flush took %lums\n",                 \
                iommu->index, what, (NOW() - start) / 10000000);    \
 } while ( false )

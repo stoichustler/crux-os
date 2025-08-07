@@ -1,14 +1,14 @@
 
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/init.h>
-#include <xen/vpci.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/init.h>
+#include <crux/vpci.h>
 
 #ifndef COMPAT
 typedef long ret_t;
 #endif
 
-ret_t pci_physdev_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+ret_t pci_physdev_op(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     ret_t ret;
 
@@ -26,8 +26,8 @@ ret_t pci_physdev_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         if ( copy_from_guest(&add, arg, 1) != 0 )
             break;
 
-        pdev_info.is_extfn = (add.flags & XEN_PCI_DEV_EXTFN);
-        if ( add.flags & XEN_PCI_DEV_VIRTFN )
+        pdev_info.is_extfn = (add.flags & CRUX_PCI_DEV_EXTFN);
+        if ( add.flags & CRUX_PCI_DEV_VIRTFN )
         {
             pdev_info.is_virtfn = true;
             pdev_info.physfn.bus = add.physfn.bus;
@@ -37,7 +37,7 @@ ret_t pci_physdev_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
             pdev_info.is_virtfn = false;
 
 #ifdef CONFIG_NUMA
-        if ( add.flags & XEN_PCI_DEV_PXM )
+        if ( add.flags & CRUX_PCI_DEV_PXM )
         {
             uint32_t pxm;
             size_t optarr_off = offsetof(struct physdev_pci_device_add, optarr) /

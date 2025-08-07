@@ -15,11 +15,11 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/bitops.h>
-#include <xen/nospec.h>
-#include <xen/sections.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/bitops.h>
+#include <crux/nospec.h>
+#include <crux/sections.h>
 
 /**
  * Maximum (non-inclusive) usable pdx. Must be

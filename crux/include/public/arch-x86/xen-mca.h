@@ -5,7 +5,7 @@
  * Contributed by Advanced Micro Devices, Inc.
  * Author: Christoph Egger <Christoph.Egger@amd.com>
  *
- * Guest OS machine check interface to x86 xen.
+ * Guest OS machine check interface to x86 Xen.
  */
 
 /* Full MCA functionality has the following Usecases from the guest side:
@@ -16,63 +16,63 @@
  * 2. Dom0 registers machine check event callback handler
  *    (doable via EVTCHNOP_bind_virq)
  * 3. Dom0 and DomU fetches machine check data
- * 4. Dom0 wants xen to notify a DomU
+ * 4. Dom0 wants Xen to notify a DomU
  * 5. Dom0 gets DomU ID from physical address
- * 6. Dom0 wants xen to kill DomU (already done for "xm destroy")
+ * 6. Dom0 wants Xen to kill DomU (already done for "xm destroy")
  *
  * Nice to have's:
- * 7. Dom0 wants xen to deactivate a physical CPU
+ * 7. Dom0 wants Xen to deactivate a physical CPU
  *    This is better done as separate task, physical CPU hotplugging,
  *    and hypercall(s) should be sysctl's
- * 8. Page migration proposed from xen NUMA work, where Dom0 can tell xen to
+ * 8. Page migration proposed from Xen NUMA work, where Dom0 can tell Xen to
  *    move a DomU (or Dom0 itself) away from a malicious page
  *    producing correctable errors.
  * 9. offlining physical page:
- *    xen free's and never re-uses a certain physical page.
+ *    Xen free's and never re-uses a certain physical page.
  * 10. Testfacility: Allow Dom0 to write values into machine check MSR's
- *     and tell xen to trigger a machine check
+ *     and tell Xen to trigger a machine check
  */
 
-#ifndef __XEN_PUBLIC_ARCH_X86_MCA_H__
-#define __XEN_PUBLIC_ARCH_X86_MCA_H__
+#ifndef __CRUX_PUBLIC_ARCH_X86_MCA_H__
+#define __CRUX_PUBLIC_ARCH_X86_MCA_H__
 
 /* Hypercall */
 #define __HYPERVISOR_mca __HYPERVISOR_arch_0
 
 /*
- * The xen-unstable repo has interface version 0x03000001; out interface
+ * The crux-unstable repo has interface version 0x03000001; out interface
  * is incompatible with that and any future minor revisions, so we
  * choose a different version number range that is numerically less
- * than that used in xen-unstable.
+ * than that used in crux-unstable.
  */
-#define XEN_MCA_INTERFACE_VERSION 0x01ecc003
+#define CRUX_MCA_INTERFACE_VERSION 0x01ecc003
 
 /* IN: Dom0 calls hypercall to retrieve nonurgent telemetry */
-#define XEN_MC_NONURGENT  0x0001
+#define CRUX_MC_NONURGENT  0x0001
 /* IN: Dom0/DomU calls hypercall to retrieve urgent telemetry */
-#define XEN_MC_URGENT     0x0002
+#define CRUX_MC_URGENT     0x0002
 /* IN: Dom0 acknowledges previosly-fetched telemetry */
-#define XEN_MC_ACK        0x0004
+#define CRUX_MC_ACK        0x0004
 
 /* OUT: All is ok */
-#define XEN_MC_OK           0x0
+#define CRUX_MC_OK           0x0
 /* OUT: Domain could not fetch data. */
-#define XEN_MC_FETCHFAILED  0x1
+#define CRUX_MC_FETCHFAILED  0x1
 /* OUT: There was no machine check data to fetch. */
-#define XEN_MC_NODATA       0x2
+#define CRUX_MC_NODATA       0x2
 /* OUT: Between notification time and this hypercall an other
  *  (most likely) correctable error happened. The fetched data,
  *  does not match the original machine check data. */
-#define XEN_MC_NOMATCH      0x4
+#define CRUX_MC_NOMATCH      0x4
 
 /* OUT: DomU did not register MC NMI handler. Try something else. */
-#define XEN_MC_CANNOTHANDLE 0x8
+#define CRUX_MC_CANNOTHANDLE 0x8
 /* OUT: Notifying DomU failed. Retry later or try something else. */
-#define XEN_MC_NOTDELIVERED 0x10
-/* Note, XEN_MC_CANNOTHANDLE and XEN_MC_NOTDELIVERED are mutually exclusive. */
+#define CRUX_MC_NOTDELIVERED 0x10
+/* Note, CRUX_MC_CANNOTHANDLE and CRUX_MC_NOTDELIVERED are mutually exclusive. */
 
 /* Applicable to all mc_vcpuid fields below. */
-#define XEN_MC_VCPUID_INVALID 0xffff
+#define CRUX_MC_VCPUID_INVALID 0xffff
 
 #ifndef __ASSEMBLY__
 
@@ -95,7 +95,7 @@ struct mcinfo_common {
     uint16_t type;      /* structure type */
     uint16_t size;      /* size of this struct in bytes */
 };
-typedef struct mcinfo_common xen_mcinfo_common_t;
+typedef struct mcinfo_common crux_mcinfo_common_t;
 
 #define MC_FLAG_CORRECTABLE     (1 << 0)
 #define MC_FLAG_UNCORRECTABLE   (1 << 1)
@@ -106,7 +106,7 @@ typedef struct mcinfo_common xen_mcinfo_common_t;
 #define MC_FLAG_MCE		(1 << 6)
 /* contains global x86 mc information */
 struct mcinfo_global {
-    xen_mcinfo_common_t common;
+    crux_mcinfo_common_t common;
 
     /* running domain at the time in error (most likely the impacted one) */
     uint16_t mc_domid;
@@ -121,7 +121,7 @@ struct mcinfo_global {
 
 /* contains bank local x86 mc information */
 struct mcinfo_bank {
-    xen_mcinfo_common_t common;
+    crux_mcinfo_common_t common;
 
     uint16_t mc_bank; /* bank nr */
     uint16_t mc_domid; /* Usecase 5: domain referenced by mc_addr on dom0
@@ -139,12 +139,12 @@ struct mcinfo_msr {
     uint64_t reg;   /* MSR */
     uint64_t value; /* MSR value */
 };
-typedef struct mcinfo_msr xen_mcinfo_msr_t;
+typedef struct mcinfo_msr crux_mcinfo_msr_t;
 
 /* contains mc information from other
  * or additional mc MSRs */
 struct mcinfo_extended {
-    xen_mcinfo_common_t common;
+    crux_mcinfo_common_t common;
 
     /* You can fill up to five registers.
      * If you need more, then use this structure
@@ -156,14 +156,14 @@ struct mcinfo_extended {
      * and E(R)FLAGS, E(R)IP, E(R)MISC, up to 11/19 of them might be
      * useful at present. So expand this array to 32 to leave room.
      */
-    xen_mcinfo_msr_t mc_msr[32];
+    crux_mcinfo_msr_t mc_msr[32];
 };
 
 /* Recovery Action flags. Giving recovery result information to DOM0 */
 
-/* xen takes successful recovery action, the error is recovered */
+/* Xen takes successful recovery action, the error is recovered */
 #define REC_ACTION_RECOVERED (0x1 << 0)
-/* No action is performed by XEN */
+/* No action is performed by CRUX */
 #define REC_ACTION_NONE (0x1 << 1)
 /* It's possible DOM0 might take action ownership in some case */
 #define REC_ACTION_NEED_RESET (0x1 << 2)
@@ -179,9 +179,9 @@ struct mcinfo_extended {
 /* L3 cache disable Action */
 #define MC_ACTION_CACHE_SHRINK (0x1 << 2)
 
-/* Below interface used between XEN/DOM0 for passing XEN's recovery action
+/* Below interface used between CRUX/DOM0 for passing CRUX's recovery action
  * information to DOM0.
- * usage Senario: After offlining broken page, XEN might pass its page offline
+ * usage Senario: After offlining broken page, CRUX might pass its page offline
  * recovery action result to DOM0. DOM0 will save the information in
  * non-volatile memory for further proactive actions, such as offlining the
  * easy broken page earlier when doing next reboot.
@@ -192,7 +192,7 @@ struct page_offline_action
     uint64_t mfn;
     uint64_t status;
 };
-typedef struct page_offline_action xen_page_offline_action_t;
+typedef struct page_offline_action crux_page_offline_action_t;
 
 struct cpu_offline_action
 {
@@ -201,18 +201,18 @@ struct cpu_offline_action
     uint16_t mc_coreid;
     uint16_t mc_core_threadid;
 };
-typedef struct cpu_offline_action xen_cpu_offline_action_t;
+typedef struct cpu_offline_action crux_cpu_offline_action_t;
 
 #define MAX_UNION_SIZE 16
 struct mcinfo_recovery
 {
-    xen_mcinfo_common_t common;
+    crux_mcinfo_common_t common;
     uint16_t mc_bank; /* bank nr */
     uint8_t action_flags;
     uint8_t action_types;
     union {
-        xen_page_offline_action_t page_retire;
-        xen_cpu_offline_action_t cpu_offline;
+        crux_page_offline_action_t page_retire;
+        crux_cpu_offline_action_t cpu_offline;
         uint8_t pad[MAX_UNION_SIZE];
     } action_info;
 };
@@ -229,10 +229,10 @@ struct mc_info {
     uint64_t mi_data[(MCINFO_MAXSIZE - 1) / 8];
 };
 typedef struct mc_info mc_info_t;
-DEFINE_XEN_GUEST_HANDLE(mc_info_t);
+DEFINE_CRUX_GUEST_HANDLE(mc_info_t);
 
 #define __MC_MSR_ARRAYSIZE 8
-#if __XEN_INTERFACE_VERSION__ <= 0x00040d00
+#if __CRUX_INTERFACE_VERSION__ <= 0x00040d00
 #define __MC_NMSRS 1
 #endif
 #define MC_NCAPS	7	/* 7 CPU feature flag words */
@@ -265,10 +265,10 @@ struct mcinfo_logical_cpu {
     uint32_t mc_cache_size;
     uint32_t mc_cache_alignment;
     int32_t mc_nmsrvals;
-    xen_mcinfo_msr_t mc_msrvalues[__MC_MSR_ARRAYSIZE];
+    crux_mcinfo_msr_t mc_msrvalues[__MC_MSR_ARRAYSIZE];
 };
-typedef struct mcinfo_logical_cpu xen_mc_logical_cpu_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mc_logical_cpu_t);
+typedef struct mcinfo_logical_cpu crux_mc_logical_cpu_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mc_logical_cpu_t);
 
 
 /*
@@ -330,28 +330,28 @@ DEFINE_XEN_GUEST_HANDLE(xen_mc_logical_cpu_t);
  * Fetch machine check data from hypervisor.
  * Note, this hypercall is special, because both Dom0 and DomU must use this.
  */
-#define XEN_MC_fetch            1
-struct xen_mc_fetch {
+#define CRUX_MC_fetch            1
+struct crux_mc_fetch {
     /* IN/OUT variables. */
-    uint32_t flags;	/* IN: XEN_MC_NONURGENT, XEN_MC_URGENT,
-                           XEN_MC_ACK if ack'ing an earlier fetch */
-                       /* OUT: XEN_MC_OK, XEN_MC_FETCHFAILED,
-                          XEN_MC_NODATA, XEN_MC_NOMATCH */
+    uint32_t flags;	/* IN: CRUX_MC_NONURGENT, CRUX_MC_URGENT,
+                           CRUX_MC_ACK if ack'ing an earlier fetch */
+                       /* OUT: CRUX_MC_OK, CRUX_MC_FETCHFAILED,
+                          CRUX_MC_NODATA, CRUX_MC_NOMATCH */
     uint32_t _pad0;
     uint64_t fetch_id;	/* OUT: id for ack, IN: id we are ack'ing */
 
     /* OUT variables. */
-    XEN_GUEST_HANDLE(mc_info_t) data;
+    CRUX_GUEST_HANDLE(mc_info_t) data;
 };
-typedef struct xen_mc_fetch xen_mc_fetch_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mc_fetch_t);
+typedef struct crux_mc_fetch crux_mc_fetch_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mc_fetch_t);
 
 
 /* Usecase 4
  * This tells the hypervisor to notify a DomU about the machine check error
  */
-#define XEN_MC_notifydomain     2
-struct xen_mc_notifydomain {
+#define CRUX_MC_notifydomain     2
+struct crux_mc_notifydomain {
     /* IN variables. */
     uint16_t mc_domid;    /* The unprivileged domain to notify. */
     uint16_t mc_vcpuid;   /* The vcpu in mc_domid to notify.
@@ -360,25 +360,25 @@ struct xen_mc_notifydomain {
     /* IN/OUT variables. */
     uint32_t flags;
 
-/* IN: XEN_MC_CORRECTABLE, XEN_MC_TRAP */
-/* OUT: XEN_MC_OK, XEN_MC_CANNOTHANDLE, XEN_MC_NOTDELIVERED, XEN_MC_NOMATCH */
+/* IN: CRUX_MC_CORRECTABLE, CRUX_MC_TRAP */
+/* OUT: CRUX_MC_OK, CRUX_MC_CANNOTHANDLE, CRUX_MC_NOTDELIVERED, CRUX_MC_NOMATCH */
 };
-typedef struct xen_mc_notifydomain xen_mc_notifydomain_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mc_notifydomain_t);
+typedef struct crux_mc_notifydomain crux_mc_notifydomain_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mc_notifydomain_t);
 
-#define XEN_MC_physcpuinfo 3
-struct xen_mc_physcpuinfo {
+#define CRUX_MC_physcpuinfo 3
+struct crux_mc_physcpuinfo {
     /* IN/OUT */
     uint32_t ncpus;
     uint32_t _pad0;
     /* OUT */
-    XEN_GUEST_HANDLE(xen_mc_logical_cpu_t) info;
+    CRUX_GUEST_HANDLE(crux_mc_logical_cpu_t) info;
 };
-typedef struct xen_mc_physcpuinfo xen_mc_physcpuinfo_t;
+typedef struct crux_mc_physcpuinfo crux_mc_physcpuinfo_t;
 
-#define XEN_MC_msrinject    4
+#define CRUX_MC_msrinject    4
 #define MC_MSRINJ_MAXMSRS       8
-struct xen_mc_msrinject {
+struct crux_mc_msrinject {
     /* IN */
     uint32_t mcinj_cpunr;           /* target processor id */
     uint32_t mcinj_flags;           /* see MC_MSRINJ_F_* below */
@@ -386,53 +386,53 @@ struct xen_mc_msrinject {
     domid_t  mcinj_domid;           /* valid only if MC_MSRINJ_F_GPADDR is
                                        present in mcinj_flags */
     uint16_t _pad0;
-    xen_mcinfo_msr_t mcinj_msr[MC_MSRINJ_MAXMSRS];
+    crux_mcinfo_msr_t mcinj_msr[MC_MSRINJ_MAXMSRS];
 };
-typedef struct xen_mc_msrinject xen_mc_msrinject_t;
+typedef struct crux_mc_msrinject crux_mc_msrinject_t;
 
 /* Flags for mcinj_flags above; bits 16-31 are reserved */
 #define MC_MSRINJ_F_INTERPOSE   0x1
 #define MC_MSRINJ_F_GPADDR      0x2
 
-#define XEN_MC_mceinject    5
-struct xen_mc_mceinject {
+#define CRUX_MC_mceinject    5
+struct crux_mc_mceinject {
     unsigned int mceinj_cpunr;      /* target processor id */
 };
-typedef struct xen_mc_mceinject xen_mc_mceinject_t;
+typedef struct crux_mc_mceinject crux_mc_mceinject_t;
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
-#define XEN_MC_inject_v2        6
-#define XEN_MC_INJECT_TYPE_MASK     0x7
-#define XEN_MC_INJECT_TYPE_MCE      0x0
-#define XEN_MC_INJECT_TYPE_CMCI     0x1
-#define XEN_MC_INJECT_TYPE_LMCE     0x2
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
+#define CRUX_MC_inject_v2        6
+#define CRUX_MC_INJECT_TYPE_MASK     0x7
+#define CRUX_MC_INJECT_TYPE_MCE      0x0
+#define CRUX_MC_INJECT_TYPE_CMCI     0x1
+#define CRUX_MC_INJECT_TYPE_LMCE     0x2
 
-#define XEN_MC_INJECT_CPU_BROADCAST 0x8
+#define CRUX_MC_INJECT_CPU_BROADCAST 0x8
 
-struct xen_mc_inject_v2 {
+struct crux_mc_inject_v2 {
     uint32_t flags;
-    xenctl_bitmap_t cpumap;
+    cruxctl_bitmap_t cpumap;
 };
-typedef struct xen_mc_inject_v2 xen_mc_inject_v2_t;
+typedef struct crux_mc_inject_v2 crux_mc_inject_v2_t;
 #endif
 
-struct xen_mc {
+struct crux_mc {
     uint32_t cmd;
-    uint32_t interface_version; /* XEN_MCA_INTERFACE_VERSION */
+    uint32_t interface_version; /* CRUX_MCA_INTERFACE_VERSION */
     union {
-        xen_mc_fetch_t             mc_fetch;
-        xen_mc_notifydomain_t      mc_notifydomain;
-        xen_mc_physcpuinfo_t       mc_physcpuinfo;
-        xen_mc_msrinject_t         mc_msrinject;
-        xen_mc_mceinject_t         mc_mceinject;
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
-        xen_mc_inject_v2_t         mc_inject_v2;
+        crux_mc_fetch_t             mc_fetch;
+        crux_mc_notifydomain_t      mc_notifydomain;
+        crux_mc_physcpuinfo_t       mc_physcpuinfo;
+        crux_mc_msrinject_t         mc_msrinject;
+        crux_mc_mceinject_t         mc_mceinject;
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
+        crux_mc_inject_v2_t         mc_inject_v2;
 #endif
     } u;
 };
-typedef struct xen_mc xen_mc_t;
-DEFINE_XEN_GUEST_HANDLE(xen_mc_t);
+typedef struct crux_mc crux_mc_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_mc_t);
 
 #endif /* __ASSEMBLY__ */
 
-#endif /* __XEN_PUBLIC_ARCH_X86_MCA_H__ */
+#endif /* __CRUX_PUBLIC_ARCH_X86_MCA_H__ */

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/include/asm/firmware/scmi-smc.h
+ * crux/arch/arm/include/asm/firmware/scmi-smc.h
  *
  * ARM System Control and Management Interface (SCMI) over SMC
  * Generic handling layer
@@ -12,7 +12,7 @@
 #ifndef __ASM_SCMI_SMC_H__
 #define __ASM_SCMI_SMC_H__
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 struct cpu_user_regs;
 

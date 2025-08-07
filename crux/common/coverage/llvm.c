@@ -24,9 +24,9 @@
  * SUCH DAMAGE.
  */
 
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/types.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/types.h>
 
 #include "coverage.h"
 
@@ -73,7 +73,7 @@ struct llvm_profile_header {
 };
 
 /*
- * Since xen uses the llvm code coverage support without the run time library
+ * Since Xen uses the llvm code coverage support without the run time library
  * __llvm_profile_runtime must be defined according to the docs at:
  *
  * https://clang.llvm.org/docs/SourceBasedCodeCoverage.html 
@@ -106,7 +106,7 @@ static uint32_t cf_check get_size(void)
 }
 
 static int cf_check dump(
-    XEN_GUEST_HANDLE_PARAM(char) buffer, uint32_t *buf_size)
+    CRUX_GUEST_HANDLE_PARAM(char) buffer, uint32_t *buf_size)
 {
     struct llvm_profile_header header = {
         .magic = LLVM_PROFILE_MAGIC,

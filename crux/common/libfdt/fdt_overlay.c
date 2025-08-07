@@ -8,7 +8,7 @@
 
 #include <fdt.h>
 #include <libfdt.h>
-#include <xen/lib.h>
+#include <crux/lib.h>
 
 #include "libfdt_internal.h"
 

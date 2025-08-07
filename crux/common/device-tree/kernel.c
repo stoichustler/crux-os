@@ -1,17 +1,17 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootinfo.h>
-#include <xen/device_tree.h>
-#include <xen/fdt-kernel.h>
-#include <xen/errno.h>
-#include <xen/gunzip.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/sched.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
+#include <crux/bootinfo.h>
+#include <crux/device_tree.h>
+#include <crux/fdt-kernel.h>
+#include <crux/errno.h>
+#include <crux/gunzip.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/sched.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
 
 #include <asm/page.h>
 #include <asm/setup.h>
@@ -200,14 +200,14 @@ int __init kernel_probe(struct kernel_info *info,
     }
     if ( !mod || !mod->size )
     {
-        printk(XENLOG_ERR "Missing kernel boot module?\n");
+        printk(CRUXLOG_ERR "Missing kernel boot module?\n");
         return -ENOENT;
     }
 
-    printk("loading %pd kernel from boot module @ %"PRIpaddr"\n",
+    printk("Loading %pd kernel from boot module @ %"PRIpaddr"\n",
            info->bd.d, info->bd.kernel->start);
     if ( info->bd.initrd )
-        printk("loading ramdisk from boot module @ %"PRIpaddr"\n",
+        printk("Loading ramdisk from boot module @ %"PRIpaddr"\n",
                info->bd.initrd->start);
 
     /*

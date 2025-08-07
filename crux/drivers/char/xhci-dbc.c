@@ -1,7 +1,7 @@
 /*
  * drivers/char/xhci-dbc.c
  *
- * xen port for the xue debugger
+ * Xen port for the xue debugger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
  * Copyright (c) 2019 Assured Information Security.
  */
 
-#include <xen/delay.h>
-#include <xen/iommu.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/rangeset.h>
-#include <xen/serial.h>
-#include <xen/timer.h>
-#include <xen/types.h>
+#include <crux/delay.h>
+#include <crux/iommu.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/rangeset.h>
+#include <crux/serial.h>
+#include <crux/timer.h>
+#include <crux/types.h>
 #include <asm/fixmap.h>
 #include <asm/io.h>
 #include <asm/string.h>
@@ -142,7 +142,7 @@ struct xhci_erst_segment {
 
 #define DBC_STRINGS_COUNT 4
 #define DBC_STRING_LANGID "\x09\x04"
-#define DBC_STRING_MANUFACTURER "xen"
+#define DBC_STRING_MANUFACTURER "Xen"
 #define DBC_STRING_PRODUCT "Debug console"
 #define DBC_STRING_SERIAL "0"
 
@@ -1197,13 +1197,13 @@ static void __init cf_check dbc_uart_init_postirq(struct serial_port *port)
     {
     case XHCI_SHARE_NONE:
         if ( pci_ro_device(0, uart->dbc.sbdf.bus, uart->dbc.sbdf.devfn) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "Failed to mark read-only %pp used for XHCI console\n",
                    &uart->dbc.sbdf);
         break;
     case XHCI_SHARE_HWDOM:
         if ( pci_hide_device(0, uart->dbc.sbdf.bus, uart->dbc.sbdf.devfn) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "Failed to hide %pp used for XHCI console\n",
                    &uart->dbc.sbdf);
         break;
@@ -1217,12 +1217,12 @@ static void __init cf_check dbc_uart_init_postirq(struct serial_port *port)
               uart->dbc.xhc_dbc_offset,
              sizeof(*uart->dbc.dbc_reg)) )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "Error while marking MMIO range of XHCI console as R/O, "
                "making the whole device R/O (share=no)\n");
         uart->dbc.share = XHCI_SHARE_NONE;
         if ( pci_ro_device(0, uart->dbc.sbdf.bus, uart->dbc.sbdf.devfn) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "Failed to mark read-only %pp used for XHCI console\n",
                    &uart->dbc.sbdf);
         if ( rangeset_add_range(mmio_ro_ranges,
@@ -1231,7 +1231,7 @@ static void __init cf_check dbc_uart_init_postirq(struct serial_port *port)
                  PFN_UP((uart->dbc.bar_val & PCI_BASE_ADDRESS_MEM_MASK) +
                         uart->dbc.xhc_dbc_offset +
                         sizeof(*uart->dbc.dbc_reg)) - 1) )
-            printk(XENLOG_INFO
+            printk(CRUXLOG_INFO
                    "Error while adding MMIO range of device to mmio_ro_ranges\n");
     }
 #endif
@@ -1362,7 +1362,7 @@ static int __init cf_check xhci_parse_dbgp(const char *opt_dbgp)
         e = parse_pci(opt_dbgp + 8, NULL, &bus, &slot, &func);
         if ( !e || (*e && *e != ',') )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Invalid dbgp= PCI device spec: '%s'\n",
                    opt_dbgp + 8);
             return -EINVAL;
@@ -1399,7 +1399,7 @@ static int __init cf_check xhci_parse_dbgp(const char *opt_dbgp)
 
     if ( *opt )
     {
-        printk(XENLOG_ERR "Invalid dbgp= parameters: '%s'\n", opt);
+        printk(CRUXLOG_ERR "Invalid dbgp= parameters: '%s'\n", opt);
         return -EINVAL;
     }
 

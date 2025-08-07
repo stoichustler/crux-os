@@ -1,9 +1,9 @@
 About
 =====
 This file documents the upstream sources for files and directories
-in this part of the xen source tree.
+in this part of the crux source tree.
 
-xen/tools/kconfig
+crux/tools/kconfig
 -----------------
 The kconfig directory was originally imported from the Linux kernel
 git tree at kernel/git/torvalds/linux.git, path: scripts/kconfig of

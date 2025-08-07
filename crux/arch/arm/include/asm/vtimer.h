@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/vtimer.h
+ * crux/arch/arm/vtimer.h
  *
  * ARM Virtual Timer emulation support
  *
@@ -21,7 +21,7 @@
 #define __ARCH_ARM_VTIMER_H__
 
 extern int domain_vtimer_init(struct domain *d,
-                              struct xen_arch_domainconfig *config);
+                              struct crux_arch_domainconfig *config);
 extern int vcpu_vtimer_init(struct vcpu *v);
 extern bool vtimer_emulate(struct cpu_user_regs *regs, union hsr hsr);
 extern void virt_timer_save(struct vcpu *v);

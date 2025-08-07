@@ -12,7 +12,7 @@
 #ifndef ASM__RISCV__SBI_H
 #define ASM__RISCV__SBI_H
 
-#include <xen/cpumask.h>
+#include <crux/cpumask.h>
 
 #define SBI_EXT_0_1_CONSOLE_PUTCHAR		0x1
 #define SBI_EXT_0_1_SHUTDOWN			0x8
@@ -88,6 +88,38 @@ bool sbi_has_rfence(void);
  */
 int sbi_remote_sfence_vma(const cpumask_t *cpu_mask, vaddr_t start,
                           size_t size);
+
+/*
+ * Instruct the remote harts to execute one or more HFENCE.GVMA
+ * instructions, covering the range of guest physical addresses
+ * in [start_addr, start_addr + size) for all VMIDs.
+ *
+ * Returns 0 if IPI was sent to all the targeted harts successfully
+ * or negative value if start_addr or size is not valid.
+ *
+ * The remote fence operation applies to the entire address space if either:
+ *  - start_addr and size are both 0, or
+ *  - size is equal to 2^XLEN-1.
+ *
+ * @cpu_mask a cpu mask containing all the target CPUs (in Xen space).
+ * @param start virtual address start
+ * @param size virtual address range size
+ */
+int sbi_remote_hfence_gvma(const cpumask_t *cpu_mask, vaddr_t start,
+                           size_t size);
+
+/*
+ * Instruct the remote harts to execute one or more HFENCE.GVMA
+ * instructions, covering the range of guest physical addresses
+ * in [start_addr, start_addr + size) only for the given VMID.
+ *
+ * @cpu_mask a cpu mask containing all the target CPUs (in Xen space).
+ * @param start virtual address start
+ * @param size virtual address range size
+ * @param vmid virtual machine id
+ */
+int sbi_remote_hfence_gvma_vmid(const cpumask_t *cpu_mask, vaddr_t start,
+                                size_t size, unsigned long vmid);
 
 /*
  * Initialize SBI library

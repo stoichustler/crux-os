@@ -17,14 +17,14 @@
  * Copyright (C) Weidong Han <weidong.han@intel.com>
  */
 
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/domain_page.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/domain_page.h>
 #include <asm/paging.h>
-#include <xen/iommu.h>
-#include <xen/irq.h>
-#include <xen/numa.h>
+#include <crux/iommu.h>
+#include <crux/irq.h>
+#include <crux/numa.h>
 #include <asm/fixmap.h>
 #include "../iommu.h"
 #include "../dmar.h"
@@ -33,7 +33,7 @@
 
 /*
  * iommu_inclusive_mapping: when set, all memory below 4GB is included in dom0
- * 1:1 iommu mappings except xen and unusable regions.
+ * 1:1 iommu mappings except crux and unusable regions.
  */
 boolean_param("iommu_inclusive_mapping", iommu_hwdom_inclusive);
 

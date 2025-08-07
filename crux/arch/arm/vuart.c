@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vuart.c
+ * crux/arch/arm/vuart.c
  *
  * Virtual UART Emulator.
  *
@@ -21,13 +21,13 @@
  * Ian Campbell <ian.campbell@citrix.com>
  * Copyright (c) 2012 Citrix Systems.
  */
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/errno.h>
-#include <xen/console.h>
-#include <xen/serial.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/errno.h>
+#include <crux/console.h>
+#include <crux/serial.h>
 #include <asm/mmio.h>
-#include <xen/perfc.h>
+#include <crux/perfc.h>
 
 #include "vuart.h"
 
@@ -89,7 +89,7 @@ static void vuart_print_char(struct vcpu *v, char c)
         if ( c != '\n' )
             uart->buf[uart->idx++] = '\n';
         uart->buf[uart->idx] = '\0';
-        printk(XENLOG_G_DEBUG "DOM%u: %s", d->domain_id, uart->buf);
+        printk(CRUXLOG_G_DEBUG "DOM%u: %s", d->domain_id, uart->buf);
         uart->idx = 0;
     }
     spin_unlock(&uart->lock);

@@ -16,29 +16,29 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/types.h>
-#include <xen/coverage.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/types.h>
+#include <crux/coverage.h>
 
 #include <public/sysctl.h>
 
 #include "coverage.h"
 
-int sysctl_cov_op(struct xen_sysctl_coverage_op *op)
+int sysctl_cov_op(struct crux_sysctl_coverage_op *op)
 {
     int ret;
 
     switch ( op->cmd )
     {
-    case XEN_SYSCTL_COVERAGE_get_size:
+    case CRUX_SYSCTL_COVERAGE_get_size:
         op->size = cov_ops.get_size();
         ret = 0;
         break;
 
-    case XEN_SYSCTL_COVERAGE_read:
+    case CRUX_SYSCTL_COVERAGE_read:
     {
-        XEN_GUEST_HANDLE_PARAM(char) buf;
+        CRUX_GUEST_HANDLE_PARAM(char) buf;
         uint32_t size = op->size;
 
         buf = guest_handle_cast(op->buffer, char);
@@ -49,7 +49,7 @@ int sysctl_cov_op(struct xen_sysctl_coverage_op *op)
         break;
     }
 
-    case XEN_SYSCTL_COVERAGE_reset:
+    case CRUX_SYSCTL_COVERAGE_reset:
         cov_ops.reset_counters();
         ret = 0;
         break;

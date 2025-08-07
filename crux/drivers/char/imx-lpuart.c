@@ -1,5 +1,5 @@
 /*
- * xen/drivers/char/imx-lpuart.c
+ * crux/drivers/char/imx-lpuart.c
  *
  * Driver for i.MX LPUART.
  *
@@ -17,11 +17,11 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/serial.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/serial.h>
 #include <asm/device.h>
 #include <asm/imx-lpuart.h>
 #include <asm/io.h>
@@ -88,7 +88,7 @@ static void __init imx_lpuart_init_postirq(struct serial_port *port)
 
     if ( setup_irq(uart->irq, 0, &uart->irqaction) != 0 )
     {
-        dprintk(XENLOG_ERR, "Failed to allocate imx_lpuart IRQ %d\n",
+        dprintk(CRUXLOG_ERR, "Failed to allocate imx_lpuart IRQ %d\n",
                 uart->irq);
         return;
     }
@@ -229,7 +229,7 @@ static int __init imx_lpuart_init(struct dt_device_node *dev,
     /* Register with generic serial driver */
     serial_register_uart(SERHND_DTUART, &imx_lpuart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

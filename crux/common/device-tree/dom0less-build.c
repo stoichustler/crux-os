@@ -1,25 +1,25 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootinfo.h>
-#include <xen/device_tree.h>
-#include <xen/dom0less-build.h>
-#include <xen/domain.h>
-#include <xen/domain_page.h>
-#include <xen/err.h>
-#include <xen/event.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/fdt-kernel.h>
-#include <xen/grant_table.h>
-#include <xen/init.h>
-#include <xen/iocap.h>
-#include <xen/iommu.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/llc-coloring.h>
-#include <xen/sizes.h>
-#include <xen/sched.h>
-#include <xen/stdbool.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
+#include <crux/bootinfo.h>
+#include <crux/device_tree.h>
+#include <crux/dom0less-build.h>
+#include <crux/domain.h>
+#include <crux/domain_page.h>
+#include <crux/err.h>
+#include <crux/event.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/fdt-kernel.h>
+#include <crux/grant_table.h>
+#include <crux/init.h>
+#include <crux/iocap.h>
+#include <crux/iommu.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/llc-coloring.h>
+#include <crux/sizes.h>
+#include <crux/sched.h>
+#include <crux/stdbool.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
 
 #include <public/bootfdt.h>
 #include <public/domctl.h>
@@ -28,18 +28,18 @@
 
 #include <asm/setup.h>
 
-#include <xen/static-memory.h>
-#include <xen/static-shmem.h>
+#include <crux/static-memory.h>
+#include <crux/static-shmem.h>
 
-#define XENSTORE_PFN_LATE_ALLOC UINT64_MAX
+#define CRUXSTORE_PFN_LATE_ALLOC UINT64_MAX
 
 static domid_t __initdata xs_domid = DOMID_INVALID;
-static bool __initdata need_xenstore;
+static bool __initdata need_cruxstore;
 
 void __init set_xs_domain(struct domain *d)
 {
     if ( xs_domid != DOMID_INVALID )
-        panic("Only 1 xenstore domain can be specified! (%u)", xs_domid);
+        panic("Only 1 cruxstore domain can be specified! (%u)", xs_domid);
 
     xs_domid = d->domain_id;
     set_global_virq_handler(d, VIRQ_DOM_EXC);
@@ -77,7 +77,7 @@ bool __init is_dom0less_mode(void)
     return ( !dom0found && domUfound );
 }
 
-static int __init alloc_xenstore_evtchn(struct domain *d)
+static int __init alloc_cruxstore_evtchn(struct domain *d)
 {
     evtchn_alloc_unbound_t alloc;
     int rc;
@@ -96,7 +96,7 @@ static int __init alloc_xenstore_evtchn(struct domain *d)
     return 0;
 }
 
-static void __init initialize_domU_xenstore(void)
+static void __init initialize_domU_cruxstore(void)
 {
     struct domain *d;
 
@@ -111,17 +111,17 @@ static void __init initialize_domU_xenstore(void)
         if ( gfn == 0 )
             continue;
 
-        if ( is_xenstore_domain(d) )
+        if ( is_cruxstore_domain(d) )
             continue;
 
-        rc = alloc_xenstore_evtchn(d);
+        rc = alloc_cruxstore_evtchn(d);
         if ( rc < 0 )
-            panic("%pd: Failed to allocate xenstore_evtchn\n", d);
+            panic("%pd: Failed to allocate cruxstore_evtchn\n", d);
 
-        if ( gfn != XENSTORE_PFN_LATE_ALLOC && IS_ENABLED(CONFIG_GRANT_TABLE) )
+        if ( gfn != CRUXSTORE_PFN_LATE_ALLOC && IS_ENABLED(CONFIG_GRANT_TABLE) )
         {
             ASSERT(gfn < UINT32_MAX);
-            gnttab_seed_entry(d, GNTTAB_RESERVED_XENSTORE, xs_domid, gfn);
+            gnttab_seed_entry(d, GNTTAB_RESERVED_CRUXSTORE, xs_domid, gfn);
         }
     }
 }
@@ -132,9 +132,9 @@ static void __init initialize_domU_xenstore(void)
  *         0 on success
  */
 static int __init handle_passthrough_prop(struct kernel_info *kinfo,
-                                          const struct fdt_property *xen_reg,
-                                          const struct fdt_property *xen_path,
-                                          bool xen_force,
+                                          const struct fdt_property *crux_reg,
+                                          const struct fdt_property *crux_path,
+                                          bool crux_force,
                                           uint32_t address_cells,
                                           uint32_t size_cells)
 {
@@ -144,17 +144,17 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
     int res;
     paddr_t mstart, size, gstart;
 
-    if ( !kinfo->xen_reg_assigned )
+    if ( !kinfo->crux_reg_assigned )
     {
-        kinfo->xen_reg_assigned = rangeset_new(NULL, NULL, 0);
+        kinfo->crux_reg_assigned = rangeset_new(NULL, NULL, 0);
 
-        if ( !kinfo->xen_reg_assigned )
+        if ( !kinfo->crux_reg_assigned )
             return -ENOMEM;
     }
 
-    /* xen,reg specifies where to map the MMIO region */
-    cell = (const __be32 *)xen_reg->data;
-    len = fdt32_to_cpu(xen_reg->len) / ((address_cells * 2 + size_cells) *
+    /* crux,reg specifies where to map the MMIO region */
+    cell = (const __be32 *)crux_reg->data;
+    len = fdt32_to_cpu(crux_reg->len) / ((address_cells * 2 + size_cells) *
                                         sizeof(uint32_t));
 
     for ( i = 0; i < len; i++ )
@@ -165,7 +165,7 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
 
         if ( gstart & ~PAGE_MASK || mstart & ~PAGE_MASK || size & ~PAGE_MASK )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "DomU passthrough config has not page aligned addresses/sizes\n");
             return -EINVAL;
         }
@@ -174,7 +174,7 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
                                   paddr_to_pfn(PAGE_ALIGN(mstart + size - 1)));
         if ( res )
         {
-            printk(XENLOG_ERR "Unable to permit to dom%d access to"
+            printk(CRUXLOG_ERR "Unable to permit to dom%d access to"
                    " 0x%"PRIpaddr" - 0x%"PRIpaddr"\n",
                    kinfo->bd.d->domain_id,
                    mstart & PAGE_MASK, PAGE_ALIGN(mstart + size) - 1);
@@ -188,35 +188,35 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
                                p2m_mmio_direct_dev);
         if ( res < 0 )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Failed to map %"PRIpaddr" to the guest at%"PRIpaddr"\n",
                    mstart, gstart);
             return -EFAULT;
         }
 
-        res = rangeset_add_range(kinfo->xen_reg_assigned, PFN_DOWN(gstart),
+        res = rangeset_add_range(kinfo->crux_reg_assigned, PFN_DOWN(gstart),
                                  PFN_DOWN(gstart + size - 1));
         if ( res )
             return res;
     }
 
     /*
-     * If xen_force, we let the user assign a MMIO region with no
+     * If crux_force, we let the user assign a MMIO region with no
      * associated path.
      */
-    if ( xen_path == NULL )
-        return xen_force ? 0 : -EINVAL;
+    if ( crux_path == NULL )
+        return crux_force ? 0 : -EINVAL;
 
     /*
-     * xen,path specifies the corresponding node in the host DT.
+     * crux,path specifies the corresponding node in the host DT.
      * Both interrupt mappings and IOMMU settings are based on it,
      * as they are done based on the corresponding host DT node.
      */
-    node = dt_find_node_by_path(xen_path->data);
+    node = dt_find_node_by_path(crux_path->data);
     if ( node == NULL )
     {
-        printk(XENLOG_ERR "Couldn't find node %s in host_dt!\n",
-               xen_path->data);
+        printk(CRUXLOG_ERR "Couldn't find node %s in host_dt!\n",
+               crux_path->data);
         return -EINVAL;
     }
 
@@ -228,8 +228,8 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
     if ( res < 0 )
         return res;
 
-    /* If xen_force, we allow assignment of devices without IOMMU protection. */
-    if ( xen_force && !dt_device_is_protected(node) )
+    /* If crux_force, we allow assignment of devices without IOMMU protection. */
+    if ( crux_force && !dt_device_is_protected(node) )
         return 0;
 
     return iommu_assign_dt_device(kinfo->bd.d, node);
@@ -242,9 +242,9 @@ static int __init handle_prop_pfdt(struct kernel_info *kinfo,
 {
     void *fdt = kinfo->fdt;
     int propoff, nameoff, res;
-    const struct fdt_property *prop, *xen_reg = NULL, *xen_path = NULL;
+    const struct fdt_property *prop, *crux_reg = NULL, *crux_path = NULL;
     const char *name;
-    bool found, xen_force = false;
+    bool found, crux_force = false;
 
     for ( propoff = fdt_first_property_offset(pfdt, nodeoff);
           propoff >= 0;
@@ -259,27 +259,27 @@ static int __init handle_prop_pfdt(struct kernel_info *kinfo,
 
         if ( scan_passthrough_prop )
         {
-            if ( dt_prop_cmp("xen,reg", name) == 0 )
+            if ( dt_prop_cmp("crux,reg", name) == 0 )
             {
-                xen_reg = prop;
+                crux_reg = prop;
                 found = true;
             }
-            else if ( dt_prop_cmp("xen,path", name) == 0 )
+            else if ( dt_prop_cmp("crux,path", name) == 0 )
             {
-                xen_path = prop;
+                crux_path = prop;
                 found = true;
             }
-            else if ( dt_prop_cmp("xen,force-assign-without-iommu",
+            else if ( dt_prop_cmp("crux,force-assign-without-iommu",
                                   name) == 0 )
             {
-                xen_force = true;
+                crux_force = true;
                 found = true;
             }
         }
 
         /*
-         * Copy properties other than the ones above: xen,reg, xen,path,
-         * and xen,force-assign-without-iommu.
+         * Copy properties other than the ones above: crux,reg, crux,path,
+         * and crux,force-assign-without-iommu.
          */
         if ( !found )
         {
@@ -290,22 +290,22 @@ static int __init handle_prop_pfdt(struct kernel_info *kinfo,
     }
 
     /*
-     * Only handle passthrough properties if both xen,reg and xen,path
-     * are present, or if xen,force-assign-without-iommu is specified.
+     * Only handle passthrough properties if both crux,reg and crux,path
+     * are present, or if crux,force-assign-without-iommu is specified.
      */
-    if ( xen_reg != NULL && (xen_path != NULL || xen_force) )
+    if ( crux_reg != NULL && (crux_path != NULL || crux_force) )
     {
-        res = handle_passthrough_prop(kinfo, xen_reg, xen_path, xen_force,
+        res = handle_passthrough_prop(kinfo, crux_reg, crux_path, crux_force,
                                       address_cells, size_cells);
         if ( res < 0 )
         {
-            printk(XENLOG_ERR "Failed to assign device to %pd\n", kinfo->bd.d);
+            printk(CRUXLOG_ERR "Failed to assign device to %pd\n", kinfo->bd.d);
             return res;
         }
     }
-    else if ( (xen_path && !xen_reg) || (xen_reg && !xen_path && !xen_force) )
+    else if ( (crux_path && !crux_reg) || (crux_reg && !crux_path && !crux_force) )
     {
-        printk(XENLOG_ERR "xen,reg or xen,path missing for %pd\n",
+        printk(CRUXLOG_ERR "crux,reg or crux,path missing for %pd\n",
                kinfo->bd.d);
         return -EINVAL;
     }
@@ -357,20 +357,20 @@ static int __init check_partial_fdt(void *pfdt, size_t size)
 
     if ( fdt_magic(pfdt) != FDT_MAGIC )
     {
-        dprintk(XENLOG_ERR, "Partial FDT is not a valid Flat Device Tree");
+        dprintk(CRUXLOG_ERR, "Partial FDT is not a valid Flat Device Tree");
         return -EINVAL;
     }
 
     res = fdt_check_header(pfdt);
     if ( res )
     {
-        dprintk(XENLOG_ERR, "Failed to check the partial FDT (%d)", res);
+        dprintk(CRUXLOG_ERR, "Failed to check the partial FDT (%d)", res);
         return -EINVAL;
     }
 
     if ( fdt_totalsize(pfdt) > size )
     {
-        dprintk(XENLOG_ERR, "Partial FDT totalsize is too big");
+        dprintk(CRUXLOG_ERR, "Partial FDT totalsize is too big");
         return -EINVAL;
     }
 
@@ -556,43 +556,43 @@ static int __init prepare_dtb_domU(struct domain *d, struct kernel_info *kinfo)
     return -EINVAL;
 }
 
-#define XENSTORE_PFN_OFFSET 1
-static int __init alloc_xenstore_page(struct domain *d)
+#define CRUXSTORE_PFN_OFFSET 1
+static int __init alloc_cruxstore_page(struct domain *d)
 {
-    struct page_info *xenstore_pg;
-    struct xenstore_domain_interface *interface;
+    struct page_info *cruxstore_pg;
+    struct cruxstore_domain_interface *interface;
     mfn_t mfn;
     gfn_t gfn;
     int rc;
 
     if ( (UINT_MAX - d->max_pages) < 1 )
     {
-        printk(XENLOG_ERR "%pd: Over-allocation for d->max_pages by 1 page.\n",
+        printk(CRUXLOG_ERR "%pd: Over-allocation for d->max_pages by 1 page.\n",
                d);
         return -EINVAL;
     }
 
     d->max_pages += 1;
-    xenstore_pg = alloc_domheap_page(d, MEMF_bits(32));
-    if ( xenstore_pg == NULL && is_64bit_domain(d) )
-        xenstore_pg = alloc_domheap_page(d, 0);
-    if ( xenstore_pg == NULL )
+    cruxstore_pg = alloc_domheap_page(d, MEMF_bits(32));
+    if ( cruxstore_pg == NULL && is_64bit_domain(d) )
+        cruxstore_pg = alloc_domheap_page(d, 0);
+    if ( cruxstore_pg == NULL )
         return -ENOMEM;
 
-    mfn = page_to_mfn(xenstore_pg);
+    mfn = page_to_mfn(cruxstore_pg);
     if ( !mfn_x(mfn) )
         return -ENOMEM;
 
     if ( !is_domain_direct_mapped(d) )
         gfn = gaddr_to_gfn(GUEST_MAGIC_BASE +
-                           (XENSTORE_PFN_OFFSET << PAGE_SHIFT));
+                           (CRUXSTORE_PFN_OFFSET << PAGE_SHIFT));
     else
         gfn = gaddr_to_gfn(mfn_to_maddr(mfn));
 
     rc = guest_physmap_add_page(d, gfn, mfn, 0);
     if ( rc )
     {
-        free_domheap_page(xenstore_pg);
+        free_domheap_page(cruxstore_pg);
         return rc;
     }
 
@@ -600,26 +600,26 @@ static int __init alloc_xenstore_page(struct domain *d)
     d->arch.hvm.params[HVM_PARAM_STORE_PFN] = gfn_x(gfn);
 #endif
     interface = map_domain_page(mfn);
-    interface->connection = XENSTORE_RECONNECT;
+    interface->connection = CRUXSTORE_RECONNECT;
     unmap_domain_page(interface);
 
     return 0;
 }
 
-static int __init alloc_xenstore_params(struct kernel_info *kinfo)
+static int __init alloc_cruxstore_params(struct kernel_info *kinfo)
 {
     struct domain *d = kinfo->bd.d;
     int rc = 0;
 
 #ifdef CONFIG_HVM
-    if ( (kinfo->dom0less_feature & (DOM0LESS_XENSTORE | DOM0LESS_XS_LEGACY))
-                                 == (DOM0LESS_XENSTORE | DOM0LESS_XS_LEGACY) )
-        d->arch.hvm.params[HVM_PARAM_STORE_PFN] = XENSTORE_PFN_LATE_ALLOC;
+    if ( (kinfo->dom0less_feature & (DOM0LESS_CRUXSTORE | DOM0LESS_XS_LEGACY))
+                                 == (DOM0LESS_CRUXSTORE | DOM0LESS_XS_LEGACY) )
+        d->arch.hvm.params[HVM_PARAM_STORE_PFN] = CRUXSTORE_PFN_LATE_ALLOC;
     else
 #endif
-    if ( kinfo->dom0less_feature & DOM0LESS_XENSTORE )
+    if ( kinfo->dom0less_feature & DOM0LESS_CRUXSTORE )
     {
-        rc = alloc_xenstore_page(d);
+        rc = alloc_cruxstore_page(d);
         if ( rc < 0 )
             return rc;
     }
@@ -640,11 +640,11 @@ static void __init domain_vcpu_affinity(struct domain *d,
         struct vcpu *v;
         cpumask_t affinity;
 
-        if ( !dt_device_is_compatible(np, "xen,vcpu") )
+        if ( !dt_device_is_compatible(np, "crux,vcpu") )
             continue;
 
         if ( !dt_property_read_u32(np, "id", &val) )
-            panic("Invalid xen,vcpu node for domain %s\n", dt_node_name(node));
+            panic("Invalid crux,vcpu node for domain %s\n", dt_node_name(node));
 
         if ( val >= d->max_vcpus )
             panic("Invalid vcpu_id %u for domain %s, max_vcpus=%u\n", val,
@@ -712,8 +712,8 @@ static int __init domain_p2m_set_allocation(struct domain *d, uint64_t mem,
     uint32_t p2m_mem_mb;
     int rc;
 
-    rc = dt_property_read_u32(node, "xen,domain-p2m-mem-mb", &p2m_mem_mb);
-    /* If xen,domain-p2m-mem-mb is not specified, use the default value. */
+    rc = dt_property_read_u32(node, "crux,domain-p2m-mem-mb", &p2m_mem_mb);
+    /* If crux,domain-p2m-mem-mb is not specified, use the default value. */
     p2m_pages = rc ?
                 p2m_mem_mb << (20 - PAGE_SHIFT) :
                 domain_p2m_pages(mem, d->max_vcpus);
@@ -752,23 +752,23 @@ static int __init construct_domU(struct kernel_info *kinfo,
     if ( rc != 0 )
         return rc;
 
-    printk("### loading domU cpus=%u memory=%#"PRIx64"Kb\n",
+    printk("*** LOADING DOMU cpus=%u memory=%#"PRIx64"KB ***\n",
            d->max_vcpus, mem);
 
-    rc = dt_property_read_string(node, "xen,enhanced", &dom0less_enhanced);
+    rc = dt_property_read_string(node, "crux,enhanced", &dom0less_enhanced);
     if ( rc == -EILSEQ ||
          rc == -ENODATA ||
          (rc == 0 && !strcmp(dom0less_enhanced, "enabled")) )
     {
-        need_xenstore = true;
+        need_cruxstore = true;
         kinfo->dom0less_feature = DOM0LESS_ENHANCED;
     }
     else if ( rc == 0 && !strcmp(dom0less_enhanced, "legacy") )
     {
-        need_xenstore = true;
+        need_cruxstore = true;
         kinfo->dom0less_feature = DOM0LESS_ENHANCED_LEGACY;
     }
-    else if ( rc == 0 && !strcmp(dom0less_enhanced, "no-xenstore") )
+    else if ( rc == 0 && !strcmp(dom0less_enhanced, "no-cruxstore") )
         kinfo->dom0less_feature = DOM0LESS_ENHANCED_NO_XS;
 
     if ( vcpu_create(d, 0) == NULL )
@@ -790,7 +790,7 @@ static int __init construct_domU(struct kernel_info *kinfo,
     }
     else
     {
-        if ( !dt_find_property(node, "xen,static-mem", NULL) )
+        if ( !dt_find_property(node, "crux,static-mem", NULL) )
             allocate_memory(d, kinfo);
         else if ( !is_domain_direct_mapped(d) )
             allocate_static_memory(d, kinfo, node);
@@ -816,9 +816,9 @@ static int __init construct_domU(struct kernel_info *kinfo,
 
     domain_vcpu_affinity(d, node);
 
-    rc = alloc_xenstore_params(kinfo);
+    rc = alloc_cruxstore_params(kinfo);
 
-    rangeset_destroy(kinfo->xen_reg_assigned);
+    rangeset_destroy(kinfo->crux_reg_assigned);
 
     return rc;
 }
@@ -869,14 +869,14 @@ void __init create_domUs(void)
             panic("Could not set up domain %s (rc = %d)\n",
                   dt_node_name(node), rc);
 
-        if ( ki.bd.create_cfg.flags & XEN_DOMCTL_CDF_xs_domain )
+        if ( ki.bd.create_cfg.flags & CRUX_DOMCTL_CDF_xs_domain )
             set_xs_domain(ki.bd.d);
     }
 
-    if ( need_xenstore && xs_domid == DOMID_INVALID )
-        panic("xenstore requested, but xenstore domain not present\n");
+    if ( need_cruxstore && xs_domid == DOMID_INVALID )
+        panic("cruxstore requested, but cruxstore domain not present\n");
 
-    initialize_domU_xenstore();
+    initialize_domU_cruxstore();
 }
 
 /*

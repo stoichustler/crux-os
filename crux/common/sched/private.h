@@ -5,13 +5,13 @@
  * Portions by Mark Williamson are (C) 2004 Intel Research Cambridge
  */
 
-#ifndef __XEN_SCHED_IF_H__
-#define __XEN_SCHED_IF_H__
+#ifndef __CRUX_SCHED_IF_H__
+#define __CRUX_SCHED_IF_H__
 
-#include <xen/err.h>
-#include <xen/list.h>
-#include <xen/percpu.h>
-#include <xen/rcupdate.h>
+#include <crux/err.h>
+#include <crux/list.h>
+#include <crux/percpu.h>
+#include <crux/rcupdate.h>
 
 /* cpus currently in no cpupool */
 extern cpumask_t cpupool_free_cpus;
@@ -351,14 +351,14 @@ struct scheduler {
                                     unsigned int new_cpu);
     int          (*adjust)         (const struct scheduler *ops,
                                     struct domain *d,
-                                    struct xen_domctl_scheduler_op *op);
+                                    struct crux_domctl_scheduler_op *op);
     void         (*adjust_affinity)(const struct scheduler *ops,
                                     struct sched_unit *unit,
                                     const struct cpumask *hard,
                                     const struct cpumask *soft);
 #ifdef CONFIG_SYSCTL
     int          (*adjust_global)  (const struct scheduler *ops,
-                                    struct xen_sysctl_scheduler_op *sc);
+                                    struct crux_sysctl_scheduler_op *sc);
 #endif
     void         (*dump_settings)  (const struct scheduler *ops);
     void         (*dump_cpu_state) (const struct scheduler *ops, int cpu);
@@ -507,14 +507,14 @@ static inline void sched_adjust_affinity(const struct scheduler *s,
 }
 
 static inline int sched_adjust_dom(const struct scheduler *s, struct domain *d,
-                                   struct xen_domctl_scheduler_op *op)
+                                   struct crux_domctl_scheduler_op *op)
 {
     return s->adjust ? s->adjust(s, d, op) : 0;
 }
 
 #ifdef CONFIG_SYSCTL
 static inline int sched_adjust_cpupool(const struct scheduler *s,
-                                       struct xen_sysctl_scheduler_op *op)
+                                       struct crux_sysctl_scheduler_op *op)
 {
     return s->adjust_global ? s->adjust_global(s, op) : 0;
 }
@@ -670,4 +670,4 @@ void cpupool_put(struct cpupool *pool);
 int cpupool_add_domain(struct domain *d, unsigned int poolid);
 void cpupool_rm_domain(struct domain *d);
 
-#endif /* __XEN_SCHED_IF_H__ */
+#endif /* __CRUX_SCHED_IF_H__ */

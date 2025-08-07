@@ -4,9 +4,9 @@
  * Architecture-independent PCI access functions.
  */
 
-#include <xen/init.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/init.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 
 unsigned int pci_find_cap_offset(pci_sbdf_t sbdf, unsigned int cap)
 {

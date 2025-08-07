@@ -15,22 +15,22 @@
  *
  * Copyright (C) Ashok Raj <ashok.raj@intel.com>
  * Copyright (C) Shaohua Li <shaohua.li@intel.com>
- * Copyright (C) Allen Kay <allen.m.kay@intel.com> - adapted to xen
+ * Copyright (C) Allen Kay <allen.m.kay@intel.com> - adapted to crux
  */
 
-#include <xen/irq.h>
-#include <xen/sched.h>
-#include <xen/xmalloc.h>
-#include <xen/domain_page.h>
-#include <xen/err.h>
-#include <xen/iocap.h>
-#include <xen/iommu.h>
-#include <xen/numa.h>
-#include <xen/softirq.h>
-#include <xen/time.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
-#include <xen/keyhandler.h>
+#include <crux/irq.h>
+#include <crux/sched.h>
+#include <crux/xmalloc.h>
+#include <crux/domain_page.h>
+#include <crux/err.h>
+#include <crux/iocap.h>
+#include <crux/iommu.h>
+#include <crux/numa.h>
+#include <crux/softirq.h>
+#include <crux/time.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
+#include <crux/keyhandler.h>
 
 #include <asm/apic.h>
 #include <asm/io_apic.h>
@@ -108,7 +108,7 @@ static int get_iommu_did(domid_t domid, const struct vtd_iommu *iommu,
     }
 
     if ( warn )
-        dprintk(XENLOG_ERR VTDPREFIX,
+        dprintk(CRUXLOG_ERR VTDPREFIX,
                 "No valid iommu %u domid for Dom%d\n",
                 iommu->index, domid);
 
@@ -142,7 +142,7 @@ static int context_set_domain_id(struct context_entry *context,
             i = find_first_zero_bit(iommu->domid_bitmap, nr_dom);
             if ( i >= nr_dom )
             {
-                dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: no free domain id\n");
+                dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: no free domain id\n");
                 return -EBUSY;
             }
             iommu->domid_map[i] = domid;
@@ -219,11 +219,11 @@ static void check_cleanup_domid_map(const struct domain *d,
 
     found = any_pdev_behind_iommu(d, exclude, iommu);
     /*
-     * Hidden devices are associated with DomXEN but usable by the hardware
+     * Hidden devices are associated with DomCRUX but usable by the hardware
      * domain. Hence they need considering here as well.
      */
     if ( !found && is_hardware_domain(d) )
-        found = any_pdev_behind_iommu(dom_xen, exclude, iommu);
+        found = any_pdev_behind_iommu(dom_crux, exclude, iommu);
 
     if ( !found )
     {
@@ -620,7 +620,7 @@ int cf_check vtd_flush_iotlb_reg(
 
     /* check IOTLB invalidation granularity */
     if ( DMA_TLB_IAIG(val) == 0 )
-        dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: flush IOTLB failed\n");
+        dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: flush IOTLB failed\n");
 
     /* flush iotlb entry will implicitly flush write buffer */
     return 0;
@@ -833,11 +833,11 @@ static void iommu_enable_translation(struct acpi_drhd_unit *drhd)
     u32 sts;
     unsigned long flags;
     struct vtd_iommu *iommu = drhd->iommu;
-    static const char crash_fmt[] = "%s; crash xen for security purpose\n";
+    static const char crash_fmt[] = "%s; crash Xen for security purpose\n";
 
     if ( drhd->gfx_only )
     {
-        static const char disable_fmt[] = XENLOG_WARNING VTDPREFIX
+        static const char disable_fmt[] = CRUXLOG_WARNING VTDPREFIX
                                           " %s; disabling IGD VT-d engine\n";
 
         if ( !iommu_igfx )
@@ -865,7 +865,7 @@ static void iommu_enable_translation(struct acpi_drhd_unit *drhd)
         if ( force_iommu )
             panic(crash_fmt, msg);
 
-        printk(XENLOG_WARNING VTDPREFIX " %s; disabling ISOCH VT-d engine\n",
+        printk(CRUXLOG_WARNING VTDPREFIX " %s; disabling ISOCH VT-d engine\n",
                msg);
         return;
     }
@@ -980,7 +980,7 @@ static int iommu_page_fault_do_one(struct vtd_iommu *iommu, int type,
     switch ( fault_type )
     {
     case DMA_REMAP:
-        printk(XENLOG_G_WARNING VTDPREFIX
+        printk(CRUXLOG_G_WARNING VTDPREFIX
                "DMAR:[%s] Request device [%pp] "
                "fault addr %"PRIx64"\n",
                (type ? "DMA Read" : "DMA Write"),
@@ -988,14 +988,14 @@ static int iommu_page_fault_do_one(struct vtd_iommu *iommu, int type,
         kind = "DMAR";
         break;
     case INTR_REMAP:
-        printk(XENLOG_G_WARNING VTDPREFIX
+        printk(CRUXLOG_G_WARNING VTDPREFIX
                "INTR-REMAP: Request device [%pp] "
                "fault index %"PRIx64"\n",
                &PCI_SBDF(seg, source_id), addr >> 48);
         kind = "INTR-REMAP";
         break;
     default:
-        printk(XENLOG_G_WARNING VTDPREFIX
+        printk(CRUXLOG_G_WARNING VTDPREFIX
                "UNKNOWN: Request device [%pp] "
                "fault addr %"PRIx64"\n",
                &PCI_SBDF(seg, source_id), addr);
@@ -1003,7 +1003,7 @@ static int iommu_page_fault_do_one(struct vtd_iommu *iommu, int type,
         break;
     }
 
-    printk(XENLOG_G_WARNING VTDPREFIX "%s: reason %02x - %s\n",
+    printk(CRUXLOG_G_WARNING VTDPREFIX "%s: reason %02x - %s\n",
            kind, fault_reason, reason);
 
     if ( iommu_verbose && fault_type == DMA_REMAP )
@@ -1190,7 +1190,7 @@ static void cf_check dma_msi_set_affinity(
 
     dest = set_desc_affinity(desc, mask);
     if (dest == BAD_APICID){
-        dprintk(XENLOG_ERR VTDPREFIX, "Set iommu interrupt affinity error!\n");
+        dprintk(CRUXLOG_ERR VTDPREFIX, "Set iommu interrupt affinity error!\n");
         return;
     }
 
@@ -1237,7 +1237,7 @@ static int __init iommu_set_interrupt(struct acpi_drhd_unit *drhd)
                      false);
     if ( irq <= 0 )
     {
-        dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: no irq available!\n");
+        dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: no irq available!\n");
         return -EINVAL;
     }
 
@@ -1248,7 +1248,7 @@ static int __init iommu_set_interrupt(struct acpi_drhd_unit *drhd)
     {
         desc->handler = &no_irq_type;
         destroy_irq(irq);
-        dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: can't request irq\n");
+        dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: can't request irq\n");
         return ret;
     }
 
@@ -1294,7 +1294,7 @@ int __init iommu_alloc(struct acpi_drhd_unit *drhd)
 
     if ( !iommu_qinval && !has_register_based_invalidation(iommu) )
     {
-        printk(XENLOG_WARNING VTDPREFIX "IOMMU %d: cannot disable Queued Invalidation\n",
+        printk(CRUXLOG_WARNING VTDPREFIX "IOMMU %d: cannot disable Queued Invalidation\n",
                iommu->index);
         iommu_qinval = true;
     }
@@ -1320,7 +1320,7 @@ int __init iommu_alloc(struct acpi_drhd_unit *drhd)
          (has_register_based_invalidation(iommu) &&
           ecap_iotlb_offset(iommu->ecap) >= PAGE_SIZE) )
     {
-        printk(XENLOG_ERR VTDPREFIX "IOMMU: unsupported\n");
+        printk(CRUXLOG_ERR VTDPREFIX "IOMMU: unsupported\n");
         print_iommu_regs(drhd);
         rc = -ENODEV;
         goto free;
@@ -1331,7 +1331,7 @@ int __init iommu_alloc(struct acpi_drhd_unit *drhd)
     agaw = fls(sagaw & 6) - 1;
     if ( agaw <= 0 )
     {
-        printk(XENLOG_ERR VTDPREFIX "IOMMU: unsupported sagaw %x\n", sagaw);
+        printk(CRUXLOG_ERR VTDPREFIX "IOMMU: unsupported sagaw %x\n", sagaw);
         print_iommu_regs(drhd);
         rc = -ENODEV;
         goto free;
@@ -1339,7 +1339,7 @@ int __init iommu_alloc(struct acpi_drhd_unit *drhd)
 
     if ( sagaw >> 3 )
     {
-        printk_once(XENLOG_WARNING VTDPREFIX
+        printk_once(CRUXLOG_WARNING VTDPREFIX
                     " Unhandled bits in SAGAW %#x%s\n",
                     sagaw,
                     iommu_hwdom_passthrough ? ", disabling passthrough" : "");
@@ -1457,7 +1457,7 @@ static void __hwdom_init cf_check intel_iommu_hwdom_init(struct domain *d)
     arch_iommu_hwdom_init(d);
 
     if ( iommu_flush_all() )
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " IOMMU flush all failed for hardware domain\n");
 
     for_each_drhd_unit ( drhd )
@@ -1517,7 +1517,7 @@ int domain_context_mapping_one(
         {
             spin_unlock(&iommu->lock);
             unmap_vtd_domain_page(context_entries);
-            dprintk(XENLOG_DEBUG VTDPREFIX,
+            dprintk(CRUXLOG_DEBUG VTDPREFIX,
                     "no domain for did %u (nr_dom %u)\n",
                     prev_did, cap_ndoms(iommu->cap));
             return -ESRCH;
@@ -1594,7 +1594,7 @@ int domain_context_mapping_one(
     {
         if ( pdev )
             check_cleanup_domid_map(domain, pdev, iommu);
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                 "%pp: unexpected context entry %016lx_%016lx (expected %016lx_%016lx)\n",
                 &PCI_SBDF(seg, bus, devfn),
                 (uint64_t)(res >> 64), (uint64_t)res,
@@ -1820,7 +1820,7 @@ static int domain_context_mapping(struct domain *domain, u8 devfn,
         break;
 
     default:
-        dprintk(XENLOG_ERR VTDPREFIX, "%pd:unknown(%u): %pp\n",
+        dprintk(CRUXLOG_ERR VTDPREFIX, "%pd:unknown(%u): %pp\n",
                 domain, pdev->type, &PCI_SBDF(seg, bus, devfn));
         ret = -EINVAL;
         break;
@@ -1901,7 +1901,7 @@ int domain_context_unmap_one(
     {
         if ( domain->is_dying )
         {
-            printk(XENLOG_ERR "%pd: error %d unmapping %04x:%02x:%02x.%u\n",
+            printk(CRUXLOG_ERR "%pd: error %d unmapping %04x:%02x:%02x.%u\n",
                    domain, rc, iommu->drhd->segment, bus,
                    PCI_SLOT(devfn), PCI_FUNC(devfn));
             rc = 0; /* Make upper layers continue in a best effort manner. */
@@ -1988,7 +1988,7 @@ static const struct acpi_drhd_unit *domain_context_unmap(
         break;
 
     default:
-        dprintk(XENLOG_ERR VTDPREFIX, "%pd:unknown(%u): %pp\n",
+        dprintk(CRUXLOG_ERR VTDPREFIX, "%pd:unknown(%u): %pp\n",
                 domain, pdev->type, &PCI_SBDF(seg, bus, devfn));
         return ERR_PTR(-EINVAL);
     }
@@ -2312,7 +2312,7 @@ static int cf_check intel_iommu_add_device(u8 devfn, struct pci_dev *pdev)
         {
             /*
              * iommu_add_device() is only called for the hardware
-             * domain (see xen/drivers/passthrough/pci.c:pci_add_device()).
+             * domain (see crux/drivers/passthrough/pci.c:pci_add_device()).
              * Since RMRRs are always reserved in the e820 map for the hardware
              * domain, there shouldn't be a conflict.
              */
@@ -2320,14 +2320,14 @@ static int cf_check intel_iommu_add_device(u8 devfn, struct pci_dev *pdev)
                                          rmrr->base_address, rmrr->end_address,
                                          0);
             if ( ret )
-                dprintk(XENLOG_ERR VTDPREFIX, "%pd: RMRR mapping failed\n",
+                dprintk(CRUXLOG_ERR VTDPREFIX, "%pd: RMRR mapping failed\n",
                         pdev->domain);
         }
     }
 
     ret = domain_context_mapping(pdev->domain, devfn, pdev);
     if ( ret )
-        dprintk(XENLOG_ERR VTDPREFIX, "%pd: context mapping failed\n",
+        dprintk(CRUXLOG_ERR VTDPREFIX, "%pd: context mapping failed\n",
                 pdev->domain);
 
     return ret;
@@ -2514,7 +2514,7 @@ static int __must_check init_vtd_hw(bool resume)
             if ( ioapic_to_iommu(IO_APIC_ID(apic)) == NULL )
             {
                 iommu_intremap = iommu_intremap_off;
-                dprintk(XENLOG_ERR VTDPREFIX,
+                dprintk(CRUXLOG_ERR VTDPREFIX,
                     "ioapic_to_iommu: ioapic %#x (id: %#x) is NULL! "
                     "Will not try to enable Interrupt Remapping.\n",
                     apic, IO_APIC_ID(apic));
@@ -2530,7 +2530,7 @@ static int __must_check init_vtd_hw(bool resume)
             if ( enable_intremap(iommu, 0) != 0 )
             {
                 iommu_intremap = iommu_intremap_off;
-                dprintk(XENLOG_WARNING VTDPREFIX,
+                dprintk(CRUXLOG_WARNING VTDPREFIX,
                         "Interrupt Remapping not enabled\n");
 
                 break;
@@ -2552,7 +2552,7 @@ static int __must_check init_vtd_hw(bool resume)
         ret = iommu_set_root_entry(iommu);
         if ( ret )
         {
-            dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: set root entry failed\n");
+            dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: set root entry failed\n");
             return -EIO;
         }
     }
@@ -2578,7 +2578,7 @@ static void __hwdom_init setup_hwdom_rmrr(struct domain *d)
         ret = iommu_identity_mapping(d, p2m_access_rw, rmrr->base_address,
                                      rmrr->end_address, 0);
         if ( ret )
-            dprintk(XENLOG_ERR VTDPREFIX,
+            dprintk(CRUXLOG_ERR VTDPREFIX,
                      "IOMMU: mapping reserved region failed\n");
     }
     pcidevs_unlock();
@@ -2598,7 +2598,7 @@ static int __init cf_check vtd_setup(void)
 
     if ( unlikely(!cpu_has_cx16) )
     {
-        printk(XENLOG_ERR VTDPREFIX "no CMPXCHG16B support, disabling IOMMU\n");
+        printk(CRUXLOG_ERR VTDPREFIX "no CMPXCHG16B support, disabling IOMMU\n");
         ret = -ENODEV;
         goto error;
     }
@@ -2675,7 +2675,7 @@ static int __init cf_check vtd_setup(void)
         ret = iommu_set_interrupt(drhd);
         if ( ret )
         {
-            dprintk(XENLOG_ERR VTDPREFIX, "IOMMU: interrupt setup failed\n");
+            dprintk(CRUXLOG_ERR VTDPREFIX, "IOMMU: interrupt setup failed\n");
             goto error;
         }
     }
@@ -2684,7 +2684,7 @@ static int __init cf_check vtd_setup(void)
 
     if ( !iommu_qinval && !reg_inval_supported )
     {
-        dprintk(XENLOG_ERR VTDPREFIX, "No available invalidation interface\n");
+        dprintk(CRUXLOG_ERR VTDPREFIX, "No available invalidation interface\n");
         ret = -ENODEV;
         goto error;
     }
@@ -2692,7 +2692,7 @@ static int __init cf_check vtd_setup(void)
     if ( !iommu_qinval && iommu_intremap )
     {
         iommu_intremap = iommu_intremap_off;
-        dprintk(XENLOG_WARNING VTDPREFIX, "Interrupt Remapping disabled "
+        dprintk(CRUXLOG_WARNING VTDPREFIX, "Interrupt Remapping disabled "
             "since Queued Invalidation isn't supported or enabled.\n");
     }
 
@@ -2855,12 +2855,12 @@ static int cf_check intel_iommu_assign_device(
         if ( rmrr->segment == seg && bdf == PCI_BDF(bus, devfn) &&
              rmrr->scope.devices_cnt > 1 )
         {
-            bool relaxed = flag & XEN_DOMCTL_DEV_RDM_RELAXED;
+            bool relaxed = flag & CRUX_DOMCTL_DEV_RDM_RELAXED;
 
-            printk(XENLOG_GUEST "%s" VTDPREFIX
+            printk(CRUXLOG_GUEST "%s" VTDPREFIX
                    " It's %s to assign %pp"
                    " with shared RMRR at %"PRIx64" for %pd.\n",
-                   relaxed ? XENLOG_WARNING : XENLOG_ERR,
+                   relaxed ? CRUXLOG_WARNING : CRUXLOG_ERR,
                    relaxed ? "risky" : "disallowed",
                    &PCI_SBDF(seg, bus, devfn), rmrr->base_address, d);
             if ( !relaxed )
@@ -2880,7 +2880,7 @@ static int cf_check intel_iommu_assign_device(
                                          rmrr->end_address, flag);
             if ( ret )
             {
-                printk(XENLOG_G_ERR VTDPREFIX
+                printk(CRUXLOG_G_ERR VTDPREFIX
                        "%pd: cannot map reserved region [%"PRIx64",%"PRIx64"]: %d\n",
                        d, rmrr->base_address, rmrr->end_address, ret);
                 break;
@@ -2905,7 +2905,7 @@ static int cf_check intel_iommu_assign_device(
 
             if ( rc && rc != -ENOENT )
             {
-                printk(XENLOG_ERR VTDPREFIX
+                printk(CRUXLOG_ERR VTDPREFIX
                        "%pd: cannot unmap reserved region [%"PRIx64",%"PRIx64"]: %d\n",
                        d, rmrr->base_address, rmrr->end_address, rc);
                 domain_crash(d);
@@ -2940,7 +2940,7 @@ static int __must_check cf_check vtd_suspend(void)
     rc = iommu_flush_all();
     if ( unlikely(rc) )
     {
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " suspend: IOMMU flush all failed: %d\n", rc);
 
         return rc;
@@ -2979,7 +2979,7 @@ static void cf_check vtd_crash_shutdown(void)
         return;
 
     if ( iommu_flush_all() )
-        printk(XENLOG_WARNING VTDPREFIX
+        printk(CRUXLOG_WARNING VTDPREFIX
                " crash shutdown: IOMMU flush all failed\n");
 
     for_each_drhd_unit ( drhd )
@@ -3015,7 +3015,7 @@ static void cf_check vtd_resume(void)
     }
 
     if ( init_vtd_hw(true) != 0 && force_iommu )
-         panic("IOMMU setup failed, crash xen for security purpose\n");
+         panic("IOMMU setup failed, crash Xen for security purpose\n");
 
     for_each_drhd_unit ( drhd )
     {
@@ -3178,7 +3178,7 @@ static int cf_check intel_iommu_quarantine_init(struct pci_dev *pdev,
                                         rmrr->base_address, rmrr->end_address,
                                         0);
             if ( rc )
-                printk(XENLOG_ERR VTDPREFIX
+                printk(CRUXLOG_ERR VTDPREFIX
                        "%pp: RMRR quarantine mapping failed\n",
                        &pdev->sbdf);
         }

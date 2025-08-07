@@ -2,7 +2,7 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/string.h>
+#include <crux/string.h>
 
 /**
  * memset - Fill a region of memory with the given value

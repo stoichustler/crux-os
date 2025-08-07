@@ -1,12 +1,12 @@
 
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bug.h>
-#include <xen/domain.h>
-#include <xen/errno.h>
-#include <xen/mm-frame.h>
-#include <xen/sched.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/domain.h>
+#include <crux/errno.h>
+#include <crux/mm-frame.h>
+#include <crux/sched.h>
+#include <crux/types.h>
 #include <asm/p2m.h>
 
 int p2m_set_entry(struct p2m_domain *p2m, gfn_t sgfn, unsigned long nr,

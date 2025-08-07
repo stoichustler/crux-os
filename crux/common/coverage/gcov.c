@@ -12,13 +12,13 @@
  *       Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
  *       Paul Larson
  *
- *  Modified for xen by:
+ *  Modified for Xen by:
  *    Wei Liu <wei.liu2@citrix.com>
  */
 
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/types.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/types.h>
 
 #include <public/sysctl.h>
 
@@ -82,7 +82,7 @@ static size_t gcov_info_payload_size(const struct gcov_info *info)
 }
 
 static int gcov_info_dump_payload(const struct gcov_info *info,
-                                  XEN_GUEST_HANDLE_PARAM(char) buffer,
+                                  CRUX_GUEST_HANDLE_PARAM(char) buffer,
                                   uint32_t *off)
 {
     char *buf;
@@ -149,7 +149,7 @@ static void cf_check gcov_reset_all_counters(void)
 }
 
 static int gcov_dump_one_record(const struct gcov_info *info,
-                                XEN_GUEST_HANDLE_PARAM(char) buffer,
+                                CRUX_GUEST_HANDLE_PARAM(char) buffer,
                                 uint32_t *off)
 {
     uint32_t payload_size;
@@ -173,10 +173,10 @@ static int gcov_dump_one_record(const struct gcov_info *info,
 }
 
 static int cf_check gcov_dump_all(
-    XEN_GUEST_HANDLE_PARAM(char) buffer, uint32_t *buffer_size)
+    CRUX_GUEST_HANDLE_PARAM(char) buffer, uint32_t *buffer_size)
 {
     uint32_t off;
-    uint32_t magic = XEN_GCOV_FORMAT_MAGIC;
+    uint32_t magic = CRUX_GCOV_FORMAT_MAGIC;
     struct gcov_info *info = NULL;
     int ret;
 

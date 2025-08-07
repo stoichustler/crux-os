@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /*
- * xen/arch/riscv/aplic.c
+ * crux/arch/riscv/aplic.c
  *
  * RISC-V Advanced Platform-Level Interrupt Controller support
  *
@@ -9,16 +9,16 @@
  * Copyright (c) 2024-2025 Vates
  */
 
-#include <xen/const.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
-#include <xen/sections.h>
-#include <xen/spinlock.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
+#include <crux/const.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
+#include <crux/sections.h>
+#include <crux/spinlock.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
 
 #include "aplic-priv.h"
 
@@ -295,7 +295,7 @@ static void cf_check aplic_set_irq_type(struct irq_desc *desc,
     spin_unlock(&aplic.lock);
 }
 
-static const hw_irq_controller aplic_xen_irq_type = {
+static const hw_irq_controller aplic_crux_irq_type = {
     .typename     = "aplic",
     .startup      = aplic_irq_startup,
     .shutdown     = aplic_irq_disable,
@@ -307,7 +307,7 @@ static const hw_irq_controller aplic_xen_irq_type = {
 static const struct intc_hw_operations aplic_ops = {
     .info                = &aplic_info,
     .init                = aplic_init,
-    .host_irq_type       = &aplic_xen_irq_type,
+    .host_irq_type       = &aplic_crux_irq_type,
     .handle_interrupt    = aplic_handle_interrupt,
     .set_irq_type        = aplic_set_irq_type,
 };
@@ -333,7 +333,7 @@ static int __init aplic_preinit(struct dt_device_node *node, const void *dat)
 {
     if ( aplic_info.node )
     {
-        printk("XEN doesn't support more than one S mode APLIC\n");
+        printk("CRUX doesn't support more than one S mode APLIC\n");
         return -ENODEV;
     }
 

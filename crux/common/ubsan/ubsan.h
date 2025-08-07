@@ -1,7 +1,7 @@
 #ifndef _LIB_UBSAN_H
 #define _LIB_UBSAN_H
 
-#include <xen/linux-compat.h>
+#include <crux/linux-compat.h>
 
 enum {
 	type_kind_int = 0,

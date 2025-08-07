@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/debug-mvebu.inc
+ * crux/arch/arm/arm64/debug-mvebu.inc
  *
  * MVEBU specific debug code.
  *

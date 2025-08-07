@@ -4,16 +4,16 @@
  * Copyright (c) 2002-2005 K A Fraser
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/param.h>
-#include <xen/version.h>
-#include <xen/sched.h>
-#include <xen/paging.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/hypfs.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/param.h>
+#include <crux/version.h>
+#include <crux/sched.h>
+#include <crux/paging.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/hypfs.h>
 #include <xsm/xsm.h>
 #include <asm/current.h>
 #include <public/version.h>
@@ -34,9 +34,9 @@ bool __ro_after_init opt_dit = IS_ENABLED(CONFIG_DIT_DEFAULT);
 boolean_param("dit", opt_dit);
 #endif
 
-static xen_commandline_t saved_cmdline;
+static crux_commandline_t saved_cmdline;
 static const char __initconst opt_builtin_cmdline[] = CONFIG_CMDLINE;
-char __ro_after_init xen_cap_info[128];
+char __ro_after_init crux_cap_info[128];
 
 static int assign_integer_param(const struct kernel_param *param, uint64_t val)
 {
@@ -211,7 +211,7 @@ static void __init _cmdline_parse(const char *cmdline)
 }
 
 /**
- *    cmdline_parse -- parses the xen command line.
+ *    cmdline_parse -- parses the crux command line.
  * If CONFIG_CMDLINE is set, it would be parsed prior to @cmdline.
  * But if CONFIG_CMDLINE_OVERRIDE is set to y, @cmdline will be ignored.
  */
@@ -451,31 +451,31 @@ static int __init cf_check buildinfo_init(void)
 {
     hypfs_add_dir(&hypfs_root, &buildinfo, true);
 
-    hypfs_string_set_reference(&changeset, xen_changeset());
+    hypfs_string_set_reference(&changeset, crux_changeset());
     hypfs_add_leaf(&buildinfo, &changeset, true);
 
     hypfs_add_dir(&buildinfo, &compileinfo, true);
-    hypfs_string_set_reference(&compiler, xen_compiler());
-    hypfs_string_set_reference(&compile_by, xen_compile_by());
-    hypfs_string_set_reference(&compile_date, xen_compile_date());
-    hypfs_string_set_reference(&compile_domain, xen_compile_domain());
+    hypfs_string_set_reference(&compiler, crux_compiler());
+    hypfs_string_set_reference(&compile_by, crux_compile_by());
+    hypfs_string_set_reference(&compile_date, crux_compile_date());
+    hypfs_string_set_reference(&compile_domain, crux_compile_domain());
     hypfs_add_leaf(&compileinfo, &compiler, true);
     hypfs_add_leaf(&compileinfo, &compile_by, true);
     hypfs_add_leaf(&compileinfo, &compile_date, true);
     hypfs_add_leaf(&compileinfo, &compile_domain, true);
 
-    major_version = xen_major_version();
-    minor_version = xen_minor_version();
+    major_version = crux_major_version();
+    minor_version = crux_minor_version();
     hypfs_add_dir(&buildinfo, &version, true);
-    hypfs_string_set_reference(&extra, xen_extra_version());
+    hypfs_string_set_reference(&extra, crux_extra_version());
     hypfs_add_leaf(&version, &extra, true);
     hypfs_add_leaf(&version, &major, true);
     hypfs_add_leaf(&version, &minor, true);
 
 #ifdef CONFIG_HYPFS_CONFIG
-    config.e.encoding = XEN_HYPFS_ENC_GZIP;
-    config.e.size = xen_config_data_size;
-    config.u.content = xen_config_data;
+    config.e.encoding = CRUX_HYPFS_ENC_GZIP;
+    config.e.size = crux_config_data_size;
+    config.u.content = crux_config_data;
     hypfs_add_leaf(&buildinfo, &config, true);
 #endif
 
@@ -495,7 +495,7 @@ static int __init cf_check param_init(void)
     {
         if ( param->init_leaf )
             param->init_leaf(param);
-        else if ( param->hypfs.e.type == XEN_HYPFS_TYPE_STRING )
+        else if ( param->hypfs.e.type == CRUX_HYPFS_TYPE_STRING )
             param->hypfs.e.size = strlen(param->hypfs.u.content) + 1;
         hypfs_add_leaf(&params, &param->hypfs, true);
     }
@@ -505,41 +505,35 @@ static int __init cf_check param_init(void)
 __initcall(param_init);
 #endif
 
-static long xenver_varbuf_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+static long cruxver_varbuf_op(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
-    struct xen_varbuf user_str;
+    struct crux_varbuf user_str;
     const char *str = NULL;
     size_t sz;
-    int rc;
 
     switch ( cmd )
     {
-    case XENVER_build_id:
-    {
-        unsigned int local_sz;
-
-        rc = xen_build_id((const void **)&str, &local_sz);
-        if ( rc )
-            return rc;
-
-        sz = local_sz;
+    case CRUXVER_build_id:
+        str = crux_build_id;
+        sz  = crux_build_id_len;
+        if ( !sz )
+            return -ENODATA;
         goto have_len;
-    }
 
-    case XENVER_extraversion2:
-        str = xen_extra_version();
+    case CRUXVER_extraversion2:
+        str = crux_extra_version();
         break;
 
-    case XENVER_changeset2:
-        str = xen_changeset();
+    case CRUXVER_changeset2:
+        str = crux_changeset();
         break;
 
-    case XENVER_commandline2:
+    case CRUXVER_commandline2:
         str = saved_cmdline;
         break;
 
-    case XENVER_capabilities2:
-        str = xen_cap_info;
+    case CRUXVER_capabilities2:
+        str = crux_cap_info;
         break;
 
     default:
@@ -562,61 +556,61 @@ static long xenver_varbuf_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
     if ( sz > user_str.len )
         return -ENOBUFS;
 
-    if ( copy_to_guest_offset(arg, offsetof(struct xen_varbuf, buf),
+    if ( copy_to_guest_offset(arg, offsetof(struct crux_varbuf, buf),
                               str, sz) )
         return -EFAULT;
 
     return sz;
 }
 
-long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+long do_crux_version(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
-    bool deny = xsm_xen_version(XSM_OTHER, cmd);
+    bool deny = xsm_crux_version(XSM_OTHER, cmd);
 
     switch ( cmd )
     {
-    case XENVER_version:
-        return (xen_major_version() << 16) | xen_minor_version();
+    case CRUXVER_version:
+        return (crux_major_version() << 16) | crux_minor_version();
 
-    case XENVER_extraversion:
+    case CRUXVER_extraversion:
     {
-        xen_extraversion_t extraversion;
+        crux_extraversion_t extraversion;
 
         memset(extraversion, 0, sizeof(extraversion));
-        safe_strcpy(extraversion, deny ? xen_deny() : xen_extra_version());
+        safe_strcpy(extraversion, deny ? crux_deny() : crux_extra_version());
         if ( copy_to_guest(arg, extraversion, ARRAY_SIZE(extraversion)) )
             return -EFAULT;
         return 0;
     }
 
-    case XENVER_compile_info:
+    case CRUXVER_compile_info:
     {
-        xen_compile_info_t info;
+        crux_compile_info_t info;
 
         memset(&info, 0, sizeof(info));
-        safe_strcpy(info.compiler,       deny ? xen_deny() : xen_compiler());
-        safe_strcpy(info.compile_by,     deny ? xen_deny() : xen_compile_by());
-        safe_strcpy(info.compile_domain, deny ? xen_deny() : xen_compile_domain());
-        safe_strcpy(info.compile_date,   deny ? xen_deny() : xen_compile_date());
+        safe_strcpy(info.compiler,       deny ? crux_deny() : crux_compiler());
+        safe_strcpy(info.compile_by,     deny ? crux_deny() : crux_compile_by());
+        safe_strcpy(info.compile_domain, deny ? crux_deny() : crux_compile_domain());
+        safe_strcpy(info.compile_date,   deny ? crux_deny() : crux_compile_date());
         if ( copy_to_guest(arg, &info, 1) )
             return -EFAULT;
         return 0;
     }
 
-    case XENVER_capabilities:
+    case CRUXVER_capabilities:
     {
-        xen_capabilities_info_t info;
+        crux_capabilities_info_t info;
 
         memset(info, 0, sizeof(info));
         if ( !deny )
-            safe_strcpy(info, xen_cap_info);
+            safe_strcpy(info, crux_cap_info);
 
         if ( copy_to_guest(arg, info, ARRAY_SIZE(info)) )
             return -EFAULT;
         return 0;
     }
 
-    case XENVER_platform_parameters:
+    case CRUXVER_platform_parameters:
     {
         const struct vcpu *curr = current;
 
@@ -635,7 +629,7 @@ long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         else
 #endif
         {
-            xen_platform_parameters_t params = {
+            crux_platform_parameters_t params = {
                 /*
                  * Out of an abundance of caution, retain the useless return
                  * value for 64bit PV guests, but in release builds only.
@@ -656,20 +650,20 @@ long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         return 0;
     }
 
-    case XENVER_changeset:
+    case CRUXVER_changeset:
     {
-        xen_changeset_info_t chgset;
+        crux_changeset_info_t chgset;
 
         memset(chgset, 0, sizeof(chgset));
-        safe_strcpy(chgset, deny ? xen_deny() : xen_changeset());
+        safe_strcpy(chgset, deny ? crux_deny() : crux_changeset());
         if ( copy_to_guest(arg, chgset, ARRAY_SIZE(chgset)) )
             return -EFAULT;
         return 0;
     }
 
-    case XENVER_get_features:
+    case CRUXVER_get_features:
     {
-        xen_feature_info_t fi;
+        crux_feature_info_t fi;
         struct domain *d = current->domain;
 
         if ( copy_from_guest(&fi, arg, 1) )
@@ -678,37 +672,37 @@ long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         switch ( fi.submap_idx )
         {
         case 0:
-            fi.submap = (1U << XENFEAT_memory_op_vnode_supported) |
+            fi.submap = (1U << CRUXFEAT_memory_op_vnode_supported) |
 #ifdef CONFIG_X86
-                        (1U << XENFEAT_vcpu_time_phys_area) |
+                        (1U << CRUXFEAT_vcpu_time_phys_area) |
 #endif
-                        (1U << XENFEAT_runstate_phys_area);
+                        (1U << CRUXFEAT_runstate_phys_area);
             if ( VM_ASSIST(d, pae_extended_cr3) )
-                fi.submap |= (1U << XENFEAT_pae_pgdir_above_4gb);
+                fi.submap |= (1U << CRUXFEAT_pae_pgdir_above_4gb);
             if ( paging_mode_translate(d) )
                 fi.submap |=
-                    (1U << XENFEAT_writable_page_tables) |
-                    (1U << XENFEAT_auto_translated_physmap);
+                    (1U << CRUXFEAT_writable_page_tables) |
+                    (1U << CRUXFEAT_auto_translated_physmap);
             if ( is_hardware_domain(d) )
-                fi.submap |= 1U << XENFEAT_dom0;
+                fi.submap |= 1U << CRUXFEAT_dom0;
 #ifdef CONFIG_ARM
-            fi.submap |= (1U << XENFEAT_ARM_SMCCC_supported);
+            fi.submap |= (1U << CRUXFEAT_ARM_SMCCC_supported);
 #endif
 #ifdef CONFIG_X86
             if ( is_pv_domain(d) )
-                fi.submap |= (1U << XENFEAT_mmu_pt_update_preserve_ad) |
-                             (1U << XENFEAT_highmem_assist) |
-                             (1U << XENFEAT_gnttab_map_avail_bits);
+                fi.submap |= (1U << CRUXFEAT_mmu_pt_update_preserve_ad) |
+                             (1U << CRUXFEAT_highmem_assist) |
+                             (1U << CRUXFEAT_gnttab_map_avail_bits);
             else
-                fi.submap |= (1U << XENFEAT_hvm_safe_pvclock) |
-                             (1U << XENFEAT_hvm_callback_vector) |
-                             (has_pirq(d) ? (1U << XENFEAT_hvm_pirqs) : 0);
-            fi.submap |= (1U << XENFEAT_dm_msix_all_writes);
+                fi.submap |= (1U << CRUXFEAT_hvm_safe_pvclock) |
+                             (1U << CRUXFEAT_hvm_callback_vector) |
+                             (has_pirq(d) ? (1U << CRUXFEAT_hvm_pirqs) : 0);
+            fi.submap |= (1U << CRUXFEAT_dm_msix_all_writes);
 #endif
             if ( !paging_mode_translate(d) || is_domain_direct_mapped(d) )
-                fi.submap |= (1U << XENFEAT_direct_mapped);
+                fi.submap |= (1U << CRUXFEAT_direct_mapped);
             else
-                fi.submap |= (1U << XENFEAT_not_direct_mapped);
+                fi.submap |= (1U << CRUXFEAT_not_direct_mapped);
             break;
         default:
             return -EINVAL;
@@ -719,14 +713,14 @@ long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         return 0;
     }
 
-    case XENVER_pagesize:
+    case CRUXVER_pagesize:
         if ( deny )
             return 0;
         return (!guest_handle_is_null(arg) ? -EINVAL : PAGE_SIZE);
 
-    case XENVER_guest_handle:
+    case CRUXVER_guest_handle:
     {
-        xen_domain_handle_t hdl;
+        crux_domain_handle_t hdl;
 
         if ( deny )
             memset(&hdl, 0, ARRAY_SIZE(hdl));
@@ -739,26 +733,26 @@ long do_xen_version(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
         return 0;
     }
 
-    case XENVER_commandline:
+    case CRUXVER_commandline:
     {
         size_t len = ARRAY_SIZE(saved_cmdline);
 
         if ( deny )
-            len = strlen(xen_deny()) + 1;
+            len = strlen(crux_deny()) + 1;
 
-        if ( copy_to_guest(arg, deny ? xen_deny() : saved_cmdline, len) )
+        if ( copy_to_guest(arg, deny ? crux_deny() : saved_cmdline, len) )
             return -EFAULT;
         return 0;
     }
 
-    case XENVER_build_id:
-    case XENVER_extraversion2:
-    case XENVER_capabilities2:
-    case XENVER_changeset2:
-    case XENVER_commandline2:
+    case CRUXVER_build_id:
+    case CRUXVER_extraversion2:
+    case CRUXVER_capabilities2:
+    case CRUXVER_changeset2:
+    case CRUXVER_commandline2:
         if ( deny )
             return -EPERM;
-        return xenver_varbuf_op(cmd, arg);
+        return cruxver_varbuf_op(cmd, arg);
     }
 
     return -ENOSYS;

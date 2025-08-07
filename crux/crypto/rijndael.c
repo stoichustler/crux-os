@@ -26,12 +26,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* start for xen */
-#include <xen/init.h>
-#include <xen/types.h>
-#include <xen/lib.h>
+/* start for Xen */
+#include <crux/init.h>
+#include <crux/types.h>
+#include <crux/lib.h>
 #include <crypto/rijndael.h>
-/* end for xen */
+/* end for Xen */
 
 #undef FULL_UNROLL
 

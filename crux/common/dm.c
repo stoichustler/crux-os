@@ -14,14 +14,14 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/dm.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/nospec.h>
+#include <crux/dm.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/nospec.h>
 
 long do_dm_op(
     domid_t domid, unsigned int nr_bufs,
-    XEN_GUEST_HANDLE_PARAM(xen_dm_op_buf_t) bufs)
+    CRUX_GUEST_HANDLE_PARAM(crux_dm_op_buf_t) bufs)
 {
     struct dmop_args args;
     int rc;

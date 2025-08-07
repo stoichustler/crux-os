@@ -2,8 +2,8 @@
 #ifndef ASM__RISCV__IRQ_H
 #define ASM__RISCV__IRQ_H
 
-#include <xen/bug.h>
-#include <xen/device_tree.h>
+#include <crux/bug.h>
+#include <crux/device_tree.h>
 
 #include <asm/irq-dt.h>
 

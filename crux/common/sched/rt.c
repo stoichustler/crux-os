@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Preemptive Global Earliest Deadline First  (EDF) scheduler for xen
+ * Preemptive Global Earliest Deadline First  (EDF) scheduler for Xen
  * EDF scheduling is a real-time scheduling algorithm used in embedded field.
  *
  * by Sisu Xi, 2013, Washington University in Saint Louis
@@ -11,24 +11,24 @@
  * based on the code of credit Scheduler
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
-#include <xen/domain.h>
-#include <xen/delay.h>
-#include <xen/event.h>
-#include <xen/time.h>
-#include <xen/timer.h>
-#include <xen/perfc.h>
-#include <xen/softirq.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
+#include <crux/domain.h>
+#include <crux/delay.h>
+#include <crux/event.h>
+#include <crux/time.h>
+#include <crux/timer.h>
+#include <crux/perfc.h>
+#include <crux/softirq.h>
 #include <asm/atomic.h>
-#include <xen/errno.h>
-#include <xen/trace.h>
-#include <xen/cpu.h>
-#include <xen/keyhandler.h>
-#include <xen/trace.h>
-#include <xen/err.h>
-#include <xen/guest_access.h>
+#include <crux/errno.h>
+#include <crux/trace.h>
+#include <crux/cpu.h>
+#include <crux/keyhandler.h>
+#include <crux/trace.h>
+#include <crux/err.h>
+#include <crux/guest_access.h>
 
 #include "private.h"
 
@@ -405,7 +405,7 @@ rt_dump(const struct scheduler *ops)
         rt_dump_unit(ops, svc);
     }
 
-    printk("domain info:\n");
+    printk("Domain info:\n");
     list_for_each ( iter, &prv->sdom )
     {
         const struct sched_unit *unit;
@@ -678,9 +678,9 @@ rt_init(struct scheduler *ops)
     int rc = -ENOMEM;
     struct rt_private *prv = xzalloc(struct rt_private);
 
-    printk("kicking RTDS scheduler\n"
+    printk("Initializing RTDS scheduler\n"
            "WARNING: This is experimental software in development.\n"
-           "use at your own risk.\n");
+           "Use at your own risk.\n");
 
     if ( prv == NULL )
         goto err;
@@ -742,7 +742,7 @@ rt_switch_sched(struct scheduler *new_ops, unsigned int cpu,
          prv->repl_timer.status == TIMER_STATUS_killed )
     {
         init_timer(&prv->repl_timer, repl_timer_handler, (void *)new_ops, cpu);
-        dprintk(XENLOG_DEBUG, "RTDS: timer initialized on cpu %u\n", cpu);
+        dprintk(CRUXLOG_DEBUG, "RTDS: timer initialized on cpu %u\n", cpu);
     }
 
     sched_idle_unit(cpu)->priv = vdata;
@@ -763,7 +763,7 @@ static void move_repl_timer(struct rt_private *prv, unsigned int old_cpu)
     if ( new_cpu >= nr_cpu_ids )
     {
         kill_timer(&prv->repl_timer);
-        dprintk(XENLOG_DEBUG, "RTDS: timer killed on cpu %d\n", old_cpu);
+        dprintk(CRUXLOG_DEBUG, "RTDS: timer killed on cpu %d\n", old_cpu);
     }
     else
     {
@@ -1369,25 +1369,25 @@ static int cf_check
 rt_dom_cntl(
     const struct scheduler *ops,
     struct domain *d,
-    struct xen_domctl_scheduler_op *op)
+    struct crux_domctl_scheduler_op *op)
 {
     struct rt_private *prv = rt_priv(ops);
     struct rt_unit *svc;
     const struct sched_unit *unit;
     unsigned long flags;
     int rc = 0;
-    struct xen_domctl_schedparam_vcpu local_sched;
+    struct crux_domctl_schedparam_vcpu local_sched;
     s_time_t period, budget;
     uint32_t index = 0;
 
     switch ( op->cmd )
     {
-    case XEN_DOMCTL_SCHEDOP_getinfo:
+    case CRUX_DOMCTL_SCHEDOP_getinfo:
         /* Return the default parameters. */
         op->u.rtds.period = RTDS_DEFAULT_PERIOD / MICROSECS(1);
         op->u.rtds.budget = RTDS_DEFAULT_BUDGET / MICROSECS(1);
         break;
-    case XEN_DOMCTL_SCHEDOP_putinfo:
+    case CRUX_DOMCTL_SCHEDOP_putinfo:
         if ( op->u.rtds.period == 0 || op->u.rtds.budget == 0 )
         {
             rc = -EINVAL;
@@ -1402,8 +1402,8 @@ rt_dom_cntl(
         }
         spin_unlock_irqrestore(&prv->lock, flags);
         break;
-    case XEN_DOMCTL_SCHEDOP_getvcpuinfo:
-    case XEN_DOMCTL_SCHEDOP_putvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_getvcpuinfo:
+    case CRUX_DOMCTL_SCHEDOP_putvcpuinfo:
         while ( index < op->u.v.nr_vcpus )
         {
             if ( copy_from_guest_offset(&local_sched,
@@ -1419,16 +1419,16 @@ rt_dom_cntl(
                 break;
             }
 
-            if ( op->cmd == XEN_DOMCTL_SCHEDOP_getvcpuinfo )
+            if ( op->cmd == CRUX_DOMCTL_SCHEDOP_getvcpuinfo )
             {
                 spin_lock_irqsave(&prv->lock, flags);
                 svc = rt_unit(d->vcpu[local_sched.vcpuid]->sched_unit);
                 local_sched.u.rtds.budget = svc->budget / MICROSECS(1);
                 local_sched.u.rtds.period = svc->period / MICROSECS(1);
                 if ( has_extratime(svc) )
-                    local_sched.u.rtds.flags |= XEN_DOMCTL_SCHEDRT_extra;
+                    local_sched.u.rtds.flags |= CRUX_DOMCTL_SCHEDRT_extra;
                 else
-                    local_sched.u.rtds.flags &= ~XEN_DOMCTL_SCHEDRT_extra;
+                    local_sched.u.rtds.flags &= ~CRUX_DOMCTL_SCHEDRT_extra;
                 spin_unlock_irqrestore(&prv->lock, flags);
 
                 if ( copy_to_guest_offset(op->u.v.vcpus, index,
@@ -1453,7 +1453,7 @@ rt_dom_cntl(
                 svc = rt_unit(d->vcpu[local_sched.vcpuid]->sched_unit);
                 svc->period = period;
                 svc->budget = budget;
-                if ( local_sched.u.rtds.flags & XEN_DOMCTL_SCHEDRT_extra )
+                if ( local_sched.u.rtds.flags & CRUX_DOMCTL_SCHEDRT_extra )
                     __set_bit(__RTDS_extratime, &svc->flags);
                 else
                     __clear_bit(__RTDS_extratime, &svc->flags);
@@ -1556,7 +1556,7 @@ static void cf_check repl_timer_handler(void *data)
 static const struct scheduler sched_rtds_def = {
     .name           = "SMP RTDS Scheduler",
     .opt_name       = "rtds",
-    .sched_id       = XEN_SCHEDULER_RTDS,
+    .sched_id       = CRUX_SCHEDULER_RTDS,
     .sched_data     = NULL,
 
     .dump_cpu_state = rt_dump_pcpu,

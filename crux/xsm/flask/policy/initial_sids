@@ -3,11 +3,11 @@
 #
 # Define initial security identifiers 
 #
-sid xenboot
-sid xen
+sid cruxboot
+sid crux
 sid dom0
 sid domio
-sid domxen
+sid domcrux
 sid unlabeled
 sid security
 sid ioport

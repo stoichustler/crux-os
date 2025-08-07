@@ -100,6 +100,6 @@ config XHCI
 	depends on X86
 	help
 	  This selects the USB based XHCI debug capability to be usable as a UART.
-	  Enabling this option makes xen use extra ~230KiB memory, even if XHCI UART
+	  Enabling this option makes Xen use extra ~230KiB memory, even if XHCI UART
 	  is not selected.
 	  If you have an x86 based system with USB3, say Y.

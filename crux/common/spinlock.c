@@ -1,14 +1,14 @@
-#include <xen/cpu.h>
-#include <xen/lib.h>
-#include <xen/irq.h>
-#include <xen/notifier.h>
-#include <xen/param.h>
-#include <xen/smp.h>
-#include <xen/time.h>
-#include <xen/sections.h>
-#include <xen/spinlock.h>
-#include <xen/guest_access.h>
-#include <xen/preempt.h>
+#include <crux/cpu.h>
+#include <crux/lib.h>
+#include <crux/irq.h>
+#include <crux/notifier.h>
+#include <crux/param.h>
+#include <crux/smp.h>
+#include <crux/time.h>
+#include <crux/sections.h>
+#include <crux/spinlock.h>
+#include <crux/guest_access.h>
+#include <crux/preempt.h>
 #include <public/sysctl.h>
 #include <asm/processor.h>
 #include <asm/atomic.h>
@@ -45,7 +45,7 @@ static int cf_check cpu_lockdebug_callback(struct notifier_block *nfb,
             per_cpu(locks_taken, cpu) = xzalloc_array(const union lock_debug *,
                                                       lock_depth_size);
         if ( !per_cpu(locks_taken, cpu) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "cpu %u: failed to allocate lock recursion check area\n",
                    cpu);
         break;
@@ -666,7 +666,7 @@ void cf_check spinlock_profile_printall(unsigned char key)
     s_time_t diff;
 
     diff = now - lock_profile_start;
-    printk("xen lock profile info SHOW  (now = %"PRI_stime" total = "
+    printk("Xen lock profile info SHOW  (now = %"PRI_stime" total = "
            "%"PRI_stime")\n", now, diff);
     spinlock_profile_iterate(spinlock_profile_print_elem, NULL);
 }
@@ -685,14 +685,14 @@ void cf_check spinlock_profile_reset(unsigned char key)
     s_time_t now = NOW();
 
     if ( key != '\0' )
-        printk("xen lock profile info RESET (now = %"PRI_stime")\n", now);
+        printk("Xen lock profile info RESET (now = %"PRI_stime")\n", now);
     lock_profile_start = now;
     spinlock_profile_iterate(spinlock_profile_reset_elem, NULL);
 }
 
 #ifdef CONFIG_SYSCTL
 typedef struct {
-    struct xen_sysctl_lockprof_op *pc;
+    struct crux_sysctl_lockprof_op *pc;
     int                      rc;
 } spinlock_profile_ucopy_t;
 
@@ -700,7 +700,7 @@ static void cf_check spinlock_profile_ucopy_elem(struct lock_profile *data,
     int32_t type, int32_t idx, void *par)
 {
     spinlock_profile_ucopy_t *p = par;
-    struct xen_sysctl_lockprof_data elem;
+    struct crux_sysctl_lockprof_data elem;
 
     if ( p->rc )
         return;
@@ -723,18 +723,18 @@ static void cf_check spinlock_profile_ucopy_elem(struct lock_profile *data,
 }
 
 /* Dom0 control of lock profiling */
-int spinlock_profile_control(struct xen_sysctl_lockprof_op *pc)
+int spinlock_profile_control(struct crux_sysctl_lockprof_op *pc)
 {
     int rc = 0;
     spinlock_profile_ucopy_t par;
 
     switch ( pc->cmd )
     {
-    case XEN_SYSCTL_LOCKPROF_reset:
+    case CRUX_SYSCTL_LOCKPROF_reset:
         spinlock_profile_reset('\0');
         break;
 
-    case XEN_SYSCTL_LOCKPROF_query:
+    case CRUX_SYSCTL_LOCKPROF_query:
         pc->nr_elem = 0;
         par.rc = 0;
         par.pc = pc;

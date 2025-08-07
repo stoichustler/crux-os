@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /*
- * xen/arch/riscv/include/asm/imsic.h
+ * crux/arch/riscv/include/asm/imsic.h
  *
  * RISC-V Incoming MSI Controller support
  *
@@ -11,9 +11,9 @@
 #ifndef ASM_RISCV_IMSIC_H
 #define ASM_RISCV_IMSIC_H
 
-#include <xen/spinlock.h>
-#include <xen/stdbool.h>
-#include <xen/types.h>
+#include <crux/spinlock.h>
+#include <crux/stdbool.h>
+#include <crux/types.h>
 
 #define IMSIC_MMIO_PAGE_SHIFT   12
 #define IMSIC_MMIO_PAGE_SZ      (1UL << IMSIC_MMIO_PAGE_SHIFT)

@@ -1,5 +1,5 @@
 /*
- * xen/common/efi/pe.c
+ * crux/common/efi/pe.c
  *
  * PE executable header parser.
  *

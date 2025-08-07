@@ -5,8 +5,8 @@
  * Copyright (C) 2024, Advanced Micro Devices, Inc.
  * Copyright (C) 2024, Minerva Systems SRL
  */
-#include <xen/init.h>
-#include <xen/llc-coloring.h>
+#include <crux/init.h>
+#include <crux/llc-coloring.h>
 
 #include <asm/processor.h>
 #include <asm/setup.h>
@@ -55,7 +55,7 @@ unsigned int __init get_llc_way_size(void)
     /* Arm ARM: (Number of sets in cache) - 1 */
     num_sets = ((ccsidr_el1 >> ccsidr_numsets_shift) & ccsidr_numsets_mask) + 1;
 
-    printk(XENLOG_INFO "LLC found: L%u (line size: %u bytes, sets num: %u)\n",
+    printk(CRUXLOG_INFO "LLC found: L%u (line size: %u bytes, sets num: %u)\n",
            n, line_size, num_sets);
 
     /* Restore value in CSSELR_EL1 */
@@ -66,18 +66,18 @@ unsigned int __init get_llc_way_size(void)
 }
 
 /*
- * get_xen_paddr - get physical address to relocate xen to
+ * get_crux_paddr - get physical address to relocate Xen to
  *
- * xen is relocated to as near to the top of RAM as possible and
- * aligned to a XEN_PADDR_ALIGN boundary.
+ * Xen is relocated to as near to the top of RAM as possible and
+ * aligned to a CRUX_PADDR_ALIGN boundary.
  */
-static paddr_t __init get_xen_paddr(paddr_t xen_size)
+static paddr_t __init get_crux_paddr(paddr_t crux_size)
 {
     const struct membanks *mem = bootinfo_get_mem();
     paddr_t min_size, paddr = 0;
     unsigned int i;
 
-    min_size = ROUNDUP(xen_size, XEN_PADDR_ALIGN);
+    min_size = ROUNDUP(crux_size, CRUX_PADDR_ALIGN);
 
     /* Find the highest bank with enough space. */
     for ( i = 0; i < mem->nr_banks; i++ )
@@ -88,12 +88,12 @@ static paddr_t __init get_xen_paddr(paddr_t xen_size)
         if ( bank->size >= min_size )
         {
             e = consider_modules(bank->start, bank->start + bank->size,
-                                 min_size, XEN_PADDR_ALIGN, 0);
+                                 min_size, CRUX_PADDR_ALIGN, 0);
             if ( !e )
                 continue;
 
 #ifdef CONFIG_ARM_32
-            /* xen must be under 4GB */
+            /* Xen must be under 4GB */
             if ( e > GB(4) )
                 e = GB(4);
             if ( e < bank->start )
@@ -108,27 +108,27 @@ static paddr_t __init get_xen_paddr(paddr_t xen_size)
     }
 
     if ( !paddr )
-        panic("Not enough memory to relocate xen\n");
+        panic("Not enough memory to relocate Xen\n");
 
-    printk("Placing xen at 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
+    printk("Placing Xen at 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
            paddr, paddr + min_size);
 
     return paddr;
 }
 
-static paddr_t __init xen_colored_map_size(void)
+static paddr_t __init crux_colored_map_size(void)
 {
-    return ROUNDUP((_end - _start) * get_max_nr_llc_colors(), XEN_PADDR_ALIGN);
+    return ROUNDUP((_end - _start) * get_max_nr_llc_colors(), CRUX_PADDR_ALIGN);
 }
 
 void __init arch_llc_coloring_init(void)
 {
-    struct boot_module *xen_boot_module = boot_module_find_by_kind(BOOTMOD_XEN);
+    struct boot_module *crux_boot_module = boot_module_find_by_kind(BOOTMOD_CRUX);
 
-    BUG_ON(!xen_boot_module);
+    BUG_ON(!crux_boot_module);
 
-    xen_boot_module->size = xen_colored_map_size();
-    xen_boot_module->start = get_xen_paddr(xen_boot_module->size);
+    crux_boot_module->size = crux_colored_map_size();
+    crux_boot_module->start = get_crux_paddr(crux_boot_module->size);
 }
 
 /*

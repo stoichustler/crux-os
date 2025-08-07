@@ -2,8 +2,8 @@
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
 
-#include <xen/string.h>
-#include <xen/ctype.h>
+#include <crux/string.h>
+#include <crux/ctype.h>
 
 /**
  * strncasecmp - Case insensitive, length-limited string comparison

@@ -1,10 +1,10 @@
-#ifndef _XEN_P2M_H
-#define _XEN_P2M_H
+#ifndef _CRUX_P2M_H
+#define _CRUX_P2M_H
 
-#include <xen/mm.h>
-#include <xen/radix-tree.h>
-#include <xen/rwlock.h>
-#include <xen/mem_access.h>
+#include <crux/mm.h>
+#include <crux/radix-tree.h>
+#include <crux/rwlock.h>
+#include <crux/mem_access.h>
 
 #include <asm/current.h>
 #include <asm/hsr.h>
@@ -160,10 +160,10 @@ typedef enum {
                              P2M_FOREIGN_TYPES))
 
 /* All common type definitions should live ahead of this inclusion. */
-#ifdef _XEN_P2M_COMMON_H
-# error "xen/p2m-common.h should not be included directly"
+#ifdef _CRUX_P2M_COMMON_H
+# error "crux/p2m-common.h should not be included directly"
 #endif
-#include <xen/p2m-common.h>
+#include <crux/p2m-common.h>
 
 #if defined(CONFIG_MMU)
 # include <asm/mmu/p2m.h>
@@ -364,10 +364,10 @@ static inline struct page_info *get_page_from_gfn(
     struct page_info *page;
 
     /*
-     * Special case for DOMID_XEN as it is the only domain so far that is
+     * Special case for DOMID_CRUX as it is the only domain so far that is
      * not auto-translated.
      */
-    if ( likely(d != dom_xen) )
+    if ( likely(d != dom_crux) )
         return p2m_get_page_from_gfn(d, _gfn(gfn), t);
 
     if ( !t )
@@ -376,7 +376,7 @@ static inline struct page_info *get_page_from_gfn(
     *t = p2m_invalid;
 
     /*
-     * DOMID_XEN sees 1-1 RAM. The p2m_type is based on the type of the
+     * DOMID_CRUX sees 1-1 RAM. The p2m_type is based on the type of the
      * page.
      */
     mfn = _mfn(gfn);
@@ -448,7 +448,7 @@ static inline bool vcpu_has_cache_enabled(struct vcpu *v)
     return (READ_SYSREG(SCTLR_EL1) & mask) == mask;
 }
 
-#endif /* _XEN_P2M_H */
+#endif /* _CRUX_P2M_H */
 
 /*
  * Local variables:

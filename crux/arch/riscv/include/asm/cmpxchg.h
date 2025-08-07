@@ -4,9 +4,9 @@
 #ifndef ASM__RISCV__CMPXCHG_H
 #define ASM__RISCV__CMPXCHG_H
 
-#include <xen/bitops.h>
-#include <xen/compiler.h>
-#include <xen/lib.h>
+#include <crux/bitops.h>
+#include <crux/compiler.h>
+#include <crux/lib.h>
 
 #include <asm/fence.h>
 #include <asm/io.h>

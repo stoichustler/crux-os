@@ -3,7 +3,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 #if defined(CONFIG_ARM_64)
 # include <asm/arm64/insn.h>

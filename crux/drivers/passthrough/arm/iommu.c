@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/acpi.h>
-#include <xen/device_tree.h>
-#include <xen/iommu.h>
-#include <xen/lib.h>
+#include <crux/acpi.h>
+#include <crux/device_tree.h>
+#include <crux/iommu.h>
+#include <crux/lib.h>
 
 #include <asm/device.h>
 
@@ -78,7 +78,7 @@ int __init iommu_hardware_setup(void)
          * Ignore the following error codes:
          *   - EBADF: Indicate the current is not an IOMMU
          *   - ENODEV: The IOMMU is not present or cannot be used by
-         *     xen.
+         *     Xen.
          */
         else if ( rc != -EBADF && rc != -ENODEV )
             return rc;
@@ -137,10 +137,10 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
 {
     /* Set to false options not supported on ARM. */
     if ( iommu_hwdom_inclusive )
-        printk(XENLOG_WARNING "map-inclusive dom0-iommu option is not supported on ARM\n");
+        printk(CRUXLOG_WARNING "map-inclusive dom0-iommu option is not supported on ARM\n");
     iommu_hwdom_inclusive = false;
     if ( iommu_hwdom_reserved == 1 )
-        printk(XENLOG_WARNING "map-reserved dom0-iommu option is not supported on ARM\n");
+        printk(CRUXLOG_WARNING "map-reserved dom0-iommu option is not supported on ARM\n");
     iommu_hwdom_reserved = 0;
 }
 

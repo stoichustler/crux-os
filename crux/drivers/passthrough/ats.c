@@ -12,10 +12,10 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
 #include "ats.h"
 
 bool __read_mostly ats_enabled;
@@ -30,7 +30,7 @@ int enable_ats_device(struct pci_dev *pdev, struct list_head *ats_list)
     BUG_ON(!pos);
 
     if ( iommu_verbose )
-        dprintk(XENLOG_INFO, "%pp: ATS capability found\n", &pdev->sbdf);
+        dprintk(CRUXLOG_INFO, "%pp: ATS capability found\n", &pdev->sbdf);
 
     value = pci_conf_read16(pdev->sbdf, pos + ATS_REG_CTL);
     if ( value & ATS_ENABLE )
@@ -61,7 +61,7 @@ int enable_ats_device(struct pci_dev *pdev, struct list_head *ats_list)
     }
 
     if ( iommu_verbose )
-        dprintk(XENLOG_INFO, "%pp: ATS %s enabled\n",
+        dprintk(CRUXLOG_INFO, "%pp: ATS %s enabled\n",
                 &pdev->sbdf, pos ? "is" : "was");
 
     return pos;
@@ -80,5 +80,5 @@ void disable_ats_device(struct pci_dev *pdev)
     list_del(&pdev->ats.list);
 
     if ( iommu_verbose )
-        dprintk(XENLOG_INFO, "%pp: ATS is disabled\n", &pdev->sbdf);
+        dprintk(CRUXLOG_INFO, "%pp: ATS is disabled\n", &pdev->sbdf);
 }

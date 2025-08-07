@@ -10,16 +10,16 @@
  * omap platform has some specific configurations
  */
 
-#include <xen/console.h>
-#include <xen/serial.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/device_tree.h>
+#include <crux/console.h>
+#include <crux/serial.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/device_tree.h>
 #include <asm/device.h>
-#include <xen/errno.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
-#include <xen/8250-uart.h>
+#include <crux/errno.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
+#include <crux/8250-uart.h>
 #include <asm/io.h>
 
 #define REG_SHIFT 2
@@ -237,7 +237,7 @@ static void __init omap_uart_init_postirq(struct serial_port *port)
 
     if ( setup_irq(uart->irq, 0, &uart->irqaction) != 0 )
     {
-        dprintk(XENLOG_ERR, "Failed to allocated omap_uart IRQ %d\n",
+        dprintk(CRUXLOG_ERR, "Failed to allocated omap_uart IRQ %d\n",
                 uart->irq);
         return;
     }
@@ -369,7 +369,7 @@ static int __init omap_uart_init(struct dt_device_node *dev,
     /* Register with generic serial driver */
     serial_register_uart(SERHND_DTUART, &omap_uart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

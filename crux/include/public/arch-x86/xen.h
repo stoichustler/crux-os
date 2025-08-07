@@ -1,81 +1,81 @@
 /* SPDX-License-Identifier: MIT */
 /******************************************************************************
- * arch-x86/xen.h
+ * arch-x86/crux.h
  *
- * Guest OS interface to x86 xen.
+ * Guest OS interface to x86 Xen.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */
 
-#ifndef __XEN_PUBLIC_ARCH_X86_XEN_H__
-#define __XEN_PUBLIC_ARCH_X86_XEN_H__
+#ifndef __CRUX_PUBLIC_ARCH_X86_CRUX_H__
+#define __CRUX_PUBLIC_ARCH_X86_CRUX_H__
 
 /* Structural guest handles introduced in 0x00030201. */
-#if __XEN_INTERFACE_VERSION__ >= 0x00030201
-#define ___DEFINE_XEN_GUEST_HANDLE(name, type) \
+#if __CRUX_INTERFACE_VERSION__ >= 0x00030201
+#define ___DEFINE_CRUX_GUEST_HANDLE(name, type) \
     typedef struct { type *p; } __guest_handle_ ## name
 #else
-#define ___DEFINE_XEN_GUEST_HANDLE(name, type) \
+#define ___DEFINE_CRUX_GUEST_HANDLE(name, type) \
     typedef type * __guest_handle_ ## name
 #endif
 
 /*
- * XEN_GUEST_HANDLE represents a guest pointer, when passed as a field
+ * CRUX_GUEST_HANDLE represents a guest pointer, when passed as a field
  * in a struct in memory.
- * XEN_GUEST_HANDLE_PARAM represent a guest pointer, when passed as an
+ * CRUX_GUEST_HANDLE_PARAM represent a guest pointer, when passed as an
  * hypercall argument.
- * XEN_GUEST_HANDLE_PARAM and XEN_GUEST_HANDLE are the same on X86 but
+ * CRUX_GUEST_HANDLE_PARAM and CRUX_GUEST_HANDLE are the same on X86 but
  * they might not be on other architectures.
  */
-#define __DEFINE_XEN_GUEST_HANDLE(name, type) \
-    ___DEFINE_XEN_GUEST_HANDLE(name, type);   \
-    ___DEFINE_XEN_GUEST_HANDLE(const_##name, const type)
-#define DEFINE_XEN_GUEST_HANDLE(name)   __DEFINE_XEN_GUEST_HANDLE(name, name)
-#define __XEN_GUEST_HANDLE(name)        __guest_handle_ ## name
-#define XEN_GUEST_HANDLE(name)          __XEN_GUEST_HANDLE(name)
-#define XEN_GUEST_HANDLE_PARAM(name)    XEN_GUEST_HANDLE(name)
-#define set_xen_guest_handle_raw(hnd, val)  do { (hnd).p = (val); } while (0)
-#define set_xen_guest_handle(hnd, val) set_xen_guest_handle_raw(hnd, val)
+#define __DEFINE_CRUX_GUEST_HANDLE(name, type) \
+    ___DEFINE_CRUX_GUEST_HANDLE(name, type);   \
+    ___DEFINE_CRUX_GUEST_HANDLE(const_##name, const type)
+#define DEFINE_CRUX_GUEST_HANDLE(name)   __DEFINE_CRUX_GUEST_HANDLE(name, name)
+#define __CRUX_GUEST_HANDLE(name)        __guest_handle_ ## name
+#define CRUX_GUEST_HANDLE(name)          __CRUX_GUEST_HANDLE(name)
+#define CRUX_GUEST_HANDLE_PARAM(name)    CRUX_GUEST_HANDLE(name)
+#define set_crux_guest_handle_raw(hnd, val)  do { (hnd).p = (val); } while (0)
+#define set_crux_guest_handle(hnd, val) set_crux_guest_handle_raw(hnd, val)
 
 #if defined(__i386__)
-# ifdef __XEN__
+# ifdef __CRUX__
 __DeFiNe__ __DECL_REG_LO8(which) uint32_t e ## which ## x
 __DeFiNe__ __DECL_REG_LO16(name) union { uint32_t e ## name; }
 # endif
-#include "xen-x86_32.h"
-# ifdef __XEN__
+#include "crux-x86_32.h"
+# ifdef __CRUX__
 __UnDeF__ __DECL_REG_LO8
 __UnDeF__ __DECL_REG_LO16
 __DeFiNe__ __DECL_REG_LO8(which) e ## which ## x
 __DeFiNe__ __DECL_REG_LO16(name) e ## name
 # endif
 #elif defined(__x86_64__)
-#include "xen-x86_64.h"
+#include "crux-x86_64.h"
 #endif
 
 #ifndef __ASSEMBLY__
-typedef unsigned long xen_pfn_t;
-#define PRI_xen_pfn "lx"
-#define PRIu_xen_pfn "lu"
+typedef unsigned long crux_pfn_t;
+#define PRI_crux_pfn "lx"
+#define PRIu_crux_pfn "lu"
 #endif
 
-#define XEN_HAVE_PV_GUEST_ENTRY 1
+#define CRUX_HAVE_PV_GUEST_ENTRY 1
 
-#define XEN_HAVE_PV_UPCALL_MASK 1
+#define CRUX_HAVE_PV_UPCALL_MASK 1
 
 /*
  * `incontents 200 segdesc Segment Descriptor Tables
  */
 /*
  * ` enum neg_errnoval
- * ` HYPERVISOR_set_gdt(const xen_pfn_t frames[], unsigned int entries);
+ * ` HYPERVISOR_set_gdt(const crux_pfn_t frames[], unsigned int entries);
  * `
  */
 /*
- * A number of GDT entries are reserved by xen. These are not situated at the
+ * A number of GDT entries are reserved by Xen. These are not situated at the
  * start of the GDT because some stupid OSes export hard-coded selector values
  * in their ABI. These hard-coded values are always near the start of the GDT,
- * so xen places itself out of the way, at the far end of the GDT.
+ * so Xen places itself out of the way, at the far end of the GDT.
  *
  * NB The LDT is set using the MMUEXT_SET_LDT op of HYPERVISOR_mmuext_op
  */
@@ -95,12 +95,12 @@ typedef unsigned long xen_pfn_t;
  */
 
 /* Maximum number of virtual CPUs in legacy multi-processor guests. */
-#define XEN_LEGACY_MAX_VCPUS 32
+#define CRUX_LEGACY_MAX_VCPUS 32
 
 #ifndef __ASSEMBLY__
 
-typedef unsigned long xen_ulong_t;
-#define PRI_xen_ulong "lx"
+typedef unsigned long crux_ulong_t;
+#define PRI_crux_ulong "lx"
 
 /*
  * ` enum neg_errnoval
@@ -126,7 +126,7 @@ typedef unsigned long xen_ulong_t;
  *  Level == 3: Everyone may enter
  *
  * Note: For compatibility with kernels not setting up exception handlers
- *       early enough, xen will avoid trying to inject #GP (and hence crash
+ *       early enough, Xen will avoid trying to inject #GP (and hence crash
  *       the domain) when an RDMSR would require this, but no handler was
  *       set yet. The precise conditions are implementation specific, and
  *       new code may not rely on such behavior anyway.
@@ -142,7 +142,7 @@ struct trap_info {
     unsigned long address; /* code offset                                   */
 };
 typedef struct trap_info trap_info_t;
-DEFINE_XEN_GUEST_HANDLE(trap_info_t);
+DEFINE_CRUX_GUEST_HANDLE(trap_info_t);
 
 typedef uint64_t tsc_timestamp_t; /* RDTSC timestamp */
 
@@ -189,7 +189,7 @@ struct vcpu_guest_context {
 #else
     unsigned long event_callback_eip;
     unsigned long failsafe_callback_eip;
-#ifdef __XEN__
+#ifdef __CRUX__
     union {
         unsigned long syscall_callback_eip;
         struct {
@@ -210,7 +210,7 @@ struct vcpu_guest_context {
 #endif
 };
 typedef struct vcpu_guest_context vcpu_guest_context_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_guest_context_t);
 
 struct arch_shared_info {
     /*
@@ -225,14 +225,14 @@ struct arch_shared_info {
      * p2m tree. In this case the linear mapper p2m list anchored at p2m_vaddr
      * is to be used.
      */
-    xen_pfn_t     pfn_to_mfn_frame_list_list;
+    crux_pfn_t     pfn_to_mfn_frame_list_list;
     unsigned long nmi_reason;
     /*
      * Following three fields are valid if p2m_cr3 contains a value different
      * from 0.
      * p2m_cr3 is the root of the address space where p2m_vaddr is valid.
      * p2m_cr3 is in the same format as a cr3 value in the vcpu register state
-     * and holds the folded machine frame number (via xen_pfn_to_cr3) of a
+     * and holds the folded machine frame number (via crux_pfn_to_cr3) of a
      * L3 or L4 page table.
      * p2m_vaddr holds the virtual address of the linear p2m list. All entries
      * in the range [0...max_pfn[ are accessible via this pointer.
@@ -255,74 +255,74 @@ struct arch_shared_info {
 };
 typedef struct arch_shared_info arch_shared_info_t;
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 /*
- * struct xen_arch_domainconfig's ABI is covered by
- * XEN_DOMCTL_INTERFACE_VERSION.
+ * struct crux_arch_domainconfig's ABI is covered by
+ * CRUX_DOMCTL_INTERFACE_VERSION.
  */
-struct xen_arch_domainconfig {
-#define _XEN_X86_EMU_LAPIC          0
-#define XEN_X86_EMU_LAPIC           (1U<<_XEN_X86_EMU_LAPIC)
-#define _XEN_X86_EMU_HPET           1
-#define XEN_X86_EMU_HPET            (1U<<_XEN_X86_EMU_HPET)
-#define _XEN_X86_EMU_PM             2
-#define XEN_X86_EMU_PM              (1U<<_XEN_X86_EMU_PM)
-#define _XEN_X86_EMU_RTC            3
-#define XEN_X86_EMU_RTC             (1U<<_XEN_X86_EMU_RTC)
-#define _XEN_X86_EMU_IOAPIC         4
-#define XEN_X86_EMU_IOAPIC          (1U<<_XEN_X86_EMU_IOAPIC)
-#define _XEN_X86_EMU_PIC            5
-#define XEN_X86_EMU_PIC             (1U<<_XEN_X86_EMU_PIC)
-#define _XEN_X86_EMU_VGA            6
-#define XEN_X86_EMU_VGA             (1U<<_XEN_X86_EMU_VGA)
-#define _XEN_X86_EMU_IOMMU          7
-#define XEN_X86_EMU_IOMMU           (1U<<_XEN_X86_EMU_IOMMU)
-#define _XEN_X86_EMU_PIT            8
-#define XEN_X86_EMU_PIT             (1U<<_XEN_X86_EMU_PIT)
-#define _XEN_X86_EMU_USE_PIRQ       9
-#define XEN_X86_EMU_USE_PIRQ        (1U<<_XEN_X86_EMU_USE_PIRQ)
-#define _XEN_X86_EMU_VPCI           10
-#define XEN_X86_EMU_VPCI            (1U<<_XEN_X86_EMU_VPCI)
+struct crux_arch_domainconfig {
+#define _CRUX_X86_EMU_LAPIC          0
+#define CRUX_X86_EMU_LAPIC           (1U<<_CRUX_X86_EMU_LAPIC)
+#define _CRUX_X86_EMU_HPET           1
+#define CRUX_X86_EMU_HPET            (1U<<_CRUX_X86_EMU_HPET)
+#define _CRUX_X86_EMU_PM             2
+#define CRUX_X86_EMU_PM              (1U<<_CRUX_X86_EMU_PM)
+#define _CRUX_X86_EMU_RTC            3
+#define CRUX_X86_EMU_RTC             (1U<<_CRUX_X86_EMU_RTC)
+#define _CRUX_X86_EMU_IOAPIC         4
+#define CRUX_X86_EMU_IOAPIC          (1U<<_CRUX_X86_EMU_IOAPIC)
+#define _CRUX_X86_EMU_PIC            5
+#define CRUX_X86_EMU_PIC             (1U<<_CRUX_X86_EMU_PIC)
+#define _CRUX_X86_EMU_VGA            6
+#define CRUX_X86_EMU_VGA             (1U<<_CRUX_X86_EMU_VGA)
+#define _CRUX_X86_EMU_IOMMU          7
+#define CRUX_X86_EMU_IOMMU           (1U<<_CRUX_X86_EMU_IOMMU)
+#define _CRUX_X86_EMU_PIT            8
+#define CRUX_X86_EMU_PIT             (1U<<_CRUX_X86_EMU_PIT)
+#define _CRUX_X86_EMU_USE_PIRQ       9
+#define CRUX_X86_EMU_USE_PIRQ        (1U<<_CRUX_X86_EMU_USE_PIRQ)
+#define _CRUX_X86_EMU_VPCI           10
+#define CRUX_X86_EMU_VPCI            (1U<<_CRUX_X86_EMU_VPCI)
 
-#define XEN_X86_EMU_ALL             (XEN_X86_EMU_LAPIC | XEN_X86_EMU_HPET |  \
-                                     XEN_X86_EMU_PM | XEN_X86_EMU_RTC |      \
-                                     XEN_X86_EMU_IOAPIC | XEN_X86_EMU_PIC |  \
-                                     XEN_X86_EMU_VGA | XEN_X86_EMU_IOMMU |   \
-                                     XEN_X86_EMU_PIT | XEN_X86_EMU_USE_PIRQ |\
-                                     XEN_X86_EMU_VPCI)
+#define CRUX_X86_EMU_ALL             (CRUX_X86_EMU_LAPIC | CRUX_X86_EMU_HPET |  \
+                                     CRUX_X86_EMU_PM | CRUX_X86_EMU_RTC |      \
+                                     CRUX_X86_EMU_IOAPIC | CRUX_X86_EMU_PIC |  \
+                                     CRUX_X86_EMU_VGA | CRUX_X86_EMU_IOMMU |   \
+                                     CRUX_X86_EMU_PIT | CRUX_X86_EMU_USE_PIRQ |\
+                                     CRUX_X86_EMU_VPCI)
     uint32_t emulation_flags;
 
 /*
  * Select whether to use a relaxed behavior for accesses to MSRs not explicitly
- * handled by xen instead of injecting a #GP to the guest. Note this option
+ * handled by Xen instead of injecting a #GP to the guest. Note this option
  * doesn't allow the guest to read or write to the underlying MSR.
  */
-#define XEN_X86_MSR_RELAXED (1u << 0)
+#define CRUX_X86_MSR_RELAXED (1u << 0)
     uint32_t misc_flags;
 };
 
-/* Max  XEN_X86_* constant. Used for ABI checking. */
-#define XEN_X86_MISC_FLAGS_MAX XEN_X86_MSR_RELAXED
+/* Max  CRUX_X86_* constant. Used for ABI checking. */
+#define CRUX_X86_MISC_FLAGS_MAX CRUX_X86_MSR_RELAXED
 
 #endif
 
 /*
  * Representations of architectural CPUID and MSR information.  Used as the
- * serialised version of xen's internal representation.
+ * serialised version of Xen's internal representation.
  */
-typedef struct xen_cpuid_leaf {
-#define XEN_CPUID_NO_SUBLEAF 0xffffffffu
+typedef struct crux_cpuid_leaf {
+#define CRUX_CPUID_NO_SUBLEAF 0xffffffffu
     uint32_t leaf, subleaf;
     uint32_t a, b, c, d;
-} xen_cpuid_leaf_t;
-DEFINE_XEN_GUEST_HANDLE(xen_cpuid_leaf_t);
+} crux_cpuid_leaf_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_cpuid_leaf_t);
 
-typedef struct xen_msr_entry {
+typedef struct crux_msr_entry {
     uint32_t idx;
     uint32_t flags; /* Reserved MBZ. */
     uint64_t val;
-} xen_msr_entry_t;
-DEFINE_XEN_GUEST_HANDLE(xen_msr_entry_t);
+} crux_msr_entry_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_msr_entry_t);
 
 #endif /* !__ASSEMBLY__ */
 
@@ -349,11 +349,11 @@ DEFINE_XEN_GUEST_HANDLE(xen_msr_entry_t);
  * Currently only CPUID.
  */
 #ifdef __ASSEMBLY__
-#define XEN_EMULATE_PREFIX .byte 0x0f,0x0b,0x78,0x65,0x6e ;
-#define XEN_CPUID          XEN_EMULATE_PREFIX cpuid
+#define CRUX_EMULATE_PREFIX .byte 0x0f,0x0b,0x78,0x65,0x6e ;
+#define CRUX_CPUID          CRUX_EMULATE_PREFIX cpuid
 #else
-#define XEN_EMULATE_PREFIX ".byte 0x0f,0x0b,0x78,0x65,0x6e ; "
-#define XEN_CPUID          XEN_EMULATE_PREFIX "cpuid"
+#define CRUX_EMULATE_PREFIX ".byte 0x0f,0x0b,0x78,0x65,0x6e ; "
+#define CRUX_CPUID          CRUX_EMULATE_PREFIX "cpuid"
 #endif
 
 /*
@@ -361,9 +361,9 @@ DEFINE_XEN_GUEST_HANDLE(xen_msr_entry_t);
  * to this IO port will be printed on the hypervisor console, subject to log
  * level restrictions.
  */
-#define XEN_HVM_DEBUGCONS_IOPORT 0xe9
+#define CRUX_HVM_DEBUGCONS_IOPORT 0xe9
 
-#endif /* __XEN_PUBLIC_ARCH_X86_XEN_H__ */
+#endif /* __CRUX_PUBLIC_ARCH_X86_CRUX_H__ */
 
 /*
  * Local variables:

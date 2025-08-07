@@ -41,8 +41,8 @@
  *  - PRINT(): The string will be located in .rodata.str.
  *  - PRINT_ID(): This will create the string in .rodata.idmap which
  *    will always be accessible. This is used when:
- *      - xen is running on the identity mapping because not all of xen is mapped
- *      - Running with the MMU-off on secondary CPUs as xen may not be
+ *      - Xen is running on the identity mapping because not all of Xen is mapped
+ *      - Running with the MMU-off on secondary CPUs as Xen may not be
  *        physically contiguous in memory (e.g. in the case of cache
  *        coloring).
  *

@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/xilinx-zynqmp-eemi.c
+ * crux/arch/arm/platforms/xilinx-zynqmp-eemi.c
  *
  * Xilinx ZynqMP EEMI API
  *
@@ -17,7 +17,7 @@
  */
 
 #include <asm/regs.h>
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <asm/smccc.h>
 #include <asm/platforms/xilinx-zynqmp-eemi.h>
 
@@ -65,9 +65,9 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     case ARM_SMCCC_REVISION_FID(SIP):
         goto forward_to_fw;
     /*
-     * We can't allow CPUs to suspend without xen knowing about it.
+     * We can't allow CPUs to suspend without crux knowing about it.
      * We accept but ignore the request and wait for the guest to issue
-     * a WFI or PSCI call which xen will trap and act accordingly upon.
+     * a WFI or PSCI call which crux will trap and act accordingly upon.
      */
     case EEMI_FID(PM_SELF_SUSPEND):
         ret = XST_PM_SUCCESS;
@@ -87,7 +87,7 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     case EEMI_FID(PM_SET_MAX_LATENCY):
         if ( !domain_has_node_access(current->domain, nodeid) )
         {
-            gprintk(XENLOG_WARNING,
+            gprintk(CRUXLOG_WARNING,
                     "zynqmp-pm: fn=%u No access to node %u\n", pm_fn, nodeid);
             ret = XST_PM_NO_ACCESS;
             goto done;
@@ -98,7 +98,7 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     case EEMI_FID(PM_RESET_GET_STATUS):
         if ( !domain_has_reset_access(current->domain, nodeid) )
         {
-            gprintk(XENLOG_WARNING,
+            gprintk(CRUXLOG_WARNING,
                     "zynqmp-pm: fn=%u No access to reset %u\n", pm_fn, nodeid);
             ret = XST_PM_NO_ACCESS;
             goto done;
@@ -114,7 +114,7 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     /* No MMIO access is allowed from non-secure domains */
     case EEMI_FID(PM_MMIO_WRITE):
     case EEMI_FID(PM_MMIO_READ):
-        gprintk(XENLOG_WARNING,
+        gprintk(CRUXLOG_WARNING,
                 "zynqmp-pm: fn=%u No MMIO access to %u\n", pm_fn, nodeid);
         ret = XST_PM_NO_ACCESS;
         goto done;
@@ -145,7 +145,7 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     case EEMI_FID(PM_CLOCK_GETPARENT):
         if ( !is_hardware_domain(current->domain) )
         {
-            gprintk(XENLOG_WARNING, "eemi: fn=%u No access", pm_fn);
+            gprintk(CRUXLOG_WARNING, "eemi: fn=%u No access", pm_fn);
             ret = XST_PM_NO_ACCESS;
             goto done;
         }
@@ -165,14 +165,14 @@ bool zynqmp_eemi(struct cpu_user_regs *regs)
     case IPI_MAILBOX_FID(IPI_MAILBOX_DISABLE_IRQ):
         if ( !is_hardware_domain(current->domain) )
         {
-            gprintk(XENLOG_WARNING, "IPI mailbox: fn=%u No access", pm_fn);
+            gprintk(CRUXLOG_WARNING, "IPI mailbox: fn=%u No access", pm_fn);
             ret = XST_PM_NO_ACCESS;
             goto done;
         }
         goto forward_to_fw;
 
     default:
-        gprintk(XENLOG_WARNING, "zynqmp-pm: Unhandled PM Call: %u\n", fid);
+        gprintk(CRUXLOG_WARNING, "zynqmp-pm: Unhandled PM Call: %u\n", fid);
         return false;
     }
 

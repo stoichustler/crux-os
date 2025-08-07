@@ -4,13 +4,13 @@
  *
  * VCPU initialisation, query, and hotplug.
  *
- * Copyright (c) 2005, Keir Fraser <keir@xensource.com>
+ * Copyright (c) 2005, Keir Fraser <keir@cruxsource.com>
  */
 
-#ifndef __XEN_PUBLIC_VCPU_H__
-#define __XEN_PUBLIC_VCPU_H__
+#ifndef __CRUX_PUBLIC_VCPU_H__
+#define __CRUX_PUBLIC_VCPU_H__
 
-#include "xen.h"
+#include "crux.h"
 
 /*
  * Prototype for this hypercall is:
@@ -71,7 +71,7 @@ struct vcpu_runstate_info {
      * When activated via VMASST_TYPE_runstate_update_flag, set during
      * updates in guest memory mapped copy of vcpu_runstate_info.
      */
-#define XEN_RUNSTATE_UPDATE          (xen_mk_ullong(1) << 63)
+#define CRUX_RUNSTATE_UPDATE          (crux_mk_ullong(1) << 63)
     /*
      * Time spent in each RUNSTATE_* (ns). The sum of these times is
      * guaranteed not to drift from system time.
@@ -79,7 +79,7 @@ struct vcpu_runstate_info {
     uint64_t time[4];
 };
 typedef struct vcpu_runstate_info vcpu_runstate_info_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_runstate_info_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_runstate_info_t);
 
 /* VCPU is currently running on a physical CPU. */
 #define RUNSTATE_running  0
@@ -117,13 +117,13 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_runstate_info_t);
 #define VCPUOP_register_runstate_memory_area 5
 struct vcpu_register_runstate_memory_area {
     union {
-        XEN_GUEST_HANDLE(vcpu_runstate_info_t) h;
+        CRUX_GUEST_HANDLE(vcpu_runstate_info_t) h;
         struct vcpu_runstate_info *v;
         uint64_t p;
     } addr;
 };
 typedef struct vcpu_register_runstate_memory_area vcpu_register_runstate_memory_area_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_register_runstate_memory_area_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_register_runstate_memory_area_t);
 
 /*
  * Set or stop a VCPU's periodic timer. Every VCPU has one periodic timer
@@ -136,7 +136,7 @@ struct vcpu_set_periodic_timer {
     uint64_t period_ns;
 };
 typedef struct vcpu_set_periodic_timer vcpu_set_periodic_timer_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_set_periodic_timer_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_set_periodic_timer_t);
 
 /*
  * Set or stop a VCPU's single-shot timer. Every VCPU has one single-shot
@@ -149,7 +149,7 @@ struct vcpu_set_singleshot_timer {
     uint32_t flags;            /* VCPU_SSHOTTMR_??? */
 };
 typedef struct vcpu_set_singleshot_timer vcpu_set_singleshot_timer_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_set_singleshot_timer_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_set_singleshot_timer_t);
 
 /* Flags to VCPUOP_set_singleshot_timer. */
  /*
@@ -175,7 +175,7 @@ struct vcpu_register_vcpu_info {
     uint32_t rsvd;   /* unused */
 };
 typedef struct vcpu_register_vcpu_info vcpu_register_vcpu_info_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_register_vcpu_info_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_register_vcpu_info_t);
 
 /* Send an NMI to the specified VCPU. @extra_arg == NULL. */
 #define VCPUOP_send_nmi             11
@@ -191,9 +191,9 @@ struct vcpu_get_physid {
     uint64_t phys_id;
 };
 typedef struct vcpu_get_physid vcpu_get_physid_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_get_physid_t);
-#define xen_vcpu_physid_to_x86_apicid(physid) ((uint32_t)(physid))
-#define xen_vcpu_physid_to_x86_acpiid(physid) ((uint32_t)((physid) >> 32))
+DEFINE_CRUX_GUEST_HANDLE(vcpu_get_physid_t);
+#define crux_vcpu_physid_to_x86_apicid(physid) ((uint32_t)(physid))
+#define crux_vcpu_physid_to_x86_acpiid(physid) ((uint32_t)((physid) >> 32))
 
 /*
  * Register a memory location to get a secondary copy of the vcpu time
@@ -215,16 +215,16 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_get_physid_t);
  * @extra_arg == pointer to vcpu_register_time_info_memory_area structure.
  */
 #define VCPUOP_register_vcpu_time_memory_area   13
-DEFINE_XEN_GUEST_HANDLE(vcpu_time_info_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_time_info_t);
 struct vcpu_register_time_memory_area {
     union {
-        XEN_GUEST_HANDLE(vcpu_time_info_t) h;
+        CRUX_GUEST_HANDLE(vcpu_time_info_t) h;
         struct vcpu_time_info *v;
         uint64_t p;
     } addr;
 };
 typedef struct vcpu_register_time_memory_area vcpu_register_time_memory_area_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_register_time_memory_area_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_register_time_memory_area_t);
 
 /*
  * Like the respective VCPUOP_register_*_memory_area, just using the "addr.p"
@@ -237,13 +237,13 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_register_time_memory_area_t);
  * be updated in the same manner as the one registered via virtual address PLUS
  * VMASST_TYPE_runstate_update_flag engaged by the domain.
  *
- * XENFEAT_{runstate,vcpu_time}_phys_area feature bits signal the availability
+ * CRUXFEAT_{runstate,vcpu_time}_phys_area feature bits signal the availability
  * of these ops.
  */
 #define VCPUOP_register_runstate_phys_area      14
 #define VCPUOP_register_vcpu_time_phys_area     15
 
-#endif /* __XEN_PUBLIC_VCPU_H__ */
+#endif /* __CRUX_PUBLIC_VCPU_H__ */
 
 /*
  * Local variables:

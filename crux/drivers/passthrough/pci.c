@@ -14,25 +14,25 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/sched.h>
-#include <xen/pci.h>
-#include <xen/pci_regs.h>
-#include <xen/pci_ids.h>
-#include <xen/list.h>
-#include <xen/prefetch.h>
-#include <xen/iommu.h>
-#include <xen/irq.h>
-#include <xen/param.h>
-#include <xen/delay.h>
-#include <xen/keyhandler.h>
-#include <xen/event.h>
-#include <xen/guest_access.h>
-#include <xen/paging.h>
-#include <xen/radix-tree.h>
-#include <xen/softirq.h>
-#include <xen/tasklet.h>
-#include <xen/vpci.h>
-#include <xen/msi.h>
+#include <crux/sched.h>
+#include <crux/pci.h>
+#include <crux/pci_regs.h>
+#include <crux/pci_ids.h>
+#include <crux/list.h>
+#include <crux/prefetch.h>
+#include <crux/iommu.h>
+#include <crux/irq.h>
+#include <crux/param.h>
+#include <crux/delay.h>
+#include <crux/keyhandler.h>
+#include <crux/event.h>
+#include <crux/guest_access.h>
+#include <crux/paging.h>
+#include <crux/radix-tree.h>
+#include <crux/softirq.h>
+#include <crux/tasklet.h>
+#include <crux/vpci.h>
+#include <crux/msi.h>
 #include <xsm/xsm.h>
 #include "ats.h"
 
@@ -244,7 +244,7 @@ static void check_pdev(const struct pci_dev *pdev)
         val = pci_conf_read16(pdev->sbdf, PCI_STATUS);
         if ( val & PCI_STATUS_CHECK )
         {
-            printk(XENLOG_INFO "%pp status %04x -> %04x\n",
+            printk(CRUXLOG_INFO "%pp status %04x -> %04x\n",
                    &pdev->sbdf, val, val & ~PCI_STATUS_CHECK);
             pci_conf_write16(pdev->sbdf, PCI_STATUS, val & PCI_STATUS_CHECK);
         }
@@ -262,7 +262,7 @@ static void check_pdev(const struct pci_dev *pdev)
         val = pci_conf_read16(pdev->sbdf, PCI_SEC_STATUS);
         if ( val & PCI_STATUS_CHECK )
         {
-            printk(XENLOG_INFO "%pp secondary status %04x -> %04x\n",
+            printk(CRUXLOG_INFO "%pp secondary status %04x -> %04x\n",
                    &pdev->sbdf, val, val & ~PCI_STATUS_CHECK);
             pci_conf_write16(pdev->sbdf, PCI_SEC_STATUS,
                              val & PCI_STATUS_CHECK);
@@ -395,7 +395,7 @@ static struct pci_dev *alloc_pdev(struct pci_seg *pseg, u8 bus, u8 devfn)
                                  pci_conf_read16(sbdf, PCI_DEVICE_ID) == 0xffff )
                                 continue;
                             stride <<= 1;
-                            printk(XENLOG_WARNING
+                            printk(CRUXLOG_WARNING
                                    "%pp looks to be a real device; bumping %04x:%02x:%02x stride to %u\n",
                                    &sbdf, phantom_devs[i].seg,
                                    phantom_devs[i].bus, phantom_devs[i].slot,
@@ -415,7 +415,7 @@ static struct pci_dev *alloc_pdev(struct pci_seg *pseg, u8 bus, u8 devfn)
             break;
 
         default:
-            printk(XENLOG_WARNING "%pp: unknown type %d\n",
+            printk(CRUXLOG_WARNING "%pp: unknown type %d\n",
                    &pdev->sbdf, pdev->type);
             break;
     }
@@ -462,10 +462,10 @@ static void __init _pci_hide_device(struct pci_dev *pdev)
 {
     if ( pdev->domain )
         return;
-    pdev->domain = dom_xen;
-    write_lock(&dom_xen->pci_lock);
-    list_add(&pdev->domain_list, &dom_xen->pdev_list);
-    write_unlock(&dom_xen->pci_lock);
+    pdev->domain = dom_crux;
+    write_lock(&dom_crux->pci_lock);
+    list_add(&pdev->domain_list, &dom_crux->pdev_list);
+    write_unlock(&dom_crux->pci_lock);
 }
 
 int __init pci_hide_device(unsigned int seg, unsigned int bus,
@@ -506,7 +506,7 @@ int __init pci_ro_device(int seg, int bus, int devfn)
     {
         size_t sz = BITS_TO_LONGS(PCI_BDF(-1, -1, -1) + 1) * sizeof(long);
 
-        pseg->ro_map = alloc_xenheap_pages(get_order_from_bytes(sz), 0);
+        pseg->ro_map = alloc_cruxheap_pages(get_order_from_bytes(sz), 0);
         if ( !pseg->ro_map )
             return -ENOMEM;
         memset(pseg->ro_map, 0, sz);
@@ -626,7 +626,7 @@ unsigned int pci_size_mem_bar(pci_sbdf_t sbdf, unsigned int pos,
     {
         if ( flags & PCI_BAR_LAST )
         {
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "%sdevice %pp with 64-bit %sBAR in last slot\n",
                    (flags & PCI_BAR_VF) ? "SR-IOV " : "", &sbdf,
                    (flags & PCI_BAR_VF) ? "vf " : "");
@@ -699,7 +699,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
 
             if ( !pf_pdev )
             {
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "Attempted to add SR-IOV VF %pp without PF %pp\n",
                        &pdev->sbdf,
                        &PCI_SBDF(seg, info->physfn.bus, info->physfn.devfn));
@@ -743,7 +743,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
                 if ( (bar & PCI_BASE_ADDRESS_SPACE) ==
                      PCI_BASE_ADDRESS_SPACE_IO )
                 {
-                    printk(XENLOG_WARNING
+                    printk(CRUXLOG_WARNING
                            "SR-IOV device %pp with vf BAR%u in IO space\n",
                            &pdev->sbdf, i);
                     continue;
@@ -758,7 +758,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
             }
         }
         else
-            printk(XENLOG_WARNING "SR-IOV device %pp has its virtual"
+            printk(CRUXLOG_WARNING "SR-IOV device %pp has its virtual"
                    " functions already enabled (%04x)\n", &pdev->sbdf, ctrl);
     }
 
@@ -772,8 +772,8 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
         list_add(&pdev->domain_list, &hardware_domain->pdev_list);
 
         /*
-         * For devices not discovered by xen during boot, add vPCI handlers
-         * when Dom0 first informs xen about such devices.
+         * For devices not discovered by Xen during boot, add vPCI handlers
+         * when Dom0 first informs Xen about such devices.
          */
         ret = vpci_assign_device(pdev);
         if ( ret )
@@ -781,7 +781,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
             list_del(&pdev->domain_list);
             write_unlock(&hardware_domain->pci_lock);
             pdev->domain = NULL;
-            printk(XENLOG_ERR "Setup of vPCI failed: %d\n", ret);
+            printk(CRUXLOG_ERR "Setup of vPCI failed: %d\n", ret);
             goto out;
         }
         write_unlock(&hardware_domain->pci_lock);
@@ -805,13 +805,13 @@ out:
     pcidevs_unlock();
     if ( !ret )
     {
-        printk(XENLOG_DEBUG "PCI add %s %pp\n", type, &pdev->sbdf);
+        printk(CRUXLOG_DEBUG "PCI add %s %pp\n", type, &pdev->sbdf);
         while ( pdev->phantom_stride )
         {
             func += pdev->phantom_stride;
             if ( PCI_SLOT(func) )
                 break;
-            printk(XENLOG_DEBUG "PCI phantom %pp\n",
+            printk(CRUXLOG_DEBUG "PCI phantom %pp\n",
                    &PCI_SBDF(seg, bus, slot, func));
         }
     }
@@ -851,7 +851,7 @@ int pci_remove_device(u16 seg, u8 bus, u8 devfn)
 
                 pdev->broken = true;
 
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "Attempted to remove PCI SR-IOV PF %pp with VFs still present\n",
                        &pdev->sbdf);
 
@@ -868,7 +868,7 @@ int pci_remove_device(u16 seg, u8 bus, u8 devfn)
             }
             pci_cleanup_msi(pdev);
             ret = iommu_remove_device(pdev);
-            printk(XENLOG_DEBUG "PCI remove device %pp\n", &pdev->sbdf);
+            printk(CRUXLOG_DEBUG "PCI remove device %pp\n", &pdev->sbdf);
             free_pdev(pseg, pdev);
             break;
         }
@@ -939,7 +939,7 @@ static int deassign_device(struct domain *d, uint16_t seg, uint8_t bus,
 
  out:
     if ( ret )
-        printk(XENLOG_G_ERR "%pd: deassign (%pp) failed (%d)\n",
+        printk(CRUXLOG_G_ERR "%pd: deassign (%pp) failed (%d)\n",
                d, &PCI_SBDF(seg, bus, devfn), ret);
 
     return ret;
@@ -1145,7 +1145,7 @@ static int __init cf_check _scan_pci_devices(struct pci_seg *pseg, void *arg)
                 pdev = alloc_pdev(pseg, bus, PCI_DEVFN(dev, func));
                 if ( !pdev )
                 {
-                    printk(XENLOG_WARNING "%pp: alloc_pdev failed\n",
+                    printk(CRUXLOG_WARNING "%pp: alloc_pdev failed\n",
                            &PCI_SBDF(pseg->nr, bus, dev, func));
                     return -ENOMEM;
                 }
@@ -1187,7 +1187,7 @@ static void __hwdom_init setup_one_hwdom_device(const struct setup_hwdom *ctxt,
         err = ctxt->handler(devfn, pdev);
         if ( err )
         {
-            printk(XENLOG_ERR "setup %pp for d%d failed (%d)\n",
+            printk(CRUXLOG_ERR "setup %pp for d%d failed (%d)\n",
                    &pdev->sbdf, ctxt->d->domain_id, err);
             if ( devfn == pdev->devfn )
                 return;
@@ -1200,7 +1200,7 @@ static void __hwdom_init setup_one_hwdom_device(const struct setup_hwdom *ctxt,
     err = vpci_assign_device(pdev);
     write_unlock(&ctxt->d->pci_lock);
     if ( err )
-        printk(XENLOG_ERR "setup of vPCI for d%d failed: %d\n",
+        printk(CRUXLOG_ERR "setup of vPCI for d%d failed: %d\n",
                ctxt->d->domain_id, err);
 }
 
@@ -1228,14 +1228,14 @@ static int __hwdom_init cf_check _setup_hwdom_pci_devices(
                 write_unlock(&ctxt->d->pci_lock);
                 setup_one_hwdom_device(ctxt, pdev);
             }
-            else if ( pdev->domain == dom_xen )
+            else if ( pdev->domain == dom_crux )
             {
                 pdev->domain = ctxt->d;
                 setup_one_hwdom_device(ctxt, pdev);
-                pdev->domain = dom_xen;
+                pdev->domain = dom_crux;
             }
             else if ( pdev->domain != ctxt->d )
-                printk(XENLOG_WARNING "Dom%d owning %pp?\n",
+                printk(CRUXLOG_WARNING "Dom%d owning %pp?\n",
                        pdev->domain->domain_id, &pdev->sbdf);
 
             if ( iommu_verbose )
@@ -1425,7 +1425,7 @@ static int iommu_add_device(struct pci_dev *pdev)
             return 0;
         rc = iommu_call(hd->platform_ops, add_device, devfn, pci_to_dev(pdev));
         if ( rc )
-            printk(XENLOG_WARNING "IOMMU: add %pp failed (%d)\n",
+            printk(CRUXLOG_WARNING "IOMMU: add %pp failed (%d)\n",
                    &PCI_SBDF(pdev->seg, pdev->bus, devfn), rc);
     }
 }
@@ -1471,7 +1471,7 @@ static int iommu_remove_device(struct pci_dev *pdev)
         if ( !rc )
             continue;
 
-        printk(XENLOG_ERR "IOMMU: remove %pp failed (%d)\n",
+        printk(CRUXLOG_ERR "IOMMU: remove %pp failed (%d)\n",
                &PCI_SBDF(pdev->seg, pdev->bus, devfn), rc);
         return rc;
     }
@@ -1494,7 +1494,7 @@ static int device_assigned(u16 seg, u8 bus, u8 devfn)
     /*
      * If the device exists and it is not owned by either the hardware
      * domain or dom_io then it must be assigned to a guest, or be
-     * hidden (owned by dom_xen).
+     * hidden (owned by dom_crux).
      */
     else if ( pdev->domain != hardware_domain &&
               pdev->domain != dom_io )
@@ -1566,7 +1566,7 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
  done:
     if ( rc )
     {
-        printk(XENLOG_G_WARNING "%pd: assign %s(%pp) failed (%d)\n",
+        printk(CRUXLOG_G_WARNING "%pd: assign %s(%pp) failed (%d)\n",
                d, devfn != pdev->devfn ? "phantom function " : "",
                &PCI_SBDF(seg, bus, devfn), rc);
 
@@ -1575,7 +1575,7 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
             /*
              * Device with phantom functions that failed to both assign and
              * rollback.  Mark the device as broken and crash the target domain,
-             * as the state of the functions at this point is unknown and xen
+             * as the state of the functions at this point is unknown and Xen
              * has no way to assert consistent context assignment among them.
              */
             pdev->broken = true;
@@ -1592,7 +1592,7 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
 
 static int iommu_get_device_group(
     struct domain *d, u16 seg, u8 bus, u8 devfn,
-    XEN_GUEST_HANDLE_64(uint32) buf, int max_sdevs)
+    CRUX_GUEST_HANDLE_64(uint32) buf, int max_sdevs)
 {
     const struct domain_iommu *hd = dom_iommu(d);
     struct pci_dev *pdev;
@@ -1661,7 +1661,7 @@ void iommu_dev_iotlb_flush_timeout(struct domain *d, struct pci_dev *pdev)
     pdev->broken = true;
 
     if ( !d->is_shutting_down && printk_ratelimit() )
-        printk(XENLOG_ERR "dom%d: ATS device %pp flush failed\n",
+        printk(CRUXLOG_ERR "dom%d: ATS device %pp flush failed\n",
                d->domain_id, &pdev->sbdf);
     if ( !is_hardware_domain(d) )
         domain_crash(d);
@@ -1670,8 +1670,8 @@ void iommu_dev_iotlb_flush_timeout(struct domain *d, struct pci_dev *pdev)
 }
 
 int iommu_do_pci_domctl(
-    struct xen_domctl *domctl, struct domain *d,
-    XEN_GUEST_HANDLE_PARAM(xen_domctl_t) u_domctl)
+    struct crux_domctl *domctl, struct domain *d,
+    CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
 {
     u16 seg;
     u8 bus, devfn;
@@ -1682,10 +1682,10 @@ int iommu_do_pci_domctl(
     {
         unsigned int flags;
 
-    case XEN_DOMCTL_get_device_group:
+    case CRUX_DOMCTL_get_device_group:
     {
         u32 max_sdevs;
-        XEN_GUEST_HANDLE_64(uint32) sdevs;
+        CRUX_GUEST_HANDLE_64(uint32) sdevs;
 
         ret = xsm_get_device_group(XSM_HOOK, domctl->u.get_device_group.machine_sbdf);
         if ( ret )
@@ -1700,7 +1700,7 @@ int iommu_do_pci_domctl(
         ret = iommu_get_device_group(d, seg, bus, devfn, sdevs, max_sdevs);
         if ( ret < 0 )
         {
-            dprintk(XENLOG_ERR, "iommu_get_device_group() failed: %d\n", ret);
+            dprintk(CRUXLOG_ERR, "iommu_get_device_group() failed: %d\n", ret);
             domctl->u.get_device_group.num_sdevs = 0;
         }
         else
@@ -1713,10 +1713,10 @@ int iommu_do_pci_domctl(
     }
     break;
 
-    case XEN_DOMCTL_assign_device:
+    case CRUX_DOMCTL_assign_device:
         ASSERT(d);
         /* fall through */
-    case XEN_DOMCTL_test_assign_device:
+    case CRUX_DOMCTL_test_assign_device:
         /* Don't support self-assignment of devices. */
         if ( d == current->domain )
         {
@@ -1725,13 +1725,13 @@ int iommu_do_pci_domctl(
         }
 
         ret = -ENODEV;
-        if ( domctl->u.assign_device.dev != XEN_DOMCTL_DEV_PCI )
+        if ( domctl->u.assign_device.dev != CRUX_DOMCTL_DEV_PCI )
             break;
 
         ret = -EINVAL;
         flags = domctl->u.assign_device.flags;
-        if ( domctl->cmd == XEN_DOMCTL_assign_device
-             ? d->is_dying || (flags & ~XEN_DOMCTL_DEV_RDM_RELAXED)
+        if ( domctl->cmd == CRUX_DOMCTL_assign_device
+             ? d->is_dying || (flags & ~CRUX_DOMCTL_DEV_RDM_RELAXED)
              : flags )
             break;
 
@@ -1747,11 +1747,11 @@ int iommu_do_pci_domctl(
 
         pcidevs_lock();
         ret = device_assigned(seg, bus, devfn);
-        if ( domctl->cmd == XEN_DOMCTL_test_assign_device )
+        if ( domctl->cmd == CRUX_DOMCTL_test_assign_device )
         {
             if ( ret )
             {
-                printk(XENLOG_G_INFO "%pp already assigned, or non-existent\n",
+                printk(CRUXLOG_G_INFO "%pp already assigned, or non-existent\n",
                        &PCI_SBDF(seg, bus, devfn));
                 ret = -EINVAL;
             }
@@ -1764,7 +1764,7 @@ int iommu_do_pci_domctl(
                                                 "h", u_domctl);
         break;
 
-    case XEN_DOMCTL_deassign_device:
+    case CRUX_DOMCTL_deassign_device:
         /* Don't support self-deassignment of devices. */
         if ( d == current->domain )
         {
@@ -1773,7 +1773,7 @@ int iommu_do_pci_domctl(
         }
 
         ret = -ENODEV;
-        if ( domctl->u.assign_device.dev != XEN_DOMCTL_DEV_PCI )
+        if ( domctl->u.assign_device.dev != CRUX_DOMCTL_DEV_PCI )
             break;
 
         ret = -EINVAL;
@@ -1826,7 +1826,7 @@ static int cf_check iterate_all(struct pci_seg *pseg, void *arg)
 }
 
 /*
- * Iterate without locking or preemption over all PCI devices known by xen.
+ * Iterate without locking or preemption over all PCI devices known by Xen.
  * Can be called with interrupts disabled.
  */
 int pci_iterate_devices(int (*handler)(struct pci_dev *pdev, void *arg),

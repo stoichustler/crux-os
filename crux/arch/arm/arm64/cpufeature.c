@@ -69,9 +69,9 @@
  *   KVM guests.
  */
 
-#include <xen/bug.h>
-#include <xen/types.h>
-#include <xen/kernel.h>
+#include <crux/bug.h>
+#include <crux/types.h>
+#include <crux/kernel.h>
 #include <asm/sysregs.h>
 #include <asm/cpufeature.h>
 #include <asm/arm64/cpufeature.h>
@@ -546,15 +546,15 @@ static void sanitize_reg(u64 *cur_reg, u64 new_reg, const char *reg_name,
 	}
 
 	if (old_reg != new_reg)
-		printk(XENLOG_DEBUG "SANITY DIF: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
+		printk(CRUXLOG_DEBUG "SANITY DIF: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
 				reg_name, old_reg, new_reg);
 	if (old_reg != *cur_reg)
-		printk(XENLOG_DEBUG "SANITY FIX: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
+		printk(CRUXLOG_DEBUG "SANITY FIX: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
 				reg_name, old_reg, *cur_reg);
 
 	if (taint)
 	{
-		printk(XENLOG_WARNING "SANITY CHECK: Unexpected variation in %s.\n",
+		printk(CRUXLOG_WARNING "SANITY CHECK: Unexpected variation in %s.\n",
 				reg_name);
 		add_taint(TAINT_CPU_OUT_OF_SPEC);
 	}
@@ -609,7 +609,7 @@ void update_system_features(const struct cpuinfo_arm *new)
 	 * could result in too much or too little memory being zeroed if a
 	 * process is preempted and migrated between CPUs.
 	 *
-	 * ftr_dczid is using STRICT comparison so we will taint xen if different
+	 * ftr_dczid is using STRICT comparison so we will taint Xen if different
 	 * values are found.
 	 */
 	SANITIZE_REG(dczid, 0, dczid);

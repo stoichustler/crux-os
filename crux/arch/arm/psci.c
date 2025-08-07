@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/psci.c
+ * crux/arch/arm/psci.c
  *
  * PSCI host support
  *
@@ -9,11 +9,11 @@
  */
 
 
-#include <xen/acpi.h>
-#include <xen/types.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/smp.h>
+#include <crux/acpi.h>
+#include <crux/types.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/smp.h>
 #include <asm/cpufeature.h>
 #include <asm/psci.h>
 #include <asm/acpi.h>
@@ -96,7 +96,7 @@ static int __init psci_is_smc_method(const struct dt_device_node *psci)
         return -EINVAL;
     }
 
-    /* Since xen runs in HYP all of the time, it does not make sense to
+    /* Since Xen runs in HYP all of the time, it does not make sense to
      * let it call into HYP for PSCI handling, since the handler just
      * won't be there. So bail out with an error if "smc" is not used.
      */
@@ -126,7 +126,7 @@ static void __init psci_init_smccc(void)
     if ( smccc_ver >= SMCCC_VERSION(1, 1) )
         cpus_set_cap(ARM_SMCCC_1_1);
 
-    printk(XENLOG_INFO "using SMC Calling Convention v%u.%u\n",
+    printk(CRUXLOG_INFO "Using SMC Calling Convention v%u.%u\n",
            SMCCC_VERSION_MAJOR(smccc_ver), SMCCC_VERSION_MINOR(smccc_ver));
 }
 
@@ -223,7 +223,7 @@ int __init psci_init(void)
 
     psci_init_smccc();
 
-    printk(XENLOG_INFO "using PSCI v%u.%u\n",
+    printk(CRUXLOG_INFO "Using PSCI v%u.%u\n",
            PSCI_VERSION_MAJOR(psci_ver), PSCI_VERSION_MINOR(psci_ver));
 
     return 0;

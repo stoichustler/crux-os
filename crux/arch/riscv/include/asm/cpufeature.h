@@ -4,7 +4,7 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/stdbool.h>
+#include <crux/stdbool.h>
 
 /*
  * These macros represent the logical IDs of each multi-letter RISC-V ISA

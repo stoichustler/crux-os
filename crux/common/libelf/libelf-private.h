@@ -15,17 +15,17 @@
 #ifndef __LIBELF_PRIVATE_H__
 #define __LIBELF_PRIVATE_H__
 
-#ifdef __XEN__
+#ifdef __CRUX__
 
-#include <xen/byteorder.h>
-#include <xen/lib.h>
-#include <xen/libelf.h>
-#include <xen/softirq.h>
+#include <crux/byteorder.h>
+#include <crux/lib.h>
+#include <crux/libelf.h>
+#include <crux/softirq.h>
 
 #include <public/elfnote.h>
 
 /* we would like to use elf->log_callback but we can't because
- * there is no vprintk in xen */
+ * there is no vprintk in Xen */
 #define elf_msg(elf, fmt, args ... ) \
    if ((elf)->verbose) printk(fmt, ## args )
 #define elf_err(elf, fmt, args ... ) \
@@ -36,7 +36,7 @@
 #define bswap_32(x) bswap32(x)
 #define bswap_64(x) bswap64(x)
 
-#else /* !__XEN__ */
+#else /* !__CRUX__ */
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -70,12 +70,12 @@
 #else
 #error Unsupported OS
 #endif
-#include <xen/elfnote.h>
-#include <xen/libelf/libelf.h>
-#include <xen-tools/common-macros.h>
+#include <crux/elfnote.h>
+#include <crux/libelf/libelf.h>
+#include <crux-tools/common-macros.h>
 
 #ifndef FUZZ_NO_LIBXC
-#include "xenctrl.h"
+#include "cruxctrl.h"
 #include "xc_private.h"
 #endif
 

@@ -2,7 +2,7 @@
 #ifndef __ASM_GENERIC_ALTP2M_H
 #define __ASM_GENERIC_ALTP2M_H
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 struct domain;
 struct vcpu;

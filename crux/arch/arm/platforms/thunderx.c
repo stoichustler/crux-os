@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/thunderx.c
+ * crux/arch/arm/platforms/thunderx.c
  *
  * Cavium Thunder-X specific settings
  *

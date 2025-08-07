@@ -6,8 +6,8 @@
  * Copyright (C) 2005 Bin Ren
  */
 
-#ifndef __XEN_PUBLIC_TRACE_H__
-#define __XEN_PUBLIC_TRACE_H__
+#ifndef __CRUX_PUBLIC_TRACE_H__
+#define __CRUX_PUBLIC_TRACE_H__
 
 #define TRACE_EXTRA_MAX    7
 #define TRACE_EXTRA_SHIFT 28
@@ -15,13 +15,13 @@
 /* Trace classes */
 #define TRC_CLS_SHIFT 16
 #define TRC_GEN      0x0001f000    /* General trace            */
-#define TRC_SCHED    0x0002f000    /* xen Scheduler trace      */
-#define TRC_DOM0OP   0x0004f000    /* xen DOM0 operation trace */
-#define TRC_HVM      0x0008f000    /* xen HVM trace            */
-#define TRC_MEM      0x0010f000    /* xen memory trace         */
-#define TRC_PV       0x0020f000    /* xen PV traces            */
-#define TRC_SHADOW   0x0040f000    /* xen shadow tracing       */
-#define TRC_HW       0x0080f000    /* xen hardware-related traces */
+#define TRC_SCHED    0x0002f000    /* Xen Scheduler trace      */
+#define TRC_DOM0OP   0x0004f000    /* Xen DOM0 operation trace */
+#define TRC_HVM      0x0008f000    /* Xen HVM trace            */
+#define TRC_MEM      0x0010f000    /* Xen memory trace         */
+#define TRC_PV       0x0020f000    /* Xen PV traces            */
+#define TRC_SHADOW   0x0040f000    /* Xen shadow tracing       */
+#define TRC_HW       0x0080f000    /* Xen hardware-related traces */
 #define TRC_GUEST    0x0800f000    /* Guest-generated traces   */
 #define TRC_ALL      0x0ffff000
 #define TRC_HD_TO_EVENT(x) ((x)&0x0fffffff)
@@ -58,7 +58,7 @@
 /* Per-scheduler IDs, to identify scheduler specific events */
 #define TRC_SCHED_CSCHED   0
 #define TRC_SCHED_CSCHED2  1
-/* #define XEN_SCHEDULER_SEDF 2 (Removed) */
+/* #define CRUX_SCHEDULER_SEDF 2 (Removed) */
 #define TRC_SCHED_ARINC653 3
 #define TRC_SCHED_RTDS     4
 #define TRC_SCHED_SNULL    5
@@ -182,8 +182,8 @@
 #define TRC_HVM_VMX_EXIT64      (TRC_HVM_ENTRYEXIT + TRC_64_FLAG + 0x02)
 #define TRC_HVM_SVM_EXIT        (TRC_HVM_ENTRYEXIT + 0x03)
 #define TRC_HVM_SVM_EXIT64      (TRC_HVM_ENTRYEXIT + TRC_64_FLAG + 0x03)
-#define TRC_HVM_PF_XEN          (TRC_HVM_HANDLER + 0x01)
-#define TRC_HVM_PF_XEN64        (TRC_HVM_HANDLER + TRC_64_FLAG + 0x01)
+#define TRC_HVM_PF_CRUX          (TRC_HVM_HANDLER + 0x01)
+#define TRC_HVM_PF_CRUX64        (TRC_HVM_HANDLER + TRC_64_FLAG + 0x01)
 #define TRC_HVM_PF_INJECT       (TRC_HVM_HANDLER + 0x02)
 #define TRC_HVM_PF_INJECT64     (TRC_HVM_HANDLER + TRC_64_FLAG + 0x02)
 #define TRC_HVM_INJ_EXC         (TRC_HVM_HANDLER + 0x03)
@@ -299,7 +299,7 @@ struct t_buf {
      *     (((2^32 - 1) % X) + 1) % X != (2^32) % X
      */
     uint32_t cons;   /* Offset of next item to be consumed by control tools. */
-    uint32_t prod;   /* Offset of next item to be produced by xen.           */
+    uint32_t prod;   /* Offset of next item to be produced by Xen.           */
     /*  Records follow immediately after the meta-data header.    */
 };
 
@@ -313,7 +313,7 @@ struct t_info {
     /* MFN lists immediately after the header */
 };
 
-#endif /* __XEN_PUBLIC_TRACE_H__ */
+#endif /* __CRUX_PUBLIC_TRACE_H__ */
 
 /*
  * Local variables:

@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/iocap.h>
-#include <xen/softirq.h>
+#include <crux/iocap.h>
+#include <crux/softirq.h>
 
 #include <asm/acpi.h>
 
@@ -52,7 +52,7 @@ struct amd_iommu *find_iommu_for_device(pci_sbdf_t sbdf)
                 tmp.dte_requestor_id = sbdf.bdf;
             ivrs_mappings[sbdf.bdf] = tmp;
 
-            printk(XENLOG_WARNING "%pp not found in ACPI tables;"
+            printk(CRUXLOG_WARNING "%pp not found in ACPI tables;"
                    " using same IOMMU as function 0\n", &sbdf);
 
             /* write iommu field last */
@@ -325,7 +325,7 @@ static int __init cf_check iov_detect(void)
     init_done = 1;
 
     if ( !amd_iommu_perdev_intremap )
-        printk(XENLOG_WARNING "AMD-Vi: Using global interrupt remap table is not recommended (see XSA-36)!\n");
+        printk(CRUXLOG_WARNING "AMD-Vi: Using global interrupt remap table is not recommended (see XSA-36)!\n");
 
     return 0;
 }
@@ -540,7 +540,7 @@ static int cf_check amd_iommu_assign_device(
 
         if ( ret )
         {
-            printk(XENLOG_ERR "AMD-Vi: "
+            printk(CRUXLOG_ERR "AMD-Vi: "
                    "unity-unmap for %pd/%04x:%02x:%02x.%u failed (%d)\n",
                    d, pdev->seg, pdev->bus,
                    PCI_SLOT(devfn), PCI_FUNC(devfn), ret);

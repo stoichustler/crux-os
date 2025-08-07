@@ -1,5 +1,5 @@
-#include <xen/irq.h>
-#include <xen/errno.h>
+#include <crux/irq.h>
+#include <crux/errno.h>
 
 DEFINE_PER_CPU(const struct cpu_user_regs *, irq_regs);
 

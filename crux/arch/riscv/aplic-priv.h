@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /*
- * xen/arch/riscv/aplic-priv.h
+ * crux/arch/riscv/aplic-priv.h
  *
  * Private part of aplic.h header.
  *
@@ -14,8 +14,8 @@
 #ifndef ASM_RISCV_APLIC_PRIV_H
 #define ASM_RISCV_APLIC_PRIV_H
 
-#include <xen/spinlock.h>
-#include <xen/types.h>
+#include <crux/spinlock.h>
+#include <crux/types.h>
 
 #include <asm/aplic.h>
 

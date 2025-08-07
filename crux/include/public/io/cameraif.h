@@ -2,15 +2,15 @@
 /******************************************************************************
  * cameraif.h
  *
- * Unified camera device I/O interface for xen guest OSes.
+ * Unified camera device I/O interface for Xen guest OSes.
  *
  * Copyright (C) 2018-2019 EPAM Systems Inc.
  *
  * Author: Oleksandr Andrushchenko <oleksandr_andrushchenko@epam.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_CAMERAIF_H__
-#define __XEN_PUBLIC_IO_CAMERAIF_H__
+#ifndef __CRUX_PUBLIC_IO_CAMERAIF_H__
+#define __CRUX_PUBLIC_IO_CAMERAIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -20,7 +20,7 @@
  *                           Protocol version
  ******************************************************************************
  */
-#define XENCAMERA_PROTOCOL_VERSION     "1"
+#define CRUXCAMERA_PROTOCOL_VERSION     "1"
 
 /*
  ******************************************************************************
@@ -28,21 +28,21 @@
  ******************************************************************************
  *
  * Front->back notifications: when enqueuing a new request, sending a
- * notification can be made conditional on xencamera_req (i.e., the generic
+ * notification can be made conditional on cruxcamera_req (i.e., the generic
  * hold-off mechanism provided by the ring macros). Backends must set
- * xencamera_req appropriately (e.g., using RING_FINAL_CHECK_FOR_REQUESTS()).
+ * cruxcamera_req appropriately (e.g., using RING_FINAL_CHECK_FOR_REQUESTS()).
  *
  * Back->front notifications: when enqueuing a new response, sending a
- * notification can be made conditional on xencamera_resp (i.e., the generic
+ * notification can be made conditional on cruxcamera_resp (i.e., the generic
  * hold-off mechanism provided by the ring macros). Frontends must set
- * xencamera_resp appropriately (e.g., using RING_FINAL_CHECK_FOR_RESPONSES()).
+ * cruxcamera_resp appropriately (e.g., using RING_FINAL_CHECK_FOR_RESPONSES()).
  *
  * The two halves of a para-virtual camera driver utilize nodes within
- * xenStore to communicate capabilities and to negotiate operating parameters.
+ * XenStore to communicate capabilities and to negotiate operating parameters.
  * This section enumerates these nodes which reside in the respective front and
- * backend portions of xenStore, following the xenBus convention.
+ * backend portions of XenStore, following the XenBus convention.
  *
- * All data in xenStore is stored as strings. Nodes specifying numeric
+ * All data in XenStore is stored as strings. Nodes specifying numeric
  * values are encoded in decimal. Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formatted node string, without loss of information.
@@ -95,7 +95,7 @@
  * /local/domain/1/device/vcamera/1/evt-event-channel = "18"
  *
  ******************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  ******************************************************************************
  *
  *----------------------------- Protocol version ------------------------------
@@ -103,11 +103,11 @@
  * versions
  *      Values:         <string>
  *
- *      List of XENCAMERA_LIST_SEPARATOR separated protocol versions supported
+ *      List of CRUXCAMERA_LIST_SEPARATOR separated protocol versions supported
  *      by the backend. For example "1,2,3".
  *
  ******************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  ******************************************************************************
  *
  *-------------------------------- Addressing ---------------------------------
@@ -137,7 +137,7 @@
  *      Values:         "0", "1"
  *
  *      If value is set to "1", then backend will be the buffer
- *      provider/allocator for this domain during XENCAMERA_OP_BUF_CREATE
+ *      provider/allocator for this domain during CRUXCAMERA_OP_BUF_CREATE
  *      operation.
  *      If value is not "1" or omitted frontend must allocate buffers itself.
  *
@@ -158,7 +158,7 @@
  * controls
  *      Values:         <list of string>
  *
- *      List of supported camera controls separated by XENCAMERA_LIST_SEPARATOR.
+ *      List of supported camera controls separated by CRUXCAMERA_LIST_SEPARATOR.
  *      Camera controls are expressed as a list of string values w/o any
  *      ordering requirement.
  *
@@ -187,7 +187,7 @@
  * frame-rates
  *      Values:         <numerator, uint32_t>/<denominator, uint32_t>
  *
- *      List of XENCAMERA_FRAME_RATE_SEPARATOR separated supported frame rates
+ *      List of CRUXCAMERA_FRAME_RATE_SEPARATOR separated supported frame rates
  *      of the camera expressed as numerator and denominator of the
  *      corresponding frame rate.
  *
@@ -200,13 +200,13 @@
  * req-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the xen camera's control event channel
+ *      The identifier of the Xen camera's control event channel
  *      used to signal activity in the ring buffer.
  *
  * req-ring-ref
  *      Values:         <uint32_t>
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      a sole page of camera's control ring buffer.
  *
  *-------------------- Camera Event Transport Parameters ----------------------
@@ -217,13 +217,13 @@
  * evt-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the xen camera's event channel
+ *      The identifier of the Xen camera's event channel
  *      used to signal activity in the ring buffer.
  *
  * evt-ring-ref
  *      Values:         <uint32_t>
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      a sole page of camera's event ring buffer.
  */
 
@@ -233,7 +233,7 @@
  ******************************************************************************
  *
  * Tool stack creates front and back state nodes with initial state
- * xenbusStateInitialising.
+ * XenbusStateInitialising.
  * Tool stack creates and sets up frontend camera configuration
  * nodes per domain.
  *
@@ -241,14 +241,14 @@
  *
  * Front                                Back
  * =================================    =====================================
- * xenbusStateInitialising              xenbusStateInitialising
+ * XenbusStateInitialising              XenbusStateInitialising
  *                                       o Query backend device identification
  *                                         data.
  *                                       o Open and validate backend device.
  *                                                |
  *                                                |
  *                                                V
- *                                      xenbusStateInitWait
+ *                                      XenbusStateInitWait
  *
  * o Query frontend configuration
  * o Allocate and initialize
@@ -260,14 +260,14 @@
  *              |
  *              |
  *              V
- * xenbusStateInitialised
+ * XenbusStateInitialised
  *
  *                                       o Query frontend transport parameters.
  *                                       o Connect to the event channels.
  *                                                |
  *                                                |
  *                                                V
- *                                      xenbusStateConnected
+ *                                      XenbusStateConnected
  *
  *  o Create and initialize OS
  *    virtual camera as per
@@ -275,48 +275,48 @@
  *              |
  *              |
  *              V
- * xenbusStateConnected
+ * XenbusStateConnected
  *
- *                                      xenbusStateUnknown
- *                                      xenbusStateClosed
- *                                      xenbusStateClosing
+ *                                      XenbusStateUnknown
+ *                                      XenbusStateClosed
+ *                                      XenbusStateClosing
  * o Remove virtual camera device
  * o Remove event channels
  *              |
  *              |
  *              V
- * xenbusStateClosed
+ * XenbusStateClosed
  *
  *------------------------------- Recovery flow -------------------------------
  *
  * In case of frontend unrecoverable errors backend handles that as
- * if frontend goes into the xenbusStateClosed state.
+ * if frontend goes into the XenbusStateClosed state.
  *
  * In case of backend unrecoverable errors frontend tries removing
  * the virtualized device. If this is possible at the moment of error,
- * then frontend goes into the xenbusStateInitialising state and is ready for
+ * then frontend goes into the XenbusStateInitialising state and is ready for
  * new connection with backend. If the virtualized device is still in use and
- * cannot be removed, then frontend goes into the xenbusStateReconfiguring state
+ * cannot be removed, then frontend goes into the XenbusStateReconfiguring state
  * until either the virtualized device is removed or backend initiates a new
  * connection. On the virtualized device removal frontend goes into the
- * xenbusStateInitialising state.
+ * XenbusStateInitialising state.
  *
- * Note on xenbusStateReconfiguring state of the frontend: if backend has
+ * Note on XenbusStateReconfiguring state of the frontend: if backend has
  * unrecoverable errors then frontend cannot send requests to the backend
  * and thus cannot provide functionality of the virtualized device anymore.
  * After backend is back to normal the virtualized device may still hold some
  * state: configuration in use, allocated buffers, client application state etc.
  * In most cases, this will require frontend to implement complex recovery
- * reconnect logic. Instead, by going into xenbusStateReconfiguring state,
+ * reconnect logic. Instead, by going into XenbusStateReconfiguring state,
  * frontend will make sure no new clients of the virtualized device are
  * accepted, allow existing client(s) to exit gracefully by signaling error
  * state etc.
  * Once all the clients are gone frontend can reinitialize the virtualized
- * device and get into xenbusStateInitialising state again signaling the
+ * device and get into XenbusStateInitialising state again signaling the
  * backend that a new connection can be made.
  *
  * There are multiple conditions possible under which frontend will go from
- * xenbusStateReconfiguring into xenbusStateInitialising, some of them are OS
+ * XenbusStateReconfiguring into XenbusStateInitialising, some of them are OS
  * specific. For example:
  * 1. The underlying OS framework may provide callbacks to signal that the last
  *    client of the virtualized device has gone and the device can be removed
@@ -329,117 +329,117 @@
  *                             REQUEST CODES
  ******************************************************************************
  */
-#define XENCAMERA_OP_CONFIG_SET        0x00
-#define XENCAMERA_OP_CONFIG_GET        0x01
-#define XENCAMERA_OP_CONFIG_VALIDATE   0x02
-#define XENCAMERA_OP_FRAME_RATE_SET    0x03
-#define XENCAMERA_OP_BUF_GET_LAYOUT    0x04
-#define XENCAMERA_OP_BUF_REQUEST       0x05
-#define XENCAMERA_OP_BUF_CREATE        0x06
-#define XENCAMERA_OP_BUF_DESTROY       0x07
-#define XENCAMERA_OP_BUF_QUEUE         0x08
-#define XENCAMERA_OP_BUF_DEQUEUE       0x09
-#define XENCAMERA_OP_CTRL_ENUM         0x0a
-#define XENCAMERA_OP_CTRL_SET          0x0b
-#define XENCAMERA_OP_CTRL_GET          0x0c
-#define XENCAMERA_OP_STREAM_START      0x0d
-#define XENCAMERA_OP_STREAM_STOP       0x0e
+#define CRUXCAMERA_OP_CONFIG_SET        0x00
+#define CRUXCAMERA_OP_CONFIG_GET        0x01
+#define CRUXCAMERA_OP_CONFIG_VALIDATE   0x02
+#define CRUXCAMERA_OP_FRAME_RATE_SET    0x03
+#define CRUXCAMERA_OP_BUF_GET_LAYOUT    0x04
+#define CRUXCAMERA_OP_BUF_REQUEST       0x05
+#define CRUXCAMERA_OP_BUF_CREATE        0x06
+#define CRUXCAMERA_OP_BUF_DESTROY       0x07
+#define CRUXCAMERA_OP_BUF_QUEUE         0x08
+#define CRUXCAMERA_OP_BUF_DEQUEUE       0x09
+#define CRUXCAMERA_OP_CTRL_ENUM         0x0a
+#define CRUXCAMERA_OP_CTRL_SET          0x0b
+#define CRUXCAMERA_OP_CTRL_GET          0x0c
+#define CRUXCAMERA_OP_STREAM_START      0x0d
+#define CRUXCAMERA_OP_STREAM_STOP       0x0e
 
-#define XENCAMERA_CTRL_BRIGHTNESS      0
-#define XENCAMERA_CTRL_CONTRAST        1
-#define XENCAMERA_CTRL_SATURATION      2
-#define XENCAMERA_CTRL_HUE             3
+#define CRUXCAMERA_CTRL_BRIGHTNESS      0
+#define CRUXCAMERA_CTRL_CONTRAST        1
+#define CRUXCAMERA_CTRL_SATURATION      2
+#define CRUXCAMERA_CTRL_HUE             3
 
 /* Number of supported controls. */
-#define XENCAMERA_MAX_CTRL             4
+#define CRUXCAMERA_MAX_CTRL             4
 
 /* Control is read-only. */
-#define XENCAMERA_CTRL_FLG_RO          (1 << 0)
+#define CRUXCAMERA_CTRL_FLG_RO          (1 << 0)
 /* Control is write-only. */
-#define XENCAMERA_CTRL_FLG_WO          (1 << 1)
+#define CRUXCAMERA_CTRL_FLG_WO          (1 << 1)
 /* Control's value is volatile. */
-#define XENCAMERA_CTRL_FLG_VOLATILE    (1 << 2)
+#define CRUXCAMERA_CTRL_FLG_VOLATILE    (1 << 2)
 
 /* Supported color spaces. */
-#define XENCAMERA_COLORSPACE_DEFAULT   0
-#define XENCAMERA_COLORSPACE_SMPTE170M 1
-#define XENCAMERA_COLORSPACE_REC709    2
-#define XENCAMERA_COLORSPACE_SRGB      3
-#define XENCAMERA_COLORSPACE_OPRGB     4
-#define XENCAMERA_COLORSPACE_BT2020    5
-#define XENCAMERA_COLORSPACE_DCI_P3    6
+#define CRUXCAMERA_COLORSPACE_DEFAULT   0
+#define CRUXCAMERA_COLORSPACE_SMPTE170M 1
+#define CRUXCAMERA_COLORSPACE_REC709    2
+#define CRUXCAMERA_COLORSPACE_SRGB      3
+#define CRUXCAMERA_COLORSPACE_OPRGB     4
+#define CRUXCAMERA_COLORSPACE_BT2020    5
+#define CRUXCAMERA_COLORSPACE_DCI_P3    6
 
 /* Color space transfer function. */
-#define XENCAMERA_XFER_FUNC_DEFAULT    0
-#define XENCAMERA_XFER_FUNC_709        1
-#define XENCAMERA_XFER_FUNC_SRGB       2
-#define XENCAMERA_XFER_FUNC_OPRGB      3
-#define XENCAMERA_XFER_FUNC_NONE       4
-#define XENCAMERA_XFER_FUNC_DCI_P3     5
-#define XENCAMERA_XFER_FUNC_SMPTE2084  6
+#define CRUXCAMERA_XFER_FUNC_DEFAULT    0
+#define CRUXCAMERA_XFER_FUNC_709        1
+#define CRUXCAMERA_XFER_FUNC_SRGB       2
+#define CRUXCAMERA_XFER_FUNC_OPRGB      3
+#define CRUXCAMERA_XFER_FUNC_NONE       4
+#define CRUXCAMERA_XFER_FUNC_DCI_P3     5
+#define CRUXCAMERA_XFER_FUNC_SMPTE2084  6
 
 /* Color space Y’CbCr encoding. */
-#define XENCAMERA_YCBCR_ENC_IGNORE           0
-#define XENCAMERA_YCBCR_ENC_601              1
-#define XENCAMERA_YCBCR_ENC_709              2
-#define XENCAMERA_YCBCR_ENC_XV601            3
-#define XENCAMERA_YCBCR_ENC_XV709            4
-#define XENCAMERA_YCBCR_ENC_BT2020           5
-#define XENCAMERA_YCBCR_ENC_BT2020_CONST_LUM 6
+#define CRUXCAMERA_YCBCR_ENC_IGNORE           0
+#define CRUXCAMERA_YCBCR_ENC_601              1
+#define CRUXCAMERA_YCBCR_ENC_709              2
+#define CRUXCAMERA_YCBCR_ENC_XV601            3
+#define CRUXCAMERA_YCBCR_ENC_XV709            4
+#define CRUXCAMERA_YCBCR_ENC_BT2020           5
+#define CRUXCAMERA_YCBCR_ENC_BT2020_CONST_LUM 6
 
 /* Quantization range. */
-#define XENCAMERA_QUANTIZATION_DEFAULT       0
-#define XENCAMERA_QUANTIZATION_FULL_RANGE    1
-#define XENCAMERA_QUANTIZATION_LIM_RANGE     2
+#define CRUXCAMERA_QUANTIZATION_DEFAULT       0
+#define CRUXCAMERA_QUANTIZATION_FULL_RANGE    1
+#define CRUXCAMERA_QUANTIZATION_LIM_RANGE     2
 
 /*
  ******************************************************************************
  *                                 EVENT CODES
  ******************************************************************************
  */
-#define XENCAMERA_EVT_FRAME_AVAIL      0x00
-#define XENCAMERA_EVT_CTRL_CHANGE      0x01
+#define CRUXCAMERA_EVT_FRAME_AVAIL      0x00
+#define CRUXCAMERA_EVT_CTRL_CHANGE      0x01
 
 /*
  ******************************************************************************
- *               XENSTORE FIELD AND PATH NAME STRINGS, HELPERS
+ *               CRUXSTORE FIELD AND PATH NAME STRINGS, HELPERS
  ******************************************************************************
  */
-#define XENCAMERA_DRIVER_NAME          "vcamera"
+#define CRUXCAMERA_DRIVER_NAME          "vcamera"
 
-#define XENCAMERA_LIST_SEPARATOR       ","
-#define XENCAMERA_RESOLUTION_SEPARATOR "x"
-#define XENCAMERA_FRACTION_SEPARATOR   "/"
+#define CRUXCAMERA_LIST_SEPARATOR       ","
+#define CRUXCAMERA_RESOLUTION_SEPARATOR "x"
+#define CRUXCAMERA_FRACTION_SEPARATOR   "/"
 
-#define XENCAMERA_FIELD_BE_VERSIONS    "versions"
-#define XENCAMERA_FIELD_FE_VERSION     "version"
-#define XENCAMERA_FIELD_REQ_RING_REF   "req-ring-ref"
-#define XENCAMERA_FIELD_REQ_CHANNEL    "req-event-channel"
-#define XENCAMERA_FIELD_EVT_RING_REF   "evt-ring-ref"
-#define XENCAMERA_FIELD_EVT_CHANNEL    "evt-event-channel"
-#define XENCAMERA_FIELD_MAX_BUFFERS    "max-buffers"
-#define XENCAMERA_FIELD_CONTROLS       "controls"
-#define XENCAMERA_FIELD_FORMATS        "formats"
-#define XENCAMERA_FIELD_FRAME_RATES    "frame-rates"
-#define XENCAMERA_FIELD_BE_ALLOC       "be-alloc"
-#define XENCAMERA_FIELD_UNIQUE_ID      "unique-id"
+#define CRUXCAMERA_FIELD_BE_VERSIONS    "versions"
+#define CRUXCAMERA_FIELD_FE_VERSION     "version"
+#define CRUXCAMERA_FIELD_REQ_RING_REF   "req-ring-ref"
+#define CRUXCAMERA_FIELD_REQ_CHANNEL    "req-event-channel"
+#define CRUXCAMERA_FIELD_EVT_RING_REF   "evt-ring-ref"
+#define CRUXCAMERA_FIELD_EVT_CHANNEL    "evt-event-channel"
+#define CRUXCAMERA_FIELD_MAX_BUFFERS    "max-buffers"
+#define CRUXCAMERA_FIELD_CONTROLS       "controls"
+#define CRUXCAMERA_FIELD_FORMATS        "formats"
+#define CRUXCAMERA_FIELD_FRAME_RATES    "frame-rates"
+#define CRUXCAMERA_FIELD_BE_ALLOC       "be-alloc"
+#define CRUXCAMERA_FIELD_UNIQUE_ID      "unique-id"
 
-#define XENCAMERA_CTRL_BRIGHTNESS_STR  "brightness"
-#define XENCAMERA_CTRL_CONTRAST_STR    "contrast"
-#define XENCAMERA_CTRL_SATURATION_STR  "saturation"
-#define XENCAMERA_CTRL_HUE_STR         "hue"
+#define CRUXCAMERA_CTRL_BRIGHTNESS_STR  "brightness"
+#define CRUXCAMERA_CTRL_CONTRAST_STR    "contrast"
+#define CRUXCAMERA_CTRL_SATURATION_STR  "saturation"
+#define CRUXCAMERA_CTRL_HUE_STR         "hue"
 
-#define XENCAMERA_FOURCC_BIGENDIAN_STR "-BE"
+#define CRUXCAMERA_FOURCC_BIGENDIAN_STR "-BE"
 
 /* Maximum number of buffer planes supported. */
-#define XENCAMERA_MAX_PLANE            4
+#define CRUXCAMERA_MAX_PLANE            4
 
 /*
  ******************************************************************************
  *                          STATUS RETURN CODES
  ******************************************************************************
  *
- * Status return code is zero on success and -XEN_EXX on failure.
+ * Status return code is zero on success and -CRUX_EXX on failure.
  *
  ******************************************************************************
  *                              Assumptions
@@ -449,12 +449,12 @@
  *   grant reference 0 is valid, but never exposed to a PV driver,
  *   because of the fact it is already in use/reserved by the PV console.
  * - all references in this document to page sizes must be treated
- *   as pages of size XEN_PAGE_SIZE unless otherwise noted.
+ *   as pages of size CRUX_PAGE_SIZE unless otherwise noted.
  * - all FOURCC mappings used for configuration and messaging are
  *   Linux V4L2 ones: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/uapi/linux/videodev2.h
  *   with the following exceptions:
  *     - characters are allowed in [0x20; 0x7f] range
- *     - when used for xenStore configuration entries the following
+ *     - when used for XenStore configuration entries the following
  *       are not allowed:
  *       - '/', '\', ' ' (space), '<', '>', ':', '"', '|', '?', '*'
  *       - if trailing spaces are part of the FOURCC code then those must be
@@ -479,7 +479,7 @@
  *     The corresponding frame rate (Hz) is calculated as:
  *       frame_rate = frame_rate_numer / frame_rate_denom
  *   - buffer index is a zero based index of the buffer. Must be less than
- *     the value of XENCAMERA_OP_CONFIG_SET.num_bufs response:
+ *     the value of CRUXCAMERA_OP_CONFIG_SET.num_bufs response:
  *       - index - uint8_t, index of the buffer.
  *
  *
@@ -494,13 +494,13 @@
  * |                             reserved                              | 8
  * +----------------+----------------+----------------+----------------+
  *   id - uint16_t, private guest value, echoed in response.
- *   operation - uint8_t, operation code, XENCAMERA_OP_XXX.
+ *   operation - uint8_t, operation code, CRUXCAMERA_OP_XXX.
  *
  *
  * Request to set/validate the configuration - request to set the
- * configuration/mode of the camera (XENCAMERA_OP_CONFIG_SET) or to
+ * configuration/mode of the camera (CRUXCAMERA_OP_CONFIG_SET) or to
  * check if the configuration is valid and can be used
- * (XENCAMERA_OP_CONFIG_VALIDATE):
+ * (CRUXCAMERA_OP_CONFIG_VALIDATE):
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |               id                | _OP_CONFIG_XXX |   reserved     | 4
@@ -527,21 +527,21 @@
  * See response format for this request.
  *
  * Notes:
- *  - the only difference between XENCAMERA_OP_CONFIG_VALIDATE and
- *    XENCAMERA_OP_CONFIG_SET is that the former doesn't actually change
+ *  - the only difference between CRUXCAMERA_OP_CONFIG_VALIDATE and
+ *    CRUXCAMERA_OP_CONFIG_SET is that the former doesn't actually change
  *    camera configuration, but queries if the configuration is valid.
  *    This can be used while stream is active and/or buffers allocated.
  *  - frontend must check the corresponding response in order to see
  *    if the values reported back by the backend do match the desired ones
  *    and can be accepted.
- *  - frontend may send multiple XENCAMERA_OP_CONFIG_SET requests before
- *    sending XENCAMERA_OP_STREAM_START request to update or tune the
+ *  - frontend may send multiple CRUXCAMERA_OP_CONFIG_SET requests before
+ *    sending CRUXCAMERA_OP_STREAM_START request to update or tune the
  *    final stream configuration.
  *  - configuration cannot be changed during active streaming, e.g.
- *    after XENCAMERA_OP_STREAM_START and before XENCAMERA_OP_STREAM_STOP
+ *    after CRUXCAMERA_OP_STREAM_START and before CRUXCAMERA_OP_STREAM_STOP
  *    requests.
  */
-struct xencamera_config_req {
+struct cruxcamera_config_req {
     uint32_t pixel_format;
     uint32_t width;
     uint32_t height;
@@ -585,19 +585,19 @@ struct xencamera_config_req {
  * frame_rate_denom - uint32_t, denominator of the frame rate.
  *
  * Notes:
- *  - to query the current (actual) frame rate use XENCAMERA_OP_CONFIG_GET
+ *  - to query the current (actual) frame rate use CRUXCAMERA_OP_CONFIG_GET
  *    request.
  *  - this request can be used with camera buffers allocated, but stream
  *    stopped, e.g. frontend is allowed to stop the stream with
- *    XENCAMERA_OP_STREAM_STOP, hold the buffers allocated (e.g. keep the
- *    configuration set with XENCAMERA_OP_CONFIG_SET), change the
+ *    CRUXCAMERA_OP_STREAM_STOP, hold the buffers allocated (e.g. keep the
+ *    configuration set with CRUXCAMERA_OP_CONFIG_SET), change the
  *    frame rate of the stream and (re)start the stream again with
- *    XENCAMERA_OP_STREAM_START.
+ *    CRUXCAMERA_OP_STREAM_START.
  *  - frame rate cannot be changed during active streaming, e.g.
- *    after XENCAMERA_OP_STREAM_START and before XENCAMERA_OP_STREAM_STOP
+ *    after CRUXCAMERA_OP_STREAM_START and before CRUXCAMERA_OP_STREAM_STOP
  *    commands.
  */
-struct xencamera_frame_rate_req {
+struct cruxcamera_frame_rate_req {
     uint32_t frame_rate_numer;
     uint32_t frame_rate_denom;
 };
@@ -641,8 +641,8 @@ struct xencamera_frame_rate_req {
  * Frontend is responsible for checking the corresponding response in order to
  * see if the values reported back by the backend do match the desired ones
  * and can be accepted.
- * Frontend is allowed to send multiple XENCAMERA_OP_BUF_REQUEST requests
- * before sending XENCAMERA_OP_STREAM_START request to update or tune the
+ * Frontend is allowed to send multiple CRUXCAMERA_OP_BUF_REQUEST requests
+ * before sending CRUXCAMERA_OP_STREAM_START request to update or tune the
  * final configuration.
  * Frontend is not allowed to change the camera configuration after this call
  * with a non-zero value of num_bufs. If camera reconfiguration is required
@@ -660,11 +660,11 @@ struct xencamera_frame_rate_req {
  * created buffers must be destroyed.
  *
  * Please note, that the number of buffers in this request must not exceed
- * the value configured in xenStore.max-buffers.
+ * the value configured in XenStore.max-buffers.
  *
  * See response format for this request.
  */
-struct xencamera_buf_request {
+struct cruxcamera_buf_request {
     uint8_t num_bufs;
 };
 
@@ -700,18 +700,18 @@ struct xencamera_buf_request {
  *
  * index - uint8_t, index of the buffer to be created in the range
  *   from 0 to the num_bufs field returned in response for
- *   XENCAMERA_OP_BUF_REQUEST request
+ *   CRUXCAMERA_OP_BUF_REQUEST request
  * plane_offset - array of uint32_t, offset of the corresponding plane
  *   in octets from the buffer start. Number of offsets returned is
- *   equal to the value returned in XENCAMERA_OP_BUF_GET_LAYOUT.num_planes.
+ *   equal to the value returned in CRUXCAMERA_OP_BUF_GET_LAYOUT.num_planes.
  * gref_directory - grant_ref_t, a reference to the first shared page
  *   describing shared buffer references. The size of the buffer is equal to
- *   XENCAMERA_OP_BUF_GET_LAYOUT.size response. At least one page exists. If
+ *   CRUXCAMERA_OP_BUF_GET_LAYOUT.size response. At least one page exists. If
  *   shared buffer size exceeds what can be addressed by this single page,
  *   then reference to the next shared page must be supplied (see
  *   gref_dir_next_page below).
  *
- * If XENCAMERA_FIELD_BE_ALLOC configuration entry is set, then backend will
+ * If CRUXCAMERA_FIELD_BE_ALLOC configuration entry is set, then backend will
  * allocate the buffer with the parameters provided in this request and page
  * directory is handled as follows:
  *   Frontend on request:
@@ -723,17 +723,17 @@ struct xencamera_buf_request {
  *     - grants permissions for the pages of the buffer allocated to
  *       the frontend
  *     - fills in page directory with grant references
- *       (gref[] in struct xencamera_page_directory)
+ *       (gref[] in struct cruxcamera_page_directory)
  */
-struct xencamera_buf_create_req {
+struct cruxcamera_buf_create_req {
     uint8_t index;
     uint8_t reserved[3];
-    uint32_t plane_offset[XENCAMERA_MAX_PLANE];
+    uint32_t plane_offset[CRUXCAMERA_MAX_PLANE];
     grant_ref_t gref_directory;
 };
 
 /*
- * Shared page for XENCAMERA_OP_BUF_CREATE buffer descriptor (gref_directory in
+ * Shared page for CRUXCAMERA_OP_BUF_CREATE buffer descriptor (gref_directory in
  * the request) employs a list of pages, describing all pages of the shared
  * data buffer:
  *         0                1                 2               3        octet
@@ -754,16 +754,16 @@ struct xencamera_buf_create_req {
  * gref_dir_next_page - grant_ref_t, reference to the next page describing
  *   page directory. Must be 0 if there are no more pages in the list.
  * gref[i] - grant_ref_t, reference to a shared page of the buffer
- *   allocated at XENCAMERA_OP_BUF_CREATE.
+ *   allocated at CRUXCAMERA_OP_BUF_CREATE.
  *
  * Number of grant_ref_t entries in the whole page directory is not
  * passed, but instead can be calculated as:
- *   num_grefs_total = (XENCAMERA_OP_BUF_REQUEST.size + XEN_PAGE_SIZE - 1) /
- *       XEN_PAGE_SIZE
+ *   num_grefs_total = (CRUXCAMERA_OP_BUF_REQUEST.size + CRUX_PAGE_SIZE - 1) /
+ *       CRUX_PAGE_SIZE
  */
-struct xencamera_page_directory {
+struct cruxcamera_page_directory {
     grant_ref_t gref_dir_next_page;
-    grant_ref_t gref[XENPV_FLEX_ARRAY_DIM];
+    grant_ref_t gref[CRUXPV_FLEX_ARRAY_DIM];
 };
 
 /*
@@ -804,9 +804,9 @@ struct xencamera_page_directory {
  *
  * Notes:
  *  - frontends must not access the buffer content after this request until
- *    response to XENCAMERA_OP_BUF_DEQUEUE has been received.
+ *    response to CRUXCAMERA_OP_BUF_DEQUEUE has been received.
  *  - buffers must be queued to the backend before destroying them with
- *    XENCAMERA_OP_BUF_DESTROY.
+ *    CRUXCAMERA_OP_BUF_DESTROY.
  *
  * index - uint8_t, index of the buffer to be queued.
  *
@@ -852,7 +852,7 @@ struct xencamera_page_directory {
  *
  * index - uint8_t, index of the control to be queried.
  */
-struct xencamera_index {
+struct cruxcamera_index {
     uint8_t index;
 };
 
@@ -879,10 +879,10 @@ struct xencamera_index {
  * |                             reserved                              | 64
  * +----------------+----------------+----------------+----------------+
  *
- * type - uint8_t, type of the control, one of the XENCAMERA_CTRL_XXX.
+ * type - uint8_t, type of the control, one of the CRUXCAMERA_CTRL_XXX.
  * value - int64_t, new value of the control.
  */
-struct xencamera_ctrl_value {
+struct cruxcamera_ctrl_value {
     uint8_t type;
     uint8_t reserved[7];
     int64_t value;
@@ -905,9 +905,9 @@ struct xencamera_ctrl_value {
  *
  * See response format for this request.
  *
- * type - uint8_t, type of the control, one of the XENCAMERA_CTRL_XXX.
+ * type - uint8_t, type of the control, one of the CRUXCAMERA_CTRL_XXX.
  */
-struct xencamera_get_ctrl_req {
+struct cruxcamera_get_ctrl_req {
     uint8_t type;
 };
 
@@ -951,12 +951,12 @@ struct xencamera_get_ctrl_req {
  * +----------------+----------------+----------------+----------------+
  *
  * id - uint16_t, copied from the request.
- * operation - uint8_t, XENCAMERA_OP_* - copied from request.
- * status - int32_t, response status, zero on success and -XEN_EXX on failure.
+ * operation - uint8_t, CRUXCAMERA_OP_* - copied from request.
+ * status - int32_t, response status, zero on success and -CRUX_EXX on failure.
  *
  *
- * Configuration response - response for XENCAMERA_OP_CONFIG_SET,
- * XENCAMERA_OP_CONFIG_GET and XENCAMERA_OP_CONFIG_VALIDATE requests:
+ * Configuration response - response for CRUXCAMERA_OP_CONFIG_SET,
+ * CRUXCAMERA_OP_CONFIG_GET and CRUXCAMERA_OP_CONFIG_VALIDATE requests:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |               id                | _OP_CONFIG_XXX |    reserved    | 4
@@ -993,21 +993,21 @@ struct xencamera_get_ctrl_req {
  * +----------------+----------------+----------------+----------------+
  *
  * Meaning of the corresponding values in this response is the same as for
- * XENCAMERA_OP_CONFIG_SET and XENCAMERA_OP_FRAME_RATE_SET requests.
+ * CRUXCAMERA_OP_CONFIG_SET and CRUXCAMERA_OP_FRAME_RATE_SET requests.
  *
  * colorspace - uint32_t, this supplements pixel_format parameter,
- *   one of the XENCAMERA_COLORSPACE_XXX.
+ *   one of the CRUXCAMERA_COLORSPACE_XXX.
  * xfer_func - uint32_t, this supplements colorspace parameter,
- *   one of the XENCAMERA_XFER_FUNC_XXX.
+ *   one of the CRUXCAMERA_XFER_FUNC_XXX.
  * ycbcr_enc - uint32_t, this supplements colorspace parameter,
- *   one of the XENCAMERA_YCBCR_ENC_XXX. Please note, that ycbcr_enc is only
+ *   one of the CRUXCAMERA_YCBCR_ENC_XXX. Please note, that ycbcr_enc is only
  *   valid for YCbCr pixelformats and should be ignored otherwise.
  * quantization - uint32_t, this supplements colorspace parameter,
- *   one of the XENCAMERA_QUANTIZATION_XXX.
+ *   one of the CRUXCAMERA_QUANTIZATION_XXX.
  * displ_asp_ratio_numer - uint32_t, numerator of the display aspect ratio.
  * displ_asp_ratio_denom - uint32_t, denominator of the display aspect ratio.
  */
-struct xencamera_config_resp {
+struct cruxcamera_config_resp {
     uint32_t pixel_format;
     uint32_t width;
     uint32_t height;
@@ -1022,7 +1022,7 @@ struct xencamera_config_resp {
 };
 
 /*
- * Request buffer response - response for XENCAMERA_OP_BUF_GET_LAYOUT
+ * Request buffer response - response for CRUXCAMERA_OP_BUF_GET_LAYOUT
  * request:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
@@ -1064,19 +1064,19 @@ struct xencamera_config_resp {
  *   corresponding single image line including padding if applicable.
  *
  * Note! The sizes and strides in this response apply to all buffers created
- * with XENCAMERA_OP_BUF_CREATE command, but individual buffers may have
- * different plane offsets, see XENCAMERA_OP_BUF_REQUEST.plane_offset.
+ * with CRUXCAMERA_OP_BUF_CREATE command, but individual buffers may have
+ * different plane offsets, see CRUXCAMERA_OP_BUF_REQUEST.plane_offset.
  */
-struct xencamera_buf_get_layout_resp {
+struct cruxcamera_buf_get_layout_resp {
     uint8_t num_planes;
     uint8_t reserved[3];
     uint32_t size;
-    uint32_t plane_size[XENCAMERA_MAX_PLANE];
-    uint32_t plane_stride[XENCAMERA_MAX_PLANE];
+    uint32_t plane_size[CRUXCAMERA_MAX_PLANE];
+    uint32_t plane_stride[CRUXCAMERA_MAX_PLANE];
 };
 
 /*
- * Request buffer response - response for XENCAMERA_OP_BUF_REQUEST
+ * Request buffer response - response for CRUXCAMERA_OP_BUF_REQUEST
  * request:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
@@ -1096,7 +1096,7 @@ struct xencamera_buf_get_layout_resp {
  * num_buffers - uint8_t, number of buffers to be used.
  *
  *
- * Control enumerate response - response for XENCAMERA_OP_CTRL_ENUM:
+ * Control enumerate response - response for CRUXCAMERA_OP_CTRL_ENUM:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |               id                | _OP_CTRL_ENUM  |    reserved    | 4
@@ -1131,14 +1131,14 @@ struct xencamera_buf_get_layout_resp {
  * +----------------+----------------+----------------+----------------+
  *
  * index - uint8_t, index of the camera control in response.
- * type - uint8_t, type of the control, one of the XENCAMERA_CTRL_XXX.
- * flags - uint32_t, flags of the control, one of the XENCAMERA_CTRL_FLG_XXX.
+ * type - uint8_t, type of the control, one of the CRUXCAMERA_CTRL_XXX.
+ * flags - uint32_t, flags of the control, one of the CRUXCAMERA_CTRL_FLG_XXX.
  * min - int64_t, minimum value of the control.
  * max - int64_t, maximum value of the control.
  * step - int64_t, minimum size in which control value can be changed.
  * def_val - int64_t, default value of the control.
  */
-struct xencamera_ctrl_enum_resp {
+struct cruxcamera_ctrl_enum_resp {
     uint8_t index;
     uint8_t type;
     uint8_t reserved[2];
@@ -1150,7 +1150,7 @@ struct xencamera_ctrl_enum_resp {
 };
 
 /*
- * Get control response - response for XENCAMERA_OP_CTRL_GET:
+ * Get control response - response for CRUXCAMERA_OP_CTRL_GET:
  *         0                1                 2               3        octet
  * +----------------+----------------+----------------+----------------+
  * |               id                | _OP_CTRL_GET   |    reserved    | 4
@@ -1174,7 +1174,7 @@ struct xencamera_ctrl_enum_resp {
  * |                             reserved                              | 64
  * +----------------+----------------+----------------+----------------+
  *
- * type - uint8_t, type of the control, one of the XENCAMERA_CTRL_XXX.
+ * type - uint8_t, type of the control, one of the CRUXCAMERA_CTRL_XXX.
  * value - int64_t, new value of the control.
  */
 
@@ -1182,7 +1182,7 @@ struct xencamera_ctrl_enum_resp {
  *----------------------------------- Events ----------------------------------
  *
  * Events are sent via a shared page allocated by the front and propagated by
- *   evt-event-channel/evt-ring-ref xenStore entries.
+ *   evt-event-channel/evt-ring-ref XenStore entries.
  *
  * All event packets have the same length (64 octets).
  * All event packets have common header:
@@ -1219,16 +1219,16 @@ struct xencamera_ctrl_enum_resp {
  * +----------------+----------------+----------------+----------------+
  *
  * index - uint8_t, index of the buffer that contains new captured frame,
- *   see XENCAMERA_OP_BUF_CREATE description on the range
+ *   see CRUXCAMERA_OP_BUF_CREATE description on the range
  * used_sz - uint32_t, number of octets this frame has. This can be less
- * than the XENCAMERA_OP_BUF_REQUEST.size (response) for compressed formats.
+ * than the CRUXCAMERA_OP_BUF_REQUEST.size (response) for compressed formats.
  * seq_num - uint32_t, sequential number of the frame. Must be
  *   monotonically increasing. If skips are detected in seq_num then that
  *   means that the frames in-between were dropped. Note however that not
  *   all video capture hardware is capable of detecting dropped frames.
  *   In that case there will be no skips in the sequence counter.
  */
-struct xencamera_frame_avail_evt {
+struct cruxcamera_frame_avail_evt {
     uint8_t index;
     uint8_t reserved[3];
     uint32_t used_sz;
@@ -1259,7 +1259,7 @@ struct xencamera_frame_avail_evt {
  * |                             reserved                              | 64
  * +----------------+----------------+----------------+----------------+
  *
- * type - uint8_t, type of the control, one of the XENCAMERA_CTRL_XXX.
+ * type - uint8_t, type of the control, one of the CRUXCAMERA_CTRL_XXX.
  * value - int64_t, new value of the control.
  *
  * Notes:
@@ -1269,49 +1269,49 @@ struct xencamera_frame_avail_evt {
  *    control state must be explicitly queried
  */
 
-struct xencamera_req {
+struct cruxcamera_req {
     uint16_t id;
     uint8_t operation;
     uint8_t reserved[5];
     union {
-        struct xencamera_config_req config;
-        struct xencamera_frame_rate_req frame_rate;
-        struct xencamera_buf_request buf_request;
-        struct xencamera_buf_create_req buf_create;
-        struct xencamera_index index;
-        struct xencamera_ctrl_value ctrl_value;
-        struct xencamera_get_ctrl_req get_ctrl;
+        struct cruxcamera_config_req config;
+        struct cruxcamera_frame_rate_req frame_rate;
+        struct cruxcamera_buf_request buf_request;
+        struct cruxcamera_buf_create_req buf_create;
+        struct cruxcamera_index index;
+        struct cruxcamera_ctrl_value ctrl_value;
+        struct cruxcamera_get_ctrl_req get_ctrl;
         uint8_t reserved[56];
     } req;
 };
 
-struct xencamera_resp {
+struct cruxcamera_resp {
     uint16_t id;
     uint8_t operation;
     uint8_t reserved;
     int32_t status;
     union {
-        struct xencamera_config_resp config;
-        struct xencamera_buf_get_layout_resp buf_layout;
-        struct xencamera_buf_request buf_request;
-        struct xencamera_ctrl_enum_resp ctrl_enum;
-        struct xencamera_ctrl_value ctrl_value;
+        struct cruxcamera_config_resp config;
+        struct cruxcamera_buf_get_layout_resp buf_layout;
+        struct cruxcamera_buf_request buf_request;
+        struct cruxcamera_ctrl_enum_resp ctrl_enum;
+        struct cruxcamera_ctrl_value ctrl_value;
         uint8_t reserved1[56];
     } resp;
 };
 
-struct xencamera_evt {
+struct cruxcamera_evt {
     uint16_t id;
     uint8_t type;
     uint8_t reserved[5];
     union {
-        struct xencamera_frame_avail_evt frame_avail;
-        struct xencamera_ctrl_value ctrl_value;
+        struct cruxcamera_frame_avail_evt frame_avail;
+        struct cruxcamera_ctrl_value ctrl_value;
         uint8_t reserved[56];
     } evt;
 };
 
-DEFINE_RING_TYPES(xen_cameraif, struct xencamera_req, struct xencamera_resp);
+DEFINE_RING_TYPES(crux_cameraif, struct cruxcamera_req, struct cruxcamera_resp);
 
 /*
  ******************************************************************************
@@ -1319,7 +1319,7 @@ DEFINE_RING_TYPES(xen_cameraif, struct xencamera_req, struct xencamera_resp);
  ******************************************************************************
  * In order to deliver asynchronous events from back to front a shared page is
  * allocated by front and its granted reference propagated to back via
- * xenStore entries (evt-ring-ref/evt-event-channel).
+ * XenStore entries (evt-ring-ref/evt-event-channel).
  * This page has a common header used by both front and back to synchronize
  * access and control event's ring buffer, while back being a producer of the
  * events and front being a consumer. The rest of the page after the header
@@ -1329,22 +1329,22 @@ DEFINE_RING_TYPES(xen_cameraif, struct xencamera_req, struct xencamera_resp);
  * for either each event, group of events or none.
  */
 
-struct xencamera_event_page {
+struct cruxcamera_event_page {
     uint32_t in_cons;
     uint32_t in_prod;
     uint8_t reserved[56];
 };
 
-#define XENCAMERA_EVENT_PAGE_SIZE 4096
-#define XENCAMERA_IN_RING_OFFS (sizeof(struct xencamera_event_page))
-#define XENCAMERA_IN_RING_SIZE (XENCAMERA_EVENT_PAGE_SIZE - XENCAMERA_IN_RING_OFFS)
-#define XENCAMERA_IN_RING_LEN (XENCAMERA_IN_RING_SIZE / sizeof(struct xencamera_evt))
-#define XENCAMERA_IN_RING(page) \
-    ((struct xencamera_evt *)((char *)(page) + XENCAMERA_IN_RING_OFFS))
-#define XENCAMERA_IN_RING_REF(page, idx) \
-    (XENCAMERA_IN_RING((page))[(idx) % XENCAMERA_IN_RING_LEN])
+#define CRUXCAMERA_EVENT_PAGE_SIZE 4096
+#define CRUXCAMERA_IN_RING_OFFS (sizeof(struct cruxcamera_event_page))
+#define CRUXCAMERA_IN_RING_SIZE (CRUXCAMERA_EVENT_PAGE_SIZE - CRUXCAMERA_IN_RING_OFFS)
+#define CRUXCAMERA_IN_RING_LEN (CRUXCAMERA_IN_RING_SIZE / sizeof(struct cruxcamera_evt))
+#define CRUXCAMERA_IN_RING(page) \
+    ((struct cruxcamera_evt *)((char *)(page) + CRUXCAMERA_IN_RING_OFFS))
+#define CRUXCAMERA_IN_RING_REF(page, idx) \
+    (CRUXCAMERA_IN_RING((page))[(idx) % CRUXCAMERA_IN_RING_LEN])
 
-#endif /* __XEN_PUBLIC_IO_CAMERAIF_H__ */
+#endif /* __CRUX_PUBLIC_IO_CAMERAIF_H__ */
 
 /*
  * Local variables:

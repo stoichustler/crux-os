@@ -1,5 +1,5 @@
 /*
- * xen/include/asm-arm/exynos4210-uart.h
+ * crux/include/asm-arm/exynos4210-uart.h
  *
  * Common constant definition between early printk and the UART driver
  * for the exynos 4210 UART

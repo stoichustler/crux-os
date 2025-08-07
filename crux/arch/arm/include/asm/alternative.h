@@ -8,8 +8,8 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/types.h>
-#include <xen/stringify.h>
+#include <crux/types.h>
+#include <crux/stringify.h>
 
 struct alt_instr {
 	int32_t  orig_offset;	/* offset to original instruction */
@@ -19,7 +19,7 @@ struct alt_instr {
 	uint8_t  repl_len;	/* size of new instruction(s), <= orig_len */
 };
 
-/* xen: helpers used by common code. */
+/* Xen: helpers used by common code. */
 #define __ALT_PTR(a,f)		((const void *)&(a)->f + (a)->f)
 #define ALT_ORIG_PTR(a)		__ALT_PTR(a, orig_offset)
 #define ALT_REPL_PTR(a)		__ALT_PTR(a, repl_offset)

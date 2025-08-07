@@ -1,5 +1,5 @@
 /*
- * xen/drivers/char/cadence-uart.c
+ * crux/drivers/char/cadence-uart.c
  *
  * Driver for Cadence UART in Xilinx ZynqMP.
  *
@@ -17,15 +17,15 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/console.h>
-#include <xen/serial.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
+#include <crux/console.h>
+#include <crux/serial.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
 #include <asm/device.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/cadence-uart.h>
 #include <asm/io.h>
 
@@ -184,7 +184,7 @@ static int __init cuart_init(struct dt_device_node *dev, const void *data)
     /* Register with generic serial driver. */
     serial_register_uart(SERHND_DTUART, &cuart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

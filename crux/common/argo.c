@@ -15,18 +15,18 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/argo.h>
-#include <xen/domain.h>
-#include <xen/domain_page.h>
-#include <xen/errno.h>
-#include <xen/event.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/nospec.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/time.h>
+#include <crux/argo.h>
+#include <crux/domain.h>
+#include <crux/domain_page.h>
+#include <crux/errno.h>
+#include <crux/event.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/nospec.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/time.h>
 
 #include <xsm/xsm.h>
 
@@ -38,12 +38,12 @@
 #include <compat/argo.h>
 CHECK_argo_addr;
 #undef CHECK_argo_addr
-#define CHECK_argo_addr struct xen_argo_addr
+#define CHECK_argo_addr struct crux_argo_addr
 CHECK_argo_register_ring;
 CHECK_argo_ring;
 CHECK_argo_ring_data_ent;
 #undef CHECK_argo_ring_data_ent
-#define CHECK_argo_ring_data_ent struct xen_argo_ring_data_ent
+#define CHECK_argo_ring_data_ent struct crux_argo_ring_data_ent
 CHECK_argo_ring_data;
 CHECK_argo_ring_message_header;
 CHECK_argo_unregister_ring;
@@ -55,26 +55,26 @@ CHECK_argo_send_addr;
 #define MAX_PENDING_PER_RING             32U
 
 /* All messages on the ring are padded to a multiple of the slot size. */
-#define ROUNDUP_MESSAGE(a) ROUNDUP((a), XEN_ARGO_MSG_SLOT_SIZE)
+#define ROUNDUP_MESSAGE(a) ROUNDUP((a), CRUX_ARGO_MSG_SLOT_SIZE)
 
 /* The maximum size of a message that may be sent on the largest Argo ring. */
-#define MAX_ARGO_MESSAGE_SIZE ((XEN_ARGO_MAX_RING_SIZE) - \
-        (sizeof(struct xen_argo_ring_message_header)) - ROUNDUP_MESSAGE(1))
+#define MAX_ARGO_MESSAGE_SIZE ((CRUX_ARGO_MAX_RING_SIZE) - \
+        (sizeof(struct crux_argo_ring_message_header)) - ROUNDUP_MESSAGE(1))
 
 /* Number of PAGEs needed to hold a ring of a given size in bytes */
 #define NPAGES_RING(ring_len) \
-    (ROUNDUP((ROUNDUP_MESSAGE(ring_len) + sizeof(xen_argo_ring_t)), PAGE_SIZE) \
+    (ROUNDUP((ROUNDUP_MESSAGE(ring_len) + sizeof(crux_argo_ring_t)), PAGE_SIZE) \
      >> PAGE_SHIFT)
 
-DEFINE_XEN_GUEST_HANDLE(xen_argo_addr_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_gfn_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_iov_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_register_ring_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_ring_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_ring_data_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_ring_data_ent_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_send_addr_t);
-DEFINE_XEN_GUEST_HANDLE(xen_argo_unregister_ring_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_addr_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_gfn_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_iov_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_register_ring_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_ring_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_ring_data_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_ring_data_ent_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_send_addr_t);
+DEFINE_CRUX_GUEST_HANDLE(crux_argo_unregister_ring_t);
 #ifdef CONFIG_COMPAT
 DEFINE_COMPAT_HANDLE(compat_argo_iov_t);
 #endif
@@ -108,7 +108,7 @@ custom_param("argo", parse_argo);
 
 typedef struct argo_ring_id
 {
-    xen_argo_port_t aport;
+    crux_argo_port_t aport;
     domid_t partner_id;
     domid_t domain_id;
 } argo_ring_id;
@@ -321,7 +321,7 @@ static DEFINE_RWLOCK(L1_global_argo_rwlock); /* L1 */
 #define argo_dprintk(fmt, args...)                      \
     do {                                                \
         if ( ARGO_DEBUG )                               \
-            printk(XENLOG_DEBUG "argo: " fmt, ##args);  \
+            printk(CRUXLOG_DEBUG "argo: " fmt, ##args);  \
     } while ( 0 )
 
 /*
@@ -384,7 +384,7 @@ find_ring_info(const struct domain *d, const struct argo_ring_id *id)
 }
 
 static struct argo_ring_info *
-find_ring_info_by_match(const struct domain *d, xen_argo_port_t aport,
+find_ring_info_by_match(const struct domain *d, crux_argo_port_t aport,
                         domid_t partner_id)
 {
     struct argo_ring_id id;
@@ -400,7 +400,7 @@ find_ring_info_by_match(const struct domain *d, xen_argo_port_t aport,
     if ( ring_info )
         return ring_info;
 
-    id.partner_id = XEN_ARGO_DOMID_ANY;
+    id.partner_id = CRUX_ARGO_DOMID_ANY;
 
     return find_ring_info(d, &id);
 }
@@ -473,7 +473,7 @@ ring_unmap(const struct domain *d, struct argo_ring_info *ring_info)
             continue;
 
         ASSERT(!mfn_eq(ring_info->mfns[i], INVALID_MFN));
-        argo_dprintk(XENLOG_ERR "argo: unmapping page %"PRI_mfn" from %p\n",
+        argo_dprintk(CRUXLOG_ERR "argo: unmapping page %"PRI_mfn" from %p\n",
                      mfn_x(ring_info->mfns[i]), ring_info->mfn_mapping[i]);
 
         unmap_domain_page_global(ring_info->mfn_mapping[i]);
@@ -497,7 +497,7 @@ ring_map_page(const struct domain *d, struct argo_ring_info *ring_info,
 
     if ( i >= ring_info->nmfns )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                "argo: ring (vm%u:%x vm%u) %p attempted to map page %u of %u\n",
                 ring_info->id.domain_id, ring_info->id.aport,
                 ring_info->id.partner_id, ring_info, i, ring_info->nmfns);
@@ -517,7 +517,7 @@ ring_map_page(const struct domain *d, struct argo_ring_info *ring_info,
         ring_info->mfn_mapping[i] = map_domain_page_global(ring_info->mfns[i]);
         if ( !ring_info->mfn_mapping[i] )
         {
-            gprintk(XENLOG_ERR, "argo: ring (vm%u:%x vm%u) %p attempted to map "
+            gprintk(CRUXLOG_ERR, "argo: ring (vm%u:%x vm%u) %p attempted to map "
                     "page %u of %u\n",
                     ring_info->id.domain_id, ring_info->id.aport,
                     ring_info->id.partner_id, ring_info, i, ring_info->nmfns);
@@ -537,7 +537,7 @@ static void
 update_tx_ptr(const struct domain *d, struct argo_ring_info *ring_info,
               uint32_t tx_ptr)
 {
-    xen_argo_ring_t *ringp;
+    crux_argo_ring_t *ringp;
 
     ASSERT(LOCKING_L3(d, ring_info));
     ASSERT(ring_info->mfn_mapping[0]);
@@ -552,7 +552,7 @@ update_tx_ptr(const struct domain *d, struct argo_ring_info *ring_info,
 static int
 memcpy_to_guest_ring(const struct domain *d, struct argo_ring_info *ring_info,
                      unsigned int offset,
-                     const void *src, XEN_GUEST_HANDLE(uint8) src_hnd,
+                     const void *src, CRUX_GUEST_HANDLE(uint8) src_hnd,
                      unsigned int len)
 {
     unsigned int mfns_index = offset >> PAGE_SHIFT;
@@ -564,7 +564,7 @@ memcpy_to_guest_ring(const struct domain *d, struct argo_ring_info *ring_info,
 
     offset &= ~PAGE_MASK;
 
-    if ( len + offset > XEN_ARGO_MAX_RING_SIZE )
+    if ( len + offset > CRUX_ARGO_MAX_RING_SIZE )
         return -EFAULT;
 
     while ( len )
@@ -606,7 +606,7 @@ get_rx_ptr(const struct domain *d, struct argo_ring_info *ring_info,
            uint32_t *rx_ptr)
 {
     void *src;
-    xen_argo_ring_t *ringp;
+    crux_argo_ring_t *ringp;
     int ret;
 
     ASSERT(LOCKING_L3(d, ring_info));
@@ -618,7 +618,7 @@ get_rx_ptr(const struct domain *d, struct argo_ring_info *ring_info,
     if ( ret )
         return ret;
 
-    ringp = (xen_argo_ring_t *)src;
+    ringp = (crux_argo_ring_t *)src;
 
     *rx_ptr = read_atomic(&ringp->rx_ptr);
 
@@ -632,7 +632,7 @@ get_rx_ptr(const struct domain *d, struct argo_ring_info *ring_info,
  * space calculation.
  */
 static int
-get_sanitized_ring(const struct domain *d, xen_argo_ring_t *ring,
+get_sanitized_ring(const struct domain *d, crux_argo_ring_t *ring,
                    struct argo_ring_info *ring_info)
 {
     uint32_t rx_ptr;
@@ -658,7 +658,7 @@ get_sanitized_ring(const struct domain *d, xen_argo_ring_t *ring,
 static unsigned int
 ringbuf_payload_space(const struct domain *d, struct argo_ring_info *ring_info)
 {
-    xen_argo_ring_t ring;
+    crux_argo_ring_t ring;
     unsigned int len;
     int ret;
 
@@ -690,9 +690,9 @@ ringbuf_payload_space(const struct domain *d, struct argo_ring_info *ring_info)
      * In a sanitized ring, we can rely on:
      *              (rx_ptr < ring_info->len)           &&
      *              (tx_ptr < ring_info->len)           &&
-     *      (ring_info->len <= XEN_ARGO_MAX_RING_SIZE)
+     *      (ring_info->len <= CRUX_ARGO_MAX_RING_SIZE)
      *
-     * and since: XEN_ARGO_MAX_RING_SIZE < INT32_MAX
+     * and since: CRUX_ARGO_MAX_RING_SIZE < INT32_MAX
      * therefore right here: ret < INT32_MAX
      * and we are safe to return it as a unsigned value from this function.
      * The subtractions below cannot increase its value.
@@ -709,7 +709,7 @@ ringbuf_payload_space(const struct domain *d, struct argo_ring_info *ring_info)
      * Since the ring indexes are sanitized, the value in ret is aligned, so
      * the simple subtraction here works to return the aligned value needed:
      */
-    ret -= sizeof(struct xen_argo_ring_message_header);
+    ret -= sizeof(struct crux_argo_ring_message_header);
     ret -= ROUNDUP_MESSAGE(1);
 
     return (ret < 0) ? 0 : ret;
@@ -721,12 +721,12 @@ ringbuf_payload_space(const struct domain *d, struct argo_ring_info *ring_info)
  * (eg. coerced into an unsigned variable resulting in a large incorrect value)
  */
 static int
-iov_count(const xen_argo_iov_t *piov, unsigned int niov,
+iov_count(const crux_argo_iov_t *piov, unsigned int niov,
           unsigned int *count)
 {
     unsigned int sum_iov_lens = 0;
 
-    if ( niov > XEN_ARGO_MAXIOV )
+    if ( niov > CRUX_ARGO_MAXIOV )
         return -EINVAL;
 
     for ( ; niov--; piov++ )
@@ -766,14 +766,14 @@ iov_count(const xen_argo_iov_t *piov, unsigned int niov,
 
 static int
 ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
-               const struct argo_ring_id *src_id, xen_argo_iov_t *iovs,
+               const struct argo_ring_id *src_id, crux_argo_iov_t *iovs,
                unsigned int niov, uint32_t message_type, unsigned int len)
 {
-    xen_argo_ring_t ring;
-    struct xen_argo_ring_message_header mh = { };
+    crux_argo_ring_t ring;
+    struct crux_argo_ring_message_header mh = { };
     int sp, ret;
-    xen_argo_iov_t *piov;
-    XEN_GUEST_HANDLE(uint8) NULL_hnd = { };
+    crux_argo_iov_t *piov;
+    CRUX_GUEST_HANDLE(uint8) NULL_hnd = { };
 
     ASSERT(LOCKING_L3(d, ring_info));
 
@@ -788,7 +788,7 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
      * remaining so we can distinguish a full ring from an empty one.
      * iov_count has already verified: len <= MAX_ARGO_MESSAGE_SIZE.
      */
-    if ( ring_info->len <= (sizeof(struct xen_argo_ring_message_header) +
+    if ( ring_info->len <= (sizeof(struct crux_argo_ring_message_header) +
                             ROUNDUP_MESSAGE(len)) )
         return -EMSGSIZE;
 
@@ -814,13 +814,13 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
      * Again: the message must not fill the ring leaving no space remaining.
      */
     if ( (ROUNDUP_MESSAGE(len) +
-            sizeof(struct xen_argo_ring_message_header)) >= sp )
+            sizeof(struct crux_argo_ring_message_header)) >= sp )
     {
         argo_dprintk("EAGAIN\n");
         return -EAGAIN;
     }
 
-    mh.len = len + sizeof(struct xen_argo_ring_message_header);
+    mh.len = len + sizeof(struct crux_argo_ring_message_header);
     mh.source.aport = src_id->aport;
     mh.source.domain_id = src_id->domain_id;
     mh.message_type = message_type;
@@ -830,7 +830,7 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
      * and the message header is 16 bytes long.
      */
     BUILD_BUG_ON(
-        sizeof(struct xen_argo_ring_message_header) != ROUNDUP_MESSAGE(1));
+        sizeof(struct crux_argo_ring_message_header) != ROUNDUP_MESSAGE(1));
 
     /*
      * First data write into the destination ring: fixed size, message header.
@@ -838,11 +838,11 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
      * is checked above and must be at least this size.
      */
     ret = memcpy_to_guest_ring(d, ring_info,
-                               ring.tx_ptr + sizeof(xen_argo_ring_t),
+                               ring.tx_ptr + sizeof(crux_argo_ring_t),
                                &mh, NULL_hnd, sizeof(mh));
     if ( ret )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "argo: failed to write message header to ring (vm%u:%x vm%u)\n",
                 ring_info->id.domain_id, ring_info->id.aport,
                 ring_info->id.partner_id);
@@ -856,13 +856,13 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
 
     for ( piov = iovs; niov--; piov++ )
     {
-        XEN_GUEST_HANDLE(uint8) buf_hnd = piov->iov_hnd;
+        CRUX_GUEST_HANDLE(uint8) buf_hnd = piov->iov_hnd;
         unsigned int iov_len = piov->iov_len;
 
         /* If no data is provided in this iov, moan and skip on to the next */
         if ( !iov_len )
         {
-            gprintk(XENLOG_WARNING,
+            gprintk(CRUXLOG_WARNING,
                     "argo: no data iov_len=0 iov_hnd=%p ring (vm%u:%x vm%u)\n",
                     buf_hnd.p, ring_info->id.domain_id, ring_info->id.aport,
                     ring_info->id.partner_id);
@@ -872,7 +872,7 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
 
         if ( unlikely(!guest_handle_okay(buf_hnd, iov_len)) )
         {
-            gprintk(XENLOG_ERR,
+            gprintk(CRUXLOG_ERR,
                     "argo: bad iov handle [%p, %u] (vm%u:%x vm%u)\n",
                     buf_hnd.p, iov_len,
                     ring_info->id.domain_id, ring_info->id.aport,
@@ -895,11 +895,11 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
              * tail of the ring, so this cannot overrun.
              */
             ret = memcpy_to_guest_ring(d, ring_info,
-                                       ring.tx_ptr + sizeof(xen_argo_ring_t),
+                                       ring.tx_ptr + sizeof(crux_argo_ring_t),
                                        NULL, buf_hnd, sp);
             if ( ret )
             {
-                gprintk(XENLOG_ERR,
+                gprintk(CRUXLOG_ERR,
                         "argo: failed to copy {%p, %d} (vm%u:%x vm%u)\n",
                         buf_hnd.p, sp,
                         ring_info->id.domain_id, ring_info->id.aport,
@@ -939,11 +939,11 @@ ringbuf_insert(const struct domain *d, struct argo_ring_info *ring_info,
          *        so this write cannot overrun.
          */
         ret = memcpy_to_guest_ring(d, ring_info,
-                                   ring.tx_ptr + sizeof(xen_argo_ring_t),
+                                   ring.tx_ptr + sizeof(crux_argo_ring_t),
                                    NULL, buf_hnd, iov_len);
         if ( ret )
         {
-            gprintk(XENLOG_ERR,
+            gprintk(CRUXLOG_ERR,
                     "argo: failed to copy [%p, %u] (vm%u:%x vm%u)\n",
                     buf_hnd.p, iov_len, ring_info->id.domain_id,
                     ring_info->id.aport, ring_info->id.partner_id);
@@ -1031,7 +1031,7 @@ pending_remove_all(const struct domain *d, struct argo_ring_info *ring_info)
                                             struct pending_ent, node)) )
     {
         /* For wildcard rings, remove each from their wildcard list too. */
-        if ( ring_info->id.partner_id == XEN_ARGO_DOMID_ANY )
+        if ( ring_info->id.partner_id == CRUX_ARGO_DOMID_ANY )
             wildcard_pending_list_remove(ent->domain_id, ent);
         list_del(&ent->node);
         xfree(ent);
@@ -1085,7 +1085,7 @@ pending_find(const struct domain *d, struct argo_ring_info *ring_info,
     {
         if ( payload_space >= ent->len )
         {
-            if ( ring_info->id.partner_id == XEN_ARGO_DOMID_ANY )
+            if ( ring_info->id.partner_id == CRUX_ARGO_DOMID_ANY )
                 wildcard_pending_list_remove(ent->domain_id, ent);
 
             list_del(&ent->node);
@@ -1116,7 +1116,7 @@ pending_queue(const struct domain *d, struct argo_ring_info *ring_info,
     ent->domain_id = src_id;
     ent->ring_info = ring_info;
 
-    if ( ring_info->id.partner_id == XEN_ARGO_DOMID_ANY )
+    if ( ring_info->id.partner_id == CRUX_ARGO_DOMID_ANY )
         wildcard_pending_list_insert(src_id, ent);
     list_add(&ent->node, &ring_info->pending);
     ring_info->npending++;
@@ -1171,7 +1171,7 @@ pending_cancel(const struct domain *d, struct argo_ring_info *ring_info,
         if ( ent->domain_id == src_id )
         {
             /* For wildcard rings, remove each from their wildcard list too. */
-            if ( ring_info->id.partner_id == XEN_ARGO_DOMID_ANY )
+            if ( ring_info->id.partner_id == CRUX_ARGO_DOMID_ANY )
                 wildcard_pending_list_remove(ent->domain_id, ent);
             list_del(&ent->node);
             xfree(ent);
@@ -1314,9 +1314,9 @@ partner_rings_remove(struct domain *src_d)
 
 static int
 fill_ring_data(const struct domain *currd,
-               XEN_GUEST_HANDLE(xen_argo_ring_data_ent_t) data_ent_hnd)
+               CRUX_GUEST_HANDLE(crux_argo_ring_data_ent_t) data_ent_hnd)
 {
-    xen_argo_ring_data_ent_t ent;
+    crux_argo_ring_data_ent_t ent;
     struct domain *dst_d;
     struct argo_ring_info *ring_info;
     int ret = 0;
@@ -1352,16 +1352,16 @@ fill_ring_data(const struct domain *currd,
     {
         unsigned int space_avail;
 
-        ent.flags |= XEN_ARGO_RING_EXISTS;
+        ent.flags |= CRUX_ARGO_RING_EXISTS;
 
         spin_lock(&ring_info->L3_lock);
 
         ent.max_message_size = ring_info->len -
-                                   sizeof(struct xen_argo_ring_message_header) -
+                                   sizeof(struct crux_argo_ring_message_header) -
                                    ROUNDUP_MESSAGE(1);
 
-        if ( ring_info->id.partner_id == XEN_ARGO_DOMID_ANY )
-            ent.flags |= XEN_ARGO_RING_SHARED;
+        if ( ring_info->id.partner_id == CRUX_ARGO_DOMID_ANY )
+            ent.flags |= CRUX_ARGO_RING_SHARED;
 
         space_avail = ringbuf_payload_space(dst_d, ring_info);
 
@@ -1371,11 +1371,11 @@ fill_ring_data(const struct domain *currd,
 
         /* Do not queue a notification for an unachievable size */
         if ( ent.space_required > ent.max_message_size )
-            ent.flags |= XEN_ARGO_RING_EMSGSIZE;
+            ent.flags |= CRUX_ARGO_RING_EMSGSIZE;
         else if ( space_avail >= ent.space_required )
         {
             pending_cancel(dst_d, ring_info, currd->domain_id);
-            ent.flags |= XEN_ARGO_RING_SUFFICIENT;
+            ent.flags |= CRUX_ARGO_RING_SUFFICIENT;
         }
         else
         {
@@ -1389,7 +1389,7 @@ fill_ring_data(const struct domain *currd,
                  * flag. No need to return an error to the caller; allow the
                  * processing of queries about other rings to continue.
                  */
-                ent.flags |= XEN_ARGO_RING_EBUSY;
+                ent.flags |= CRUX_ARGO_RING_EBUSY;
                 ret = 0;
             }
         }
@@ -1397,7 +1397,7 @@ fill_ring_data(const struct domain *currd,
         spin_unlock(&ring_info->L3_lock);
 
         if ( space_avail == ent.max_message_size )
-            ent.flags |= XEN_ARGO_RING_EMPTY;
+            ent.flags |= CRUX_ARGO_RING_EMPTY;
 
     }
     read_unlock(&dst_d->argo->rings_L2_rwlock);
@@ -1453,7 +1453,7 @@ find_ring_mfn(struct domain *d, gfn_t gfn, mfn_t *mfn)
 static int
 find_ring_mfns(struct domain *d, struct argo_ring_info *ring_info,
                const unsigned int npage,
-               XEN_GUEST_HANDLE_PARAM(xen_argo_gfn_t) gfn_hnd,
+               CRUX_GUEST_HANDLE_PARAM(crux_argo_gfn_t) gfn_hnd,
                const unsigned int len)
 {
     unsigned int i;
@@ -1495,7 +1495,7 @@ find_ring_mfns(struct domain *d, struct argo_ring_info *ring_info,
     for ( i = 0; i < npage; i++ )
     {
         mfn_t mfn;
-        xen_argo_gfn_t argo_gfn;
+        crux_argo_gfn_t argo_gfn;
 
         ret = __copy_from_guest_offset(&argo_gfn, gfn_hnd, i, 1) ? -EFAULT : 0;
         if ( ret )
@@ -1504,7 +1504,7 @@ find_ring_mfns(struct domain *d, struct argo_ring_info *ring_info,
         ret = find_ring_mfn(d, _gfn(argo_gfn), &mfn);
         if ( ret )
         {
-            gprintk(XENLOG_ERR, "argo: vm%u: invalid gfn %"PRI_gfn" "
+            gprintk(CRUXLOG_ERR, "argo: vm%u: invalid gfn %"PRI_gfn" "
                     "r:(vm%u:%x vm%u) %p %u/%u\n",
                     d->domain_id, gfn_x(_gfn(argo_gfn)),
                     ring_info->id.domain_id, ring_info->id.aport,
@@ -1538,9 +1538,9 @@ find_ring_mfns(struct domain *d, struct argo_ring_info *ring_info,
 
 static long
 unregister_ring(struct domain *currd,
-                XEN_GUEST_HANDLE_PARAM(xen_argo_unregister_ring_t) unreg_hnd)
+                CRUX_GUEST_HANDLE_PARAM(crux_argo_unregister_ring_t) unreg_hnd)
 {
-    xen_argo_unregister_ring_t unreg;
+    crux_argo_unregister_ring_t unreg;
     struct argo_ring_id ring_id;
     struct argo_ring_info *ring_info = NULL;
     struct argo_send_info *send_info = NULL;
@@ -1575,7 +1575,7 @@ unregister_ring(struct domain *currd,
     ring_remove_info(currd, ring_info);
     currd->argo->ring_count--;
 
-    if ( ring_id.partner_id == XEN_ARGO_DOMID_ANY )
+    if ( ring_id.partner_id == CRUX_ARGO_DOMID_ANY )
         goto out;
 
     dst_d = rcu_lock_domain_by_id(ring_id.partner_id);
@@ -1617,14 +1617,14 @@ unregister_ring(struct domain *currd,
 
 static long
 register_ring(struct domain *currd,
-              XEN_GUEST_HANDLE_PARAM(xen_argo_register_ring_t) reg_hnd,
-              XEN_GUEST_HANDLE_PARAM(xen_argo_gfn_t) gfn_hnd,
+              CRUX_GUEST_HANDLE_PARAM(crux_argo_register_ring_t) reg_hnd,
+              CRUX_GUEST_HANDLE_PARAM(crux_argo_gfn_t) gfn_hnd,
               unsigned int npage, unsigned int flags)
 {
-    xen_argo_register_ring_t reg;
+    crux_argo_register_ring_t reg;
     struct argo_ring_id ring_id;
     void *map_ringp;
-    xen_argo_ring_t *ringp;
+    crux_argo_ring_t *ringp;
     struct argo_ring_info *ring_info, *new_ring_info = NULL;
     struct argo_send_info *send_info = NULL;
     struct domain *dst_d = NULL;
@@ -1634,7 +1634,7 @@ register_ring(struct domain *currd,
     ASSERT(currd == current->domain);
 
     /* flags: reserve currently-undefined bits, require zero.  */
-    if ( unlikely(flags & ~XEN_ARGO_REGISTER_FLAG_MASK) )
+    if ( unlikely(flags & ~CRUX_ARGO_REGISTER_FLAG_MASK) )
         return -EINVAL;
 
     if ( copy_from_guest(&reg, reg_hnd, 1) )
@@ -1651,9 +1651,9 @@ register_ring(struct domain *currd,
      *   message is present.
      * The above determines the minimum acceptable ring size.
      */
-    if ( (reg.len < (sizeof(struct xen_argo_ring_message_header)
+    if ( (reg.len < (sizeof(struct crux_argo_ring_message_header)
                       + ROUNDUP_MESSAGE(1) + ROUNDUP_MESSAGE(1))) ||
-         (reg.len > XEN_ARGO_MAX_RING_SIZE) ||
+         (reg.len > CRUX_ARGO_MAX_RING_SIZE) ||
          (reg.len != ROUNDUP_MESSAGE(reg.len)) ||
          (NPAGES_RING(reg.len) != npage) ||
          (reg.pad != 0) )
@@ -1663,7 +1663,7 @@ register_ring(struct domain *currd,
     ring_id.aport = reg.aport;
     ring_id.domain_id = currd->domain_id;
 
-    if ( reg.partner_id == XEN_ARGO_DOMID_ANY )
+    if ( reg.partner_id == CRUX_ARGO_DOMID_ANY )
     {
         ret = opt_argo_mac_permissive ? xsm_argo_register_any_source(currd) :
                                         -EPERM;
@@ -1750,9 +1750,9 @@ register_ring(struct domain *currd,
          * If the caller specified that the ring must not already exist,
          * fail at attempt to add a completed ring which already exists.
          */
-        if ( flags & XEN_ARGO_REGISTER_FLAG_FAIL_EXIST )
+        if ( flags & CRUX_ARGO_REGISTER_FLAG_FAIL_EXIST )
         {
-            gprintk(XENLOG_ERR, "argo: vm%u disallowed reregistration of "
+            gprintk(CRUXLOG_ERR, "argo: vm%u disallowed reregistration of "
                     "existing ring (vm%u:%x vm%u)\n",
                     currd->domain_id, ring_id.domain_id, ring_id.aport,
                     ring_id.partner_id);
@@ -1768,7 +1768,7 @@ register_ring(struct domain *currd,
              * Simple blunt solution: disallow ring resize for now.
              * TODO: investigate enabling ring resize.
              */
-            gprintk(XENLOG_ERR, "argo: vm%u attempted to change ring size "
+            gprintk(CRUXLOG_ERR, "argo: vm%u attempted to change ring size "
                     "(vm%u:%x vm%u)\n",
                     currd->domain_id, ring_id.domain_id, ring_id.aport,
                     ring_id.partner_id);
@@ -1788,7 +1788,7 @@ register_ring(struct domain *currd,
     ret = find_ring_mfns(currd, ring_info, npage, gfn_hnd, reg.len);
     if ( ret )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "argo: vm%u failed to find ring mfns (vm%u:%x vm%u)\n",
                 currd->domain_id, ring_id.domain_id, ring_id.aport,
                 ring_id.partner_id);
@@ -1798,13 +1798,13 @@ register_ring(struct domain *currd,
     }
 
     /*
-     * The first page of the memory supplied for the ring has the xen_argo_ring
+     * The first page of the memory supplied for the ring has the crux_argo_ring
      * structure at its head, which is where the ring indexes reside.
      */
     ret = ring_map_page(currd, ring_info, 0, &map_ringp);
     if ( ret )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "argo: vm%u failed to map ring mfn 0 (vm%u:%x vm%u)\n",
                 currd->domain_id, ring_id.domain_id, ring_id.aport,
                 ring_id.partner_id);
@@ -1913,10 +1913,10 @@ notify_check_pending(struct domain *d)
 
 static long
 notify(struct domain *currd,
-       XEN_GUEST_HANDLE_PARAM(xen_argo_ring_data_t) ring_data_hnd)
+       CRUX_GUEST_HANDLE_PARAM(crux_argo_ring_data_t) ring_data_hnd)
 {
-    XEN_GUEST_HANDLE(xen_argo_ring_data_ent_t) ent_hnd;
-    xen_argo_ring_data_t ring_data;
+    CRUX_GUEST_HANDLE(crux_argo_ring_data_ent_t) ent_hnd;
+    crux_argo_ring_data_t ring_data;
     int ret = 0;
 
     ASSERT(currd == current->domain);
@@ -1941,14 +1941,14 @@ notify(struct domain *currd,
 
     if ( ring_data.nent > MAX_NOTIFY_COUNT )
     {
-        gprintk(XENLOG_ERR, "argo: notify entry count(%u) exceeds max(%u)\n",
+        gprintk(CRUXLOG_ERR, "argo: notify entry count(%u) exceeds max(%u)\n",
                 ring_data.nent, MAX_NOTIFY_COUNT);
         ret = -EACCES;
         goto out;
     }
 
     ent_hnd = guest_handle_for_field(ring_data_hnd,
-                                     xen_argo_ring_data_ent_t, data[0]);
+                                     crux_argo_ring_data_ent_t, data[0]);
     if ( unlikely(!guest_handle_okay(ent_hnd, ring_data.nent)) )
     {
         ret = -EFAULT;
@@ -1968,8 +1968,8 @@ notify(struct domain *currd,
 }
 
 static long
-sendv(struct domain *src_d, xen_argo_addr_t *src_addr,
-      const xen_argo_addr_t *dst_addr, xen_argo_iov_t *iovs, unsigned int niov,
+sendv(struct domain *src_d, crux_argo_addr_t *src_addr,
+      const crux_argo_addr_t *dst_addr, crux_argo_iov_t *iovs, unsigned int niov,
       uint32_t message_type)
 {
     struct domain *dst_d = NULL;
@@ -1986,7 +1986,7 @@ sendv(struct domain *src_d, xen_argo_addr_t *src_addr,
     if ( unlikely(src_addr->pad || dst_addr->pad) )
         return -EINVAL;
 
-    if ( src_addr->domain_id == XEN_ARGO_DOMID_ANY )
+    if ( src_addr->domain_id == CRUX_ARGO_DOMID_ANY )
          src_addr->domain_id = src_d->domain_id;
 
     /* No domain is currently authorized to send on behalf of another */
@@ -2004,7 +2004,7 @@ sendv(struct domain *src_d, xen_argo_addr_t *src_addr,
     ret = xsm_argo_send(src_d, dst_d);
     if ( ret )
     {
-        gprintk(XENLOG_ERR, "argo: XSM REJECTED %i -> %i\n",
+        gprintk(CRUXLOG_ERR, "argo: XSM REJECTED %i -> %i\n",
                 src_d->domain_id, dst_d->domain_id);
 
         rcu_unlock_domain(dst_d);
@@ -2033,7 +2033,7 @@ sendv(struct domain *src_d, xen_argo_addr_t *src_addr,
                                         src_id.domain_id);
     if ( !ring_info )
     {
-        gprintk(XENLOG_ERR,
+        gprintk(CRUXLOG_ERR,
                 "argo: vm%u connection refused, src (vm%u:%x) dst (vm%u:%x)\n",
                 current->domain->domain_id, src_id.domain_id, src_id.aport,
                 dst_addr->domain_id, dst_addr->aport);
@@ -2083,8 +2083,8 @@ sendv(struct domain *src_d, xen_argo_addr_t *src_addr,
 }
 
 long
-do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
-           XEN_GUEST_HANDLE_PARAM(void) arg2, unsigned long raw_arg3,
+do_argo_op(unsigned int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg1,
+           CRUX_GUEST_HANDLE_PARAM(void) arg2, unsigned long raw_arg3,
            unsigned long raw_arg4)
 {
     struct domain *currd = current->domain;
@@ -2107,17 +2107,17 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
 
     switch ( cmd )
     {
-    case XEN_ARGO_OP_register_ring:
+    case CRUX_ARGO_OP_register_ring:
     {
-        XEN_GUEST_HANDLE_PARAM(xen_argo_register_ring_t) reg_hnd =
-            guest_handle_cast(arg1, xen_argo_register_ring_t);
-        XEN_GUEST_HANDLE_PARAM(xen_argo_gfn_t) gfn_hnd =
-            guest_handle_cast(arg2, xen_argo_gfn_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_register_ring_t) reg_hnd =
+            guest_handle_cast(arg1, crux_argo_register_ring_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_gfn_t) gfn_hnd =
+            guest_handle_cast(arg2, crux_argo_gfn_t);
         /* arg3: npage, arg4: flags */
 
-        BUILD_BUG_ON(!IS_ALIGNED(XEN_ARGO_MAX_RING_SIZE, PAGE_SIZE));
+        BUILD_BUG_ON(!IS_ALIGNED(CRUX_ARGO_MAX_RING_SIZE, PAGE_SIZE));
 
-        if ( unlikely(arg3 > (XEN_ARGO_MAX_RING_SIZE >> PAGE_SHIFT)) )
+        if ( unlikely(arg3 > (CRUX_ARGO_MAX_RING_SIZE >> PAGE_SHIFT)) )
         {
             rc = -EINVAL;
             break;
@@ -2134,10 +2134,10 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
         break;
     }
 
-    case XEN_ARGO_OP_unregister_ring:
+    case CRUX_ARGO_OP_unregister_ring:
     {
-        XEN_GUEST_HANDLE_PARAM(xen_argo_unregister_ring_t) unreg_hnd =
-            guest_handle_cast(arg1, xen_argo_unregister_ring_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_unregister_ring_t) unreg_hnd =
+            guest_handle_cast(arg1, crux_argo_unregister_ring_t);
 
         if ( unlikely((!guest_handle_is_null(arg2)) || arg3 || arg4) )
         {
@@ -2149,21 +2149,21 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
         break;
     }
 
-    case XEN_ARGO_OP_sendv:
+    case CRUX_ARGO_OP_sendv:
     {
-        xen_argo_send_addr_t send_addr;
-        xen_argo_iov_t iovs[XEN_ARGO_MAXIOV];
+        crux_argo_send_addr_t send_addr;
+        crux_argo_iov_t iovs[CRUX_ARGO_MAXIOV];
         unsigned int niov;
 
-        XEN_GUEST_HANDLE_PARAM(xen_argo_send_addr_t) send_addr_hnd =
-            guest_handle_cast(arg1, xen_argo_send_addr_t);
-        XEN_GUEST_HANDLE_PARAM(xen_argo_iov_t) iovs_hnd =
-            guest_handle_cast(arg2, xen_argo_iov_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_send_addr_t) send_addr_hnd =
+            guest_handle_cast(arg1, crux_argo_send_addr_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_iov_t) iovs_hnd =
+            guest_handle_cast(arg2, crux_argo_iov_t);
         /* arg3 is niov */
         /* arg4 is message_type. Must be a 32-bit value. */
 
-        /* XEN_ARGO_MAXIOV value determines size of iov array on stack */
-        BUILD_BUG_ON(XEN_ARGO_MAXIOV > 8);
+        /* CRUX_ARGO_MAXIOV value determines size of iov array on stack */
+        BUILD_BUG_ON(CRUX_ARGO_MAXIOV > 8);
 
         rc = copy_from_guest(&send_addr, send_addr_hnd, 1) ? -EFAULT : 0;
         if ( rc )
@@ -2176,12 +2176,12 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
          * Reject niov above maximum limit or message_types that are outside
          * 32 bit range.
          */
-        if ( unlikely((arg3 > XEN_ARGO_MAXIOV) || (arg4 != (uint32_t)arg4)) )
+        if ( unlikely((arg3 > CRUX_ARGO_MAXIOV) || (arg4 != (uint32_t)arg4)) )
         {
             rc = -EINVAL;
             break;
         }
-        niov = array_index_nospec(arg3, XEN_ARGO_MAXIOV + 1);
+        niov = array_index_nospec(arg3, CRUX_ARGO_MAXIOV + 1);
 
         rc = copy_from_guest(iovs, iovs_hnd, niov) ? -EFAULT : 0;
         if ( rc )
@@ -2194,10 +2194,10 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
         break;
     }
 
-    case XEN_ARGO_OP_notify:
+    case CRUX_ARGO_OP_notify:
     {
-        XEN_GUEST_HANDLE_PARAM(xen_argo_ring_data_t) ring_data_hnd =
-                   guest_handle_cast(arg1, xen_argo_ring_data_t);
+        CRUX_GUEST_HANDLE_PARAM(crux_argo_ring_data_t) ring_data_hnd =
+                   guest_handle_cast(arg1, crux_argo_ring_data_t);
 
         if ( unlikely((!guest_handle_is_null(arg2)) || arg3 || arg4) )
         {
@@ -2221,23 +2221,23 @@ do_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
 
 #ifdef CONFIG_COMPAT
 int
-compat_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
-               XEN_GUEST_HANDLE_PARAM(void) arg2, unsigned long arg3,
+compat_argo_op(unsigned int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg1,
+               CRUX_GUEST_HANDLE_PARAM(void) arg2, unsigned long arg3,
                unsigned long arg4)
 {
     struct domain *currd = current->domain;
     int rc;
-    xen_argo_send_addr_t send_addr;
-    xen_argo_iov_t iovs[XEN_ARGO_MAXIOV];
-    compat_argo_iov_t compat_iovs[XEN_ARGO_MAXIOV];
+    crux_argo_send_addr_t send_addr;
+    crux_argo_iov_t iovs[CRUX_ARGO_MAXIOV];
+    compat_argo_iov_t compat_iovs[CRUX_ARGO_MAXIOV];
     unsigned int i, niov;
-    XEN_GUEST_HANDLE_PARAM(xen_argo_send_addr_t) send_addr_hnd;
+    CRUX_GUEST_HANDLE_PARAM(crux_argo_send_addr_t) send_addr_hnd;
 
-    /* check XEN_ARGO_MAXIOV as it sizes stack arrays: iovs, compat_iovs */
-    BUILD_BUG_ON(XEN_ARGO_MAXIOV > 8);
+    /* check CRUX_ARGO_MAXIOV as it sizes stack arrays: iovs, compat_iovs */
+    BUILD_BUG_ON(CRUX_ARGO_MAXIOV > 8);
 
     /* Forward all ops besides sendv to the native handler. */
-    if ( cmd != XEN_ARGO_OP_sendv )
+    if ( cmd != CRUX_ARGO_OP_sendv )
         return do_argo_op(cmd, arg1, arg2, arg3, arg4);
 
     if ( unlikely(!opt_argo) )
@@ -2250,19 +2250,19 @@ compat_argo_op(unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) arg1,
     argo_dprintk("->compat_argo_op(%u,%p,%p,%lu,0x%lx)\n", cmd,
                  (void *)arg1.p, (void *)arg2.p, arg3, arg4);
 
-    send_addr_hnd = guest_handle_cast(arg1, xen_argo_send_addr_t);
+    send_addr_hnd = guest_handle_cast(arg1, crux_argo_send_addr_t);
     /* arg2: iovs, arg3: niov, arg4: message_type */
 
     rc = copy_from_guest(&send_addr, send_addr_hnd, 1) ? -EFAULT : 0;
     if ( rc )
         goto out;
 
-    if ( unlikely(arg3 > XEN_ARGO_MAXIOV) )
+    if ( unlikely(arg3 > CRUX_ARGO_MAXIOV) )
     {
         rc = -EINVAL;
         goto out;
     }
-    niov = array_index_nospec(arg3, XEN_ARGO_MAXIOV + 1);
+    niov = array_index_nospec(arg3, CRUX_ARGO_MAXIOV + 1);
 
     rc = copy_from_guest(compat_iovs, arg2, niov) ? -EFAULT : 0;
     if ( rc )

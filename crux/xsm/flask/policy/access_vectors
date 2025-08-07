@@ -3,34 +3,34 @@
 #
 # class class_name { permission_name ... }
 
-# Class xen and xen2 consists of dom0-only operations dealing with the
+# Class crux and crux2 consists of dom0-only operations dealing with the
 # hypervisor itself. Unless otherwise specified, the source is the domain
-# executing the hypercall, and the target is the xen initial sid (type xen_t).
-class xen
+# executing the hypercall, and the target is the crux initial sid (type crux_t).
+class crux
 {
-# XENPF_settime32
-# XENPF_settime64
+# CRUXPF_settime32
+# CRUXPF_settime64
     settime
-# XEN_SYSCTL_tbuf_op
+# CRUX_SYSCTL_tbuf_op
     tbufcontrol
-# CONSOLEIO_read, XEN_SYSCTL_readconsole
+# CONSOLEIO_read, CRUX_SYSCTL_readconsole
     readconsole
-# XEN_SYSCTL_readconsole with clear=1
+# CRUX_SYSCTL_readconsole with clear=1
     clearconsole
-# XEN_SYSCTL_perfc_op
+# CRUX_SYSCTL_perfc_op
     perfcontrol
-# XENPF_add_memtype
+# CRUXPF_add_memtype
     mtrr_add
-# XENPF_del_memtype
+# CRUXPF_del_memtype
     mtrr_del
-# XENPF_read_memtype
+# CRUXPF_read_memtype
     mtrr_read
-# XENPF_microcode_update
+# CRUXPF_microcode_update
     microcode
-# XEN_SYSCTL_physinfo, XEN_SYSCTL_cputopoinfo, XEN_SYSCTL_numainfo
-# XEN_SYSCTL_pcitopoinfo, XEN_SYSCTL_get_cpu_policy
+# CRUX_SYSCTL_physinfo, CRUX_SYSCTL_cputopoinfo, CRUX_SYSCTL_numainfo
+# CRUX_SYSCTL_pcitopoinfo, CRUX_SYSCTL_get_cpu_policy
     physinfo
-# XENPF_platform_quirk
+# CRUXPF_platform_quirk
     quirk
 # CONSOLEIO_write
     writeconsole
@@ -38,68 +38,68 @@ class xen
     readapic
 # PHYSDEVOP_apic_write
     writeapic
-# Most XENOPROF_*
+# Most CRUXOPROF_*
     privprofile
-# XENOPROF_{init,enable_virq,disable_virq,get_buffer}
+# CRUXOPROF_{init,enable_virq,disable_virq,get_buffer}
     nonprivprofile
 # kexec hypercall
     kexec
-# XENPF_firmware_info, XENPF_efi_runtime_call
+# CRUXPF_firmware_info, CRUXPF_efi_runtime_call
     firmware
-# XENPF_enter_acpi_sleep
+# CRUXPF_enter_acpi_sleep
     sleep
-# XENPF_change_freq
+# CRUXPF_change_freq
     frequency
-# XENPF_getidletime
+# CRUXPF_getidletime
     getidle
-# XEN_SYSCTL_debug_keys
+# CRUX_SYSCTL_debug_keys
     debug
-# XEN_SYSCTL_getcpuinfo, XENPF_get_cpu_version, XENPF_get_cpuinfo
+# CRUX_SYSCTL_getcpuinfo, CRUXPF_get_cpu_version, CRUXPF_get_cpuinfo
     getcpuinfo
-# XEN_SYSCTL_availheap
+# CRUX_SYSCTL_availheap
     heap
-# XEN_SYSCTL_get_pmstat, XEN_SYSCTL_pm_op, XENPF_set_processor_pminfo,
-# XENPF_core_parking
+# CRUX_SYSCTL_get_pmstat, CRUX_SYSCTL_pm_op, CRUXPF_set_processor_pminfo,
+# CRUXPF_core_parking
     pm_op
 # mca hypercall
     mca_op
-# XEN_SYSCTL_lockprof_op
+# CRUX_SYSCTL_lockprof_op
     lockprof
-# XEN_SYSCTL_cpupool_op
+# CRUX_SYSCTL_cpupool_op
     cpupool_op
 # hypfs hypercall
     hypfs_op
-# XEN_SYSCTL_scheduler_op with XEN_DOMCTL_SCHEDOP_getinfo, XEN_SYSCTL_sched_id, XEN_DOMCTL_SCHEDOP_getvcpuinfo
+# CRUX_SYSCTL_scheduler_op with CRUX_DOMCTL_SCHEDOP_getinfo, CRUX_SYSCTL_sched_id, CRUX_DOMCTL_SCHEDOP_getvcpuinfo
     getscheduler
-# XEN_SYSCTL_scheduler_op with XEN_DOMCTL_SCHEDOP_putinfo, XEN_DOMCTL_SCHEDOP_putvcpuinfo
+# CRUX_SYSCTL_scheduler_op with CRUX_DOMCTL_SCHEDOP_putinfo, CRUX_DOMCTL_SCHEDOP_putvcpuinfo
     setscheduler
 }
 
-# This is a continuation of class xen, since only 32 permissions can be
+# This is a continuation of class crux, since only 32 permissions can be
 # defined per class
-class xen2
+class crux2
 {
-# XENPF_resource_op
+# CRUXPF_resource_op
     resource_op
-# XEN_SYSCTL_psr_cmt_op
+# CRUX_SYSCTL_psr_cmt_op
     psr_cmt_op
-# XEN_SYSCTL_psr_alloc
+# CRUX_SYSCTL_psr_alloc
     psr_alloc
-# XENPF_get_symbol
+# CRUXPF_get_symbol
     get_symbol
 # PMU control
     pmu_ctrl
 # PMU use (domains, including unprivileged ones, will be using this operation)
     pmu_use
-# XEN_SYSCTL_get_cpu_levelling_caps
+# CRUX_SYSCTL_get_cpu_levelling_caps
     get_cpu_levelling_caps
-# XEN_SYSCTL_get_cpu_featureset
+# CRUX_SYSCTL_get_cpu_featureset
     get_cpu_featureset
-# XEN_SYSCTL_livepatch_op
+# CRUX_SYSCTL_livepatch_op
     livepatch_op
-# XEN_SYSCTL_coverage_op
+# CRUX_SYSCTL_coverage_op
     coverage_op
-# XENPF_get_dom0_console
+# CRUXPF_get_dom0_console
     get_dom0_console
 }
 
@@ -112,79 +112,79 @@ class xen2
 # see docs/misc/xsm-flask.txt and the example XSM policy for details.
 class domain
 {
-# XEN_DOMCTL_setvcpucontext
-# XEN_DOMCTL_setvcpuextstate
-# XEN_DOMCTL_set_ext_vcpucontext
-# XEN_DOMCTL_set_vcpu_msrs
+# CRUX_DOMCTL_setvcpucontext
+# CRUX_DOMCTL_setvcpuextstate
+# CRUX_DOMCTL_set_ext_vcpucontext
+# CRUX_DOMCTL_set_vcpu_msrs
     setvcpucontext
-# XEN_DOMCTL_pausedomain
+# CRUX_DOMCTL_pausedomain
     pause
-# XEN_DOMCTL_unpausedomain
+# CRUX_DOMCTL_unpausedomain
     unpause
-# XEN_DOMCTL_resumedomain
+# CRUX_DOMCTL_resumedomain
     resume
-# XEN_DOMCTL_arm_createdomain
+# CRUX_DOMCTL_arm_createdomain
     create
 # checked in FLASK_RELABEL_DOMAIN for any relabel operation:
 #  source = the old label of the domain
 #  target = the new label of the domain
 # see also the domain2 relabel{from,to,self} permissions
     transition
-# XEN_DOMCTL_max_vcpus
+# CRUX_DOMCTL_max_vcpus
     max_vcpus
-# XEN_DOMCTL_destroydomain
+# CRUX_DOMCTL_destroydomain
     destroy
-# XEN_DOMCTL_setvcpuaffinity
-# XEN_DOMCTL_setnodeaffinity
+# CRUX_DOMCTL_setvcpuaffinity
+# CRUX_DOMCTL_setnodeaffinity
     setaffinity
-# XEN_DOMCTL_getvcpuaffinity
-# XEN_DOMCTL_getnodeaffinity
+# CRUX_DOMCTL_getvcpuaffinity
+# CRUX_DOMCTL_getnodeaffinity
     getaffinity
-# XEN_DOMCTL_scheduler_op with XEN_DOMCTL_SCHEDOP_getinfo
+# CRUX_DOMCTL_scheduler_op with CRUX_DOMCTL_SCHEDOP_getinfo
     getscheduler
-# XEN_DOMCTL_getdomaininfo, XEN_SYSCTL_getdomaininfolist
+# CRUX_DOMCTL_getdomaininfo, CRUX_SYSCTL_getdomaininfolist
     getdomaininfo
-# XEN_DOMCTL_getvcpuinfo
+# CRUX_DOMCTL_getvcpuinfo
     getvcpuinfo
-# XEN_DOMCTL_getvcpucontext
-# XEN_DOMCTL_get_ext_vcpucontext
-# XEN_DOMCTL_getvcpuextstate
-# XEN_DOMCTL_get_vcpu_msrs
+# CRUX_DOMCTL_getvcpucontext
+# CRUX_DOMCTL_get_ext_vcpucontext
+# CRUX_DOMCTL_getvcpuextstate
+# CRUX_DOMCTL_get_vcpu_msrs
     getvcpucontext
-# XEN_DOMCTL_max_mem
+# CRUX_DOMCTL_max_mem
     setdomainmaxmem
-# XEN_DOMCTL_setdomainhandle
+# CRUX_DOMCTL_setdomainhandle
     setdomainhandle
-# XEN_DOMCTL_setdebugging
+# CRUX_DOMCTL_setdebugging
     setdebugging
-# XEN_DOMCTL_hypercall_init
+# CRUX_DOMCTL_hypercall_init
     hypercall
-# XEN_DOMCTL_settimeoffset
+# CRUX_DOMCTL_settimeoffset
     settime
-# checked in XEN_DOMCTL_set_target:
+# checked in CRUX_DOMCTL_set_target:
 #  source = the new device model domain
 #  target = the new target domain
 # see also the domain2 make_priv_for and set_as_target checks
     set_target
 # SCHEDOP_remote_shutdown
     shutdown
-# XEN_DOMCTL_set_address_size
+# CRUX_DOMCTL_set_address_size
     setaddrsize
-# XEN_DOMCTL_get_address_size
+# CRUX_DOMCTL_get_address_size
     getaddrsize
-# XEN_DOMCTL_sendtrigger
+# CRUX_DOMCTL_sendtrigger
     trigger
-# XENMEM_get_pod_target
+# CRUXMEM_get_pod_target
     getpodtarget
-# XENMEM_set_pod_target
+# CRUXMEM_set_pod_target
     setpodtarget
-# XEN_DOMCTL_subscribe
+# CRUX_DOMCTL_subscribe
     set_misc_info
-# XEN_DOMCTL_set_virq_handler
+# CRUX_DOMCTL_set_virq_handler
     set_virq_handler
-# XEN_DOMCTL_get_paging_mempool_size
+# CRUX_DOMCTL_get_paging_mempool_size
     getpagingmempool
-# XEN_DOMCTL_set_paging_mempool_size
+# CRUX_DOMCTL_set_paging_mempool_size
     setpagingmempool
 }
 
@@ -205,68 +205,68 @@ class domain2
 #  target = the new label of the domain
 # see also domain__transition
     relabelself
-# checked in XEN_DOMCTL_set_target:
+# checked in CRUX_DOMCTL_set_target:
 #  source = the domain making the hypercall
 #  target = the new device model domain
     make_priv_for
-# checked in XEN_DOMCTL_set_target:
+# checked in CRUX_DOMCTL_set_target:
 #  source = the domain making the hypercall
 #  target = the new target domain
     set_as_target
-# XEN_DOMCTL_set_cpu_policy
+# CRUX_DOMCTL_set_cpu_policy
     set_cpu_policy
-# XEN_DOMCTL_gettscinfo
+# CRUX_DOMCTL_gettscinfo
     gettsc
-# XEN_DOMCTL_settscinfo
+# CRUX_DOMCTL_settscinfo
     settsc
-# XEN_DOMCTL_scheduler_op with XEN_DOMCTL_SCHEDOP_putinfo
+# CRUX_DOMCTL_scheduler_op with CRUX_DOMCTL_SCHEDOP_putinfo
     setscheduler
-# XENMEM_claim_pages
+# CRUXMEM_claim_pages
     setclaim
-# XEN_DOMCTL_cacheflush
+# CRUX_DOMCTL_cacheflush
     cacheflush
 # Creation of the hardware domain when it is not dom0
     create_hardware_domain
-# XEN_DOMCTL_setvnumainfo
+# CRUX_DOMCTL_setvnumainfo
     set_vnumainfo
-# XENMEM_getvnumainfo
+# CRUXMEM_getvnumainfo
     get_vnumainfo
-# XEN_DOMCTL_psr_cmt_op
+# CRUX_DOMCTL_psr_cmt_op
     psr_cmt_op
-# XEN_DOMCTL_set_access_required
-# XEN_DOMCTL_monitor_op
-# XEN_DOMCTL_vm_event_op
+# CRUX_DOMCTL_set_access_required
+# CRUX_DOMCTL_monitor_op
+# CRUX_DOMCTL_vm_event_op
     vm_event
-# XEN_DOMCTL_soft_reset
+# CRUX_DOMCTL_soft_reset
     soft_reset
-# XENMEM_access_op
+# CRUXMEM_access_op
     mem_access
-# XENMEM_paging_op
+# CRUXMEM_paging_op
     mem_paging
-# XENMEM_sharing_op
+# CRUXMEM_sharing_op
     mem_sharing
-# XEN_DOMCTL_psr_alloc
+# CRUX_DOMCTL_psr_alloc
     psr_alloc
-# XENMEM_resource_map
+# CRUXMEM_resource_map
     resource_map
-# XEN_DOMCTL_get_cpu_policy
+# CRUX_DOMCTL_get_cpu_policy
     get_cpu_policy
-# XEN_DOMCTL_vuart_op
+# CRUX_DOMCTL_vuart_op
     vuart_op
-# XEN_DOMCTL_dt_overlay
+# CRUX_DOMCTL_dt_overlay
     dt_overlay
-# XEN_DOMCTL_set_llc_colors
+# CRUX_DOMCTL_set_llc_colors
     set_llc_colors
-# XEN_DOMCTL_get_domain_state
+# CRUX_DOMCTL_get_domain_state
     get_domain_state
 }
 
 # Similar to class domain, but primarily contains domctls related to HVM domains
 class hvm
 {
-# XEN_DOMCTL_sethvmcontext
+# CRUX_DOMCTL_sethvmcontext
     sethvmc
-# XEN_DOMCTL_gethvmcontext, XEN_DOMCTL_gethvmcontext_partial
+# CRUX_DOMCTL_gethvmcontext, CRUX_DOMCTL_gethvmcontext_partial
     gethvmc
 # HVMOP_set_param
     setparam
@@ -276,13 +276,13 @@ class hvm
 # HVMOP_get_mem_type,
 # HVMOP_set_mem_access, HVMOP_get_mem_access, HVMOP_pagetable_dying
     hvmctl
-# XEN_DOMCTL_mem_sharing_op and XENMEM_sharing_op_{share,add_physmap} with:
+# CRUX_DOMCTL_mem_sharing_op and CRUXMEM_sharing_op_{share,add_physmap} with:
 #  source = the domain making the hypercall
 #  target = domain whose memory is being shared
     mem_sharing
-# XEN_DOMCTL_audit_p2m
+# CRUX_DOMCTL_audit_p2m
     audit_p2m
-# checked in XENMEM_sharing_op_{share,add_physmap} with:
+# checked in CRUXMEM_sharing_op_{share,add_physmap} with:
 #  source = domain whose memory is being shared
 #  target = client domain
     share_mem
@@ -351,7 +351,7 @@ class grant
 # are checked using the domain ID used to access the page - the most common case
 # is a domain's own ID (the _self label).  Using DOMID_IO in the map command to
 # restrict the mapping to IO memory will result in the target being domio_t, and
-# migration uses read-only mappings with a target of DOMID_XEN (domxen_t).
+# migration uses read-only mappings with a target of DOMID_CRUX (domcrux_t).
 class mmu
 {
 # checked when using mmu_update to map a page readably
@@ -362,20 +362,20 @@ class mmu
 #  source = domain making the hypercall
 #  target = domain whose pages are being mapped
     map_write
-# XEN_DOMCTL_getpageframeinfo3
+# CRUX_DOMCTL_getpageframeinfo3
     pageinfo
-# XENMEM_{increase,decrease}_reservation, XENMEM_populate_physmap
+# CRUXMEM_{increase,decrease}_reservation, CRUXMEM_populate_physmap
     adjust
-# XENMEM_{current,maximum}_reservation, XENMEM_maximum_gpfn
+# CRUXMEM_{current,maximum}_reservation, CRUXMEM_maximum_gpfn
     stat
 # mmu_update MMU_MACHPHYS_UPDATE
     updatemp
-# XENMEM_add_to_physmap, XENMEM_remove_from_physmap
+# CRUXMEM_add_to_physmap, CRUXMEM_remove_from_physmap
     physmap
 # MMUEXT_PIN_L*_TABLE
     pinpage
-# XENMEM_machine_memory_map (with target xen_t)
-# XENMEM_set_memory_map (with domain target)
+# CRUXMEM_machine_memory_map (with target crux_t)
+# CRUXMEM_set_memory_map (with domain target)
     memorymap
 # checked when using mmu_update to update the page tables of another domain
 #  source = domain making the hypercall
@@ -383,7 +383,7 @@ class mmu
     remote_remap
 # the mmuext_op hypercall acting on the target domain
     mmuext_op
-# XENMEM_exchange:
+# CRUXMEM_exchange:
 #  source = domain making the hypercall
 #  target = domain whose pages are being exchanged
     exchange
@@ -395,7 +395,7 @@ class mmu
 # control of the paging_domctl split by subop
 class shadow
 {
-# XEN_DOMCTL_SHADOW_OP_OFF
+# CRUX_DOMCTL_SHADOW_OP_OFF
     disable
 # enable, get/set allocation
     enable
@@ -427,9 +427,9 @@ class resource
 #  source = domain making the hypercall
 #  target = domain which will no longer have access to the resource
     remove
-# checked when using some core xen devices (target xen_t)
+# checked when using some core Xen devices (target crux_t)
 #  source = domain which will have access to the resource
-#  target = xen_t
+#  target = crux_t
     use
 # checked when adding a resource to a domain:
 #  source = domain which will have access to the resource
@@ -454,29 +454,29 @@ class resource
     add_irq
 # PHYSDEVOP_unmap_pirq (same as map, and only for real IRQs)
     remove_irq
-# XEN_DOMCTL_ioport_permission, XEN_DOMCTL_ioport_mapping
+# CRUX_DOMCTL_ioport_permission, CRUX_DOMCTL_ioport_mapping
     add_ioport
     remove_ioport
-# XEN_DOMCTL_iomem_permission, XEN_DOMCTL_memory_mapping
+# CRUX_DOMCTL_iomem_permission, CRUX_DOMCTL_memory_mapping
     add_iomem
     remove_iomem
-# XEN_DOMCTL_get_device_group, XEN_DOMCTL_test_assign_device:
+# CRUX_DOMCTL_get_device_group, CRUX_DOMCTL_test_assign_device:
 #  source = domain making the hypercall
 #  target = device being queried
     stat_device
-# XEN_DOMCTL_assign_device
+# CRUX_DOMCTL_assign_device
     add_device
-# XEN_DOMCTL_deassign_device
+# CRUX_DOMCTL_deassign_device
     remove_device
 # checked for PCI hot and cold-plug hypercalls, with target as the PCI device
-# checked for CPU and memory hotplug with xen_t as the target
+# checked for CPU and memory hotplug with crux_t as the target
     plug
 # checked for PCI hot-unplug hypercalls, with target as the PCI device
-# checked for CPU offlining with xen_t as the target
+# checked for CPU offlining with crux_t as the target
     unplug
 # checked for PHYSDEVOP_restore_msi* (target PCI device)
 # checked for PHYSDEVOP_setup_gsi (target IRQ)
-# checked for PHYSDEVOP_pci_mmcfg_reserved (target xen_t)
+# checked for PHYSDEVOP_pci_mmcfg_reserved (target crux_t)
     setup
 }
 
@@ -512,31 +512,31 @@ class security
     del_ocontext
 }
 
-# Class version is used to describe the XENVER_ hypercall.
+# Class version is used to describe the CRUXVER_ hypercall.
 # Almost all sub-ops are described here - in the default case all of them should
-# be allowed except the XENVER_commandline.
+# be allowed except the CRUXVER_commandline.
 #
-# The ones that are omitted are XENVER_version, XENVER_platform_parameters,
-# and XENVER_get_features  - as they MUST always be returned to a guest.
+# The ones that are omitted are CRUXVER_version, CRUXVER_platform_parameters,
+# and CRUXVER_get_features  - as they MUST always be returned to a guest.
 #
 class version
 {
 # Extra information (-unstable).
-    xen_extraversion
+    crux_extraversion
 # Compile information of the hypervisor.
-    xen_compile_info
-# Such as "xen-3.0-x86_64 xen-3.0-x86_32p hvm-3.0-x86_32 hvm-3.0-x86_32p hvm-3.0-x86_64".
-    xen_capabilities
+    crux_compile_info
+# Such as "crux-3.0-x86_64 crux-3.0-x86_32p hvm-3.0-x86_32 hvm-3.0-x86_32p hvm-3.0-x86_64".
+    crux_capabilities
 # Source code changeset.
-    xen_changeset
+    crux_changeset
 # Page size the hypervisor uses.
-    xen_pagesize
+    crux_pagesize
 # An value that the control stack can choose.
-    xen_guest_handle
-# xen command line.
-    xen_commandline
-# xen build id
-    xen_build_id
+    crux_guest_handle
+# Xen command line.
+    crux_commandline
+# Xen build id
+    crux_build_id
 }
 
 # Class argo is used to describe the Argo interdomain communication system.

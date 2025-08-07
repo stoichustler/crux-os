@@ -24,19 +24,19 @@
  *
  */
 #include <asm/io.h>
-#include <xen/init.h>
-#include <xen/pfn.h>
-#include <xen/types.h>
-#include <xen/errno.h>
-#include <xen/acpi.h>
-#include <xen/numa.h>
+#include <crux/init.h>
+#include <crux/pfn.h>
+#include <crux/types.h>
+#include <crux/errno.h>
+#include <crux/acpi.h>
+#include <crux/numa.h>
 #include <acpi/acmacros.h>
 #include <acpi/acpiosxf.h>
 #include <acpi/platform/aclinux.h>
-#include <xen/spinlock.h>
-#include <xen/domain_page.h>
-#include <xen/efi.h>
-#include <xen/vmap.h>
+#include <crux/spinlock.h>
+#include <crux/domain_page.h>
+#include <crux/efi.h>
+#include <crux/vmap.h>
 
 #define _COMPONENT		ACPI_OS_SERVICES
 ACPI_MODULE_NAME("osl")

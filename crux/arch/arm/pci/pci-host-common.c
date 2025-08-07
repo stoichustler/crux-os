@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/pci.h>
-#include <xen/rwlock.h>
-#include <xen/sched.h>
-#include <xen/vmap.h>
+#include <crux/init.h>
+#include <crux/pci.h>
+#include <crux/rwlock.h>
+#include <crux/sched.h>
+#include <crux/vmap.h>
 
 #include <asm/setup.h>
 
@@ -69,7 +69,7 @@ void __init pci_generic_init_bus_range(struct dt_device_node *dev,
     if ( err ) {
         cfg->busn_start = 0;
         cfg->busn_end = 0xff;
-        printk(XENLOG_INFO "%s: No bus range found for pci controller\n",
+        printk(CRUXLOG_INFO "%s: No bus range found for pci controller\n",
                dt_node_full_name(dev));
     } else {
         cfg->busn_start = bus_range[0];
@@ -87,7 +87,7 @@ void __init pci_generic_init_bus_range_child(struct dt_device_node *dev,
     cfg->busn_end = bridge->cfg->busn_end;
     bridge->cfg->busn_end = bridge->cfg->busn_start;
 
-    printk(XENLOG_INFO "Root bus end updated: [bus %x-%x]\n",
+    printk(CRUXLOG_INFO "Root bus end updated: [bus %x-%x]\n",
            bridge->cfg->busn_start, bridge->cfg->busn_end);
 }
 
@@ -136,7 +136,7 @@ gen_pci_init(struct dt_device_node *dev, struct pci_host_bridge *bridge,
     cfg->win = pci_remap_cfgspace(cfg->phys_addr, cfg->size);
     if ( !cfg->win )
     {
-        printk(XENLOG_ERR "ECAM ioremap failed\n");
+        printk(CRUXLOG_ERR "ECAM ioremap failed\n");
         goto err_exit;
     }
     printk("ECAM at [mem 0x%"PRIpaddr"-0x%"PRIpaddr"] for [bus %x-%x] \n",
@@ -264,7 +264,7 @@ pci_host_common_probe(struct dt_device_node *dev,
     domain = pci_bus_find_domain_nr(dev);
     if ( domain < 0 )
     {
-        printk(XENLOG_ERR "Inconsistent \"linux,pci-domain\" property in DT\n");
+        printk(CRUXLOG_ERR "Inconsistent \"linux,pci-domain\" property in DT\n");
         BUG();
     }
     bridge->segment = domain;
@@ -307,7 +307,7 @@ pci_find_host_bridge_node(const struct pci_dev *pdev)
     bridge = pci_find_host_bridge(pdev->seg, pdev->bus);
     if ( unlikely(!bridge) )
     {
-        printk(XENLOG_ERR "Unable to find PCI bridge for %pp\n", &pdev->sbdf);
+        printk(CRUXLOG_ERR "Unable to find PCI bridge for %pp\n", &pdev->sbdf);
         return NULL;
     }
     return bridge->dt_node;
@@ -405,7 +405,7 @@ int __init pci_host_bridge_mappings(struct domain *d)
             err = dt_device_get_paddr(dev, i, &addr, &size);
             if ( err )
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "Unable to retrieve address range index=%u for %s\n",
                        i, dt_node_full_name(dev));
                 return err;

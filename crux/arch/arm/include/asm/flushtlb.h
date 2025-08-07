@@ -1,7 +1,7 @@
 #ifndef __ASM_ARM_FLUSHTLB_H__
 #define __ASM_ARM_FLUSHTLB_H__
 
-#include <xen/cpumask.h>
+#include <crux/cpumask.h>
 
 /*
  * Filter the given set of CPUs, removing those that definitely flushed their
@@ -32,7 +32,7 @@ void arch_flush_tlb_mask(const cpumask_t *mask);
  * Flush a range of VA's hypervisor mappings from the TLB of the local
  * processor.
  */
-static inline void flush_xen_tlb_range_va_local(vaddr_t va,
+static inline void flush_crux_tlb_range_va_local(vaddr_t va,
                                                 unsigned long size)
 {
     vaddr_t end = va + size;
@@ -41,7 +41,7 @@ static inline void flush_xen_tlb_range_va_local(vaddr_t va,
     dsb(nshst); /* Ensure prior page-tables updates have completed */
     while ( va < end )
     {
-        __flush_xen_tlb_one_local(va);
+        __flush_crux_tlb_one_local(va);
         va += PAGE_SIZE;
     }
     dsb(nsh); /* Ensure the TLB invalidation has completed */
@@ -52,7 +52,7 @@ static inline void flush_xen_tlb_range_va_local(vaddr_t va,
  * Flush a range of VA's hypervisor mappings from the TLB of all
  * processors in the inner-shareable domain.
  */
-static inline void flush_xen_tlb_range_va(vaddr_t va,
+static inline void flush_crux_tlb_range_va(vaddr_t va,
                                           unsigned long size)
 {
     vaddr_t end = va + size;
@@ -61,7 +61,7 @@ static inline void flush_xen_tlb_range_va(vaddr_t va,
     dsb(ishst); /* Ensure prior page-tables updates have completed */
     while ( va < end )
     {
-        __flush_xen_tlb_one(va);
+        __flush_crux_tlb_one(va);
         va += PAGE_SIZE;
     }
     dsb(ish); /* Ensure the TLB invalidation has completed */

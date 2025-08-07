@@ -1,7 +1,7 @@
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/pmap.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/pmap.h>
 
 #include <asm/pmap.h>
 #include <asm/fixmap.h>
@@ -37,7 +37,7 @@ void *__init pmap_map(mfn_t mfn)
 
     /*
      * We cannot use set_fixmap() here. We use PMAP when the domain map
-     * page infrastructure is not yet initialized, so map_pages_to_xen() called
+     * page infrastructure is not yet initialized, so map_pages_to_crux() called
      * by set_fixmap() needs to map pages on demand, which then calls pmap()
      * again, resulting in a loop. Modify the PTEs directly instead. The same
      * is true for pmap_unmap().

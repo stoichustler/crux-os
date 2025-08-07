@@ -7,7 +7,7 @@
 #define ASM__RISCV__CSR_H
 
 #include <asm/asm.h>
-#include <xen/const.h>
+#include <crux/const.h>
 #include <asm/riscv_encoding.h>
 
 #ifndef __ASSEMBLY__

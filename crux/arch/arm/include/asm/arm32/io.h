@@ -21,7 +21,7 @@
 #ifndef _ARM_ARM32_IO_H
 #define _ARM_ARM32_IO_H
 
-#include <xen/byteorder.h>
+#include <crux/byteorder.h>
 
 #include <asm/system.h>
 

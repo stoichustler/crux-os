@@ -1,6 +1,6 @@
 /*
  * VGIC MMIO handling functions
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -12,11 +12,11 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/bitops.h>
-#include <xen/bsearch.h>
-#include <xen/byteorder.h>
-#include <xen/lib.h>
-#include <xen/sched.h>
+#include <crux/bitops.h>
+#include <crux/bsearch.h>
+#include <crux/byteorder.h>
+#include <crux/lib.h>
+#include <crux/sched.h>
 
 #include <asm/new_vgic.h>
 
@@ -335,7 +335,7 @@ void vgic_mmio_write_cactive(struct vcpu *vcpu,
          * emulated MMIO access.
          */
         if ( irq->active || irq->vcpu )
-            printk(XENLOG_G_ERR
+            printk(CRUXLOG_G_ERR
                    "%pv: vGICD: IRQ%u: clearing active state not supported\n",
                    vcpu, irq->intid);
 
@@ -364,7 +364,7 @@ void vgic_mmio_write_sactive(struct vcpu *vcpu,
          * emulated MMIO access.
          */
         if ( !irq->active || irq->vcpu )
-            printk(XENLOG_G_ERR
+            printk(CRUXLOG_G_ERR
                    "%pv: vGICD: IRQ%u: setting active state not supported\n",
                    vcpu, irq->intid);
 

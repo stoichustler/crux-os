@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * xen/arch/arm/arm64/debug-linflex.inc
+ * crux/arch/arm/arm64/debug-linflex.inc
  *
  * NXP LINFlexD UART specific debug code
  *

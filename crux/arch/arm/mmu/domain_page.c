@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-#include <xen/mm.h>
-#include <xen/pmap.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/pmap.h>
+#include <crux/vmap.h>
 
 /* Override macros from asm/page.h to make them work with mfn_t */
 #undef virt_to_mfn
@@ -11,11 +11,11 @@
 static DEFINE_PAGE_TABLES(cpu0_dommap, DOMHEAP_SECOND_PAGES);
 
 /*
- * xen_dommap == pages used by map_domain_page, these pages contain
+ * crux_dommap == pages used by map_domain_page, these pages contain
  * the second level pagetables which map the domheap region
  * starting at DOMHEAP_VIRT_START in 2MB chunks.
  */
-static DEFINE_PER_CPU(lpae_t *, xen_dommap);
+static DEFINE_PER_CPU(lpae_t *, crux_dommap);
 
 /*
  * Prepare the area that will be used to map domheap pages. They are
@@ -28,13 +28,13 @@ static DEFINE_PER_CPU(lpae_t *, xen_dommap);
 bool init_domheap_mappings(unsigned int cpu)
 {
     unsigned int order = get_order_from_pages(DOMHEAP_SECOND_PAGES);
-    lpae_t *root = per_cpu(xen_pgtable, cpu);
+    lpae_t *root = per_cpu(crux_pgtable, cpu);
     unsigned int i, first_idx;
     lpae_t *domheap;
     mfn_t mfn;
 
     ASSERT(root);
-    ASSERT(!per_cpu(xen_dommap, cpu));
+    ASSERT(!per_cpu(crux_dommap, cpu));
 
     /*
      * The domheap for cpu0 is initialized before the heap is initialized.
@@ -43,7 +43,7 @@ bool init_domheap_mappings(unsigned int cpu)
     if ( !cpu )
         domheap = cpu0_dommap;
     else
-        domheap = alloc_xenheap_pages(order, 0);
+        domheap = alloc_cruxheap_pages(order, 0);
 
     if ( !domheap )
         return false;
@@ -59,12 +59,12 @@ bool init_domheap_mappings(unsigned int cpu)
     first_idx = first_table_offset(DOMHEAP_VIRT_START);
     for ( i = 0; i < DOMHEAP_SECOND_PAGES; i++ )
     {
-        lpae_t pte = mfn_to_xen_entry(mfn_add(mfn, i), MT_NORMAL);
+        lpae_t pte = mfn_to_crux_entry(mfn_add(mfn, i), MT_NORMAL);
         pte.pt.table = 1;
         write_pte(&root[first_idx + i], pte);
     }
 
-    per_cpu(xen_dommap, cpu) = domheap;
+    per_cpu(crux_dommap, cpu) = domheap;
 
     return true;
 }
@@ -83,8 +83,8 @@ void unmap_domain_page_global(const void *ptr)
 void *map_domain_page(mfn_t mfn)
 {
     unsigned long flags;
-    lpae_t *map = this_cpu(xen_dommap);
-    unsigned long slot_mfn = mfn_x(mfn) & ~XEN_PT_LPAE_ENTRY_MASK;
+    lpae_t *map = this_cpu(crux_dommap);
+    unsigned long slot_mfn = mfn_x(mfn) & ~CRUX_PT_LPAE_ENTRY_MASK;
     vaddr_t va;
     lpae_t pte;
     int i, slot;
@@ -95,7 +95,7 @@ void *map_domain_page(mfn_t mfn)
      * entry is a 2MB superpage pte.  We use the available bits of each
      * PTE as a reference count; when the refcount is zero the slot can
      * be reused. */
-    for ( slot = (slot_mfn >> XEN_PT_LPAE_SHIFT) % DOMHEAP_ENTRIES, i = 0;
+    for ( slot = (slot_mfn >> CRUX_PT_LPAE_SHIFT) % DOMHEAP_ENTRIES, i = 0;
           i < DOMHEAP_ENTRIES;
           slot = (slot + 1) % DOMHEAP_ENTRIES, i++ )
     {
@@ -110,7 +110,7 @@ void *map_domain_page(mfn_t mfn)
         else if ( map[slot].pt.avail == 0 )
         {
             /* Commandeer this 2MB slot */
-            pte = mfn_to_xen_entry(_mfn(slot_mfn), MT_NORMAL);
+            pte = mfn_to_crux_entry(_mfn(slot_mfn), MT_NORMAL);
             pte.pt.avail = 1;
             write_pte(map + slot, pte);
             break;
@@ -127,7 +127,7 @@ void *map_domain_page(mfn_t mfn)
         static int max_tries = 32;
         if ( i >= max_tries )
         {
-            dprintk(XENLOG_WARNING, "Domheap map is filling: %i tries\n", i);
+            dprintk(CRUXLOG_WARNING, "Domheap map is filling: %i tries\n", i);
             max_tries *= 2;
         }
     }
@@ -137,13 +137,13 @@ void *map_domain_page(mfn_t mfn)
 
     va = (DOMHEAP_VIRT_START
           + (slot << SECOND_SHIFT)
-          + ((mfn_x(mfn) & XEN_PT_LPAE_ENTRY_MASK) << THIRD_SHIFT));
+          + ((mfn_x(mfn) & CRUX_PT_LPAE_ENTRY_MASK) << THIRD_SHIFT));
 
     /*
      * We may not have flushed this specific subpage at map time,
      * since we only flush the 4k page not the superpage
      */
-    flush_xen_tlb_range_va_local(va, PAGE_SIZE);
+    flush_crux_tlb_range_va_local(va, PAGE_SIZE);
 
     return (void *)va;
 }
@@ -152,7 +152,7 @@ void *map_domain_page(mfn_t mfn)
 void unmap_domain_page(const void *ptr)
 {
     unsigned long flags;
-    lpae_t *map = this_cpu(xen_dommap);
+    lpae_t *map = this_cpu(crux_dommap);
     int slot = ((unsigned long)ptr - DOMHEAP_VIRT_START) >> SECOND_SHIFT;
 
     if ( !ptr )
@@ -171,9 +171,9 @@ void unmap_domain_page(const void *ptr)
 mfn_t domain_page_map_to_mfn(const void *ptr)
 {
     unsigned long va = (unsigned long)ptr;
-    lpae_t *map = this_cpu(xen_dommap);
+    lpae_t *map = this_cpu(crux_dommap);
     int slot = (va - DOMHEAP_VIRT_START) >> SECOND_SHIFT;
-    unsigned long offset = (va>>THIRD_SHIFT) & XEN_PT_LPAE_ENTRY_MASK;
+    unsigned long offset = (va>>THIRD_SHIFT) & CRUX_PT_LPAE_ENTRY_MASK;
 
     if ( (va >= VMAP_VIRT_START) && ((va - VMAP_VIRT_START) < VMAP_VIRT_SIZE) )
         return virt_to_mfn(va);

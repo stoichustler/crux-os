@@ -52,12 +52,12 @@ booti 0x00200000 - 0x00800000
 
 Zephyr (vm0)
 
-- check zeus/snippets/xen_dom0/boards/radxa_zero3w.overlay
+- check zeus/snippets/crux_dom0/boards/radxa_zero3w.overlay
 - currently works ok.
 
 - compilation
   $ python3 cook.py -t [cross-compile toolchain path] -b \
-    radxa_zero3w/rk3568/xen_dom0
+    radxa_zero3w/rk3568/crux_dom0
 
 RouX (vm1)
 

@@ -34,14 +34,14 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/lib.h>
-#include <xen/xmalloc.h>
-#include <xen/string.h>
-#include <xen/spinlock.h>
-#include <xen/rwlock.h>
-#include <xen/errno.h>
+#include <crux/lib.h>
+#include <crux/xmalloc.h>
+#include <crux/string.h>
+#include <crux/spinlock.h>
+#include <crux/rwlock.h>
+#include <crux/errno.h>
 #include <conditional.h>
 #include "flask.h"
 #include "avc.h"
@@ -473,7 +473,7 @@ static int context_struct_compute_av(struct context *scontext,
     avd->flags = 0;
 
     /*
-     * We do not presently support policydb.handle_unknown == allow in xen.
+     * We do not presently support policydb.handle_unknown == allow in Xen.
      */
     if ( !tclass || tclass > policydb.p_classes.nprim )
         return -EINVAL;
@@ -835,7 +835,7 @@ int security_context_to_sid(char *scontext, u32 scontext_len, u32 *sid)
                 goto out;
             }
         }
-        *sid = SECINITSID_XEN;
+        *sid = SECINITSID_CRUX;
         goto out;
     }
     *sid = SECSID_NULL;

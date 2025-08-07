@@ -6,13 +6,13 @@
  * Copyright (c) Vates
  */
 
-#include <xen/bug.h>
-#include <xen/cpumask.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/spinlock.h>
+#include <crux/bug.h>
+#include <crux/cpumask.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/spinlock.h>
 
 #include <asm/hardirq.h>
 #include <asm/intc.h>
@@ -112,7 +112,7 @@ int setup_irq(unsigned int irq, unsigned int irqflags, struct irqaction *new)
          * TODO: would be nice to have functionality to print which domain owns
          *       an IRQ.
          */
-        printk(XENLOG_ERR "ERROR: IRQ %u is already in use by a domain\n", irq);
+        printk(CRUXLOG_ERR "ERROR: IRQ %u is already in use by a domain\n", irq);
         return -EBUSY;
     }
 
@@ -123,8 +123,8 @@ int setup_irq(unsigned int irq, unsigned int irqflags, struct irqaction *new)
     /* First time the IRQ is setup */
     if ( disabled )
     {
-        /* Route interrupt to xen */
-        intc_route_irq_to_xen(desc, IRQ_NO_PRIORITY);
+        /* Route interrupt to crux */
+        intc_route_irq_to_crux(desc, IRQ_NO_PRIORITY);
 
         /*
          * We don't care for now which CPU will receive the

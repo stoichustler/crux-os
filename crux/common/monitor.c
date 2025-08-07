@@ -1,5 +1,5 @@
 /*
- * xen/common/monitor.c
+ * crux/common/monitor.c
  *
  * Common monitor_op domctl handler.
  *
@@ -19,16 +19,16 @@
  * License along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/event.h>
-#include <xen/monitor.h>
-#include <xen/sched.h>
-#include <xen/vm_event.h>
+#include <crux/event.h>
+#include <crux/monitor.h>
+#include <crux/sched.h>
+#include <crux/vm_event.h>
 #include <xsm/xsm.h>
 #include <asm/altp2m.h>
 #include <asm/monitor.h>
 #include <asm/vm_event.h>
 
-int monitor_domctl(struct domain *d, struct xen_domctl_monitor_op *mop)
+int monitor_domctl(struct domain *d, struct crux_domctl_monitor_op *mop)
 {
     int rc;
     bool requested_status = false;
@@ -42,10 +42,10 @@ int monitor_domctl(struct domain *d, struct xen_domctl_monitor_op *mop)
 
     switch ( mop->op )
     {
-    case XEN_DOMCTL_MONITOR_OP_ENABLE:
+    case CRUX_DOMCTL_MONITOR_OP_ENABLE:
         requested_status = true;
         /* fallthrough */
-    case XEN_DOMCTL_MONITOR_OP_DISABLE:
+    case CRUX_DOMCTL_MONITOR_OP_DISABLE:
         /* sanity check: avoid left-shift undefined behavior */
         if ( unlikely(mop->event > 31) )
             return -EINVAL;
@@ -54,7 +54,7 @@ int monitor_domctl(struct domain *d, struct xen_domctl_monitor_op *mop)
             return -EOPNOTSUPP;
         break;
 
-    case XEN_DOMCTL_MONITOR_OP_GET_CAPABILITIES:
+    case CRUX_DOMCTL_MONITOR_OP_GET_CAPABILITIES:
         mop->event = arch_monitor_get_capabilities(d);
         return 0;
 
@@ -65,7 +65,7 @@ int monitor_domctl(struct domain *d, struct xen_domctl_monitor_op *mop)
 
     switch ( mop->event )
     {
-    case XEN_DOMCTL_MONITOR_EVENT_GUEST_REQUEST:
+    case CRUX_DOMCTL_MONITOR_EVENT_GUEST_REQUEST:
     {
         bool old_status = d->monitor.guest_request_enabled;
 

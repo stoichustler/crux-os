@@ -81,9 +81,9 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/bitops.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/bitops.h>
 
 extern DECLARE_BITMAP(cpu_hwcaps, ARM_NCAPS);
 
@@ -113,7 +113,7 @@ static inline bool cpus_have_cap(unsigned int num)
 static inline void cpus_set_cap(unsigned int num)
 {
     if (num >= ARM_NCAPS)
-        printk(XENLOG_WARNING "Attempt to set an illegal CPU capability (%d >= %d)\n",
+        printk(CRUXLOG_WARNING "Attempt to set an illegal CPU capability (%d >= %d)\n",
                num, ARM_NCAPS);
     else
         __set_bit(num, cpu_hwcaps);
@@ -341,7 +341,7 @@ struct cpuinfo_arm {
 
     /*
      * DCZID is only used to check for incoherent values between cores
-     * and taint xen in this case
+     * and taint Xen in this case
      */
     struct {
         register_t bits[1];
@@ -349,7 +349,7 @@ struct cpuinfo_arm {
 
     /*
      * CTR is only used to check for different cache types or policies and
-     * taint xen in this case
+     * taint Xen in this case
      */
     struct {
         register_t bits[1];

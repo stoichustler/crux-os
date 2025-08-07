@@ -3,7 +3,7 @@
  * 
  * Track atomic regions in the hypervisor which disallow sleeping.
  * 
- * Copyright (c) 2010, Keir Fraser <keir@xen.org>
+ * Copyright (c) 2010, Keir Fraser <keir@crux.org>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/preempt.h>
-#include <xen/irq.h>
+#include <crux/preempt.h>
+#include <crux/irq.h>
 #include <asm/system.h>
 
 DEFINE_PER_CPU(unsigned int, __preempt_count);

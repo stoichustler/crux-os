@@ -15,11 +15,11 @@
  *  General Public License for more details.
  */
 
-#include <xen/alternative-call.h>
-#include <xen/cpu.h>
-#include <xen/cpumask.h>
-#include <xen/init.h>
-#include <xen/param.h>
+#include <crux/alternative-call.h>
+#include <crux/cpu.h>
+#include <crux/cpumask.h>
+#include <crux/init.h>
+#include <crux/param.h>
 
 #include <asm/smp.h>
 

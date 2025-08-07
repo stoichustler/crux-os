@@ -8,41 +8,41 @@
  * Copyright (c) 2002-2006, K Fraser
  */
 
-#ifndef __XEN_PUBLIC_DOM0_OPS_H__
-#define __XEN_PUBLIC_DOM0_OPS_H__
+#ifndef __CRUX_PUBLIC_DOM0_OPS_H__
+#define __CRUX_PUBLIC_DOM0_OPS_H__
 
-#include "xen.h"
+#include "crux.h"
 #include "platform.h"
 
-#if __XEN_INTERFACE_VERSION__ >= 0x00030204
+#if __CRUX_INTERFACE_VERSION__ >= 0x00030204
 #error "dom0_ops.h is a compatibility interface only"
 #endif
 
-#define DOM0_INTERFACE_VERSION XENPF_INTERFACE_VERSION
+#define DOM0_INTERFACE_VERSION CRUXPF_INTERFACE_VERSION
 
-#define DOM0_SETTIME          XENPF_settime
-#define dom0_settime          xenpf_settime
-#define dom0_settime_t        xenpf_settime_t
+#define DOM0_SETTIME          CRUXPF_settime
+#define dom0_settime          cruxpf_settime
+#define dom0_settime_t        cruxpf_settime_t
 
-#define DOM0_ADD_MEMTYPE      XENPF_add_memtype
-#define dom0_add_memtype      xenpf_add_memtype
-#define dom0_add_memtype_t    xenpf_add_memtype_t
+#define DOM0_ADD_MEMTYPE      CRUXPF_add_memtype
+#define dom0_add_memtype      cruxpf_add_memtype
+#define dom0_add_memtype_t    cruxpf_add_memtype_t
 
-#define DOM0_DEL_MEMTYPE      XENPF_del_memtype
-#define dom0_del_memtype      xenpf_del_memtype
-#define dom0_del_memtype_t    xenpf_del_memtype_t
+#define DOM0_DEL_MEMTYPE      CRUXPF_del_memtype
+#define dom0_del_memtype      cruxpf_del_memtype
+#define dom0_del_memtype_t    cruxpf_del_memtype_t
 
-#define DOM0_READ_MEMTYPE     XENPF_read_memtype
-#define dom0_read_memtype     xenpf_read_memtype
-#define dom0_read_memtype_t   xenpf_read_memtype_t
+#define DOM0_READ_MEMTYPE     CRUXPF_read_memtype
+#define dom0_read_memtype     cruxpf_read_memtype
+#define dom0_read_memtype_t   cruxpf_read_memtype_t
 
-#define DOM0_MICROCODE        XENPF_microcode_update
-#define dom0_microcode        xenpf_microcode_update
-#define dom0_microcode_t      xenpf_microcode_update_t
+#define DOM0_MICROCODE        CRUXPF_microcode_update
+#define dom0_microcode        cruxpf_microcode_update
+#define dom0_microcode_t      cruxpf_microcode_update_t
 
-#define DOM0_PLATFORM_QUIRK   XENPF_platform_quirk
-#define dom0_platform_quirk   xenpf_platform_quirk
-#define dom0_platform_quirk_t xenpf_platform_quirk_t
+#define DOM0_PLATFORM_QUIRK   CRUXPF_platform_quirk
+#define dom0_platform_quirk   cruxpf_platform_quirk
+#define dom0_platform_quirk_t cruxpf_platform_quirk_t
 
 typedef uint64_t cpumap_t;
 
@@ -60,7 +60,7 @@ struct dom0_msr {
     uint32_t out2;
 };
 typedef struct dom0_msr dom0_msr_t;
-DEFINE_XEN_GUEST_HANDLE(dom0_msr_t);
+DEFINE_CRUX_GUEST_HANDLE(dom0_msr_t);
 
 /* Unsupported legacy operation -- defined for API compatibility. */
 #define DOM0_PHYSICAL_MEMORY_MAP 40
@@ -70,7 +70,7 @@ struct dom0_memory_map_entry {
     uint8_t  is_ram;
 };
 typedef struct dom0_memory_map_entry dom0_memory_map_entry_t;
-DEFINE_XEN_GUEST_HANDLE(dom0_memory_map_entry_t);
+DEFINE_CRUX_GUEST_HANDLE(dom0_memory_map_entry_t);
 
 struct dom0_op {
     uint32_t cmd;
@@ -88,9 +88,9 @@ struct dom0_op {
     } u;
 };
 typedef struct dom0_op dom0_op_t;
-DEFINE_XEN_GUEST_HANDLE(dom0_op_t);
+DEFINE_CRUX_GUEST_HANDLE(dom0_op_t);
 
-#endif /* __XEN_PUBLIC_DOM0_OPS_H__ */
+#endif /* __CRUX_PUBLIC_DOM0_OPS_H__ */
 
 /*
  * Local variables:

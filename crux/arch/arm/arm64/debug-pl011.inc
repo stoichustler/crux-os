@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm64/debug-pl011.inc
+ * crux/arch/arm/arm64/debug-pl011.inc
  *
  * PL011 specific debug code
  *

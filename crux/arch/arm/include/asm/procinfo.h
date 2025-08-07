@@ -21,7 +21,7 @@
 #ifndef __ASM_ARM_PROCINFO_H
 #define __ASM_ARM_PROCINFO_H
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 
 struct processor {
     /* Initialize specific processor register for the new vCPU */

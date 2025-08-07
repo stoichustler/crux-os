@@ -14,18 +14,18 @@
  *      as published by the Free Software Foundation.
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/lib.h>
-#include <xen/xmalloc.h>
-#include <xen/types.h>
-#include <xen/list.h>
-#include <xen/spinlock.h>
-#include <xen/prefetch.h>
-#include <xen/kernel.h>
-#include <xen/sched.h>
-#include <xen/init.h>
-#include <xen/rcupdate.h>
+#include <crux/lib.h>
+#include <crux/xmalloc.h>
+#include <crux/types.h>
+#include <crux/list.h>
+#include <crux/spinlock.h>
+#include <crux/prefetch.h>
+#include <crux/kernel.h>
+#include <crux/sched.h>
+#include <crux/init.h>
+#include <crux/rcupdate.h>
 #include <asm/atomic.h>
 #include <asm/current.h>
 #include <public/xsm/flask_op.h>
@@ -241,7 +241,7 @@ void __init avc_init(void)
     atomic_set(&avc_cache.lru_hint, 0);
 }
 
-int avc_get_hash_stats(struct xen_flask_hash_stats *arg)
+int avc_get_hash_stats(struct crux_flask_hash_stats *arg)
 {
     int i, chain_len, max_chain_len, slots_used;
     struct avc_node *node;

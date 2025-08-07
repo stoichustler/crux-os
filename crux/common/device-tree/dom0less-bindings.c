@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootfdt.h>
-#include <xen/device_tree.h>
-#include <xen/dom0less-build.h>
-#include <xen/domain.h>
-#include <xen/grant_table.h>
-#include <xen/llc-coloring.h>
-#include <xen/sched.h>
+#include <crux/bootfdt.h>
+#include <crux/device_tree.h>
+#include <crux/dom0less-build.h>
+#include <crux/domain.h>
+#include <crux/grant_table.h>
+#include <crux/llc-coloring.h>
+#include <crux/sched.h>
 
 #include <public/bootfdt.h>
 #include <public/domctl.h>
@@ -14,7 +14,7 @@
 int __init parse_dom0less_node(struct dt_device_node *node,
                                struct boot_domain *bd)
 {
-    struct xen_domctl_createdomain *d_cfg = &bd->create_cfg;
+    struct crux_domctl_createdomain *d_cfg = &bd->create_cfg;
     unsigned int *flags = &bd->create_flags;
     struct dt_device_node *cpupool_node;
     uint32_t val;
@@ -22,15 +22,15 @@ int __init parse_dom0less_node(struct dt_device_node *node,
     bool iommu = false;
     const char *dom0less_iommu = NULL;
 
-    if ( !dt_device_is_compatible(node, "xen,domain") )
+    if ( !dt_device_is_compatible(node, "crux,domain") )
         return -ENOENT;
 
     *flags = 0;
-    *d_cfg = (struct xen_domctl_createdomain){
+    *d_cfg = (struct crux_domctl_createdomain){
         .max_evtchn_port = 1023,
         .max_grant_frames = -1,
         .max_maptrack_frames = -1,
-        .grant_opts = XEN_DOMCTL_GRANT_version(opt_gnttab_max_version),
+        .grant_opts = CRUX_DOMCTL_GRANT_version(opt_gnttab_max_version),
     };
 
     if ( dt_property_read_u32(node, "capabilities", &val) )
@@ -55,14 +55,14 @@ int __init parse_dom0less_node(struct dt_device_node *node,
             iommu = true;
         }
 
-        if ( val & DOMAIN_CAPS_XENSTORE )
+        if ( val & DOMAIN_CAPS_CRUXSTORE )
         {
-            d_cfg->flags |= XEN_DOMCTL_CDF_xs_domain;
+            d_cfg->flags |= CRUX_DOMCTL_CDF_xs_domain;
             d_cfg->max_evtchn_port = -1;
         }
     }
 
-    if ( dt_find_property(node, "xen,static-mem", NULL) )
+    if ( dt_find_property(node, "crux,static-mem", NULL) )
     {
         if ( llc_coloring_enabled )
             panic("LLC coloring and static memory are incompatible\n");
@@ -105,7 +105,7 @@ int __init parse_dom0less_node(struct dt_device_node *node,
     }
 
     if ( iommu_enabled && (iommu || has_dtb) )
-        d_cfg->flags |= XEN_DOMCTL_CDF_iommu;
+        d_cfg->flags |= CRUX_DOMCTL_CDF_iommu;
 
     /* Get the optional property domain-cpupool */
     cpupool_node = dt_parse_phandle(node, "domain-cpupool", 0);
@@ -119,7 +119,7 @@ int __init parse_dom0less_node(struct dt_device_node *node,
     }
 
     if ( dt_property_read_u32(node, "max_grant_version", &val) )
-        d_cfg->grant_opts = XEN_DOMCTL_GRANT_version(val);
+        d_cfg->grant_opts = CRUX_DOMCTL_GRANT_version(val);
 
     if ( dt_property_read_u32(node, "max_grant_frames", &val) )
     {

@@ -2,13 +2,13 @@
  * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  */
 
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/mm.h>
-#include <xen/rcupdate.h>
-#include <xen/sections.h>
-#include <xen/spinlock.h>
-#include <xen/virtual_region.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/mm.h>
+#include <crux/rcupdate.h>
+#include <crux/sections.h>
+#include <crux/spinlock.h>
+#include <crux/virtual_region.h>
 
 extern const struct bug_frame
     __start_bug_frames_0[], __stop_bug_frames_0[],
@@ -134,11 +134,11 @@ void relax_virtual_region_perms(void)
     rcu_read_lock(&rcu_virtual_region_lock);
     list_for_each_entry_rcu( region, &virtual_region_list, list )
     {
-        modify_xen_mappings_lite((unsigned long)region->text_start,
+        modify_crux_mappings_lite((unsigned long)region->text_start,
                                  (unsigned long)region->text_end,
                                  PAGE_HYPERVISOR_RWX);
         if ( region->rodata_start )
-            modify_xen_mappings_lite((unsigned long)region->rodata_start,
+            modify_crux_mappings_lite((unsigned long)region->rodata_start,
                                      (unsigned long)region->rodata_end,
                                      PAGE_HYPERVISOR_RW);
     }
@@ -152,11 +152,11 @@ void tighten_virtual_region_perms(void)
     rcu_read_lock(&rcu_virtual_region_lock);
     list_for_each_entry_rcu( region, &virtual_region_list, list )
     {
-        modify_xen_mappings_lite((unsigned long)region->text_start,
+        modify_crux_mappings_lite((unsigned long)region->text_start,
                                  (unsigned long)region->text_end,
                                  PAGE_HYPERVISOR_RX);
         if ( region->rodata_start )
-            modify_xen_mappings_lite((unsigned long)region->rodata_start,
+            modify_crux_mappings_lite((unsigned long)region->rodata_start,
                                      (unsigned long)region->rodata_end,
                                      PAGE_HYPERVISOR_RO);
     }

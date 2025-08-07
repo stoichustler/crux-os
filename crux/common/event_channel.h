@@ -3,7 +3,7 @@
 #ifndef EVENT_CHANNEL_H
 #define EVENT_CHANNEL_H
 
-#include <xen/event.h>
+#include <crux/event.h>
 
 static inline unsigned int max_evtchns(const struct domain *d)
 {

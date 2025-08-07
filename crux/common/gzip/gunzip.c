@@ -1,8 +1,8 @@
-#include <xen/errno.h>
-#include <xen/gunzip.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
+#include <crux/errno.h>
+#include <crux/gunzip.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
 
 #define WSIZE           0x80000000U
 

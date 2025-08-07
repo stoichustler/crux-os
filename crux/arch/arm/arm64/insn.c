@@ -18,17 +18,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <xen/bug.h>
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sizes.h>
-#include <xen/bitops.h>
+#include <crux/bug.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sizes.h>
+#include <crux/bitops.h>
 #include <asm/insn.h>
 #include <asm/arm64/insn.h>
 
 #define __kprobes
-#define pr_err(fmt, ...) printk(XENLOG_ERR fmt, ## __VA_ARGS__)
+#define pr_err(fmt, ...) printk(CRUXLOG_ERR fmt, ## __VA_ARGS__)
 
 bool aarch64_insn_is_branch_imm(u32 insn)
 {

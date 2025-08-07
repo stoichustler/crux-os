@@ -1,7 +1,7 @@
 /******************************************************************************
  * xsm/silo.c
  *
- * SILO module for XSM (xen Security Modules)
+ * SILO module for XSM (Xen Security Modules)
  *
  * Copyright (c) 2018 Citrix Systems Ltd.
  *
@@ -116,7 +116,7 @@ static const struct xsm_ops __initconst_cf_clobber silo_xsm_ops = {
 
 const struct xsm_ops *__init silo_init(void)
 {
-    printk("initialising XSM SILO mode\n");
+    printk("Initialising XSM SILO mode\n");
 
     return &silo_xsm_ops;
 }

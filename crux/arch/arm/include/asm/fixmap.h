@@ -4,8 +4,8 @@
 #ifndef __ASM_FIXMAP_H
 #define __ASM_FIXMAP_H
 
-#include <xen/acpi.h>
-#include <xen/pmap.h>
+#include <crux/acpi.h>
+#include <crux/pmap.h>
 
 /* Fixmap slots */
 #define FIX_CONSOLE  0  /* The primary UART */
@@ -23,11 +23,11 @@
 #ifndef __ASSEMBLY__
 
 /*
- * Direct access to xen_fixmap[] should only happen when {set,
+ * Direct access to crux_fixmap[] should only happen when {set,
  * clear}_fixmap() is unusable (e.g. where we would end up to
  * recursively call the helpers).
  */
-extern lpae_t xen_fixmap[XEN_PT_LPAE_ENTRIES];
+extern lpae_t crux_fixmap[CRUX_PT_LPAE_ENTRIES];
 
 /* Map a page in a fixmap entry */
 extern void set_fixmap(unsigned int map, mfn_t mfn, unsigned int flags);

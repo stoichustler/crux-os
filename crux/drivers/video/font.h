@@ -8,8 +8,8 @@
  *  for more details.
  */
 
-#ifndef _XEN_FONT_H
-#define _XEN_FONT_H
+#ifndef _CRUX_FONT_H
+#define _CRUX_FONT_H
 
 struct font_desc {
     const char *name;
@@ -19,4 +19,4 @@ struct font_desc {
 
 extern const struct font_desc font_vga_8x8, font_vga_8x14, font_vga_8x16;
 
-#endif /* _XEN_FONT_H */
+#endif /* _CRUX_FONT_H */

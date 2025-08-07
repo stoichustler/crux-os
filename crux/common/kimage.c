@@ -11,15 +11,15 @@
  * Version 2.  See the file COPYING for more details.
  */
 
-#include <xen/types.h>
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/errno.h>
-#include <xen/spinlock.h>
-#include <xen/guest_access.h>
-#include <xen/mm.h>
-#include <xen/kexec.h>
-#include <xen/kimage.h>
+#include <crux/types.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/errno.h>
+#include <crux/spinlock.h>
+#include <crux/guest_access.h>
+#include <crux/mm.h>
+#include <crux/kexec.h>
+#include <crux/kimage.h>
 
 #include <asm/page.h>
 
@@ -83,7 +83,7 @@ static struct page_info *kimage_alloc_zeroed_page(unsigned memflags)
 
 static int do_kimage_alloc(struct kexec_image **rimage, paddr_t entry,
                            unsigned long nr_segments,
-                           xen_kexec_segment_t *segments, uint8_t type)
+                           crux_kexec_segment_t *segments, uint8_t type)
 {
     struct kexec_image *image;
     unsigned long i;
@@ -208,7 +208,7 @@ out:
 
 static int kimage_normal_alloc(struct kexec_image **rimage, paddr_t entry,
                                unsigned long nr_segments,
-                               xen_kexec_segment_t *segments)
+                               crux_kexec_segment_t *segments)
 {
     return do_kimage_alloc(rimage, entry, nr_segments, segments,
                            KEXEC_TYPE_DEFAULT);
@@ -216,7 +216,7 @@ static int kimage_normal_alloc(struct kexec_image **rimage, paddr_t entry,
 
 static int kimage_crash_alloc(struct kexec_image **rimage, paddr_t entry,
                               unsigned long nr_segments,
-                              xen_kexec_segment_t *segments)
+                              crux_kexec_segment_t *segments)
 {
     unsigned long i;
 
@@ -665,7 +665,7 @@ found:
 }
 
 static int kimage_load_normal_segment(struct kexec_image *image,
-                                      xen_kexec_segment_t *segment)
+                                      crux_kexec_segment_t *segment)
 {
     unsigned long to_copy;
     unsigned long src_offset;
@@ -718,7 +718,7 @@ static int kimage_load_normal_segment(struct kexec_image *image,
 }
 
 static int kimage_load_crash_segment(struct kexec_image *image,
-                                     xen_kexec_segment_t *segment)
+                                     crux_kexec_segment_t *segment)
 {
     /*
      * For crash dumps kernels we simply copy the data from user space
@@ -764,7 +764,7 @@ static int kimage_load_crash_segment(struct kexec_image *image,
     return 0;
 }
 
-static int kimage_load_segment(struct kexec_image *image, xen_kexec_segment_t *segment)
+static int kimage_load_segment(struct kexec_image *image, crux_kexec_segment_t *segment)
 {
     int result = -ENOMEM;
     paddr_t addr;
@@ -795,7 +795,7 @@ static int kimage_load_segment(struct kexec_image *image, xen_kexec_segment_t *s
 
 int kimage_alloc(struct kexec_image **rimage, uint8_t type, uint16_t arch,
                  uint64_t entry_maddr,
-                 uint32_t nr_segments, xen_kexec_segment_t *segment)
+                 uint32_t nr_segments, crux_kexec_segment_t *segment)
 {
     int result;
 
@@ -896,7 +896,7 @@ int kimage_build_ind(struct kexec_image *image, mfn_t ind_mfn,
             goto done;
         case IND_SOURCE:
         {
-            struct page_info *guest_page, *xen_page;
+            struct page_info *guest_page, *crux_page;
 
             guest_page = mfn_to_page(mfn);
             if ( !get_page(guest_page, current->domain) )
@@ -905,18 +905,18 @@ int kimage_build_ind(struct kexec_image *image, mfn_t ind_mfn,
                 goto done;
             }
 
-            xen_page = kimage_alloc_page(image, dest);
-            if ( !xen_page )
+            crux_page = kimage_alloc_page(image, dest);
+            if ( !crux_page )
             {
                 put_page(guest_page);
                 ret = -ENOMEM;
                 goto done;
             }
 
-            copy_domain_page(page_to_mfn(xen_page), mfn);
+            copy_domain_page(page_to_mfn(crux_page), mfn);
             put_page(guest_page);
 
-            ret = kimage_add_page(image, page_to_maddr(xen_page));
+            ret = kimage_add_page(image, page_to_maddr(crux_page));
             if ( ret < 0 )
                 goto done;
 

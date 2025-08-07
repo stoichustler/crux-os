@@ -3,76 +3,76 @@
  *
  */
 
-#include <xen/hypercall.h>
+#include <crux/hypercall.h>
 #include <compat/grant_table.h>
 
-#define xen_grant_entry_v1 grant_entry_v1
+#define crux_grant_entry_v1 grant_entry_v1
 CHECK_grant_entry_v1;
-#undef xen_grant_entry_v1
+#undef crux_grant_entry_v1
 
-#define xen_grant_entry_header grant_entry_header
+#define crux_grant_entry_header grant_entry_header
 CHECK_grant_entry_header;
-#undef xen_grant_entry_header
+#undef crux_grant_entry_header
 
-#define xen_grant_entry_v2 grant_entry_v2
+#define crux_grant_entry_v2 grant_entry_v2
 CHECK_grant_entry_v2;
-#undef xen_grant_entry_v2
+#undef crux_grant_entry_v2
 
-#define xen_gnttab_map_grant_ref gnttab_map_grant_ref
+#define crux_gnttab_map_grant_ref gnttab_map_grant_ref
 CHECK_gnttab_map_grant_ref;
-#undef xen_gnttab_map_grant_ref
+#undef crux_gnttab_map_grant_ref
 
-#define xen_gnttab_unmap_grant_ref gnttab_unmap_grant_ref
+#define crux_gnttab_unmap_grant_ref gnttab_unmap_grant_ref
 CHECK_gnttab_unmap_grant_ref;
-#undef xen_gnttab_unmap_grant_ref
+#undef crux_gnttab_unmap_grant_ref
 
-#define xen_gnttab_unmap_and_replace gnttab_unmap_and_replace
+#define crux_gnttab_unmap_and_replace gnttab_unmap_and_replace
 CHECK_gnttab_unmap_and_replace;
-#undef xen_gnttab_unmap_and_replace
+#undef crux_gnttab_unmap_and_replace
 
-#define xen_gnttab_query_size gnttab_query_size
+#define crux_gnttab_query_size gnttab_query_size
 CHECK_gnttab_query_size;
-#undef xen_gnttab_query_size
+#undef crux_gnttab_query_size
 
-DEFINE_XEN_GUEST_HANDLE(gnttab_setup_table_compat_t);
-DEFINE_XEN_GUEST_HANDLE(gnttab_transfer_compat_t);
-DEFINE_XEN_GUEST_HANDLE(gnttab_copy_compat_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_setup_table_compat_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_transfer_compat_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_copy_compat_t);
 
-#define xen_gnttab_dump_table gnttab_dump_table
+#define crux_gnttab_dump_table gnttab_dump_table
 CHECK_gnttab_dump_table;
-#undef xen_gnttab_dump_table
+#undef crux_gnttab_dump_table
 
-#define xen_gnttab_set_version gnttab_set_version
+#define crux_gnttab_set_version gnttab_set_version
 CHECK_gnttab_set_version;
-#undef xen_gnttab_set_version
+#undef crux_gnttab_set_version
 
-DEFINE_XEN_GUEST_HANDLE(gnttab_get_status_frames_compat_t);
+DEFINE_CRUX_GUEST_HANDLE(gnttab_get_status_frames_compat_t);
 
-#define xen_gnttab_get_version gnttab_get_version
+#define crux_gnttab_get_version gnttab_get_version
 CHECK_gnttab_get_version;
-#undef xen_gnttab_get_version
+#undef crux_gnttab_get_version
 
-#define xen_gnttab_swap_grant_ref gnttab_swap_grant_ref
+#define crux_gnttab_swap_grant_ref gnttab_swap_grant_ref
 CHECK_gnttab_swap_grant_ref;
-#undef xen_gnttab_swap_grant_ref
+#undef crux_gnttab_swap_grant_ref
 
-#define xen_gnttab_cache_flush gnttab_cache_flush
+#define crux_gnttab_cache_flush gnttab_cache_flush
 CHECK_gnttab_cache_flush;
-#undef xen_gnttab_cache_flush
+#undef crux_gnttab_cache_flush
 
 int compat_grant_table_op(
-    unsigned int cmd, XEN_GUEST_HANDLE_PARAM(void) uop, unsigned int count)
+    unsigned int cmd, CRUX_GUEST_HANDLE_PARAM(void) uop, unsigned int count)
 {
     int rc = 0;
     unsigned int i, cmd_op;
-    XEN_GUEST_HANDLE_PARAM(void) cnt_uop;
+    CRUX_GUEST_HANDLE_PARAM(void) cnt_uop;
 
 #ifdef CONFIG_PV_SHIM
     if ( unlikely(pv_shim) )
         return pv_shim_grant_table_op(cmd, uop, count);
 #endif
 
-    set_xen_guest_handle(cnt_uop, NULL);
+    set_crux_guest_handle(cnt_uop, NULL);
     cmd_op = cmd & GNTTABOP_CMD_MASK;
     if ( cmd_op != GNTTABOP_cache_flush )
         cmd_op = cmd;
@@ -81,7 +81,7 @@ int compat_grant_table_op(
 #define CASE(name)                                                  \
     case GNTTABOP_ ## name:                                         \
     {                                                               \
-        XEN_GUEST_HANDLE_PARAM(gnttab_ ## name ## _compat_t) h =    \
+        CRUX_GUEST_HANDLE_PARAM(gnttab_ ## name ## _compat_t) h =    \
             guest_handle_cast(uop, gnttab_ ## name ## _compat_t);   \
                                                                     \
         if ( unlikely(!guest_handle_okay(h, count)) )               \
@@ -145,7 +145,7 @@ int compat_grant_table_op(
     {
         unsigned int n;
         union {
-            XEN_GUEST_HANDLE(void) uop;
+            CRUX_GUEST_HANDLE(void) uop;
             struct gnttab_setup_table *setup;
             struct gnttab_transfer *xfer;
             struct gnttab_copy *copy;
@@ -158,7 +158,7 @@ int compat_grant_table_op(
             struct compat_gnttab_get_status_frames get_status;
         } cmp;
 
-        set_xen_guest_handle(nat.uop, COMPAT_ARG_XLAT_VIRT_BASE);
+        set_crux_guest_handle(nat.uop, COMPAT_ARG_XLAT_VIRT_BASE);
         switch ( cmd_op )
         {
         case GNTTABOP_setup_table:
@@ -175,7 +175,7 @@ int compat_grant_table_op(
                     sizeof(*nat.setup->frame_list.p);
 
 #define XLAT_gnttab_setup_table_HNDL_frame_list(_d_, _s_) \
-                set_xen_guest_handle((_d_)->frame_list, (unsigned long *)(nat.setup + 1))
+                set_crux_guest_handle((_d_)->frame_list, (unsigned long *)(nat.setup + 1))
                 XLAT_gnttab_setup_table(nat.setup, &cmp.setup);
 #undef XLAT_gnttab_setup_table_HNDL_frame_list
                 rc = gnttab_setup_table(guest_handle_cast(nat.uop,
@@ -236,7 +236,7 @@ int compat_grant_table_op(
             }
             if ( rc >= 0 )
             {
-                XEN_GUEST_HANDLE_PARAM(gnttab_transfer_compat_t) xfer;
+                CRUX_GUEST_HANDLE_PARAM(gnttab_transfer_compat_t) xfer;
 
                 xfer = guest_handle_cast(uop, gnttab_transfer_compat_t);
                 guest_handle_add_offset(xfer, i);
@@ -281,7 +281,7 @@ int compat_grant_table_op(
             }
             if ( rc >= 0 )
             {
-                XEN_GUEST_HANDLE_PARAM(gnttab_copy_compat_t) copy;
+                CRUX_GUEST_HANDLE_PARAM(gnttab_copy_compat_t) copy;
 
                 copy = guest_handle_cast(uop, gnttab_copy_compat_t);
                 guest_handle_add_offset(copy, i);
@@ -318,7 +318,7 @@ int compat_grant_table_op(
                 guest_handle_cast(nat.uop, gnttab_get_status_frames_t), count);
             if ( rc >= 0 )
             {
-                XEN_GUEST_HANDLE_PARAM(gnttab_get_status_frames_compat_t) get =
+                CRUX_GUEST_HANDLE_PARAM(gnttab_get_status_frames_compat_t) get =
                     guest_handle_cast(uop,
                                       gnttab_get_status_frames_compat_t);
 

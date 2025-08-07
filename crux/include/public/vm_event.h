@@ -7,14 +7,14 @@
  * Copyright (c) 2009 by Citrix Systems, Inc. (Patrick Colp)
  */
 
-#ifndef _XEN_PUBLIC_VM_EVENT_H
-#define _XEN_PUBLIC_VM_EVENT_H
+#ifndef _CRUX_PUBLIC_VM_EVENT_H
+#define _CRUX_PUBLIC_VM_EVENT_H
 
-#include "xen.h"
+#include "crux.h"
 
 #define VM_EVENT_INTERFACE_VERSION 0x00000007
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
 #include "io/ring.h"
 
@@ -98,7 +98,7 @@
  * Requires the vCPU to be paused already (synchronous events only).
  *
  * On a response requires setting the  p2midx field of fast_singlestep to which
- * xen will switch the vCPU to on the occurance of the first singlestep, after
+ * Xen will switch the vCPU to on the occurance of the first singlestep, after
  * which singlestep gets automatically disabled.
  */
 #define VM_EVENT_FLAG_FAST_SINGLESTEP    (1 << 11)
@@ -439,8 +439,8 @@ typedef struct vm_event_st {
 
 DEFINE_RING_TYPES(vm_event, vm_event_request_t, vm_event_response_t);
 
-#endif /* defined(__XEN__) || defined(__XEN_TOOLS__) */
-#endif /* _XEN_PUBLIC_VM_EVENT_H */
+#endif /* defined(__CRUX__) || defined(__CRUX_TOOLS__) */
+#endif /* _CRUX_PUBLIC_VM_EVENT_H */
 
 /*
  * Local variables:

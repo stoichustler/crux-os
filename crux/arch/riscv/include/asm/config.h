@@ -3,8 +3,8 @@
 #ifndef ASM__RISCV__CONFIG_H
 #define ASM__RISCV__CONFIG_H
 
-#include <xen/const.h>
-#include <xen/page-size.h>
+#include <crux/const.h>
+#include <crux/page-size.h>
 
 #include <asm/riscv_encoding.h>
 
@@ -45,7 +45,7 @@
  *                   ..... ( 2 MB gap )
  *  0xffffffffc1200000  0xffffffffc15fffff L2 511          FDT
  *                   ..... ( 2 MB gap )
- *  0xffffffffc0000000  0xffffffffc0ffffff L2 511          xen
+ *  0xffffffffc0000000  0xffffffffc0ffffff L2 511          Xen
  *                   .....                 L2 510          Unused
  *  0x3200000000        0x7f7fffffff       L2 200-509      Direct map
  *                   .....                 L2 199          Unused
@@ -69,18 +69,18 @@
 #define SLOTN(slot)             (_AT(vaddr_t, slot) << SLOTN_ENTRY_BITS)
 
 #if RV_STAGE1_MODE == SATP_MODE_SV39
-#define XEN_VIRT_START 0xFFFFFFFFC0000000
+#define CRUX_VIRT_START 0xFFFFFFFFC0000000
 #elif RV_STAGE1_MODE == SATP_MODE_SV48
-#define XEN_VIRT_START 0xFFFFFF8000000000
+#define CRUX_VIRT_START 0xFFFFFF8000000000
 #else
 #error "unsupported RV_STAGE1_MODE"
 #endif
 
 #define GAP_SIZE                MB(2)
 
-#define XEN_VIRT_SIZE           MB(16)
+#define CRUX_VIRT_SIZE           MB(16)
 
-#define BOOT_FDT_VIRT_START     (XEN_VIRT_START + XEN_VIRT_SIZE + GAP_SIZE)
+#define BOOT_FDT_VIRT_START     (CRUX_VIRT_START + CRUX_VIRT_SIZE + GAP_SIZE)
 #define BOOT_FDT_VIRT_SIZE      MB(4)
 
 #define FIXMAP_BASE \
@@ -116,7 +116,7 @@
 #error "RV32 isn't supported"
 #endif
 
-#define HYPERVISOR_VIRT_START XEN_VIRT_START
+#define HYPERVISOR_VIRT_START CRUX_VIRT_START
 
 #if defined(CONFIG_RISCV_64)
 # define ELFSIZE 64
@@ -125,8 +125,8 @@
 # error "Unsupported RISCV variant"
 #endif
 
-/* xen_ulong_t is always 64 bits */
-#define BITS_PER_XEN_ULONG 64
+/* crux_ulong_t is always 64 bits */
+#define BITS_PER_CRUX_ULONG 64
 
 #define CONFIG_RISCV_L1_CACHE_SHIFT 6
 #define CONFIG_PAGEALLOC_MAX_ORDER  18
@@ -148,7 +148,7 @@
 #define IDENT_AREA_SIZE 64
 
 #ifndef __ASSEMBLY__
-extern unsigned long phys_offset; /* = load_start - XEN_VIRT_START */
+extern unsigned long phys_offset; /* = load_start - CRUX_VIRT_START */
 #endif
 
 #endif /* ASM__RISCV__CONFIG_H */

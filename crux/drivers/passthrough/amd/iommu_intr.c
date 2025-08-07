@@ -16,8 +16,8 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/err.h>
-#include <xen/softirq.h>
+#include <crux/err.h>
+#include <crux/softirq.h>
 
 #include <asm/io_apic.h>
 
@@ -233,7 +233,7 @@ static void update_intremap_entry(const struct amd_iommu *iommu,
          */
         if ( res != old )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "unexpected IRTE %016lx_%016lx (expected %016lx_%016lx)\n",
                    (uint64_t)(res >> 64), (uint64_t)res,
                    (uint64_t)(old >> 64), (uint64_t)old);
@@ -354,7 +354,7 @@ void cf_check amd_iommu_ioapic_update_ire(
     if ( rc )
     {
         /* Keep the entry masked. */
-        printk(XENLOG_ERR "Remapping IO-APIC %#x pin %u failed (%d)\n",
+        printk(CRUXLOG_ERR "Remapping IO-APIC %#x pin %u failed (%d)\n",
                IO_APIC_ID(apic), pin, rc);
         return;
     }

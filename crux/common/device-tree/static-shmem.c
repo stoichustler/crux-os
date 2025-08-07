@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/device_tree.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/rangeset.h>
-#include <xen/sched.h>
-#include <xen/static-memory.h>
-#include <xen/static-shmem.h>
+#include <crux/device_tree.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/rangeset.h>
+#include <crux/sched.h>
+#include <crux/static-memory.h>
+#include <crux/static-shmem.h>
 
 #include <asm/setup.h>
 
@@ -74,7 +74,7 @@ static bool __init is_shm_allocated_to_domio(paddr_t pbase)
 
     if ( d != dom_io )
     {
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "shm memory node has already been allocated to a specific owner %pd, Please check your configuration\n",
                d);
         return false;
@@ -98,7 +98,7 @@ static mfn_t __init acquire_shared_memory_bank(struct domain *d,
     nr_pfns = PFN_DOWN(psize);
     if ( (UINT_MAX - d->max_pages) < nr_pfns )
     {
-        printk(XENLOG_ERR "%pd: Over-allocation for d->max_pages: %lu.\n",
+        printk(CRUXLOG_ERR "%pd: Over-allocation for d->max_pages: %lu.\n",
                d, nr_pfns);
         return INVALID_MFN;
     }
@@ -116,7 +116,7 @@ static mfn_t __init acquire_shared_memory_bank(struct domain *d,
 
     if ( res )
     {
-        printk(XENLOG_ERR "%pd: failed to %s static memory: %d.\n", d,
+        printk(CRUXLOG_ERR "%pd: failed to %s static memory: %d.\n", d,
                bank_from_heap ? "assign" : "acquire", res);
         goto fail;
     }
@@ -157,7 +157,7 @@ static int __init assign_shared_memory(struct domain *d, paddr_t gbase,
                                       PFN_DOWN(psize));
         if ( ret )
         {
-            printk(XENLOG_ERR "Failed to map shared memory to %pd.\n", d);
+            printk(CRUXLOG_ERR "Failed to map shared memory to %pd.\n", d);
             return ret;
         }
     }
@@ -175,7 +175,7 @@ static int __init assign_shared_memory(struct domain *d, paddr_t gbase,
     {
         if ( !get_page_nr(page + i, d, nr_borrowers) )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Failed to add %lu references to page %"PRI_mfn".\n",
                    nr_borrowers, mfn_x(smfn) + i);
             goto fail;
@@ -287,7 +287,7 @@ static bool __init save_map_heap_pages(struct domain *d, struct page_info *pg,
         }
     }
 
-    printk("Failed to allocate static shared memory from xen heap: (%d)\n",
+    printk("Failed to allocate static shared memory from Xen heap: (%d)\n",
            ret);
 
     return false;
@@ -317,12 +317,12 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
         const char *role_str;
         const char *shm_id;
 
-        if ( !dt_device_is_compatible(shm_node, "xen,domain-shared-memory-v1") )
+        if ( !dt_device_is_compatible(shm_node, "crux,domain-shared-memory-v1") )
             continue;
 
-        if ( dt_property_read_string(shm_node, "xen,shm-id", &shm_id) )
+        if ( dt_property_read_string(shm_node, "crux,shm-id", &shm_id) )
         {
-            printk("%pd: invalid \"xen,shm-id\" property", d);
+            printk("%pd: invalid \"crux,shm-id\" property", d);
             return -EINVAL;
         }
         BUG_ON((strlen(shm_id) <= 0) || (strlen(shm_id) >= MAX_SHM_ID_LENGTH));
@@ -342,11 +342,11 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
             role_str = NULL;
 
         /*
-         * xen,shared-mem = <[pbase,] gbase, size>;
+         * crux,shared-mem = <[pbase,] gbase, size>;
          * pbase is optional.
          */
         addr_cells = dt_n_addr_cells(shm_node);
-        prop = dt_find_property(shm_node, "xen,shared-mem", NULL);
+        prop = dt_find_property(shm_node, "crux,shared-mem", NULL);
         BUG_ON(!prop);
         cells = (const __be32 *)prop->value;
 
@@ -380,7 +380,7 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
         {
             /*
              * The host physical address is not supplied by the user, so it
-             * means that the banks needs to be allocated from the xen heap,
+             * means that the banks needs to be allocated from the Xen heap,
              * look into the already allocated banks from the heap.
              */
             const struct membank *alloc_bank =
@@ -405,7 +405,7 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
                 if ( !allocate_domheap_memory(NULL, psize, save_map_heap_pages,
                                               &cb_arg) )
                 {
-                    printk(XENLOG_ERR
+                    printk(CRUXLOG_ERR
                            "Failed to allocate (%"PRIpaddr"KB) pages as static shared memory from heap\n",
                            psize >> 10);
                     return -EINVAL;
@@ -419,7 +419,7 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
                 paddr_t gbase_bank = gbase;
 
                 /*
-                 * Static shared memory banks that are taken from the xen heap
+                 * Static shared memory banks that are taken from the Xen heap
                  * are allocated sequentially in shm_heap_banks, so starting
                  * from the first bank found identified by shm_id, the code can
                  * just advance by one bank at the time until it reaches the end
@@ -468,21 +468,21 @@ int __init make_shm_resv_memory_node(const struct kernel_info *kinfo,
     /*
      * For each shared memory region, a range is exposed under
      * the /reserved-memory node as a child node. Each range sub-node is
-     * named xen-shmem@<address>.
+     * named crux-shmem@<address>.
      */
-    dt_dprintk("Create xen-shmem node\n");
+    dt_dprintk("Create crux-shmem node\n");
 
     for ( ; i < mem->nr_banks; i++ )
     {
         uint64_t start = mem->bank[i].start;
         uint64_t size = mem->bank[i].size;
-        const char compat[] = "xen,shared-memory-v1";
+        const char compat[] = "crux,shared-memory-v1";
         /* Worst case addrcells + sizecells */
         __be32 reg[GUEST_ROOT_ADDRESS_CELLS + GUEST_ROOT_SIZE_CELLS];
         __be32 *cells;
         unsigned int len = (addrcells + sizecells) * sizeof(__be32);
 
-        res = domain_fdt_begin_node(fdt, "xen-shmem", mem->bank[i].start);
+        res = domain_fdt_begin_node(fdt, "crux-shmem", mem->bank[i].start);
         if ( res )
             return res;
 
@@ -500,18 +500,18 @@ int __init make_shm_resv_memory_node(const struct kernel_info *kinfo,
         dt_dprintk("Shared memory bank %u: %#"PRIx64"->%#"PRIx64"\n",
                    i, start, start + size);
 
-        res = fdt_property_string(fdt, "xen,id",
+        res = fdt_property_string(fdt, "crux,id",
                                   mem->bank[i].shmem_extra->shm_id);
         if ( res )
             return res;
 
         /*
          * TODO:
-         * - xen,offset: (borrower VMs only)
+         * - crux,offset: (borrower VMs only)
          *   64 bit integer offset within the owner virtual machine's shared
          *   memory region used for the mapping in the borrower VM
          */
-        res = fdt_property_u64(fdt, "xen,offset", 0);
+        res = fdt_property_u64(fdt, "crux,offset", 0);
         if ( res )
             return res;
 
@@ -544,16 +544,16 @@ int __init process_shm_node(const void *fdt, int node, uint32_t address_cells,
     }
 
     /*
-     * "xen,shm-id" property holds an arbitrary string with a strict limit
+     * "crux,shm-id" property holds an arbitrary string with a strict limit
      * on the number of characters, MAX_SHM_ID_LENGTH
      */
-    prop_id = fdt_get_property(fdt, node, "xen,shm-id", NULL);
+    prop_id = fdt_get_property(fdt, node, "crux,shm-id", NULL);
     if ( !prop_id )
         return -ENOENT;
     shm_id = (const char *)prop_id->data;
     if ( strnlen(shm_id, MAX_SHM_ID_LENGTH) == MAX_SHM_ID_LENGTH )
     {
-        printk("fdt: invalid xen,shm-id %s, it must be limited to %u characters\n",
+        printk("fdt: invalid crux,shm-id %s, it must be limited to %u characters\n",
                shm_id, MAX_SHM_ID_LENGTH);
         return -EINVAL;
     }
@@ -575,12 +575,12 @@ int __init process_shm_node(const void *fdt, int node, uint32_t address_cells,
     }
 
     /*
-     * xen,shared-mem = <paddr, gaddr, size>;
+     * crux,shared-mem = <paddr, gaddr, size>;
      * Memory region starting from physical address #paddr of #size shall
      * be mapped to guest physical address #gaddr as static shared memory
      * region.
      */
-    prop = fdt_get_property(fdt, node, "xen,shared-mem", &len);
+    prop = fdt_get_property(fdt, node, "crux,shared-mem", &len);
     if ( !prop )
         return -ENOENT;
 
@@ -592,7 +592,7 @@ int __init process_shm_node(const void *fdt, int node, uint32_t address_cells,
                                 &size);
         else
         {
-            printk("fdt: invalid `xen,shared-mem` property.\n");
+            printk("fdt: invalid `crux,shared-mem` property.\n");
             return -EINVAL;
         }
     }
@@ -693,7 +693,7 @@ int __init process_shm_node(const void *fdt, int node, uint32_t address_cells,
             continue;
         else
         {
-            printk("fdt: xen,shm-id %s does not match for all the nodes using the same region\n",
+            printk("fdt: crux,shm-id %s does not match for all the nodes using the same region\n",
                    shm_id);
             return -EINVAL;
         }
@@ -811,7 +811,7 @@ int __init remove_shm_from_rangeset(const struct kernel_info *kinfo,
                                     PFN_DOWN(end - 1));
         if ( res )
         {
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "Failed to remove: %#"PRIpaddr"->%#"PRIpaddr", error: %d\n",
                    start, end, res);
             return -EINVAL;

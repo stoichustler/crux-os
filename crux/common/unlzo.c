@@ -30,10 +30,10 @@
  */
 
 #include "decompress.h"
-#include <xen/lzo.h>
+#include <crux/lzo.h>
 
-#ifdef __XEN__
-#include <xen/unaligned.h>
+#ifdef __CRUX__
+#include <crux/unaligned.h>
 #else
 
 static inline uint16_t get_unaligned_be16(const void *p)

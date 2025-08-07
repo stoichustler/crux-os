@@ -1,6 +1,6 @@
-#include <xen/init.h>
-#include <xen/pci.h>
-#include <xen/msi.h>
+#include <crux/init.h>
+#include <crux/pci.h>
+#include <crux/msi.h>
 #include <asm/hvm/io.h>
 
 int pdev_msix_assign(struct domain *d, struct pci_dev *pdev)
@@ -55,7 +55,7 @@ int pdev_msi_init(struct pci_dev *pdev)
              * initially, clear it (and ENABLE too - for safety), to meet that
              * expectation.
              */
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "%pp: unexpected initial MSI-X state (MASKALL=%d, ENABLE=%d), fixing\n",
                    &pdev->sbdf,
                    !!(ctrl & PCI_MSIX_FLAGS_MASKALL),

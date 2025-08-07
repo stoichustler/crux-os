@@ -1,12 +1,12 @@
-#include <xen/bitmap.h>
-#include <xen/sections.h>
-#include <xen/init.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/spinlock.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
-#include <xen/xvmalloc.h>
+#include <crux/bitmap.h>
+#include <crux/sections.h>
+#include <crux/init.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/spinlock.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
+#include <crux/xvmalloc.h>
 #include <asm/page.h>
 
 static DEFINE_SPINLOCK(vm_lock);
@@ -46,7 +46,7 @@ void __init vm_init_type(enum vmap_region type, void *start, void *end)
             BUG_ON(!pg);
             mfn = page_to_mfn(pg);
         }
-        rc = map_pages_to_xen(va, mfn, 1, PAGE_HYPERVISOR);
+        rc = map_pages_to_crux(va, mfn, 1, PAGE_HYPERVISOR);
         BUG_ON(rc);
 
         clear_page((void *)va);
@@ -126,7 +126,7 @@ static void *vm_alloc(unsigned int nr, unsigned int align,
         {
             unsigned long va = (unsigned long)vm_bitmap(t) + vm_top[t] / 8;
 
-            if ( !map_pages_to_xen(va, mfn, 1, PAGE_HYPERVISOR) )
+            if ( !map_pages_to_crux(va, mfn, 1, PAGE_HYPERVISOR) )
             {
                 clear_page((void *)va);
                 vm_top[t] += PAGE_SIZE * 8;
@@ -198,7 +198,7 @@ static void vm_free(const void *va)
 
     if ( !bit )
     {
-        type = VMAP_XEN;
+        type = VMAP_CRUX;
         bit = vm_index(va, type);
     }
 
@@ -230,7 +230,7 @@ void *__vmap(const mfn_t *mfn, unsigned int granularity,
 
     for ( ; va && nr--; ++mfn, cur += PAGE_SIZE * granularity )
     {
-        if ( map_pages_to_xen(cur, *mfn, granularity, flags) )
+        if ( map_pages_to_crux(cur, *mfn, granularity, flags) )
         {
             vunmap(va);
             va = NULL;
@@ -255,7 +255,7 @@ unsigned int vmap_size(const void *va)
     unsigned int pages = vm_size(va, VMAP_DEFAULT);
 
     if ( !pages )
-        pages = vm_size(va, VMAP_XEN);
+        pages = vm_size(va, VMAP_CRUX);
 
     return pages;
 }
@@ -266,9 +266,9 @@ void vunmap(const void *va)
     unsigned pages = vmap_size(va);
 
 #ifndef _PAGE_NONE
-    destroy_xen_mappings(addr, addr + PAGE_SIZE * pages);
+    destroy_crux_mappings(addr, addr + PAGE_SIZE * pages);
 #else /* Avoid tearing down intermediate page tables. */
-    map_pages_to_xen(addr, INVALID_MFN, pages, _PAGE_NONE);
+    map_pages_to_crux(addr, INVALID_MFN, pages, _PAGE_NONE);
 #endif
     vm_free(va);
 }
@@ -316,9 +316,9 @@ void *vmalloc(size_t size)
     return vmalloc_type(size, VMAP_DEFAULT);
 }
 
-void *vmalloc_xen(size_t size)
+void *vmalloc_crux(size_t size)
 {
-    return vmalloc_type(size, VMAP_XEN);
+    return vmalloc_type(size, VMAP_CRUX);
 }
 
 void *vzalloc(size_t size)

@@ -9,7 +9,7 @@
  */
 
 #include "decompress.h"
-#include <xen/lz4.h>
+#include <crux/lz4.h>
 #include "lz4/decompress.c"
 
 /*
@@ -35,7 +35,7 @@ int __init unlz4(unsigned char *input, unsigned int in_len,
 	u8 *inp_start;
 	u8 *outp;
 	int size = in_len -= 4;
-#if defined(__XEN__) || defined(__MINIOS__)
+#if defined(__CRUX__) || defined(__MINIOS__)
 	size_t out_len = get_unaligned_le32(input + in_len);
 #endif
 	size_t dest_len;
@@ -115,7 +115,7 @@ int __init unlz4(unsigned char *input, unsigned int in_len,
 			}
 			fill(inp, chunksize);
 		}
-#if defined(__XEN__) || defined(__MINIOS__)
+#if defined(__CRUX__) || defined(__MINIOS__)
 		if (out_len >= uncomp_chunksize) {
 			dest_len = uncomp_chunksize;
 			out_len -= dest_len;

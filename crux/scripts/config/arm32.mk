@@ -1,7 +1,7 @@
 CONFIG_ARM := y
 CONFIG_ARM_32 := y
 
-CONFIG_XEN_INSTALL_SUFFIX :=
+CONFIG_CRUX_INSTALL_SUFFIX :=
 
 # -march= -mcpu=
 

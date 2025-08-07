@@ -12,15 +12,15 @@
  * this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/cpu.h>
-#include <xen/sched.h>
-#include <xen/iocap.h>
-#include <xen/iommu.h>
-#include <xen/paging.h>
-#include <xen/guest_access.h>
-#include <xen/event.h>
-#include <xen/softirq.h>
-#include <xen/vm_event.h>
+#include <crux/cpu.h>
+#include <crux/sched.h>
+#include <crux/iocap.h>
+#include <crux/iommu.h>
+#include <crux/paging.h>
+#include <crux/guest_access.h>
+#include <crux/event.h>
+#include <crux/softirq.h>
+#include <crux/vm_event.h>
 #include <xsm/xsm.h>
 
 #include <asm/hvm/io.h>
@@ -346,7 +346,7 @@ static int __hwdom_init cf_check identity_map(unsigned long s, unsigned long e,
     long rc;
 
     if ( iommu_verbose )
-        printk(XENLOG_INFO " [%010lx, %010lx] R%c\n",
+        printk(CRUXLOG_INFO " [%010lx, %010lx] R%c\n",
                s, e, info->mmio_ro ? 'O' : 'W');
 
     if ( paging_mode_translate(d) )
@@ -399,7 +399,7 @@ static int __hwdom_init cf_check identity_map(unsigned long s, unsigned long e,
     }
     ASSERT(rc <= 0);
     if ( rc )
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "IOMMU identity mapping of [%lx, %lx] failed: %ld\n",
                s, e, rc);
 
@@ -423,12 +423,12 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
 
     if ( iommu_hwdom_inclusive )
     {
-        printk(XENLOG_WARNING
+        printk(CRUXLOG_WARNING
                "IOMMU inclusive mappings are deprecated and will be removed in future versions\n");
 
         if ( !is_pv_domain(d) )
         {
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "IOMMU inclusive mappings are only supported on PV Dom0\n");
             iommu_hwdom_inclusive = false;
         }
@@ -475,10 +475,10 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
             panic("IOMMU failed to add identity range: %d\n", rc);
     }
 
-    /* Remove any areas in-use by xen. */
-    rc = remove_xen_ranges(map);
+    /* Remove any areas in-use by Xen. */
+    rc = remove_crux_ranges(map);
     if ( rc )
-        panic("IOMMU failed to remove xen ranges: %d\n", rc);
+        panic("IOMMU failed to remove Xen ranges: %d\n", rc);
 
     iomem.r = map;
     rc = rangeset_report_ranges(d->iomem_caps, 0, ~0UL, map_subtract_iomemcap,
@@ -503,7 +503,7 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
     }
 
     if ( iommu_verbose )
-        printk(XENLOG_INFO "%pd: identity mappings for IOMMU:\n", d);
+        printk(CRUXLOG_INFO "%pd: identity mappings for IOMMU:\n", d);
 
     rc = rangeset_report_ranges(map, 0, ~0UL, identity_map, &map_data);
     rangeset_destroy(map);
@@ -514,7 +514,7 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
                                     &map_data);
     }
     if ( rc )
-        printk(XENLOG_WARNING "IOMMU unable to create %smappings: %d\n",
+        printk(CRUXLOG_WARNING "IOMMU unable to create %smappings: %d\n",
                map_data.mmio_ro ? "read-only " : "", rc);
 
     /* Use if to avoid compiler warning */
@@ -791,7 +791,7 @@ bool __init iommu_unity_region_ok(const char *prefix, mfn_t start, mfn_t end)
                          E820_RESERVED) )
         return true;
 
-    printk(XENLOG_WARNING
+    printk(CRUXLOG_WARNING
            "%s: [%#lx, %#lx] is not (entirely) in reserved memory\n",
            prefix, mfn_to_maddr(start), mfn_to_maddr(end));
 
@@ -804,7 +804,7 @@ bool __init iommu_unity_region_ok(const char *prefix, mfn_t start, mfn_t end)
             if ( e820_add_range(mfn_to_maddr(addr),
                                 mfn_to_maddr(addr) + PAGE_SIZE, E820_RESERVED) )
                 continue;
-            printk(XENLOG_ERR
+            printk(CRUXLOG_ERR
                    "%s: page at %#" PRI_mfn " couldn't be reserved\n",
                    prefix, mfn_x(addr));
             return false;
@@ -813,14 +813,14 @@ bool __init iommu_unity_region_ok(const char *prefix, mfn_t start, mfn_t end)
         /*
          * Types which aren't RAM are considered good enough.
          * Note that a page being partially RESERVED, ACPI or UNUSABLE will
-         * force xen into assuming the whole page as having that type in
+         * force Xen into assuming the whole page as having that type in
          * practice.
          */
         if ( type & (RAM_TYPE_RESERVED | RAM_TYPE_ACPI |
                      RAM_TYPE_UNUSABLE) )
             continue;
 
-        printk(XENLOG_ERR
+        printk(CRUXLOG_ERR
                "%s: page at %#" PRI_mfn " can't be converted\n",
                prefix, mfn_x(addr));
         return false;

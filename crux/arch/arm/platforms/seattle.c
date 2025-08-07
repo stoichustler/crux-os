@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/seattle.c
+ * crux/arch/arm/seattle.c
  *
  * AMD Seattle specific settings
  *

@@ -15,8 +15,8 @@
  * License along with this library; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef __XEN__
-#include <xen/guest_access.h>
+#ifdef __CRUX__
+#include <crux/guest_access.h>
 #endif
 
 #include "libelf-private.h"
@@ -108,7 +108,7 @@ elf_errorstatus elf_init(struct elf_binary *elf, const char *image_input, size_t
     return 0;
 }
 
-#ifndef __XEN__
+#ifndef __CRUX__
 void elf_call_log_callback(struct elf_binary *elf, bool iserr,
                            const char *fmt,...) {
     va_list al;

@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/arm32/traps.c
+ * crux/arch/arm/arm32/traps.c
  *
  * ARM AArch32 Specific Trap handlers
  *
@@ -16,11 +16,11 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/lib.h>
-#include <xen/kernel.h>
-#include <xen/sched.h>
+#include <crux/lib.h>
+#include <crux/kernel.h>
+#include <crux/sched.h>
 
-#include <public/xen.h>
+#include <public/crux.h>
 
 #include <asm/mmio.h>
 #include <asm/processor.h>
@@ -39,7 +39,7 @@ void do_trap_undefined_instruction(struct cpu_user_regs *regs)
     if ( !is_active_kernel_text(pc) )
         goto die;
 
-    /* PC should be always a multiple of 4, as xen is using ARM instruction set */
+    /* PC should be always a multiple of 4, as Xen is using ARM instruction set */
     if ( regs->pc & 0x3 )
         goto die;
 

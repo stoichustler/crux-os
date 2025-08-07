@@ -6,15 +6,15 @@
 #ifndef __FFA_PRIVATE_H__
 #define __FFA_PRIVATE_H__
 
-#include <xen/const.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
-#include <xen/mm.h>
-#include <xen/list.h>
-#include <xen/spinlock.h>
-#include <xen/sched.h>
-#include <xen/time.h>
-#include <xen/bitmap.h>
+#include <crux/const.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
+#include <crux/mm.h>
+#include <crux/list.h>
+#include <crux/spinlock.h>
+#include <crux/sched.h>
+#include <crux/time.h>
+#include <crux/bitmap.h>
 
 /* Error codes */
 #define FFA_RET_OK                      0
@@ -58,7 +58,7 @@
 /*
  * The FF-A specification explicitly works with 4K pages as a measure of
  * memory size, for example, FFA_RXTX_MAP takes one parameter "RX/TX page
- * count" which is the number of contiguous 4K pages allocated. xen may use
+ * count" which is the number of contiguous 4K pages allocated. Xen may use
  * a different page size depending on the configuration to avoid confusion
  * with PAGE_SIZE use a special define when it's a page size as in the FF-A
  * specification.
@@ -96,7 +96,7 @@
 
 /*
  * Limits the number of shared buffers that guest can have at once. This
- * is to prevent case, when guests trick XEN into exhausting its own
+ * is to prevent case, when guests trick CRUX into exhausting its own
  * memory by allocating many small buffers. This value has been chosen
  * arbitrarily.
  */

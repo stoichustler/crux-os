@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Advanced Micro Devices, Inc.
  * Author: Leo Duran <leo.duran@amd.com>
- * Author: Wei Wang <wei.wang2@amd.com> - adapted to xen
+ * Author: Wei Wang <wei.wang2@amd.com> - adapted to crux
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,9 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/acpi.h>
-#include <xen/delay.h>
-#include <xen/keyhandler.h>
+#include <crux/acpi.h>
+#include <crux/delay.h>
+#include <crux/keyhandler.h>
 
 #include "iommu.h"
 
@@ -562,7 +562,7 @@ static void cf_check parse_event_log_entry(struct amd_iommu *iommu, u32 entry[])
         unsigned int flags = MASK_EXTR(entry[1], IOMMU_EVENT_FLAGS_MASK);
         uint64_t addr = *(uint64_t *)(entry + 2);
 
-        printk(XENLOG_ERR "AMD-Vi: %s: %pp d%u addr %016"PRIx64
+        printk(CRUXLOG_ERR "AMD-Vi: %s: %pp d%u addr %016"PRIx64
                " flags %#x%s%s%s%s%s%s%s%s%s%s\n",
                code_str, &PCI_SBDF(iommu->sbdf.seg, device_id),
                domain_id, addr, flags,
@@ -586,7 +586,7 @@ static void cf_check parse_event_log_entry(struct amd_iommu *iommu, u32 entry[])
                                          PCI_DEVFN(bdf));
     }
     else
-        printk(XENLOG_ERR "%s %08x %08x %08x %08x\n",
+        printk(CRUXLOG_ERR "%s %08x %08x %08x %08x\n",
                code_str, entry[0], entry[1], entry[2], entry[3]);
 }
 
@@ -745,7 +745,7 @@ static bool __init set_iommu_interrupt_handler(struct amd_iommu *iommu)
     irq = create_irq(NUMA_NO_NODE, false);
     if ( irq <= 0 )
     {
-        dprintk(XENLOG_ERR, "IOMMU: no irqs\n");
+        dprintk(CRUXLOG_ERR, "IOMMU: no irqs\n");
         return 0;
     }
 
@@ -850,7 +850,7 @@ static void amd_iommu_erratum_746_workaround(struct amd_iommu *iommu)
     pci_conf_write32(iommu->sbdf, 0xf0, 0x90 | (1 << 8));
 
     pci_conf_write32(iommu->sbdf, 0xf4, value | (1 << 2));
-    printk(XENLOG_INFO
+    printk(CRUXLOG_INFO
            "AMD-Vi: Applying erratum 746 workaround for IOMMU at %pp\n",
            &iommu->sbdf);
 
@@ -1349,7 +1349,7 @@ static bool __init amd_sp5100_erratum28(void)
         byte = pci_conf_read8(PCI_SBDF(0, bus, 0x14, 0), 0xad);
         if ( (byte >> 3) & 1 )
         {
-            printk(XENLOG_WARNING "AMD-Vi: SP5100 erratum 28 detected, disabling IOMMU.\n"
+            printk(CRUXLOG_WARNING "AMD-Vi: SP5100 erratum 28 detected, disabling IOMMU.\n"
                    "If possible, disable SATA Combined mode in BIOS or contact your vendor for BIOS update.\n");
             return 1;
         }
@@ -1463,7 +1463,7 @@ int __init amd_iommu_init(bool xt)
      */
     clear_iommu_hap_pt_share();
 
-    printk(XENLOG_DEBUG "AMD-Vi: Disabled HAP memory map sharing with IOMMU\n");
+    printk(CRUXLOG_DEBUG "AMD-Vi: Disabled HAP memory map sharing with IOMMU\n");
 
     /* per iommu initialization  */
     for_each_amd_iommu ( iommu )

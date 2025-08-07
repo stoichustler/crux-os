@@ -2,14 +2,14 @@
 /******************************************************************************
  * blkif.h
  *
- * Unified block-device I/O interface for xen guest OSes.
+ * Unified block-device I/O interface for Xen guest OSes.
  *
  * Copyright (c) 2003-2004, Keir Fraser
  * Copyright (c) 2012, Spectra Logic Corporation
  */
 
-#ifndef __XEN_PUBLIC_IO_BLKIF_H__
-#define __XEN_PUBLIC_IO_BLKIF_H__
+#ifndef __CRUX_PUBLIC_IO_BLKIF_H__
+#define __CRUX_PUBLIC_IO_BLKIF_H__
 
 #include "ring.h"
 #include "../grant_table.h"
@@ -34,30 +34,30 @@
 /*
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a xen block driver utilize nodes within the xenStore to
+ * The two halves of a Xen block driver utilize nodes within the XenStore to
  * communicate capabilities and to negotiate operating parameters.  This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the xenStore, following the xenBus convention.
+ * backend portions of the XenStore, following the XenBus convention.
  *
- * All data in the xenStore is stored as strings.  Nodes specifying numeric
+ * All data in the XenStore is stored as strings.  Nodes specifying numeric
  * values are encoded in decimal.  Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formatted node string, without loss of information.
  *
- * Any specified default value is in effect if the corresponding xenBus node
- * is not present in the xenStore.
+ * Any specified default value is in effect if the corresponding XenBus node
+ * is not present in the XenStore.
  *
- * xenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose xenBus tree contains them.
+ * XenStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose XenBus tree contains them.
  *
- * xenStore nodes marked "DEPRECATED" in their notes section should only be
+ * XenStore nodes marked "DEPRECATED" in their notes section should only be
  * used to provide interoperability with legacy implementations.
  *
- * See the xenBus state transition diagram below for details on when xenBus
+ * See the XenBus state transition diagram below for details on when XenBus
  * nodes must be published and when they can be queried.
  *
  *****************************************************************************
- *                            Backend xenBus Nodes
+ *                            Backend XenBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -101,7 +101,7 @@
  *
  *      The underlying storage is not affected by the direct IO memory
  *      lifetime bug.  See:
- *        https://lists.xen.org/archives/html/xen-devel/2012-12/msg01154.html
+ *        https://lists.crux.org/archives/html/crux-devel/2012-12/msg01154.html
  *
  *      Therefore this option gives the backend permission to use
  *      O_DIRECT, notwithstanding that bug.
@@ -242,7 +242,7 @@
  *      only be used for request segment length and alignment.
  *
  *      When exposing a device that uses a logical sector size of 4096, the
- *      only difference xenstore wise will be that 'sector-size' (and possibly
+ *      only difference cruxstore wise will be that 'sector-size' (and possibly
  *      'physical-sector-size' if supported by the backend) will be 4096, but
  *      the 'sectors' node will still be calculated using 512 byte units.  The
  *      sector base units in the ring requests fields will all be 512 byte
@@ -263,7 +263,7 @@
  *      "physical-sector-size", if that node is present.
  *
  *****************************************************************************
- *                            Frontend xenBus Nodes
+ *                            Frontend XenBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -271,14 +271,14 @@
  * event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the xen event channel used to signal activity
+ *      The identifier of the Xen event channel used to signal activity
  *      in the ring buffer.
  *
  * ring-ref
  *      Values:         <uint32_t>
  *      Notes:          6
  *
- *      The xen grant reference granting permission for the backend to map
+ *      The Xen grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer.
  *
  * ring-ref%u
@@ -286,13 +286,13 @@
  *      Notes:          6
  *
  *      For a frontend providing a multi-page ring, a "number of ring pages"
- *      sized list of nodes, each containing a xen grant reference granting
+ *      sized list of nodes, each containing a Xen grant reference granting
  *      permission for the backend to map the page of the ring located
  *      at page index "%u".  Page indexes are zero based.
  *
  * protocol
- *      Values:         string (XEN_IO_PROTO_ABI_*)
- *      Default Value:  XEN_IO_PROTO_ABI_NATIVE
+ *      Values:         string (CRUX_IO_PROTO_ABI_*)
+ *      Default Value:  CRUX_IO_PROTO_ABI_NATIVE
  *
  *      The machine ABI rules governing the format of all ring request and
  *      response structures.
@@ -376,7 +376,7 @@
  *
  * Notes
  * -----
- * (1) Multi-page ring buffer scheme first developed in the Citrix xenServer
+ * (1) Multi-page ring buffer scheme first developed in the Citrix XenServer
  *     PV drivers.
  * (2) Multi-page ring buffer scheme first used in some RedHat distributions
  *     including a distribution deployed on certain nodes of the Amazon
@@ -385,7 +385,7 @@
  *     in slightly different forms, by both Citrix and RedHat/Amazon.
  *     For full interoperability, block front and backends should publish
  *     identical ring parameters, adjusted for unit differences, to the
- *     xenStore nodes used in both schemes.
+ *     XenStore nodes used in both schemes.
  * (4) Devices that support discard functionality may internally allocate space
  *     (discardable extents) in units that are larger than the exported logical
  *     block size. If the backing device has such discardable extents the
@@ -478,11 +478,11 @@
  *                                   Startup                                 *
  *****************************************************************************
  *
- * Tool stack creates front and back nodes with state xenbusStateInitialising.
+ * Tool stack creates front and back nodes with state XenbusStateInitialising.
  *
  * Front                                Back
  * =================================    =====================================
- * xenbusStateInitialising              xenbusStateInitialising
+ * XenbusStateInitialising              XenbusStateInitialising
  *  o Query virtual device               o Query backend device identification
  *    properties.                          data.
  *  o Setup OS device instance.          o Open and validate backend device.
@@ -491,7 +491,7 @@
  *                                                      |
  *                                                      |
  *                                                      V
- *                                      xenbusStateInitWait
+ *                                      XenbusStateInitWait
  *
  * o Query backend features and
  *   transport parameters.
@@ -503,7 +503,7 @@
  *              |
  *              |
  *              V
- * xenbusStateInitialised
+ * XenbusStateInitialised
  *
  *                                       o Query frontend transport parameters.
  *                                       o Connect to the request ring and
@@ -512,7 +512,7 @@
  *                                                      |
  *                                                      |
  *                                                      V
- *                                      xenbusStateConnected
+ *                                      XenbusStateConnected
  *
  *  o Query backend device properties.
  *  o Finalize OS virtual device
@@ -520,20 +520,20 @@
  *              |
  *              |
  *              V
- * xenbusStateConnected
+ * XenbusStateConnected
  *
  * Note: Drivers that do not support any optional features, or the negotiation
  *       of transport parameters, can skip certain states in the state machine:
  *
- *       o A frontend may transition to xenbusStateInitialised without
- *         waiting for the backend to enter xenbusStateInitWait.  In this
+ *       o A frontend may transition to XenbusStateInitialised without
+ *         waiting for the backend to enter XenbusStateInitWait.  In this
  *         case, default transport parameters are in effect and any
  *         transport parameters published by the frontend must contain
  *         their default values.
  *
- *       o A backend may transition to xenbusStateInitialised, bypassing
- *         xenbusStateInitWait, without waiting for the frontend to first
- *         enter the xenbusStateInitialised state.  In this case, default
+ *       o A backend may transition to XenbusStateInitialised, bypassing
+ *         XenbusStateInitWait, without waiting for the frontend to first
+ *         enter the XenbusStateInitialised state.  In this case, default
  *         transport parameters are in effect and any transport parameters
  *         published by the backend must contain their default values.
  *
@@ -555,14 +555,14 @@
  * execution of the barrier request.  All writes issued after the barrier
  * request must not execute until after the completion of the barrier request.
  *
- * Optional.  See "feature-barrier" xenBus node documentation above.
+ * Optional.  See "feature-barrier" XenBus node documentation above.
  */
 #define BLKIF_OP_WRITE_BARRIER     2
 /*
  * Commit any uncommitted contents of the backing device's volatile cache
  * to stable storage.
  *
- * Optional.  See "feature-flush-cache" xenBus node documentation above.
+ * Optional.  See "feature-flush-cache" XenBus node documentation above.
  */
 #define BLKIF_OP_FLUSH_DISKCACHE   3
 /*
@@ -587,14 +587,14 @@
  *     Interface%20manuals/100293068c.pdf
  *
  * Optional.  See "feature-discard", "discard-alignment",
- * "discard-granularity", and "discard-secure" in the xenBus node
+ * "discard-granularity", and "discard-secure" in the XenBus node
  * documentation above.
  */
 #define BLKIF_OP_DISCARD           5
 
 /*
  * Recognized if "feature-max-indirect-segments" in present in the backend
- * xenbus info. The "feature-max-indirect-segments" node contains the maximum
+ * cruxbus info. The "feature-max-indirect-segments" node contains the maximum
  * number of segments allowed by the backend per request. If the node is
  * present, the frontend might use blkif_request_indirect structs in order to
  * issue requests with more than BLKIF_MAX_SEGMENTS_PER_REQUEST (11). The
@@ -630,12 +630,12 @@
 
 /*
  * NB. 'first_sect' and 'last_sect' in blkif_request_segment are all in units
- * of 512 bytes, despite the 'sector-size' xenstore node possibly having a
+ * of 512 bytes, despite the 'sector-size' cruxstore node possibly having a
  * value greater than 512.
  *
  * The value in 'first_sect' and 'last_sect' fields must be setup so that the
  * resulting segment offset and size is aligned to the logical sector size
- * reported by the 'sector-size' xenstore node, see 'Backend Device Properties'
+ * reported by the 'sector-size' cruxstore node, see 'Backend Device Properties'
  * section.
  */
 struct blkif_request_segment {
@@ -649,7 +649,7 @@ struct blkif_request_segment {
  * Starting ring element for any I/O request.
  *
  * The 'sector_number' field is in units of 512b, despite the value of the
- * 'sector-size' xenstore node.  Note however that the offset in
+ * 'sector-size' cruxstore node.  Note however that the offset in
  * 'sector_number' must be aligned to 'sector-size'.
  */
 struct blkif_request {
@@ -667,7 +667,7 @@ typedef struct blkif_request blkif_request_t;
  * sizeof(struct blkif_request_discard) <= sizeof(struct blkif_request)
  *
  * The 'sector_number' field is in units of 512b, despite the value of the
- * 'sector-size' xenstore node.  Note however that the offset in
+ * 'sector-size' cruxstore node.  Note however that the offset in
  * 'sector_number' must be aligned to 'discard-granularity'.
  */
 struct blkif_request_discard {
@@ -683,7 +683,7 @@ typedef struct blkif_request_discard blkif_request_discard_t;
 
 /*
  * The 'sector_number' field is in units of 512b, despite the value of the
- * 'sector-size' xenstore node.  Note however that the offset in
+ * 'sector-size' cruxstore node.  Note however that the offset in
  * 'sector_number' must be aligned to 'sector-size'.
  */
 struct blkif_request_indirect {
@@ -726,7 +726,7 @@ DEFINE_RING_TYPES(blkif, struct blkif_request, struct blkif_response);
 #define VDISK_REMOVABLE    0x2
 #define VDISK_READONLY     0x4
 
-#endif /* __XEN_PUBLIC_IO_BLKIF_H__ */
+#endif /* __CRUX_PUBLIC_IO_BLKIF_H__ */
 
 /*
  * Local variables:

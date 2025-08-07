@@ -1,15 +1,15 @@
-# xen system configuration
+# crux system configuration
 # ========================
 #
-# xen uses a set of variables for system configuration and at build time,
+# crux uses a set of variables for system configuration and at build time,
 # because of this these variables are defined on one master input source file
 # and is generated after running ./configure. The master source is located
-# on the xen source tree at under config/Paths.mk.in and it is used to
+# on the crux source tree at under config/Paths.mk.in and it is used to
 # generate shell or header files by the build system upon demand.
 #
 # For more documentation you can refer to the wiki:
 #
-# https://wiki.xen.org/wiki/Category:Host_Configuration#System_wide_xen_configuration
+# https://wiki.crux.org/wiki/Category:Host_Configuration#System_wide_crux_configuration
 
 PACKAGE_TARNAME          := @PACKAGE_TARNAME@
 prefix                   := @prefix@
@@ -37,22 +37,22 @@ SHAREDIR                 := @SHAREDIR@
 MAN1DIR                  := $(mandir)/man1
 MAN8DIR                  := $(mandir)/man8
 
-XEN_RUN_DIR              := @XEN_RUN_DIR@
-XEN_LOG_DIR              := @XEN_LOG_DIR@
-XEN_LIB_DIR              := @XEN_LIB_DIR@
+CRUX_RUN_DIR              := @CRUX_RUN_DIR@
+CRUX_LOG_DIR              := @CRUX_LOG_DIR@
+CRUX_LIB_DIR              := @CRUX_LIB_DIR@
 
 CONFIG_DIR               := @CONFIG_DIR@
 INITD_DIR                := @INITD_DIR@
 CONFIG_LEAF_DIR          := @CONFIG_LEAF_DIR@
 BASH_COMPLETION_DIR      := $(CONFIG_DIR)/bash_completion.d
-XEN_LOCK_DIR             := @XEN_LOCK_DIR@
-XEN_PAGING_DIR           := @XEN_PAGING_DIR@
-XEN_DUMP_DIR             := @XEN_DUMP_DIR@
+CRUX_LOCK_DIR             := @CRUX_LOCK_DIR@
+CRUX_PAGING_DIR           := @CRUX_PAGING_DIR@
+CRUX_DUMP_DIR             := @CRUX_DUMP_DIR@
 DEBUG_DIR                := @DEBUG_DIR@
 
-XENFIRMWAREDIR           := @XENFIRMWAREDIR@
+CRUXFIRMWAREDIR           := @CRUXFIRMWAREDIR@
 
-XEN_CONFIG_DIR           := @XEN_CONFIG_DIR@
-XEN_SCRIPT_DIR           := @XEN_SCRIPT_DIR@
+CRUX_CONFIG_DIR           := @CRUX_CONFIG_DIR@
+CRUX_SCRIPT_DIR           := @CRUX_SCRIPT_DIR@
 
 PKG_INSTALLDIR           := ${libdir}/pkgconfig

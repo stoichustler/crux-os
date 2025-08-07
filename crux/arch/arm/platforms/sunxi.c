@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platforms/sunxi.c
+ * crux/arch/arm/platforms/sunxi.c
  *
  * SUNXI (Allwinner ARM SoCs) specific settings
  *
@@ -16,8 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/platform.h>
 #include <asm/io.h>
 
@@ -46,21 +46,21 @@ static void __iomem *sunxi_map_watchdog(bool *new_wdt)
 
     if ( !node )
     {
-        dprintk(XENLOG_ERR, "Cannot find matching watchdog node in DT\n");
+        dprintk(CRUXLOG_ERR, "Cannot find matching watchdog node in DT\n");
         return NULL;
     }
 
     ret = dt_device_get_paddr(node, 0, &wdt_start, &wdt_len);
     if ( ret )
     {
-        dprintk(XENLOG_ERR, "Cannot read watchdog register address\n");
+        dprintk(CRUXLOG_ERR, "Cannot read watchdog register address\n");
         return NULL;
     }
 
     wdt = ioremap_nocache(wdt_start & PAGE_MASK, PAGE_SIZE);
     if ( !wdt )
     {
-        dprintk(XENLOG_ERR, "Unable to map watchdog register!\n");
+        dprintk(CRUXLOG_ERR, "Unable to map watchdog register!\n");
         return NULL;
     }
 
@@ -126,7 +126,7 @@ static const char * const sunxi_v8_dt_compat[] __initconst =
 static const struct dt_device_match sunxi_blacklist_dev[] __initconst =
 {
     /*
-     * The UARTs share a page which runs the risk of mapping the xen console
+     * The UARTs share a page which runs the risk of mapping the crux console
      * UART to dom0, so don't map any of them.
      */
     DT_MATCH_COMPATIBLE("snps,dw-apb-uart"),

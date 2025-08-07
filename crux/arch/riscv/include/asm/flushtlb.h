@@ -2,8 +2,8 @@
 #ifndef ASM__RISCV__FLUSHTLB_H
 #define ASM__RISCV__FLUSHTLB_H
 
-#include <xen/bug.h>
-#include <xen/cpumask.h>
+#include <crux/bug.h>
+#include <crux/cpumask.h>
 
 #include <asm/sbi.h>
 

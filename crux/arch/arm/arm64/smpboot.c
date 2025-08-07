@@ -1,12 +1,12 @@
-#include <xen/acpi.h>
-#include <xen/cpu.h>
-#include <xen/device_tree.h>
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/errno.h>
-#include <xen/mm.h>
-#include <xen/smp.h>
-#include <xen/vmap.h>
+#include <crux/acpi.h>
+#include <crux/cpu.h>
+#include <crux/device_tree.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/errno.h>
+#include <crux/mm.h>
+#include <crux/smp.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 #include <asm/psci.h>
 
@@ -30,7 +30,7 @@ static int __init smp_spin_table_cpu_up(int cpu)
     release = ioremap_nocache(cpu_release_addr[cpu], 8);
     if ( !release )
     {
-        dprintk(XENLOG_ERR, "CPU%d: Unable to map release address\n", cpu);
+        dprintk(CRUXLOG_ERR, "CPU%d: Unable to map release address\n", cpu);
         return -EFAULT;
     }
 

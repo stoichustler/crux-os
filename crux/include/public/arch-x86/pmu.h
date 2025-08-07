@@ -3,38 +3,38 @@
  * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
  */
 
-#ifndef __XEN_PUBLIC_ARCH_X86_PMU_H__
-#define __XEN_PUBLIC_ARCH_X86_PMU_H__
+#ifndef __CRUX_PUBLIC_ARCH_X86_PMU_H__
+#define __CRUX_PUBLIC_ARCH_X86_PMU_H__
 
 /* x86-specific PMU definitions */
 
 /* AMD PMU registers and structures */
-struct xen_pmu_amd_ctxt {
+struct crux_pmu_amd_ctxt {
     /*
-     * Offsets to counter and control MSRs (relative to xen_pmu_arch.c.amd).
+     * Offsets to counter and control MSRs (relative to crux_pmu_arch.c.amd).
      * For PV(H) guests these fields are RO.
      */
     uint32_t counters;
     uint32_t ctrls;
 
     /* Counter MSRs */
-    uint64_t regs[XEN_FLEX_ARRAY_DIM];
+    uint64_t regs[CRUX_FLEX_ARRAY_DIM];
 };
-typedef struct xen_pmu_amd_ctxt xen_pmu_amd_ctxt_t;
-DEFINE_XEN_GUEST_HANDLE(xen_pmu_amd_ctxt_t);
+typedef struct crux_pmu_amd_ctxt crux_pmu_amd_ctxt_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_pmu_amd_ctxt_t);
 
 /* Intel PMU registers and structures */
-struct xen_pmu_cntr_pair {
+struct crux_pmu_cntr_pair {
     uint64_t counter;
     uint64_t control;
 };
-typedef struct xen_pmu_cntr_pair xen_pmu_cntr_pair_t;
-DEFINE_XEN_GUEST_HANDLE(xen_pmu_cntr_pair_t);
+typedef struct crux_pmu_cntr_pair crux_pmu_cntr_pair_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_pmu_cntr_pair_t);
 
-struct xen_pmu_intel_ctxt {
+struct crux_pmu_intel_ctxt {
    /*
     * Offsets to fixed and architectural counter MSRs (relative to
-    * xen_pmu_arch.c.intel).
+    * crux_pmu_arch.c.intel).
     * For PV(H) guests these fields are RO.
     */
     uint32_t fixed_counters;
@@ -50,13 +50,13 @@ struct xen_pmu_intel_ctxt {
     uint64_t debugctl;
 
     /* Fixed and architectural counter MSRs */
-    uint64_t regs[XEN_FLEX_ARRAY_DIM];
+    uint64_t regs[CRUX_FLEX_ARRAY_DIM];
 };
-typedef struct xen_pmu_intel_ctxt xen_pmu_intel_ctxt_t;
-DEFINE_XEN_GUEST_HANDLE(xen_pmu_intel_ctxt_t);
+typedef struct crux_pmu_intel_ctxt crux_pmu_intel_ctxt_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_pmu_intel_ctxt_t);
 
 /* Sampled domain's registers */
-struct xen_pmu_regs {
+struct crux_pmu_regs {
     uint64_t ip;
     uint64_t sp;
     uint64_t flags;
@@ -65,8 +65,8 @@ struct xen_pmu_regs {
     uint8_t cpl;
     uint8_t pad[3];
 };
-typedef struct xen_pmu_regs xen_pmu_regs_t;
-DEFINE_XEN_GUEST_HANDLE(xen_pmu_regs_t);
+typedef struct crux_pmu_regs crux_pmu_regs_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_pmu_regs_t);
 
 /* PMU flags */
 #define PMU_CACHED         (1<<0) /* PMU MSRs are cached in the context */
@@ -80,18 +80,18 @@ DEFINE_XEN_GUEST_HANDLE(xen_pmu_regs_t);
  * Fields of this structure marked as RW for guest should only be written by
  * the guest when PMU_CACHED bit in pmu_flags is set (which is done by the
  * hypervisor during PMU interrupt). Hypervisor will read updated data in
- * XENPMU_flush hypercall and clear PMU_CACHED bit.
+ * CRUXPMU_flush hypercall and clear PMU_CACHED bit.
  */
-struct xen_pmu_arch {
+struct crux_pmu_arch {
     union {
         /*
          * Processor's registers at the time of interrupt.
          * WO for hypervisor, RO for guests.
          */
-        xen_pmu_regs_t regs;
-        /* Padding for adding new registers to xen_pmu_regs in the future */
-#define XENPMU_REGS_PAD_SZ  64
-        uint8_t pad[XENPMU_REGS_PAD_SZ];
+        crux_pmu_regs_t regs;
+        /* Padding for adding new registers to crux_pmu_regs in the future */
+#define CRUXPMU_REGS_PAD_SZ  64
+        uint8_t pad[CRUXPMU_REGS_PAD_SZ];
     } r;
 
     /* WO for hypervisor, RO for guest */
@@ -101,7 +101,7 @@ struct xen_pmu_arch {
      * APIC LVTPC register.
      * RW for both hypervisor and guest.
      * Only APIC_LVT_MASKED bit is loaded by the hypervisor into hardware
-     * during XENPMU_flush or XENPMU_lvtpc_set.
+     * during CRUXPMU_flush or CRUXPMU_lvtpc_set.
      */
     union {
         uint32_t lapic_lvtpc;
@@ -112,24 +112,24 @@ struct xen_pmu_arch {
      * Vendor-specific PMU registers.
      * RW for both hypervisor and guest (see exceptions above).
      * Guest's updates to this field are verified and then loaded by the
-     * hypervisor into hardware during XENPMU_flush
+     * hypervisor into hardware during CRUXPMU_flush
      */
     union {
-        xen_pmu_amd_ctxt_t amd;
-        xen_pmu_intel_ctxt_t intel;
+        crux_pmu_amd_ctxt_t amd;
+        crux_pmu_intel_ctxt_t intel;
 
         /*
          * Padding for contexts (fixed parts only, does not include MSR banks
          * that are specified by offsets)
          */
-#define XENPMU_CTXT_PAD_SZ  128
-        uint8_t pad[XENPMU_CTXT_PAD_SZ];
+#define CRUXPMU_CTXT_PAD_SZ  128
+        uint8_t pad[CRUXPMU_CTXT_PAD_SZ];
     } c;
 };
-typedef struct xen_pmu_arch xen_pmu_arch_t;
-DEFINE_XEN_GUEST_HANDLE(xen_pmu_arch_t);
+typedef struct crux_pmu_arch crux_pmu_arch_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_pmu_arch_t);
 
-#endif /* __XEN_PUBLIC_ARCH_X86_PMU_H__ */
+#endif /* __CRUX_PUBLIC_ARCH_X86_PMU_H__ */
 /*
  * Local variables:
  * mode: C

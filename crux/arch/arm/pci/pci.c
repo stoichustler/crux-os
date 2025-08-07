@@ -12,13 +12,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/acpi.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/iommu.h>
-#include <xen/param.h>
-#include <xen/pci.h>
+#include <crux/acpi.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/iommu.h>
+#include <crux/param.h>
+#include <crux/pci.h>
 
 /*
  * PIRQ event channels are not supported on Arm, so nothing to do.
@@ -52,7 +52,7 @@ static int __init dt_pci_init(void)
          * Ignore the following error codes:
          *   - EBADF: Indicate the current device is not a pci device.
          *   - ENODEV: The pci device is not present or cannot be used by
-         *     xen.
+         *     Xen.
          */
         if( !rc || rc == -EBADF || rc == -ENODEV )
             continue;
@@ -66,7 +66,7 @@ static int __init dt_pci_init(void)
 #ifdef CONFIG_ACPI
 static int __init acpi_pci_init(void)
 {
-    printk(XENLOG_ERR "ACPI pci init not supported \n");
+    printk(CRUXLOG_ERR "ACPI pci init not supported \n");
     return -EOPNOTSUPP;
 }
 #else

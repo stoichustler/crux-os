@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MIT */
 
 /*
- * xen/arch/riscv/imsic.c
+ * crux/arch/riscv/imsic.c
  *
  * RISC-V Incoming MSI Controller support
  *
@@ -9,16 +9,16 @@
  * (c) Vates
  */
 
-#include <xen/bitops.h>
-#include <xen/const.h>
-#include <xen/cpumask.h>
-#include <xen/device_tree.h>
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/macros.h>
-#include <xen/smp.h>
-#include <xen/spinlock.h>
-#include <xen/xvmalloc.h>
+#include <crux/bitops.h>
+#include <crux/const.h>
+#include <crux/cpumask.h>
+#include <crux/device_tree.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/macros.h>
+#include <crux/smp.h>
+#include <crux/spinlock.h>
+#include <crux/xvmalloc.h>
 
 #include <asm/imsic.h>
 
@@ -222,7 +222,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     tmp = BITS_PER_LONG - IMSIC_MMIO_PAGE_SHIFT;
     if ( tmp < imsic_cfg.guest_index_bits )
     {
-        printk(XENLOG_ERR "%s: guest index bits too big\n",
+        printk(CRUXLOG_ERR "%s: guest index bits too big\n",
                dt_node_name(node));
         return -ENOENT;
     }
@@ -235,7 +235,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     tmp -= imsic_cfg.guest_index_bits;
     if ( tmp < imsic_cfg.hart_index_bits )
     {
-        printk(XENLOG_ERR "%s: HART index bits too big\n",
+        printk(CRUXLOG_ERR "%s: HART index bits too big\n",
                dt_node_name(node));
         return -ENOENT;
     }
@@ -247,7 +247,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     tmp -= imsic_cfg.hart_index_bits;
     if ( tmp < imsic_cfg.group_index_bits )
     {
-        printk(XENLOG_ERR "%s: group index bits too big\n",
+        printk(CRUXLOG_ERR "%s: group index bits too big\n",
                dt_node_name(node));
         return -ENOENT;
     }
@@ -259,14 +259,14 @@ static int imsic_parse_node(const struct dt_device_node *node,
         imsic_cfg.group_index_shift = tmp;
     if ( imsic_cfg.group_index_shift < tmp )
     {
-        printk(XENLOG_ERR "%s: group index shift too small\n",
+        printk(CRUXLOG_ERR "%s: group index shift too small\n",
                dt_node_name(node));
         return -ENOENT;
     }
     tmp = imsic_cfg.group_index_bits + imsic_cfg.group_index_shift - 1;
     if ( tmp >= BITS_PER_LONG )
     {
-        printk(XENLOG_ERR "%s: group index shift too big\n",
+        printk(CRUXLOG_ERR "%s: group index shift too big\n",
                dt_node_name(node));
         return -ENOENT;
     }
@@ -274,7 +274,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     /* Find number of interrupt identities */
     if ( !dt_property_read_u32(node, "riscv,num-ids", &imsic_cfg.nr_ids) )
     {
-        printk(XENLOG_ERR "%s: number of interrupt identities not found\n",
+        printk(CRUXLOG_ERR "%s: number of interrupt identities not found\n",
                node->name);
         return -ENOENT;
     }
@@ -282,7 +282,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     if ( (imsic_cfg.nr_ids < IMSIC_MIN_ID) ||
          (imsic_cfg.nr_ids > IMSIC_MAX_ID) )
     {
-        printk(XENLOG_ERR "%s: invalid number of interrupt identities\n",
+        printk(CRUXLOG_ERR "%s: invalid number of interrupt identities\n",
                node->name);
         return -ENOENT;
     }
@@ -292,7 +292,7 @@ static int imsic_parse_node(const struct dt_device_node *node,
     rc = dt_device_get_address(node, *nr_mmios, &base_addr, NULL);
     if ( rc )
     {
-        printk(XENLOG_ERR "%s: first MMIO resource not found: %d\n",
+        printk(CRUXLOG_ERR "%s: first MMIO resource not found: %d\n",
                dt_node_name(node), rc);
         return rc;
     }
@@ -364,7 +364,7 @@ int __init imsic_init(const struct dt_device_node *node)
                                    &mmios[i].size);
         if ( rc )
         {
-            printk(XENLOG_ERR "%s: unable to parse MMIO regset %u\n",
+            printk(CRUXLOG_ERR "%s: unable to parse MMIO regset %u\n",
                    node->name, i);
             goto imsic_init_err;
         }
@@ -378,7 +378,7 @@ int __init imsic_init(const struct dt_device_node *node)
         if ( base_addr != imsic_cfg.base_addr )
         {
             rc = -EINVAL;
-            printk(XENLOG_ERR "%s: address mismatch for regset %u\n",
+            printk(CRUXLOG_ERR "%s: address mismatch for regset %u\n",
                    node->name, i);
             goto imsic_init_err;
         }
@@ -386,7 +386,7 @@ int __init imsic_init(const struct dt_device_node *node)
         if ( mmios[i].size != expected_mmio_size )
         {
             rc = -EINVAL;
-            printk(XENLOG_ERR "%s: IMSIC MMIO size is incorrect %ld, expected MMIO size: %ld\n",
+            printk(CRUXLOG_ERR "%s: IMSIC MMIO size is incorrect %ld, expected MMIO size: %ld\n",
                    node->name, mmios[i].size, expected_mmio_size);
             goto imsic_init_err;
         }
@@ -400,7 +400,7 @@ int __init imsic_init(const struct dt_device_node *node)
         rc = imsic_get_parent_hartid(node, i, &hartid);
         if ( rc )
         {
-            printk(XENLOG_WARNING "%s: cpu ID for parent irq%u not found\n",
+            printk(CRUXLOG_WARNING "%s: cpu ID for parent irq%u not found\n",
                    node->name, i);
             continue;
         }
@@ -423,7 +423,7 @@ int __init imsic_init(const struct dt_device_node *node)
 
         if ( cpu >= num_possible_cpus() )
         {
-            printk(XENLOG_WARNING "%s: unsupported hart ID=%#lx for parent irq%u\n",
+            printk(CRUXLOG_WARNING "%s: unsupported hart ID=%#lx for parent irq%u\n",
                    node->name, hartid, i);
             continue;
         }
@@ -446,7 +446,7 @@ int __init imsic_init(const struct dt_device_node *node)
 
         if ( index == nr_mmios )
         {
-            printk(XENLOG_WARNING "%s: MMIO not found for parent irq%u\n",
+            printk(CRUXLOG_WARNING "%s: MMIO not found for parent irq%u\n",
                    node->name, i);
             continue;
         }
@@ -454,7 +454,7 @@ int __init imsic_init(const struct dt_device_node *node)
         if ( !IS_ALIGNED(mmios[cpu].base_addr + reloff,
                          IMSIC_MMIO_PAGE_SZ) )
         {
-            printk(XENLOG_WARNING "%s: MMIO address %#lx is not aligned on a page\n",
+            printk(CRUXLOG_WARNING "%s: MMIO address %#lx is not aligned on a page\n",
                    node->name, msi[cpu].base_addr + reloff);
             continue;
         }
@@ -467,7 +467,7 @@ int __init imsic_init(const struct dt_device_node *node)
 
     if ( !nr_handlers )
     {
-        printk(XENLOG_ERR "%s: No CPU handlers found\n", node->name);
+        printk(CRUXLOG_ERR "%s: No CPU handlers found\n", node->name);
         rc = -ENODEV;
         goto imsic_init_err;
     }

@@ -1,15 +1,15 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bootinfo.h>
-#include <xen/fdt-domain-build.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/mm.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
-#include <xen/types.h>
-#include <xen/vmap.h>
+#include <crux/bootinfo.h>
+#include <crux/fdt-domain-build.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/mm.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
+#include <crux/types.h>
+#include <crux/vmap.h>
 
 #include <asm/p2m.h>
 
@@ -63,7 +63,7 @@ static bool __init guest_map_pages(struct domain *d, struct page_info *pg,
     res = guest_physmap_add_page(d, *sgfn, page_to_mfn(pg), order);
     if ( res )
     {
-        dprintk(XENLOG_ERR, "Failed map pages to DOMU: %d", res);
+        dprintk(CRUXLOG_ERR, "Failed map pages to DOMU: %d", res);
         return false;
     }
 
@@ -185,7 +185,7 @@ int __init find_unallocated_memory(const struct kernel_info *kinfo,
                                  PFN_DOWN(end - 1));
         if ( res )
         {
-            printk(XENLOG_ERR "Failed to add: %#"PRIpaddr"->%#"PRIpaddr"\n",
+            printk(CRUXLOG_ERR "Failed to add: %#"PRIpaddr"->%#"PRIpaddr"\n",
                    start, end);
             goto out;
         }
@@ -210,7 +210,7 @@ int __init find_unallocated_memory(const struct kernel_info *kinfo,
                                         PFN_DOWN(end - 1));
             if ( res )
             {
-                printk(XENLOG_ERR
+                printk(CRUXLOG_ERR
                        "Failed to add: %#"PRIpaddr"->%#"PRIpaddr", error %d\n",
                        start, end, res);
                 goto out;
@@ -239,7 +239,7 @@ void __init allocate_memory(struct domain *d, struct kernel_info *kinfo)
     unsigned int i, nr_banks = GUEST_RAM_BANKS;
     struct membanks *hwdom_free_mem = NULL;
 
-    printk(XENLOG_INFO "allocating mappings totalling %ldMB for %pd:\n",
+    printk(CRUXLOG_INFO "Allocating mappings totalling %ldMB for %pd:\n",
            /* Don't want format this as PRIpaddr (16 digit hex) */
            (unsigned long)(kinfo->unassigned_mem >> 20), d);
 
@@ -316,7 +316,7 @@ void __init allocate_memory(struct domain *d, struct kernel_info *kinfo)
 
     for( i = 0; i < mem->nr_banks; i++ )
     {
-        printk(XENLOG_INFO "%pd BANK[%d] %#"PRIpaddr"-%#"PRIpaddr" (%ldMB)\n",
+        printk(CRUXLOG_INFO "%pd BANK[%d] %#"PRIpaddr"-%#"PRIpaddr" (%ldMB)\n",
                d,
                i,
                mem->bank[i].start,
@@ -340,7 +340,7 @@ void __init dtb_load(struct kernel_info *kinfo,
 {
     unsigned long left;
 
-    printk("loading %pd DTB to 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
+    printk("Loading %pd DTB to 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
            kinfo->bd.d, kinfo->dtb_paddr,
            kinfo->dtb_paddr + fdt_totalsize(kinfo->fdt));
 
@@ -372,7 +372,7 @@ void __init initrd_load(struct kernel_info *kinfo,
     paddr = mod->start;
     len = mod->size;
 
-    printk("loading %pd initrd from %"PRIpaddr" to 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
+    printk("Loading %pd initrd from %"PRIpaddr" to 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
            kinfo->bd.d, paddr, load_addr, load_addr + len);
 
     /* Fix up linux,initrd-start and linux,initrd-end in /chosen */

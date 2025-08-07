@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/bitops.h>
-#include <xen/init.h>
-#include <xen/self-tests.h>
+#include <crux/bitops.h>
+#include <crux/init.h>
+#include <crux/self-tests.h>
 
 /* Mask of type UL with the upper x bits set. */
 #define UPPER_MASK(x) (~0UL << (BITS_PER_LONG - (x)))

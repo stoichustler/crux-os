@@ -301,7 +301,7 @@ static void write_src(void)
 
 		return;
 	}
-	printf("#include <xen/config.h>\n");
+	printf("#include <crux/config.h>\n");
 	printf("#if BITS_PER_LONG == 64 && !defined(SYMBOLS_ORIGIN)\n");
 	printf("#define PTR .quad\n");
 	printf("#define ALGN .balign 8\n");
@@ -606,7 +606,7 @@ int main(int argc, char **argv)
 				warn_dup = true;
 			else if (strcmp(argv[i], "--error-dup") == 0)
 				warn_dup = error_dup = true;
-			else if (strcmp(argv[i], "--xensyms") == 0)
+			else if (strcmp(argv[i], "--cruxsyms") == 0)
 				map_only = true;
 			else
 				usage();

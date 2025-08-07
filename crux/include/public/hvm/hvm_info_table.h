@@ -7,8 +7,8 @@
  * Copyright (c) 2006, Keir Fraser
  */
 
-#ifndef __XEN_PUBLIC_HVM_HVM_INFO_TABLE_H__
-#define __XEN_PUBLIC_HVM_HVM_INFO_TABLE_H__
+#ifndef __CRUX_PUBLIC_HVM_HVM_INFO_TABLE_H__
+#define __CRUX_PUBLIC_HVM_HVM_INFO_TABLE_H__
 
 #define HVM_INFO_PFN         0x09F
 #define HVM_INFO_OFFSET      0x800
@@ -18,10 +18,10 @@
 #define HVM_MAX_VCPUS        128
 
 /*
- * In some cases SMP HVM guests may require knowledge of xen's idea of vCPU ids
+ * In some cases SMP HVM guests may require knowledge of Xen's idea of vCPU ids
  * for their vCPUs. For example, HYPERVISOR_vcpu_op and some EVTCHNOP_*
  * hypercalls take vcpu id as a parameter. It is valid for HVM guests to assume
- * that xen's vCPU id always equals to ACPI (not APIC!) id in MADT table which
+ * that Xen's vCPU id always equals to ACPI (not APIC!) id in MADT table which
  * is always present for SMP guests.
  */
 
@@ -62,4 +62,4 @@ struct hvm_info_table {
     uint8_t     vcpu_online[(HVM_MAX_VCPUS + 7)/8];
 };
 
-#endif /* __XEN_PUBLIC_HVM_HVM_INFO_TABLE_H__ */
+#endif /* __CRUX_PUBLIC_HVM_HVM_INFO_TABLE_H__ */

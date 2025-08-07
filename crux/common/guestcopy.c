@@ -1,12 +1,12 @@
-#include <xen/lib.h>
-#include <xen/guest_access.h>
-#include <xen/err.h>
+#include <crux/lib.h>
+#include <crux/guest_access.h>
+#include <crux/err.h>
 
 /*
  * The function copies a string from the guest and adds a NUL to
  * make sure the string is correctly terminated.
  */
-char *safe_copy_string_from_guest(XEN_GUEST_HANDLE(char) u_buf,
+char *safe_copy_string_from_guest(CRUX_GUEST_HANDLE(char) u_buf,
                                   size_t size, size_t max_size)
 {
     char *tmp;

@@ -5,19 +5,19 @@
  * Copyright (c) 2012, Citrix Systems
  */
 
-#include <xen/types.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/sched.h>
-#include <xen/hypercall.h>
+#include <crux/types.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/sched.h>
+#include <crux/hypercall.h>
 
 
-int do_arm_physdev_op(int cmd, XEN_GUEST_HANDLE_PARAM(void) arg)
+int do_arm_physdev_op(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
 #ifdef CONFIG_HAS_PCI
     return pci_physdev_op(cmd, arg);
 #else
-    gdprintk(XENLOG_DEBUG, "PHYSDEVOP cmd=%d: not implemented\n", cmd);
+    gdprintk(CRUXLOG_DEBUG, "PHYSDEVOP cmd=%d: not implemented\n", cmd);
     return -ENOSYS;
 #endif
 }

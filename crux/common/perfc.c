@@ -1,11 +1,11 @@
 
-#include <xen/cpumask.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/lib.h>
-#include <xen/perfc.h>
-#include <xen/spinlock.h>
-#include <xen/time.h>
+#include <crux/cpumask.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/lib.h>
+#include <crux/perfc.h>
+#include <crux/spinlock.h>
+#include <crux/time.h>
 
 #include <public/sysctl.h>
 
@@ -20,7 +20,7 @@ static const struct {
     } type;
     unsigned int nr_elements;
 } perfc_info[] = {
-#include <xen/perfc_defn.h>
+#include <crux/perfc_defn.h>
 };
 
 #define NR_PERFCTRS (sizeof(perfc_info) / sizeof(perfc_info[0]))
@@ -32,7 +32,7 @@ void cf_check perfc_printall(unsigned char key)
     unsigned int i, j;
     s_time_t now = NOW();
 
-    printk("xen performance counters SHOW  (now = %"PRI_stime")\n", now);
+    printk("Xen performance counters SHOW  (now = %"PRI_stime")\n", now);
 
     for ( i = j = 0; i < NR_PERFCTRS; i++ )
     {
@@ -120,7 +120,7 @@ void cf_check perfc_reset(unsigned char key)
     s_time_t now = NOW();
 
     if ( key != '\0' )
-        printk("xen performance counters RESET (now = %"PRI_stime")\n", now);
+        printk("Xen performance counters RESET (now = %"PRI_stime")\n", now);
 
     /* leave STATUS counters alone -- don't reset */
 
@@ -150,13 +150,13 @@ void cf_check perfc_reset(unsigned char key)
 }
 
 #ifdef CONFIG_SYSCTL
-static struct xen_sysctl_perfc_desc perfc_d[NR_PERFCTRS];
-static xen_sysctl_perfc_val_t *perfc_vals;
+static struct crux_sysctl_perfc_desc perfc_d[NR_PERFCTRS];
+static crux_sysctl_perfc_val_t *perfc_vals;
 static unsigned int      perfc_nbr_vals;
 static cpumask_t         perfc_cpumap;
 
-static int perfc_copy_info(XEN_GUEST_HANDLE_64(xen_sysctl_perfc_desc_t) desc,
-                           XEN_GUEST_HANDLE_64(xen_sysctl_perfc_val_t) val)
+static int perfc_copy_info(CRUX_GUEST_HANDLE_64(crux_sysctl_perfc_desc_t) desc,
+                           CRUX_GUEST_HANDLE_64(crux_sysctl_perfc_val_t) val)
 {
     unsigned int i, j, v;
 
@@ -188,7 +188,7 @@ static int perfc_copy_info(XEN_GUEST_HANDLE_64(xen_sysctl_perfc_desc_t) desc,
         }
 
         xfree(perfc_vals);
-        perfc_vals = xmalloc_array(xen_sysctl_perfc_val_t, perfc_nbr_vals);
+        perfc_vals = xmalloc_array(crux_sysctl_perfc_val_t, perfc_nbr_vals);
     }
 
     if ( guest_handle_is_null(desc) )
@@ -236,7 +236,7 @@ static int perfc_copy_info(XEN_GUEST_HANDLE_64(xen_sysctl_perfc_desc_t) desc,
 }
 
 /* Dom0 control of perf counters */
-int perfc_control(struct xen_sysctl_perfc_op *pc)
+int perfc_control(struct crux_sysctl_perfc_op *pc)
 {
     static DEFINE_SPINLOCK(lock);
     int rc;
@@ -245,12 +245,12 @@ int perfc_control(struct xen_sysctl_perfc_op *pc)
 
     switch ( pc->cmd )
     {
-    case XEN_SYSCTL_PERFCOP_reset:
+    case CRUX_SYSCTL_PERFCOP_reset:
         rc = perfc_copy_info(pc->desc, pc->val);
         perfc_reset(0);
         break;
 
-    case XEN_SYSCTL_PERFCOP_query:
+    case CRUX_SYSCTL_PERFCOP_query:
         rc = perfc_copy_info(pc->desc, pc->val);
         break;
 

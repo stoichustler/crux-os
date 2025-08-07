@@ -7,9 +7,9 @@
  * Copyright (c) 2005, K A Fraser
  */
 
-#include <xen/sched.h>
-#include <xen/errno.h>
-#include <xen/rangeset.h>
+#include <crux/sched.h>
+#include <crux/errno.h>
+#include <crux/rangeset.h>
 #include <xsm/xsm.h>
 
 /* An inclusive range [s,e] and pointer to next range in ascending order. */

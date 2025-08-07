@@ -3,26 +3,26 @@
  * Copyright (c) 2007, Keir Fraser
  */
 
-#ifndef __XEN_PUBLIC_HVM_HVM_OP_H__
-#define __XEN_PUBLIC_HVM_HVM_OP_H__
+#ifndef __CRUX_PUBLIC_HVM_HVM_OP_H__
+#define __CRUX_PUBLIC_HVM_HVM_OP_H__
 
-#include "../xen.h"
+#include "../crux.h"
 #include "../trace.h"
 #include "../event_channel.h"
 
-/* Get/set subcommands: extra argument == pointer to xen_hvm_param struct. */
+/* Get/set subcommands: extra argument == pointer to crux_hvm_param struct. */
 #define HVMOP_set_param           0
 #define HVMOP_get_param           1
-struct xen_hvm_param {
+struct crux_hvm_param {
     domid_t  domid;    /* IN */
     uint16_t pad;
     uint32_t index;    /* IN */
     uint64_t value;    /* IN/OUT */
 };
-typedef struct xen_hvm_param xen_hvm_param_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_param_t);
+typedef struct crux_hvm_param crux_hvm_param_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_param_t);
 
-struct xen_hvm_altp2m_suppress_ve {
+struct crux_hvm_altp2m_suppress_ve {
     uint16_t view;
     uint8_t suppress_ve; /* Boolean type. */
     uint8_t pad1;
@@ -30,7 +30,7 @@ struct xen_hvm_altp2m_suppress_ve {
     uint64_t gfn;
 };
 
-struct xen_hvm_altp2m_suppress_ve_multi {
+struct crux_hvm_altp2m_suppress_ve_multi {
     uint16_t view;
     uint8_t suppress_ve; /* Boolean type. */
     uint8_t pad1;
@@ -40,11 +40,11 @@ struct xen_hvm_altp2m_suppress_ve_multi {
     uint64_t first_error_gfn; /* Gfn of the first error. */
 };
 
-#if __XEN_INTERFACE_VERSION__ < 0x00040900
+#if __CRUX_INTERFACE_VERSION__ < 0x00040900
 
 /* Set the logical level of one of a domain's PCI INTx wires. */
 #define HVMOP_set_pci_intx_level  2
-struct xen_hvm_set_pci_intx_level {
+struct crux_hvm_set_pci_intx_level {
     /* Domain to be updated. */
     domid_t  domid;
     /* PCI INTx identification in PCI topology (domain:bus:device:intx). */
@@ -52,12 +52,12 @@ struct xen_hvm_set_pci_intx_level {
     /* Assertion level (0 = unasserted, 1 = asserted). */
     uint8_t  level;
 };
-typedef struct xen_hvm_set_pci_intx_level xen_hvm_set_pci_intx_level_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_pci_intx_level_t);
+typedef struct crux_hvm_set_pci_intx_level crux_hvm_set_pci_intx_level_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_set_pci_intx_level_t);
 
 /* Set the logical level of one of a domain's ISA IRQ wires. */
 #define HVMOP_set_isa_irq_level   3
-struct xen_hvm_set_isa_irq_level {
+struct crux_hvm_set_isa_irq_level {
     /* Domain to be updated. */
     domid_t  domid;
     /* ISA device identification, by ISA IRQ (0-15). */
@@ -65,11 +65,11 @@ struct xen_hvm_set_isa_irq_level {
     /* Assertion level (0 = unasserted, 1 = asserted). */
     uint8_t  level;
 };
-typedef struct xen_hvm_set_isa_irq_level xen_hvm_set_isa_irq_level_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_isa_irq_level_t);
+typedef struct crux_hvm_set_isa_irq_level crux_hvm_set_isa_irq_level_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_set_isa_irq_level_t);
 
 #define HVMOP_set_pci_link_route  4
-struct xen_hvm_set_pci_link_route {
+struct crux_hvm_set_pci_link_route {
     /* Domain to be updated. */
     domid_t  domid;
     /* PCI link identifier (0-3). */
@@ -77,10 +77,10 @@ struct xen_hvm_set_pci_link_route {
     /* ISA IRQ (1-15), or 0 (disable link). */
     uint8_t  isa_irq;
 };
-typedef struct xen_hvm_set_pci_link_route xen_hvm_set_pci_link_route_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_pci_link_route_t);
+typedef struct crux_hvm_set_pci_link_route crux_hvm_set_pci_link_route_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_set_pci_link_route_t);
 
-#endif /* __XEN_INTERFACE_VERSION__ < 0x00040900 */
+#endif /* __CRUX_INTERFACE_VERSION__ < 0x00040900 */
 
 /* Flushes all VCPU TLBs: @arg must be NULL. */
 #define HVMOP_flush_tlbs          5
@@ -90,13 +90,13 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_pci_link_route_t);
  * compat header. This will ensure that the improperly named HVMMEM_(*)
  * values are defined only once.
  */
-#ifndef XEN_GENERATING_COMPAT_HEADERS
+#ifndef CRUX_GENERATING_COMPAT_HEADERS
 
 typedef enum {
     HVMMEM_ram_rw,             /* Normal read/write guest RAM */
     HVMMEM_ram_ro,             /* Read-only; writes are discarded */
     HVMMEM_mmio_dm,            /* Reads and write go to the device model */
-#if __XEN_INTERFACE_VERSION__ < 0x00040700
+#if __CRUX_INTERFACE_VERSION__ < 0x00040700
     HVMMEM_mmio_write_dm,      /* Read-only; writes go to the device model */
 #else
     HVMMEM_unused,             /* Placeholder; setting memory to this type
@@ -111,50 +111,50 @@ typedef enum {
                                   to HVMMEM_ram_rw. */
 } hvmmem_type_t;
 
-#endif /* XEN_GENERATING_COMPAT_HEADERS */
+#endif /* CRUX_GENERATING_COMPAT_HEADERS */
 
 /* Hint from PV drivers for pagetable destruction. */
 #define HVMOP_pagetable_dying        9
-struct xen_hvm_pagetable_dying {
+struct crux_hvm_pagetable_dying {
     /* Domain with a pagetable about to be destroyed. */
     domid_t  domid;
     uint16_t pad[3]; /* align next field on 8-byte boundary */
     /* guest physical address of the toplevel pagetable dying */
     uint64_t gpa;
 };
-typedef struct xen_hvm_pagetable_dying xen_hvm_pagetable_dying_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_pagetable_dying_t);
+typedef struct crux_hvm_pagetable_dying crux_hvm_pagetable_dying_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_pagetable_dying_t);
 
-/* Get the current xen time, in nanoseconds since system boot. */
+/* Get the current Xen time, in nanoseconds since system boot. */
 #define HVMOP_get_time              10
-struct xen_hvm_get_time {
+struct crux_hvm_get_time {
     uint64_t now;      /* OUT */
 };
-typedef struct xen_hvm_get_time xen_hvm_get_time_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_time_t);
+typedef struct crux_hvm_get_time crux_hvm_get_time_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_get_time_t);
 
-#define HVMOP_xentrace              11
-struct xen_hvm_xentrace {
+#define HVMOP_cruxtrace              11
+struct crux_hvm_cruxtrace {
     uint16_t event, extra_bytes;
     uint8_t extra[TRACE_EXTRA_MAX * sizeof(uint32_t)];
 };
-typedef struct xen_hvm_xentrace xen_hvm_xentrace_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_xentrace_t);
+typedef struct crux_hvm_cruxtrace crux_hvm_cruxtrace_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_cruxtrace_t);
 
 /* Following tools-only interfaces may change in future. */
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
-/* Deprecated by XENMEM_access_op_set_access */
+/* Deprecated by CRUXMEM_access_op_set_access */
 #define HVMOP_set_mem_access        12
 
-/* Deprecated by XENMEM_access_op_get_access */
+/* Deprecated by CRUXMEM_access_op_get_access */
 #define HVMOP_get_mem_access        13
 
-#endif /* defined(__XEN__) || defined(__XEN_TOOLS__) */
+#endif /* defined(__CRUX__) || defined(__CRUX_TOOLS__) */
 
 #define HVMOP_get_mem_type    15
 /* Return hvmmem_type_t for the specified pfn. */
-struct xen_hvm_get_mem_type {
+struct crux_hvm_get_mem_type {
     /* Domain to be queried. */
     domid_t domid;
     /* OUT variable. */
@@ -163,11 +163,11 @@ struct xen_hvm_get_mem_type {
     /* IN variable. */
     uint64_t pfn;
 };
-typedef struct xen_hvm_get_mem_type xen_hvm_get_mem_type_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_mem_type_t);
+typedef struct crux_hvm_get_mem_type crux_hvm_get_mem_type_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_get_mem_type_t);
 
 /* Following tools-only interfaces may change in future. */
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 
 /*
  * Definitions relating to DMOP_create_ioreq_server. (Defined here for
@@ -182,7 +182,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_mem_type_t);
  */
 #define HVM_IOREQSRV_BUFIOREQ_ATOMIC 2
 
-#endif /* defined(__XEN__) || defined(__XEN_TOOLS__) */
+#endif /* defined(__CRUX__) || defined(__CRUX_TOOLS__) */
 
 #if defined(__i386__) || defined(__x86_64__)
 
@@ -194,12 +194,12 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_mem_type_t);
  *                                 HVM_PARAM_CALLBACK_IRQ).
  */
 #define HVMOP_set_evtchn_upcall_vector 23
-struct xen_hvm_evtchn_upcall_vector {
+struct crux_hvm_evtchn_upcall_vector {
     uint32_t vcpu;
     uint8_t vector;
 };
-typedef struct xen_hvm_evtchn_upcall_vector xen_hvm_evtchn_upcall_vector_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_evtchn_upcall_vector_t);
+typedef struct crux_hvm_evtchn_upcall_vector crux_hvm_evtchn_upcall_vector_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_evtchn_upcall_vector_t);
 
 #endif /* defined(__i386__) || defined(__x86_64__) */
 
@@ -210,63 +210,63 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_evtchn_upcall_vector_t);
 
 #define HVMOP_ALTP2M_INTERFACE_VERSION 0x00000001
 
-struct xen_hvm_altp2m_domain_state {
+struct crux_hvm_altp2m_domain_state {
     /* IN or OUT variable on/off */
     uint8_t state;
 };
-typedef struct xen_hvm_altp2m_domain_state xen_hvm_altp2m_domain_state_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_domain_state_t);
+typedef struct crux_hvm_altp2m_domain_state crux_hvm_altp2m_domain_state_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_domain_state_t);
 
-struct xen_hvm_altp2m_vcpu_enable_notify {
+struct crux_hvm_altp2m_vcpu_enable_notify {
     uint32_t vcpu_id;
     uint32_t pad;
     /* #VE info area gfn */
     uint64_t gfn;
 };
-typedef struct xen_hvm_altp2m_vcpu_enable_notify xen_hvm_altp2m_vcpu_enable_notify_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_vcpu_enable_notify_t);
+typedef struct crux_hvm_altp2m_vcpu_enable_notify crux_hvm_altp2m_vcpu_enable_notify_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_vcpu_enable_notify_t);
 
-struct xen_hvm_altp2m_vcpu_disable_notify {
+struct crux_hvm_altp2m_vcpu_disable_notify {
     uint32_t vcpu_id;
 };
-typedef struct xen_hvm_altp2m_vcpu_disable_notify xen_hvm_altp2m_vcpu_disable_notify_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_vcpu_disable_notify_t);
+typedef struct crux_hvm_altp2m_vcpu_disable_notify crux_hvm_altp2m_vcpu_disable_notify_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_vcpu_disable_notify_t);
 
-struct xen_hvm_altp2m_view {
+struct crux_hvm_altp2m_view {
     /* IN/OUT variable */
     uint16_t view;
-    uint16_t hvmmem_default_access; /* xenmem_access_t */
+    uint16_t hvmmem_default_access; /* cruxmem_access_t */
 };
-typedef struct xen_hvm_altp2m_view xen_hvm_altp2m_view_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_view_t);
+typedef struct crux_hvm_altp2m_view crux_hvm_altp2m_view_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_view_t);
 
-#if __XEN_INTERFACE_VERSION__ < 0x00040a00
-struct xen_hvm_altp2m_set_mem_access {
+#if __CRUX_INTERFACE_VERSION__ < 0x00040a00
+struct crux_hvm_altp2m_set_mem_access {
     /* view */
     uint16_t view;
     /* Memory type */
-    uint16_t access; /* xenmem_access_t */
+    uint16_t access; /* cruxmem_access_t */
     uint32_t pad;
     /* gfn */
     uint64_t gfn;
 };
-typedef struct xen_hvm_altp2m_set_mem_access xen_hvm_altp2m_set_mem_access_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_set_mem_access_t);
-#endif /* __XEN_INTERFACE_VERSION__ < 0x00040a00 */
+typedef struct crux_hvm_altp2m_set_mem_access crux_hvm_altp2m_set_mem_access_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_set_mem_access_t);
+#endif /* __CRUX_INTERFACE_VERSION__ < 0x00040a00 */
 
-struct xen_hvm_altp2m_mem_access {
+struct crux_hvm_altp2m_mem_access {
     /* view */
     uint16_t view;
     /* Memory type */
-    uint16_t access; /* xenmem_access_t */
+    uint16_t access; /* cruxmem_access_t */
     uint32_t pad;
     /* gfn */
     uint64_t gfn;
 };
-typedef struct xen_hvm_altp2m_mem_access xen_hvm_altp2m_mem_access_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_mem_access_t);
+typedef struct crux_hvm_altp2m_mem_access crux_hvm_altp2m_mem_access_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_mem_access_t);
 
-struct xen_hvm_altp2m_set_mem_access_multi {
+struct crux_hvm_altp2m_set_mem_access_multi {
     /* view */
     uint16_t view;
     uint16_t pad;
@@ -278,12 +278,12 @@ struct xen_hvm_altp2m_set_mem_access_multi {
      */
     uint64_t opaque;
     /* List of pfns to set access for */
-    XEN_GUEST_HANDLE(const_uint64) pfn_list;
+    CRUX_GUEST_HANDLE(const_uint64) pfn_list;
     /* Corresponding list of access settings for pfn_list */
-    XEN_GUEST_HANDLE(const_uint8) access_list;
+    CRUX_GUEST_HANDLE(const_uint8) access_list;
 };
 
-struct xen_hvm_altp2m_change_gfn {
+struct crux_hvm_altp2m_change_gfn {
     /* view */
     uint16_t view;
     uint16_t pad1;
@@ -293,21 +293,21 @@ struct xen_hvm_altp2m_change_gfn {
     /* new gfn, INVALID_GFN (~0UL) means revert */
     uint64_t new_gfn;
 };
-typedef struct xen_hvm_altp2m_change_gfn xen_hvm_altp2m_change_gfn_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_change_gfn_t);
+typedef struct crux_hvm_altp2m_change_gfn crux_hvm_altp2m_change_gfn_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_change_gfn_t);
 
-struct xen_hvm_altp2m_get_vcpu_p2m_idx {
+struct crux_hvm_altp2m_get_vcpu_p2m_idx {
     uint32_t vcpu_id;
     uint16_t altp2m_idx;
 };
 
-struct xen_hvm_altp2m_set_visibility {
+struct crux_hvm_altp2m_set_visibility {
     uint16_t altp2m_idx;
     uint8_t visible;
     uint8_t pad;
 };
 
-struct xen_hvm_altp2m_op {
+struct crux_hvm_altp2m_op {
     uint32_t version;   /* HVMOP_ALTP2M_INTERFACE_VERSION */
     uint32_t cmd;
 /* Get/set the altp2m state for a domain */
@@ -345,27 +345,27 @@ struct xen_hvm_altp2m_op {
     uint16_t pad1;
     uint32_t pad2;
     union {
-        struct xen_hvm_altp2m_domain_state         domain_state;
-        struct xen_hvm_altp2m_vcpu_enable_notify   enable_notify;
-        struct xen_hvm_altp2m_view                 view;
-#if __XEN_INTERFACE_VERSION__ < 0x00040a00
-        struct xen_hvm_altp2m_set_mem_access       set_mem_access;
-#endif /* __XEN_INTERFACE_VERSION__ < 0x00040a00 */
-        struct xen_hvm_altp2m_mem_access           mem_access;
-        struct xen_hvm_altp2m_change_gfn           change_gfn;
-        struct xen_hvm_altp2m_set_mem_access_multi set_mem_access_multi;
-        struct xen_hvm_altp2m_suppress_ve          suppress_ve;
-        struct xen_hvm_altp2m_suppress_ve_multi    suppress_ve_multi;
-        struct xen_hvm_altp2m_vcpu_disable_notify  disable_notify;
-        struct xen_hvm_altp2m_get_vcpu_p2m_idx     get_vcpu_p2m_idx;
-        struct xen_hvm_altp2m_set_visibility       set_visibility;
+        struct crux_hvm_altp2m_domain_state         domain_state;
+        struct crux_hvm_altp2m_vcpu_enable_notify   enable_notify;
+        struct crux_hvm_altp2m_view                 view;
+#if __CRUX_INTERFACE_VERSION__ < 0x00040a00
+        struct crux_hvm_altp2m_set_mem_access       set_mem_access;
+#endif /* __CRUX_INTERFACE_VERSION__ < 0x00040a00 */
+        struct crux_hvm_altp2m_mem_access           mem_access;
+        struct crux_hvm_altp2m_change_gfn           change_gfn;
+        struct crux_hvm_altp2m_set_mem_access_multi set_mem_access_multi;
+        struct crux_hvm_altp2m_suppress_ve          suppress_ve;
+        struct crux_hvm_altp2m_suppress_ve_multi    suppress_ve_multi;
+        struct crux_hvm_altp2m_vcpu_disable_notify  disable_notify;
+        struct crux_hvm_altp2m_get_vcpu_p2m_idx     get_vcpu_p2m_idx;
+        struct crux_hvm_altp2m_set_visibility       set_visibility;
         uint8_t pad[64];
     } u;
 };
-typedef struct xen_hvm_altp2m_op xen_hvm_altp2m_op_t;
-DEFINE_XEN_GUEST_HANDLE(xen_hvm_altp2m_op_t);
+typedef struct crux_hvm_altp2m_op crux_hvm_altp2m_op_t;
+DEFINE_CRUX_GUEST_HANDLE(crux_hvm_altp2m_op_t);
 
-#endif /* __XEN_PUBLIC_HVM_HVM_OP_H__ */
+#endif /* __CRUX_PUBLIC_HVM_HVM_OP_H__ */
 
 /*
  * Local variables:

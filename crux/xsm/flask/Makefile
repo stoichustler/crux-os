@@ -46,11 +46,11 @@ $(obj)/flask-policy.S: $(srctree)/tools/binfile FORCE
 targets += flask-policy.S
 
 FLASK_BUILD_DIR := $(abs_objtree)/$(obj)
-POLICY_SRC := $(FLASK_BUILD_DIR)/xenpolicy-$(XEN_FULLVERSION)
+POLICY_SRC := $(FLASK_BUILD_DIR)/cruxpolicy-$(CRUX_FULLVERSION)
 
 $(obj)/policy.bin: FORCE
-	$(MAKE) -f $(XEN_ROOT)/tools/flask/policy/Makefile.common \
-	        -C $(XEN_ROOT)/tools/flask/policy \
+	$(MAKE) -f $(CRUX_ROOT)/tools/flask/policy/Makefile.common \
+	        -C $(CRUX_ROOT)/tools/flask/policy \
 	        FLASK_BUILD_DIR=$(FLASK_BUILD_DIR) POLICY_FILENAME=$(POLICY_SRC)
 	cmp -s $(POLICY_SRC) $@ || cp $(POLICY_SRC) $@
 

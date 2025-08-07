@@ -2,7 +2,7 @@
 #ifndef ASM__RISCV__P2M_H
 #define ASM__RISCV__P2M_H
 
-#include <xen/errno.h>
+#include <crux/errno.h>
 
 #include <asm/page-bits.h>
 
@@ -20,7 +20,7 @@ typedef enum {
     p2m_ram_rw,         /* Normal read/write domain RAM */
 } p2m_type_t;
 
-#include <xen/p2m-common.h>
+#include <crux/p2m-common.h>
 
 static inline int get_page_and_type(struct page_info *page,
                                     struct domain *domain,

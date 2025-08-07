@@ -3,7 +3,7 @@
  * 
  * Sleep in hypervisor context for some event to occur.
  * 
- * Copyright (c) 2010, Keir Fraser <keir@xen.org>
+ * Copyright (c) 2010, Keir Fraser <keir@crux.org>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,17 +19,17 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/sched.h>
-#include <xen/softirq.h>
-#include <xen/wait.h>
-#include <xen/errno.h>
+#include <crux/sched.h>
+#include <crux/softirq.h>
+#include <crux/wait.h>
+#include <crux/errno.h>
 
 struct waitqueue_vcpu {
     struct list_head list;
     struct vcpu *vcpu;
 #ifdef CONFIG_X86
     /*
-     * xen/x86 does not have per-vcpu hypervisor stacks. So we must save the
+     * Xen/x86 does not have per-vcpu hypervisor stacks. So we must save the
      * hypervisor context before sleeping (descheduling), setjmp/longjmp-style.
      */
     void *esp;
@@ -46,7 +46,7 @@ int init_waitqueue_vcpu(struct vcpu *v)
         return -ENOMEM;
 
 #ifdef CONFIG_X86
-    wqv->stack = alloc_xenheap_page();
+    wqv->stack = alloc_cruxheap_page();
     if ( wqv->stack == NULL )
     {
         xfree(wqv);
@@ -72,7 +72,7 @@ void destroy_waitqueue_vcpu(struct vcpu *v)
 
     BUG_ON(!list_empty(&wqv->list));
 #ifdef CONFIG_X86
-    free_xenheap_page(wqv->stack);
+    free_cruxheap_page(wqv->stack);
 #endif
     xfree(wqv);
 
@@ -135,7 +135,7 @@ static void __prepare_to_wait(struct waitqueue_vcpu *wqv)
     /* Save current VCPU affinity; force wakeup on *this* CPU only. */
     if ( vcpu_temporary_affinity(curr, smp_processor_id(), VCPU_AFFINITY_WAIT) )
     {
-        gdprintk(XENLOG_ERR, "Unable to set vcpu affinity\n");
+        gdprintk(CRUXLOG_ERR, "Unable to set vcpu affinity\n");
         domain_crash(curr->domain);
 
         for ( ; ; )
@@ -178,7 +178,7 @@ static void __prepare_to_wait(struct waitqueue_vcpu *wqv)
 
     if ( unlikely(esp == NULL) )
     {
-        gdprintk(XENLOG_ERR, "Stack too large in %s\n", __func__);
+        gdprintk(CRUXLOG_ERR, "Stack too large in %s\n", __func__);
         domain_crash(curr->domain);
 
         for ( ; ; )
@@ -206,7 +206,7 @@ void check_wakeup_from_wait(void)
     /* Check if we are still pinned. */
     if ( unlikely(!(curr->affinity_broken & VCPU_AFFINITY_WAIT)) )
     {
-        gdprintk(XENLOG_ERR, "vcpu affinity lost\n");
+        gdprintk(CRUXLOG_ERR, "vcpu affinity lost\n");
         domain_crash(curr->domain);
 
         /* Re-initiate scheduler and don't longjmp(). */

@@ -1,6 +1,6 @@
 #include "private.h"
 
-#include <xen/lib/x86/cpu-policy.h>
+#include <crux/lib/x86/cpu-policy.h>
 
 static void zero_leaves(struct cpuid_leaf *l,
                         unsigned int first, unsigned int last)
@@ -153,9 +153,9 @@ void x86_cpu_policy_fill_native(struct cpu_policy *p)
          * The choice of CPUID_GUEST_NR_CACHE is arbitrary.  It is expected
          * that it will eventually need increasing for future hardware.
          */
-#ifdef __XEN__
+#ifdef __CRUX__
         if ( i == ARRAY_SIZE(p->cache.raw) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "CPUID: Insufficient Leaf 4 space for this hardware\n");
 #endif
     }
@@ -190,10 +190,10 @@ void x86_cpu_policy_fill_native(struct cpu_policy *p)
          * The choice of CPUID_GUEST_NR_TOPO is per the manual.  It may need
          * to grow for future hardware.
          */
-#ifdef __XEN__
+#ifdef __CRUX__
         if ( i == ARRAY_SIZE(p->topo.raw) &&
              (cpuid_count_leaf(0xb, i, &u.l), u.t.type != 0) )
-            printk(XENLOG_WARNING
+            printk(CRUXLOG_WARNING
                    "CPUID: Insufficient Leaf 0xb space for this hardware\n");
 #endif
     }
@@ -228,7 +228,7 @@ void x86_cpu_policy_fill_native(struct cpu_policy *p)
     p->hv_limit = 0;
     p->hv2_limit = 0;
 
-#ifdef __XEN__
+#ifdef __CRUX__
     /* TODO MSR_PLATFORM_INFO */
 
     if ( p->feat.arch_caps )
@@ -323,7 +323,7 @@ const uint32_t *x86_cpu_policy_lookup_deep_deps(uint32_t feature)
 }
 
 /*
- * Copy a single cpuid_leaf into a provided xen_cpuid_leaf_t buffer,
+ * Copy a single cpuid_leaf into a provided crux_cpuid_leaf_t buffer,
  * performing boundary checking against the buffer size.
  */
 static int copy_leaf_to_buffer(uint32_t leaf, uint32_t subleaf,
@@ -331,7 +331,7 @@ static int copy_leaf_to_buffer(uint32_t leaf, uint32_t subleaf,
                                cpuid_leaf_buffer_t leaves,
                                uint32_t *curr_entry, const uint32_t nr_entries)
 {
-    const xen_cpuid_leaf_t val = {
+    const crux_cpuid_leaf_t val = {
         leaf, subleaf, data->a, data->b, data->c, data->d,
     };
 
@@ -409,21 +409,21 @@ int x86_cpuid_copy_to_buffer(const struct cpu_policy *p,
         }
 
         default:
-            COPY_LEAF(leaf, XEN_CPUID_NO_SUBLEAF, &p->basic.raw[leaf]);
+            COPY_LEAF(leaf, CRUX_CPUID_NO_SUBLEAF, &p->basic.raw[leaf]);
             break;
         }
     }
 
-    /* TODO: Port xen and Viridian leaves to the new CPUID infrastructure. */
-    COPY_LEAF(0x40000000, XEN_CPUID_NO_SUBLEAF,
+    /* TODO: Port Xen and Viridian leaves to the new CPUID infrastructure. */
+    COPY_LEAF(0x40000000, CRUX_CPUID_NO_SUBLEAF,
               &(struct cpuid_leaf){ p->hv_limit });
-    COPY_LEAF(0x40000100, XEN_CPUID_NO_SUBLEAF,
+    COPY_LEAF(0x40000100, CRUX_CPUID_NO_SUBLEAF,
               &(struct cpuid_leaf){ p->hv2_limit });
 
     /* Extended leaves. */
     for ( leaf = 0; leaf <= MIN(p->extd.max_leaf & 0xffffUL,
                                 ARRAY_SIZE(p->extd.raw) - 1); ++leaf )
-        COPY_LEAF(0x80000000U | leaf, XEN_CPUID_NO_SUBLEAF, &p->extd.raw[leaf]);
+        COPY_LEAF(0x80000000U | leaf, CRUX_CPUID_NO_SUBLEAF, &p->extd.raw[leaf]);
 
 #undef COPY_LEAF
 
@@ -438,7 +438,7 @@ int x86_cpuid_copy_from_buffer(struct cpu_policy *p,
                                uint32_t *err_subleaf)
 {
     unsigned int i;
-    xen_cpuid_leaf_t data;
+    crux_cpuid_leaf_t data;
 
     if ( err_leaf )
         *err_leaf = -1;
@@ -501,7 +501,7 @@ int x86_cpuid_copy_from_buffer(struct cpu_policy *p,
                 break;
 
             default:
-                if ( data.subleaf != XEN_CPUID_NO_SUBLEAF )
+                if ( data.subleaf != CRUX_CPUID_NO_SUBLEAF )
                     goto out_of_range;
 
                 array_access_nospec(p->basic.raw, data.leaf) = l;
@@ -510,21 +510,21 @@ int x86_cpuid_copy_from_buffer(struct cpu_policy *p,
             break;
 
         case 0x40000000:
-            if ( data.subleaf != XEN_CPUID_NO_SUBLEAF )
+            if ( data.subleaf != CRUX_CPUID_NO_SUBLEAF )
                 goto out_of_range;
 
             p->hv_limit = l.a;
             break;
 
         case 0x40000100:
-            if ( data.subleaf != XEN_CPUID_NO_SUBLEAF )
+            if ( data.subleaf != CRUX_CPUID_NO_SUBLEAF )
                 goto out_of_range;
 
             p->hv2_limit = l.a;
             break;
 
         case 0x80000000U ... 0x80000000U + ARRAY_SIZE(p->extd.raw) - 1:
-            if ( data.subleaf != XEN_CPUID_NO_SUBLEAF )
+            if ( data.subleaf != CRUX_CPUID_NO_SUBLEAF )
                 goto out_of_range;
 
             array_access_nospec(p->extd.raw, data.leaf & 0xffff) = l;

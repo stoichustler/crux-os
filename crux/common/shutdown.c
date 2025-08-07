@@ -1,14 +1,14 @@
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/sections.h>
-#include <xen/domain.h>
-#include <xen/delay.h>
-#include <xen/watchdog.h>
-#include <xen/shutdown.h>
-#include <xen/console.h>
-#include <xen/kexec.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/sections.h>
+#include <crux/domain.h>
+#include <crux/delay.h>
+#include <crux/watchdog.h>
+#include <crux/shutdown.h>
+#include <crux/console.h>
+#include <crux/kexec.h>
 #include <public/sched.h>
 
 /* opt_noreboot: If true, machine will need manual reset on error. */

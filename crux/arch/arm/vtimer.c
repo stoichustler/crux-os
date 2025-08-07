@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/vtimer.c
+ * crux/arch/arm/vtimer.c
  *
  * ARM Virtual Timer emulation support
  *
@@ -8,11 +8,11 @@
  * Copyright (c) 2011 Citrix Systems.
  */
 
-#include <xen/acpi.h>
-#include <xen/lib.h>
-#include <xen/perfc.h>
-#include <xen/sched.h>
-#include <xen/timer.h>
+#include <crux/acpi.h>
+#include <crux/lib.h>
+#include <crux/perfc.h>
+#include <crux/sched.h>
+#include <crux/timer.h>
 
 #include <asm/cpregs.h>
 #include <asm/div64.h>
@@ -52,7 +52,7 @@ static void virt_timer_expired(void *data)
     perfc_incr(vtimer_virt_inject);
 }
 
-int domain_vtimer_init(struct domain *d, struct xen_arch_domainconfig *config)
+int domain_vtimer_init(struct domain *d, struct crux_arch_domainconfig *config)
 {
     d->arch.virt_timer_base.offset = get_cycles();
     d->arch.virt_timer_base.nanoseconds =
@@ -70,7 +70,7 @@ int domain_vtimer_init(struct domain *d, struct xen_arch_domainconfig *config)
      *
      * Note that we should still reserve it when using the Device-Tree
      * because the interrupt is not optional. That said, we are not
-     * expecting any OS to use it when running on top of xen.
+     * expecting any OS to use it when running on top of Xen.
      *
      * At this stage vgic_reserve_virq() is not meant to fail.
      */
@@ -192,7 +192,7 @@ static bool vtimer_cntp_ctl(struct cpu_user_regs *regs, register_t *r,
         if ( v->arch.phys_timer.ctl & CNTx_CTL_ENABLE )
         {
             /*
-             * If cval is before the point xen started, expire timer
+             * If cval is before the point Xen started, expire timer
              * immediately.
              */
             expires = v->arch.phys_timer.cval > boot_count
@@ -228,7 +228,7 @@ static bool vtimer_cntp_tval(struct cpu_user_regs *regs, register_t *r,
         {
             v->arch.phys_timer.ctl &= ~CNTx_CTL_PENDING;
             /*
-             * If cval is before the point xen started, expire timer
+             * If cval is before the point Xen started, expire timer
              * immediately.
              */
             expires = v->arch.phys_timer.cval > boot_count
@@ -259,7 +259,7 @@ static bool vtimer_cntp_cval(struct cpu_user_regs *regs, uint64_t *r,
         {
             v->arch.phys_timer.ctl &= ~CNTx_CTL_PENDING;
             /*
-             * If cval is before the point xen started, expire timer
+             * If cval is before the point Xen started, expire timer
              * immediately.
              */
             expires = v->arch.phys_timer.cval > boot_count
@@ -388,7 +388,7 @@ void vtimer_update_irqs(struct vcpu *v)
     /*
      * For the virtual timer we read the current state from the hardware.
      * Technically we should keep the CNTx_CTL_MASK bit here, to catch if
-     * the timer interrupt is masked. However xen *always* masks the timer
+     * the timer interrupt is masked. However Xen *always* masks the timer
      * upon entering the hypervisor, leaving it up to the guest to un-mask it.
      * So we would always read a "low" level, despite the condition being
      * actually "high".  Ignoring the mask bit solves this (for now).

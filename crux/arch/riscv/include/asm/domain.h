@@ -2,7 +2,7 @@
 #ifndef ASM__RISCV__DOMAIN_H
 #define ASM__RISCV__DOMAIN_H
 
-#include <xen/xmalloc.h>
+#include <crux/xmalloc.h>
 #include <public/hvm/params.h>
 
 struct hvm_domain
@@ -20,7 +20,7 @@ struct arch_domain {
     struct hvm_domain hvm;
 };
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 
 static inline struct vcpu_guest_context *alloc_vcpu_guest_context(void)
 {

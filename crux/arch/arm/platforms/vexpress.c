@@ -1,5 +1,5 @@
 /*
- * xen/arch/arm/platform_vexpress.c
+ * crux/arch/arm/platform_vexpress.c
  *
  * Versatile Express specific settings
  *
@@ -19,8 +19,8 @@
 
 #include <asm/platforms/vexpress.h>
 #include <asm/platform.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 #include <asm/io.h>
 
 #define DCC_SHIFT      26
@@ -72,7 +72,7 @@ static void vexpress_reset(void)
 
     if ( !sp810 )
     {
-        dprintk(XENLOG_ERR, "Unable to map SP810\n");
+        dprintk(CRUXLOG_ERR, "Unable to map SP810\n");
         return;
     }
 
@@ -95,7 +95,7 @@ static int __init vexpress_smp_init(void)
     sysflags = ioremap_nocache(V2M_SYS_MMIO_BASE, PAGE_SIZE);
     if ( !sysflags )
     {
-        dprintk(XENLOG_ERR, "Unable to map vexpress MMIO\n");
+        dprintk(CRUXLOG_ERR, "Unable to map vexpress MMIO\n");
         return -EFAULT;
     }
 
@@ -123,7 +123,7 @@ static const struct dt_device_match vexpress_blacklist_dev[] __initconst =
     DT_MATCH_COMPATIBLE("arm,cci-400"),
     DT_MATCH_COMPATIBLE("arm,cci-400-pmu"),
     /* Video device
-     * TODO: remove it once memreserve is handled properly by xen
+     * TODO: remove it once memreserve is handled properly by crux
      */
     DT_MATCH_COMPATIBLE("arm,hdlcd"),
     /* Hardware power management */

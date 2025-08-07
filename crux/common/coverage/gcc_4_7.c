@@ -10,11 +10,11 @@
  *
  *  Uses gcc-internal data definitions.
  *
- *  Imported from Linux and modified for xen by
+ *  Imported from Linux and modified for Xen by
  *    Wei Liu <wei.liu2@citrix.com>
  */
 
-#include <xen/string.h>
+#include <crux/string.h>
 
 #include "gcov.h"
 

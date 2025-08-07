@@ -3,8 +3,8 @@
  *                  link of the hypervisor image.
  */
 
-#include <xen/types.h>
-#include <xen/symbols.h>
+#include <crux/types.h>
+#include <crux/symbols.h>
 
 #ifdef SYMBOLS_ORIGIN
 const unsigned int symbols_offsets[1];

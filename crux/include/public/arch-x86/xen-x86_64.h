@@ -1,27 +1,27 @@
 /* SPDX-License-Identifier: MIT */
 /******************************************************************************
- * xen-x86_64.h
+ * crux-x86_64.h
  *
- * Guest OS interface to x86 64-bit xen.
+ * Guest OS interface to x86 64-bit Xen.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */
 
-#ifndef __XEN_PUBLIC_ARCH_X86_XEN_X86_64_H__
-#define __XEN_PUBLIC_ARCH_X86_XEN_X86_64_H__
+#ifndef __CRUX_PUBLIC_ARCH_X86_CRUX_X86_64_H__
+#define __CRUX_PUBLIC_ARCH_X86_CRUX_X86_64_H__
 
 /*
  * Hypercall interface:
  *  Input:  %rdi, %rsi, %rdx, %r10, %r8 (arguments 1-5)
  *  Output: %rax
- * Access is via hypercall page (set up by guest loader or via a xen MSR):
+ * Access is via hypercall page (set up by guest loader or via a Xen MSR):
  *  call hypercall_page + hypercall-number * 32
  * Clobbered: argument registers (e.g., 2-arg hypercall clobbers %rdi,%rsi)
  */
 
 /*
  * 64-bit segment selectors
- * These flat segments are in the xen-private section of every GDT. Since these
+ * These flat segments are in the Xen-private section of every GDT. Since these
  * are also present in the initial GDT, many OSes will be able to avoid
  * installing their own GDT.
  */
@@ -59,12 +59,12 @@
 #define __MACH2PHYS_VIRT_END    0xFFFF804000000000
 
 #ifndef HYPERVISOR_VIRT_START
-#define HYPERVISOR_VIRT_START xen_mk_ulong(__HYPERVISOR_VIRT_START)
-#define HYPERVISOR_VIRT_END   xen_mk_ulong(__HYPERVISOR_VIRT_END)
+#define HYPERVISOR_VIRT_START crux_mk_ulong(__HYPERVISOR_VIRT_START)
+#define HYPERVISOR_VIRT_END   crux_mk_ulong(__HYPERVISOR_VIRT_END)
 #endif
 
-#define MACH2PHYS_VIRT_START  xen_mk_ulong(__MACH2PHYS_VIRT_START)
-#define MACH2PHYS_VIRT_END    xen_mk_ulong(__MACH2PHYS_VIRT_END)
+#define MACH2PHYS_VIRT_START  crux_mk_ulong(__MACH2PHYS_VIRT_START)
+#define MACH2PHYS_VIRT_END    crux_mk_ulong(__MACH2PHYS_VIRT_END)
 #define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>3)
 #ifndef machine_to_phys_mapping
 #define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
@@ -113,7 +113,7 @@ struct iret_context {
     /* Bottom of iret stack frame. */
 };
 
-#if defined(__XEN__) || defined(__XEN_TOOLS__)
+#if defined(__CRUX__) || defined(__CRUX_TOOLS__)
 /* Anonymous unions include all permissible names (e.g., al/ah/ax/eax/rax). */
 #define __DECL_REG_LOHI(which) union { \
     uint64_t r ## which ## x; \
@@ -190,7 +190,7 @@ struct cpu_user_regs {
     uint16_t gs, _pad6[3];
 };
 typedef struct cpu_user_regs cpu_user_regs_t;
-DEFINE_XEN_GUEST_HANDLE(cpu_user_regs_t);
+DEFINE_CRUX_GUEST_HANDLE(cpu_user_regs_t);
 
 #undef __DECL_REG
 #undef __DECL_REG_LOHI
@@ -198,8 +198,8 @@ DEFINE_XEN_GUEST_HANDLE(cpu_user_regs_t);
 #undef __DECL_REG_LO16
 #undef __DECL_REG_HI
 
-#define xen_pfn_to_cr3(pfn) ((unsigned long)(pfn) << 12)
-#define xen_cr3_to_pfn(cr3) ((unsigned long)(cr3) >> 12)
+#define crux_pfn_to_cr3(pfn) ((unsigned long)(pfn) << 12)
+#define crux_cr3_to_pfn(cr3) ((unsigned long)(cr3) >> 12)
 
 struct arch_vcpu_info {
     unsigned long cr2;
@@ -207,11 +207,11 @@ struct arch_vcpu_info {
 };
 typedef struct arch_vcpu_info arch_vcpu_info_t;
 
-typedef unsigned long xen_callback_t;
+typedef unsigned long crux_callback_t;
 
 #endif /* !__ASSEMBLY__ */
 
-#endif /* __XEN_PUBLIC_ARCH_X86_XEN_X86_64_H__ */
+#endif /* __CRUX_PUBLIC_ARCH_X86_CRUX_X86_64_H__ */
 
 /*
  * Local variables:

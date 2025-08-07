@@ -5,8 +5,8 @@
  * Based on Linux's SMMUv3 driver:
  *    drivers/iommu/arm-smmu-v3.c
  *    commit: ab435ce49bd1d02e33dfec24f76955dc1196970b
- * and xen's SMMU driver:
- *    xen/drivers/passthrough/arm/smmu.c
+ * and Xen's SMMU driver:
+ *    crux/drivers/passthrough/arm/smmu.c
  *
  * Major differences with regard to Linux driver are as follows:
  *  1. Driver is currently supported as Tech Preview.
@@ -19,7 +19,7 @@
  *  5. Latest version of the Linux SMMUv3 code implements the commands queue
  *     access functions based on atomic operations implemented in Linux.
  *     Atomic functions used by the commands queue access functions are not
- *     implemented in XEN therefore we decided to port the earlier version
+ *     implemented in CRUX therefore we decided to port the earlier version
  *     of the code. Atomic operations are introduced to fix the bottleneck of
  *     the SMMU command queue insertion operation. A new algorithm for
  *     inserting commands into the queue is introduced, which is
@@ -27,17 +27,17 @@
  *     Consequence of reverting the patch is that the command queue insertion
  *     will be slow for large systems as spinlock will be used to serializes
  *     accesses from all CPUs to the single queue supported by the hardware.
- *     Once the proper atomic operations will be available in XEN the driver
+ *     Once the proper atomic operations will be available in CRUX the driver
  *     can be updated.
  *  6. Spin lock is used in place of Mutex when attaching a device to the SMMU,
- *     as there is no blocking locks implementation available in XEN.This might
- *     introduce latency in XEN. Need to investigate before driver is out for
+ *     as there is no blocking locks implementation available in CRUX.This might
+ *     introduce latency in CRUX. Need to investigate before driver is out for
  *     Tech Preview.
  *  7. PCI ATS functionality is not supported, as there is no support available
- *     in XEN to test the functionality. Code is not tested and compiled. Code
+ *     in CRUX to test the functionality. Code is not tested and compiled. Code
  *     is guarded by the flag CONFIG_PCI_ATS.
  *  8. MSI interrupts are not supported as there is no support available
- *     in XEN to request MSI interrupts. Code is not tested and compiled. Code
+ *     in CRUX to request MSI interrupts. Code is not tested and compiled. Code
  *     is guarded by the flag CONFIG_MSI.
  *
  * Following functionality should be supported before driver is out for tech
@@ -46,7 +46,7 @@
  *  1. Investigate the timing analysis of using spin lock in place of mutex
  *     when attaching devices to SMMU.
  *  2. Merged the latest Linux SMMUv3 driver code once atomic operation is
- *     available in XEN.
+ *     available in CRUX.
  *  3. PCI ATS and MSI interrupts should be supported.
  *  4. Investigate side-effect of using tasklet in place of threaded IRQ and
  *     fix if any.
@@ -71,21 +71,21 @@
  *
  */
 
-#include <xen/acpi.h>
-#include <xen/bitops.h>
-#include <xen/config.h>
-#include <xen/delay.h>
-#include <xen/errno.h>
-#include <xen/err.h>
-#include <xen/irq.h>
-#include <xen/lib.h>
-#include <xen/linux-compat.h>
-#include <xen/list.h>
-#include <xen/mm.h>
-#include <xen/rbtree.h>
-#include <xen/sched.h>
-#include <xen/sizes.h>
-#include <xen/vmap.h>
+#include <crux/acpi.h>
+#include <crux/bitops.h>
+#include <crux/config.h>
+#include <crux/delay.h>
+#include <crux/errno.h>
+#include <crux/err.h>
+#include <crux/irq.h>
+#include <crux/lib.h>
+#include <crux/linux-compat.h>
+#include <crux/list.h>
+#include <crux/mm.h>
+#include <crux/rbtree.h>
+#include <crux/sched.h>
+#include <crux/sizes.h>
+#include <crux/vmap.h>
 #include <asm/atomic.h>
 #include <asm/device.h>
 #include <asm/io.h>
@@ -115,17 +115,17 @@
 /* Device logger functions */
 #define dev_name(dev)	dt_node_full_name((dev)->of_node)
 #define dev_dbg(dev, fmt, ...)			\
-	printk(XENLOG_DEBUG "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_DEBUG "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 #define dev_notice(dev, fmt, ...)		\
-	printk(XENLOG_INFO "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_INFO "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 #define dev_warn(dev, fmt, ...)			\
-	printk(XENLOG_WARNING "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_WARNING "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 #define dev_err(dev, fmt, ...)			\
-	printk(XENLOG_ERR "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_ERR "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 #define dev_info(dev, fmt, ...)			\
-	printk(XENLOG_INFO "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_INFO "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 #define dev_err_ratelimited(dev, fmt, ...)			\
-	printk(XENLOG_ERR "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
+	printk(CRUXLOG_ERR "SMMUv3: %s: " fmt, dev_name(dev), ## __VA_ARGS__)
 
 /*
  * Periodically poll an address and wait between reads in us until a
@@ -169,13 +169,13 @@ static void *dmam_alloc_coherent(struct device *dev, size_t size,
 	 * (void *)
 	 */
 	if (size & (size - 1)) {
-		printk(XENLOG_WARNING "SMMUv3: Fixing alignment for the DMA buffer\n");
+		printk(CRUXLOG_WARNING "SMMUv3: Fixing alignment for the DMA buffer\n");
 		alignment = sizeof(void *);
 	}
 
 	vaddr = _xzalloc(size, alignment);
 	if (!vaddr) {
-		printk(XENLOG_ERR "SMMUv3: DMA allocation failed\n");
+		printk(CRUXLOG_ERR "SMMUv3: DMA allocation failed\n");
 		return NULL;
 	}
 
@@ -1205,7 +1205,7 @@ static int arm_smmu_domain_finalise_s2(struct arm_smmu_domain *smmu_domain,
 			  FIELD_PREP(STRTAB_STE_2_VTCR_S2TG, vtcr->tg) |
 			  FIELD_PREP(STRTAB_STE_2_VTCR_S2PS, vtcr->ps);
 
-	printk(XENLOG_DEBUG
+	printk(CRUXLOG_DEBUG
 		   "SMMUv3: d%u: vmid 0x%x vtcr 0x%"PRIpaddr" p2maddr 0x%"PRIpaddr"\n",
 		   smmu_domain->d->domain_id, cfg->vmid, cfg->vtcr, cfg->vttbr);
 
@@ -1554,7 +1554,7 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
 			return -EEXIST;
 		}
 
-		/* Let xen know that the master device is protected by an IOMMU. */
+		/* Let Xen know that the master device is protected by an IOMMU. */
 		dt_device_set_protected(dev_to_dt(dev));
 	}
 
@@ -1567,7 +1567,7 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
 		struct pci_dev *pdev = dev_to_pci(dev);
 
 		/*
-		 * During PHYSDEVOP_pci_device_add, xen does not assign the
+		 * During PHYSDEVOP_pci_device_add, Xen does not assign the
 		 * device, so we must do it here.
 		 */
 		if ( pdev->domain )
@@ -2356,7 +2356,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
 	smmu->oas = min_t(unsigned long, PADDR_BITS, smmu->oas);
 	smmu->ias = max(smmu->ias, smmu->oas);
 
-	/* xen: Set maximum Stage-2 input size supported by the SMMU. */
+	/* Xen: Set maximum Stage-2 input size supported by the SMMU. */
 	p2m_restrict_ipa_bits(smmu->ias);
 
 	dev_info(smmu->dev, "ias %lu-bit, oas %lu-bit (features 0x%08x)\n",
@@ -2575,7 +2575,7 @@ static const struct dt_device_match arm_smmu_of_match[] = {
 	{ },
 };
 
-/* Start of xen specific code. */
+/* Start of Xen specific code. */
 
 /*
  * Platform features. It indicates the list of features supported by all
@@ -2587,12 +2587,12 @@ static uint32_t __ro_after_init platform_features = ARM_SMMU_FEAT_COHERENCY;
 
 static int __must_check arm_smmu_iotlb_flush_all(struct domain *d)
 {
-	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
+	struct arm_smmu_crux_domain *crux_domain = dom_iommu(d)->arch.priv;
 	struct iommu_domain *io_domain;
 
-	spin_lock(&xen_domain->lock);
+	spin_lock(&crux_domain->lock);
 
-	list_for_each_entry(io_domain, &xen_domain->contexts, list) {
+	list_for_each_entry(io_domain, &crux_domain->contexts, list) {
 		/*
 		 * Only invalidate the context when SMMU is present.
 		 * This is because the context initialization is delayed
@@ -2604,7 +2604,7 @@ static int __must_check arm_smmu_iotlb_flush_all(struct domain *d)
 		arm_smmu_tlb_inv_context(to_smmu_domain(io_domain));
 	}
 
-	spin_unlock(&xen_domain->lock);
+	spin_unlock(&crux_domain->lock);
 
 	return 0;
 }
@@ -2639,17 +2639,17 @@ static struct iommu_domain *arm_smmu_get_domain(struct domain *d,
 	struct iommu_domain *io_domain;
 	struct arm_smmu_domain *smmu_domain;
 	struct iommu_fwspec *fwspec = dev_iommu_fwspec_get(dev);
-	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
+	struct arm_smmu_crux_domain *crux_domain = dom_iommu(d)->arch.priv;
 	struct arm_smmu_device *smmu = arm_smmu_get_by_dev(fwspec->iommu_dev);
 
 	if (!smmu)
 		return NULL;
 
 	/*
-	 * Loop through the &xen_domain->contexts to locate a context
+	 * Loop through the &crux_domain->contexts to locate a context
 	 * assigned to this SMMU
 	 */
-	list_for_each_entry(io_domain, &xen_domain->contexts, list) {
+	list_for_each_entry(io_domain, &crux_domain->contexts, list) {
 		smmu_domain = to_smmu_domain(io_domain);
 		if (smmu_domain->smmu == smmu)
 			return io_domain;
@@ -2669,7 +2669,7 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
 	int ret = 0;
 	struct iommu_domain *io_domain;
 	struct arm_smmu_domain *smmu_domain;
-	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
+	struct arm_smmu_crux_domain *crux_domain = dom_iommu(d)->arch.priv;
 
 #ifdef CONFIG_HAS_PCI
 	if ( dev_is_pci(dev) )
@@ -2707,10 +2707,10 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
 	}
 #endif
 
-	spin_lock(&xen_domain->lock);
+	spin_lock(&crux_domain->lock);
 
 	/*
-	 * Check to see if an iommu_domain already exists for this xen domain
+	 * Check to see if an iommu_domain already exists for this crux domain
 	 * under the same SMMU
 	 */
 	io_domain = arm_smmu_get_domain(d, dev);
@@ -2724,7 +2724,7 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
 		smmu_domain->d = d;
 
 		/* Chain the new context to the domain */
-		list_add(&io_domain->list, &xen_domain->contexts);
+		list_add(&io_domain->list, &crux_domain->contexts);
 	}
 
 	ret = arm_smmu_attach_dev(io_domain, dev);
@@ -2736,14 +2736,14 @@ static int arm_smmu_assign_dev(struct domain *d, u8 devfn,
 	}
 
 out:
-	spin_unlock(&xen_domain->lock);
+	spin_unlock(&crux_domain->lock);
 	return ret;
 }
 
 static int arm_smmu_deassign_dev(struct domain *d, uint8_t devfn, struct device *dev)
 {
 	struct iommu_domain *io_domain = arm_smmu_get_domain(d, dev);
-	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
+	struct arm_smmu_crux_domain *crux_domain = dom_iommu(d)->arch.priv;
 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(io_domain);
 	struct arm_smmu_master *master = dev_iommu_priv_get(dev);
 
@@ -2767,7 +2767,7 @@ static int arm_smmu_deassign_dev(struct domain *d, uint8_t devfn, struct device 
 		return -ESRCH;
 	}
 
-	spin_lock(&xen_domain->lock);
+	spin_lock(&crux_domain->lock);
 
 	arm_smmu_detach_dev(master);
 	atomic_dec(&io_domain->ref);
@@ -2775,7 +2775,7 @@ static int arm_smmu_deassign_dev(struct domain *d, uint8_t devfn, struct device 
 	if (io_domain->ref.counter == 0)
 		arm_smmu_destroy_iommu_domain(io_domain);
 
-	spin_unlock(&xen_domain->lock);
+	spin_unlock(&crux_domain->lock);
 
 	return 0;
 }
@@ -2808,18 +2808,18 @@ static int arm_smmu_reassign_dev(struct domain *s, struct domain *t,
 	return 0;
 }
 
-static int arm_smmu_iommu_xen_domain_init(struct domain *d)
+static int arm_smmu_iommu_crux_domain_init(struct domain *d)
 {
-	struct arm_smmu_xen_domain *xen_domain;
+	struct arm_smmu_crux_domain *crux_domain;
 
-	xen_domain = xzalloc(struct arm_smmu_xen_domain);
-	if (!xen_domain)
+	crux_domain = xzalloc(struct arm_smmu_crux_domain);
+	if (!crux_domain)
 		return -ENOMEM;
 
-	spin_lock_init(&xen_domain->lock);
-	INIT_LIST_HEAD(&xen_domain->contexts);
+	spin_lock_init(&crux_domain->lock);
+	INIT_LIST_HEAD(&crux_domain->contexts);
 
-	dom_iommu(d)->arch.priv = xen_domain;
+	dom_iommu(d)->arch.priv = crux_domain;
 
 	/* Coherent walk can be enabled only when all SMMUs support it. */
 	if (platform_features & ARM_SMMU_FEAT_COHERENCY)
@@ -2828,19 +2828,19 @@ static int arm_smmu_iommu_xen_domain_init(struct domain *d)
 	return 0;
 }
 
-static void arm_smmu_iommu_xen_domain_teardown(struct domain *d)
+static void arm_smmu_iommu_crux_domain_teardown(struct domain *d)
 {
-	struct arm_smmu_xen_domain *xen_domain = dom_iommu(d)->arch.priv;
+	struct arm_smmu_crux_domain *crux_domain = dom_iommu(d)->arch.priv;
 
-	ASSERT(list_empty(&xen_domain->contexts));
-	xfree(xen_domain);
+	ASSERT(list_empty(&crux_domain->contexts));
+	xfree(crux_domain);
 }
 
 static const struct iommu_ops arm_smmu_iommu_ops = {
 	.page_sizes		= PAGE_SIZE_4K,
-	.init			= arm_smmu_iommu_xen_domain_init,
+	.init			= arm_smmu_iommu_crux_domain_init,
 	.hwdom_init		= arch_iommu_hwdom_init,
-	.teardown		= arm_smmu_iommu_xen_domain_teardown,
+	.teardown		= arm_smmu_iommu_crux_domain_teardown,
 	.iotlb_flush		= arm_smmu_iotlb_flush,
 	.assign_device		= arm_smmu_assign_dev,
 	.reassign_device	= arm_smmu_reassign_dev,
@@ -2860,7 +2860,7 @@ static __init int arm_smmu_dt_init(struct dt_device_node *dev,
 	 * Even if the device can't be initialized, we don't want to
 	 * give the SMMU device to dom0.
 	 */
-	dt_device_set_used_by(dev, DOMID_XEN);
+	dt_device_set_used_by(dev, DOMID_CRUX);
 
 	rc = arm_smmu_device_probe(dt_to_dev(dev));
 	if (rc)

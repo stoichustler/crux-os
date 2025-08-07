@@ -7,28 +7,28 @@
  * Copyright (c) 2015, Citrix
  */
 
-#include <xen/types.h>
-#include <xen/sched.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/spinlock.h>
+#include <crux/types.h>
+#include <crux/sched.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/spinlock.h>
 #include <public/platform.h>
 #include <xsm/xsm.h>
 #include <asm/current.h>
 #include <asm/event.h>
 
-static DEFINE_SPINLOCK(xenpf_lock);
+static DEFINE_SPINLOCK(cruxpf_lock);
 
-long do_platform_op(XEN_GUEST_HANDLE_PARAM(xen_platform_op_t) u_xenpf_op)
+long do_platform_op(CRUX_GUEST_HANDLE_PARAM(crux_platform_op_t) u_cruxpf_op)
 {
     long ret;
-    struct xen_platform_op curop, *op = &curop;
+    struct crux_platform_op curop, *op = &curop;
     struct domain *d;
 
-    if ( copy_from_guest(op, u_xenpf_op, 1) )
+    if ( copy_from_guest(op, u_cruxpf_op, 1) )
         return -EFAULT;
 
-    if ( op->interface_version != XENPF_INTERFACE_VERSION )
+    if ( op->interface_version != CRUXPF_INTERFACE_VERSION )
         return -EACCES;
 
     d = rcu_lock_current_domain();
@@ -44,14 +44,14 @@ long do_platform_op(XEN_GUEST_HANDLE_PARAM(xen_platform_op_t) u_xenpf_op)
      * which might (for some current or future reason) want to synchronise
      * with this vcpu.
      */
-    while ( !spin_trylock(&xenpf_lock) )
+    while ( !spin_trylock(&cruxpf_lock) )
         if ( hypercall_preempt_check() )
             return hypercall_create_continuation(
-                __HYPERVISOR_platform_op, "h", u_xenpf_op);
+                __HYPERVISOR_platform_op, "h", u_cruxpf_op);
 
     switch ( op->cmd )
     {
-    case XENPF_settime64:
+    case CRUXPF_settime64:
         if ( likely(!op->u.settime64.mbz) )
             do_settime(op->u.settime64.secs,
                        op->u.settime64.nsecs,
@@ -65,7 +65,7 @@ long do_platform_op(XEN_GUEST_HANDLE_PARAM(xen_platform_op_t) u_xenpf_op)
         break;
     }
 
-    spin_unlock(&xenpf_lock);
+    spin_unlock(&cruxpf_lock);
     rcu_unlock_domain(d);
     return ret;
 }

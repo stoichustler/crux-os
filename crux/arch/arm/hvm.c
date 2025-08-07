@@ -5,17 +5,17 @@
  * Arch-specific hardware virtual machine abstractions.
  */
 
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/errno.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/sched.h>
-#include <xen/monitor.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/errno.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/sched.h>
+#include <crux/monitor.h>
 
 #include <xsm/xsm.h>
 
-#include <public/xen.h>
+#include <public/crux.h>
 #include <public/hvm/params.h>
 #include <public/hvm/hvm_op.h>
 
@@ -39,7 +39,7 @@ static int hvm_allow_set_param(const struct domain *d, unsigned int param)
     case HVM_PARAM_MONITOR_RING_PFN:
         return d == current->domain ? -EPERM : 0;
 
-        /* Writeable only by xen, hole, deprecated, or out-of-range. */
+        /* Writeable only by Xen, hole, deprecated, or out-of-range. */
     default:
         return -EINVAL;
     }
@@ -70,7 +70,7 @@ static int hvm_allow_get_param(const struct domain *d, unsigned int param)
     }
 }
 
-long do_hvm_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) arg)
+long do_hvm_op(unsigned long op, CRUX_GUEST_HANDLE_PARAM(void) arg)
 {
     long rc = 0;
 
@@ -79,7 +79,7 @@ long do_hvm_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) arg)
     case HVMOP_set_param:
     case HVMOP_get_param:
     {
-        struct xen_hvm_param a;
+        struct crux_hvm_param a;
         struct domain *d;
 
         if ( copy_from_guest(&a, arg, 1) )
@@ -125,7 +125,7 @@ long do_hvm_op(unsigned long op, XEN_GUEST_HANDLE_PARAM(void) arg)
 
     default:
     {
-        gdprintk(XENLOG_DEBUG, "HVMOP op=%lu: not implemented\n", op);
+        gdprintk(CRUXLOG_DEBUG, "HVMOP op=%lu: not implemented\n", op);
         rc = -ENOSYS;
         break;
     }

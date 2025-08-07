@@ -2,7 +2,7 @@
 #ifndef __ASM_GENERIC_DEVICE_H__
 #define __ASM_GENERIC_DEVICE_H__
 
-#include <xen/stdbool.h>
+#include <crux/stdbool.h>
 
 enum device_type
 {
@@ -39,7 +39,7 @@ typedef struct device device_t;
 
 #ifdef CONFIG_HAS_DEVICE_TREE_DISCOVERY
 
-#include <xen/device_tree.h>
+#include <crux/device_tree.h>
 
 #define dev_is_dt(dev)  ((dev)->type == DEV_DT)
 

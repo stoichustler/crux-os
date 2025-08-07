@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
-#include <xen/init.h>
-#include <xen/llc-coloring.h>
-#include <xen/mm.h>
-#include <xen/pfn.h>
-#include <xen/static-memory.h>
-#include <xen/static-shmem.h>
+#include <crux/init.h>
+#include <crux/llc-coloring.h>
+#include <crux/mm.h>
+#include <crux/pfn.h>
+#include <crux/static-memory.h>
+#include <crux/static-shmem.h>
 
 #include <asm/setup.h>
 
@@ -13,9 +13,9 @@
 #undef virt_to_mfn
 #define virt_to_mfn(va) _mfn(__virt_to_mfn(va))
 
-static DEFINE_PAGE_TABLE(xen_first_id);
-static DEFINE_PAGE_TABLE(xen_second_id);
-static DEFINE_PAGE_TABLE(xen_third_id);
+static DEFINE_PAGE_TABLE(crux_first_id);
+static DEFINE_PAGE_TABLE(crux_second_id);
+static DEFINE_PAGE_TABLE(crux_third_id);
 
 /*
  * The identity mapping may start at physical address 0. So we don't want
@@ -26,7 +26,7 @@ static DEFINE_PAGE_TABLE(xen_third_id);
  * We need to prepare the identity mapping for both the boot page tables
  * and runtime page tables.
  *
- * The logic to create the entry is slightly different because xen may
+ * The logic to create the entry is slightly different because Xen may
  * be running at a different location at runtime.
  */
 static void __init prepare_boot_identity_mapping(void)
@@ -49,21 +49,21 @@ static void __init prepare_boot_identity_mapping(void)
               IDENTITY_MAPPING_AREA_NR_L0 >> 1);
 
     /* Link first ID table */
-    pte = mfn_to_xen_entry(virt_to_mfn(boot_first_id), MT_NORMAL);
+    pte = mfn_to_crux_entry(virt_to_mfn(boot_first_id), MT_NORMAL);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
     write_pte(&boot_pgtable[id_offsets[0]], pte);
 
     /* Link second ID table */
-    pte = mfn_to_xen_entry(virt_to_mfn(boot_second_id), MT_NORMAL);
+    pte = mfn_to_crux_entry(virt_to_mfn(boot_second_id), MT_NORMAL);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
     write_pte(&boot_first_id[id_offsets[1]], pte);
 
     /* Link third ID table */
-    pte = mfn_to_xen_entry(virt_to_mfn(boot_third_id), MT_NORMAL);
+    pte = mfn_to_crux_entry(virt_to_mfn(boot_third_id), MT_NORMAL);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
@@ -83,25 +83,25 @@ static void __init prepare_runtime_identity_mapping(void)
               IDENTITY_MAPPING_AREA_NR_L0 >> 1);
 
     /* Link first ID table */
-    pte = pte_of_xenaddr((vaddr_t)xen_first_id);
+    pte = pte_of_cruxaddr((vaddr_t)crux_first_id);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
-    write_pte(&xen_pgtable[id_offsets[0]], pte);
+    write_pte(&crux_pgtable[id_offsets[0]], pte);
 
     /* Link second ID table */
-    pte = pte_of_xenaddr((vaddr_t)xen_second_id);
+    pte = pte_of_cruxaddr((vaddr_t)crux_second_id);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
-    write_pte(&xen_first_id[id_offsets[1]], pte);
+    write_pte(&crux_first_id[id_offsets[1]], pte);
 
     /* Link third ID table */
-    pte = pte_of_xenaddr((vaddr_t)xen_third_id);
+    pte = pte_of_cruxaddr((vaddr_t)crux_third_id);
     pte.pt.table = 1;
     pte.pt.xn = 0;
 
-    write_pte(&xen_second_id[id_offsets[2]], pte);
+    write_pte(&crux_second_id[id_offsets[2]], pte);
 
     /* The mapping in the third table will be created at a later stage */
 }
@@ -125,10 +125,10 @@ static void update_identity_mapping(bool enable)
     int rc;
 
     if ( enable )
-        rc = map_pages_to_xen(id_addr, maddr_to_mfn(id_addr), 1,
+        rc = map_pages_to_crux(id_addr, maddr_to_mfn(id_addr), 1,
                               PAGE_HYPERVISOR_RX);
     else
-        rc = destroy_xen_mappings(id_addr, id_addr + PAGE_SIZE);
+        rc = destroy_crux_mappings(id_addr, id_addr + PAGE_SIZE);
 
     BUG_ON(rc);
 }
@@ -139,29 +139,29 @@ void update_boot_mapping(bool enable)
 }
 
 extern void switch_ttbr_id(uint64_t ttbr);
-extern void relocate_xen(uint64_t ttbr, void *src, void *dst, size_t len);
+extern void relocate_crux(uint64_t ttbr, void *src, void *dst, size_t len);
 
 typedef void (switch_ttbr_fn)(uint64_t ttbr);
-typedef void (relocate_xen_fn)(uint64_t ttbr, void *src, void *dst, size_t len);
+typedef void (relocate_crux_fn)(uint64_t ttbr, void *src, void *dst, size_t len);
 
 #ifdef CONFIG_LLC_COLORING
 void __init relocate_and_switch_ttbr(uint64_t ttbr)
 {
-    vaddr_t id_addr = virt_to_maddr(relocate_xen);
-    relocate_xen_fn *fn = (relocate_xen_fn *)id_addr;
+    vaddr_t id_addr = virt_to_maddr(relocate_crux);
+    relocate_crux_fn *fn = (relocate_crux_fn *)id_addr;
     lpae_t pte;
 
     /* Enable the identity mapping in the boot page tables */
     update_identity_mapping(true);
 
     /* Enable the identity mapping in the runtime page tables */
-    pte = pte_of_xenaddr((vaddr_t)relocate_xen);
+    pte = pte_of_cruxaddr((vaddr_t)relocate_crux);
     pte.pt.table = 1;
     pte.pt.xn = 0;
     pte.pt.ro = 1;
-    write_pte(&xen_third_id[third_table_offset(id_addr)], pte);
+    write_pte(&crux_third_id[third_table_offset(id_addr)], pte);
 
-    /* Relocate xen and switch TTBR */
+    /* Relocate Xen and switch TTBR */
     fn(ttbr, _start, (void *)BOOT_RELOC_VIRT_START, _end - _start);
 
     /*
@@ -183,11 +183,11 @@ void __init switch_ttbr(uint64_t ttbr)
     update_identity_mapping(true);
 
     /* Enable the identity mapping in the runtime page tables */
-    pte = pte_of_xenaddr((vaddr_t)switch_ttbr_id);
+    pte = pte_of_cruxaddr((vaddr_t)switch_ttbr_id);
     pte.pt.table = 1;
     pte.pt.xn = 0;
     pte.pt.ro = 1;
-    write_pte(&xen_third_id[third_table_offset(id_addr)], pte);
+    write_pte(&crux_third_id[third_table_offset(id_addr)], pte);
 
     /* Switch TTBR */
     fn(ttbr);
@@ -233,7 +233,7 @@ static void __init setup_directmap_mappings(unsigned long base_mfn,
         panic("cannot add directmap mapping at %lx below heap start %lx\n",
               base_mfn, mfn_x(directmap_mfn_start));
 
-    rc = map_pages_to_xen((vaddr_t)__mfn_to_virt(base_mfn),
+    rc = map_pages_to_crux((vaddr_t)__mfn_to_virt(base_mfn),
                           _mfn(base_mfn), nr_mfns,
                           PAGE_HYPERVISOR_RW | _PAGE_BLOCK);
     if ( rc )
@@ -276,7 +276,7 @@ void __init setup_mm(void)
 
     total_pages += ram_size >> PAGE_SHIFT;
 
-    directmap_virt_end = XENHEAP_VIRT_START + ram_end - ram_start;
+    directmap_virt_end = CRUXHEAP_VIRT_START + ram_end - ram_start;
     directmap_mfn_start = maddr_to_mfn(ram_start);
     directmap_mfn_end = maddr_to_mfn(ram_end);
 

@@ -4,11 +4,11 @@
  *
  * Scheduler state interactions
  *
- * Copyright (c) 2005, Keir Fraser <keir@xensource.com>
+ * Copyright (c) 2005, Keir Fraser <keir@cruxsource.com>
  */
 
-#ifndef __XEN_PUBLIC_SCHED_H__
-#define __XEN_PUBLIC_SCHED_H__
+#ifndef __CRUX_PUBLIC_SCHED_H__
+#define __CRUX_PUBLIC_SCHED_H__
 
 #include "event_channel.h"
 
@@ -28,7 +28,7 @@
  * @arg == Operation-specific extra argument(s), as described below.
  * ...  == Additional Operation-specific extra arguments, described below.
  *
- * Versions of xen prior to 3.0.2 provided only the following legacy version
+ * Versions of Xen prior to 3.0.2 provided only the following legacy version
  * of this hypercall, supporting only the commands yield, block and shutdown:
  *  long sched_op(int cmd, unsigned long arg)
  * @cmd == SCHEDOP_??? (scheduler operation).
@@ -119,39 +119,39 @@ struct sched_shutdown {
     unsigned int reason; /* SHUTDOWN_* => enum sched_shutdown_reason */
 };
 typedef struct sched_shutdown sched_shutdown_t;
-DEFINE_XEN_GUEST_HANDLE(sched_shutdown_t);
+DEFINE_CRUX_GUEST_HANDLE(sched_shutdown_t);
 
 struct sched_poll {
-    XEN_GUEST_HANDLE(evtchn_port_t) ports;
+    CRUX_GUEST_HANDLE(evtchn_port_t) ports;
     unsigned int nr_ports;
     uint64_t timeout;
 };
 typedef struct sched_poll sched_poll_t;
-DEFINE_XEN_GUEST_HANDLE(sched_poll_t);
+DEFINE_CRUX_GUEST_HANDLE(sched_poll_t);
 
 struct sched_remote_shutdown {
     domid_t domain_id;         /* Remote domain ID */
     unsigned int reason;       /* SHUTDOWN_* => enum sched_shutdown_reason */
 };
 typedef struct sched_remote_shutdown sched_remote_shutdown_t;
-DEFINE_XEN_GUEST_HANDLE(sched_remote_shutdown_t);
+DEFINE_CRUX_GUEST_HANDLE(sched_remote_shutdown_t);
 
 struct sched_watchdog {
     uint32_t id;                /* watchdog ID */
     uint32_t timeout;           /* timeout */
 };
 typedef struct sched_watchdog sched_watchdog_t;
-DEFINE_XEN_GUEST_HANDLE(sched_watchdog_t);
+DEFINE_CRUX_GUEST_HANDLE(sched_watchdog_t);
 
 struct sched_pin_override {
     int32_t pcpu;
 };
 typedef struct sched_pin_override sched_pin_override_t;
-DEFINE_XEN_GUEST_HANDLE(sched_pin_override_t);
+DEFINE_CRUX_GUEST_HANDLE(sched_pin_override_t);
 
 /*
  * Reason codes for SCHEDOP_shutdown. These may be interpreted by control
- * software to determine the appropriate action. For the most part, xen does
+ * software to determine the appropriate action. For the most part, Xen does
  * not care about the shutdown code.
  */
 /* ` enum sched_shutdown_reason { */
@@ -163,16 +163,16 @@ DEFINE_XEN_GUEST_HANDLE(sched_pin_override_t);
 
 /*
  * Domain asked to perform 'soft reset' for it. The expected behavior is to
- * reset internal xen state for the domain returning it to the point where it
+ * reset internal Xen state for the domain returning it to the point where it
  * was created but leaving the domain's memory contents and vCPU contexts
- * intact. This will allow the domain to start over and set up all xen specific
+ * intact. This will allow the domain to start over and set up all Xen specific
  * interfaces again.
  */
 #define SHUTDOWN_soft_reset 5
 #define SHUTDOWN_MAX        5  /* Maximum valid shutdown reason.             */
 /* ` } */
 
-#endif /* __XEN_PUBLIC_SCHED_H__ */
+#endif /* __CRUX_PUBLIC_SCHED_H__ */
 
 /*
  * Local variables:

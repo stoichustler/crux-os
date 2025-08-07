@@ -1,0 +1,17 @@
+#ifndef CRUX_COMPILE_H
+#define CRUX_COMPILE_H
+
+#define CRUX_COMPILE_DATE	"@@date@@"
+#define CRUX_COMPILE_TIME	"@@time@@"
+#define CRUX_COMPILE_BY		"@@whoami@@"
+#define CRUX_COMPILE_DOMAIN	"@@domain@@"
+#define CRUX_COMPILE_HOST	"@@hostname@@"
+#define CRUX_COMPILER		"@@compiler@@"
+
+#define CRUX_VERSION		@@version@@
+#define CRUX_SUBVERSION		@@subversion@@
+#define CRUX_VERSION_STRING	"@@version@@.@@subversion@@"
+#define CRUX_EXTRAVERSION	"@@extraversion@@"
+
+#define CRUX_CHANGESET		"@@changeset@@"
+#define CRUX_BANNER		\

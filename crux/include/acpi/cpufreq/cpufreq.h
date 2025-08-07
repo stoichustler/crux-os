@@ -1,5 +1,5 @@
 /*
- *  xen/include/acpi/cpufreq/cpufreq.h
+ *  crux/include/acpi/cpufreq/cpufreq.h
  *
  *  Copyright (C) 2001 Russell King
  *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
@@ -11,24 +11,24 @@
  * published by the Free Software Foundation.
  */
 
-#ifndef __XEN_CPUFREQ_PM_H__
-#define __XEN_CPUFREQ_PM_H__
+#ifndef __CRUX_CPUFREQ_PM_H__
+#define __CRUX_CPUFREQ_PM_H__
 
-#include <xen/types.h>
-#include <xen/list.h>
-#include <xen/cpumask.h>
+#include <crux/types.h>
+#include <crux/list.h>
+#include <crux/cpumask.h>
 
 #include "processor_perf.h"
 
 extern bool cpufreq_verbose;
 
-enum cpufreq_xen_opt {
+enum cpufreq_crux_opt {
     CPUFREQ_none,
-    CPUFREQ_xen,
+    CPUFREQ_crux,
     CPUFREQ_hwp,
 };
-extern enum cpufreq_xen_opt cpufreq_xen_opts[2];
-extern unsigned int cpufreq_xen_cnt;
+extern enum cpufreq_crux_opt cpufreq_crux_opts[2];
+extern unsigned int cpufreq_crux_cnt;
 struct cpufreq_governor;
 
 struct acpi_cpufreq_data {
@@ -86,9 +86,9 @@ DECLARE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_policy);
 extern int __cpufreq_set_policy(struct cpufreq_policy *data,
                                 struct cpufreq_policy *policy);
 
-#define CPUFREQ_SHARED_TYPE_HW   XEN_CPUPERF_SHARED_TYPE_HW
-#define CPUFREQ_SHARED_TYPE_ALL  XEN_CPUPERF_SHARED_TYPE_ALL
-#define CPUFREQ_SHARED_TYPE_ANY  XEN_CPUPERF_SHARED_TYPE_ANY
+#define CPUFREQ_SHARED_TYPE_HW   CRUX_CPUPERF_SHARED_TYPE_HW
+#define CPUFREQ_SHARED_TYPE_ALL  CRUX_CPUPERF_SHARED_TYPE_ALL
+#define CPUFREQ_SHARED_TYPE_ANY  CRUX_CPUPERF_SHARED_TYPE_ANY
 
 /******************** cpufreq transition notifiers *******************/
 
@@ -266,10 +266,10 @@ static inline bool hwp_active(void) { return false; }
 #endif
 
 int get_hwp_para(unsigned int cpu,
-                 struct xen_cppc_para *cppc_para);
+                 struct crux_cppc_para *cppc_para);
 int set_hwp_para(struct cpufreq_policy *policy,
-                 struct xen_set_cppc_para *set_cppc);
+                 struct crux_set_cppc_para *set_cppc);
 
 int acpi_cpufreq_register(void);
 
-#endif /* __XEN_CPUFREQ_PM_H__ */
+#endif /* __CRUX_CPUFREQ_PM_H__ */

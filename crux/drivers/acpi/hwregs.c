@@ -44,9 +44,9 @@
  */
 
 #include <asm/io.h>
-#include <xen/init.h>
-#include <xen/types.h>
-#include <xen/errno.h>
+#include <crux/init.h>
+#include <crux/types.h>
+#include <crux/errno.h>
 #include <acpi/acpi.h>
 
 #define _COMPONENT          ACPI_HARDWARE

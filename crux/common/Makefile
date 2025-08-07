@@ -62,7 +62,7 @@ obj-$(CONFIG_HAS_VMAP) += vmap.o
 obj-y += vsprintf.o
 obj-y += wait.o
 obj-bin-y += warning.init.o
-obj-$(CONFIG_XENOPROF) += xenoprof.o
+obj-$(CONFIG_CRUXOPROF) += cruxoprof.o
 obj-y += xmalloc_tlsf.o
 
 obj-bin-$(CONFIG_X86) += $(foreach n,decompress bunzip2 unxz unlzma lzo unlzo unlz4 unzstd earlycpio,$(n).init.o)
@@ -89,7 +89,7 @@ $(obj)/config.gz: $(CONF_FILE)
 $(obj)/config_data.o: $(obj)/config.gz
 
 $(obj)/config_data.S: $(srctree)/tools/binfile FORCE
-	$(call if_changed,binfile,$(obj)/config.gz xen_config_data)
+	$(call if_changed,binfile,$(obj)/config.gz crux_config_data)
 targets += config_data.S
 
 clean-files := config.gz

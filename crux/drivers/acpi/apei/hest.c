@@ -26,12 +26,12 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/kernel.h>
-#include <xen/mm.h>
-#include <xen/param.h>
-#include <xen/pfn.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/kernel.h>
+#include <crux/mm.h>
+#include <crux/param.h>
+#include <crux/pfn.h>
 #include <acpi/acpi.h>
 #include <acpi/apei.h>
 
@@ -100,7 +100,7 @@ int apei_hest_parse(apei_hest_func_t func, void *data)
 	for (i = 0; i < hest_tab->error_source_count; i++) {
 		len = hest_esrc_len(hest_hdr);
 		if (!len) {
-			printk(XENLOG_WARNING HEST_PFX
+			printk(CRUXLOG_WARNING HEST_PFX
 			       "Unknown or unused hardware error source "
 			       "type: %d for hardware error source: %d\n",
 			       hest_hdr->type, hest_hdr->source_id);
@@ -108,7 +108,7 @@ int apei_hest_parse(apei_hest_func_t func, void *data)
 		}
 		if ((void *)hest_hdr + len >
 		    (void *)hest_tab + hest_tab->header.length) {
-			printk(XENLOG_WARNING HEST_PFX
+			printk(CRUXLOG_WARNING HEST_PFX
 			       "Table contents overflow for hardware error source: %d\n",
 			       hest_hdr->source_id);
 			return -EINVAL;
@@ -151,7 +151,7 @@ static int __init cf_check hest_parse_cmc(
 	if (!(cmc->flags & ACPI_HEST_FIRMWARE_FIRST) || !cmc->num_hardware_banks)
 		return 1;
 
-	printk(XENLOG_INFO HEST_PFX "Enabling Firmware First mode for corrected errors.\n");
+	printk(CRUXLOG_INFO HEST_PFX "Enabling Firmware First mode for corrected errors.\n");
 
 	mc_bank = (const struct acpi_hest_ia_error_bank *)(cmc + 1);
 	for (i = 0; i < cmc->num_hardware_banks; i++, mc_bank++)
@@ -173,7 +173,7 @@ void __init acpi_hest_init(void)
 		return;
 
 	if (hest_disable) {
-		printk(XENLOG_INFO HEST_PFX "Table parsing disabled.\n");
+		printk(CRUXLOG_INFO HEST_PFX "Table parsing disabled.\n");
 		return;
 	}
 
@@ -181,11 +181,11 @@ void __init acpi_hest_init(void)
 	if (status == AE_NOT_FOUND)
 		goto err;
 	if (ACPI_FAILURE(status)) {
-		printk(XENLOG_ERR HEST_PFX "Failed to get table, %s\n",
+		printk(CRUXLOG_ERR HEST_PFX "Failed to get table, %s\n",
 		       acpi_format_exception(status));
 		goto err;
 	}
-	map_pages_to_xen((unsigned long)__va(hest_addr), maddr_to_mfn(hest_addr),
+	map_pages_to_crux((unsigned long)__va(hest_addr), maddr_to_mfn(hest_addr),
 			 PFN_UP(hest_addr + hest_len) - PFN_DOWN(hest_addr),
 			 PAGE_HYPERVISOR);
 	hest_tab = __va(hest_addr);
@@ -193,7 +193,7 @@ void __init acpi_hest_init(void)
 	if (!acpi_disable_cmcff)
 		apei_hest_parse(hest_parse_cmc, NULL);
 
-	printk(XENLOG_INFO HEST_PFX "Table parsing has been initialized\n");
+	printk(CRUXLOG_INFO HEST_PFX "Table parsing has been initialized\n");
 	return;
 err:
 	hest_disable = 1;

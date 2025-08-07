@@ -10,7 +10,7 @@
 #ifndef __ARM_EARLY_PRINTK_H__
 #define __ARM_EARLY_PRINTK_H__
 
-#include <xen/page-size.h>
+#include <crux/page-size.h>
 #include <asm/fixmap.h>
 #include <asm/mpu.h>
 

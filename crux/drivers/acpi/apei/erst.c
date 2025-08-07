@@ -25,14 +25,14 @@
  * along with this program; If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/kernel.h>
-#include <xen/errno.h>
-#include <xen/delay.h>
-#include <xen/init.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/spinlock.h>
-#include <xen/cper.h>
+#include <crux/kernel.h>
+#include <crux/errno.h>
+#include <crux/delay.h>
+#include <crux/init.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/spinlock.h>
+#include <crux/cper.h>
 #include <asm/fixmap.h>
 #include <asm/io.h>
 #include <acpi/acpi.h>
@@ -106,7 +106,7 @@ static inline int erst_errno(int command_status)
 static int erst_timedout(u64 *t, u64 spin_unit)
 {
 	if ((int64_t)*t < spin_unit) {
-		printk(XENLOG_WARNING "Firmware does not respond in time\n");
+		printk(CRUXLOG_WARNING "Firmware does not respond in time\n");
 		return 1;
 	}
 	*t -= spin_unit;
@@ -798,7 +798,7 @@ int __init erst_init(void)
 		printk(KERN_WARNING "Failed to get ERST table: %s\n", msg);
 		return -EINVAL;
 	}
-	map_pages_to_xen((unsigned long)__va(erst_addr), maddr_to_mfn(erst_addr),
+	map_pages_to_crux((unsigned long)__va(erst_addr), maddr_to_mfn(erst_addr),
 			 PFN_UP(erst_addr + erst_len) - PFN_DOWN(erst_addr),
 			 PAGE_HYPERVISOR);
 	erst_tab = __va(erst_addr);
@@ -832,7 +832,7 @@ int __init erst_init(void)
 		goto err_unmap_reg;
 	}
 
-	printk(KERN_INFO "xen ERST support is initialized.\n");
+	printk(KERN_INFO "Xen ERST support is initialized.\n");
 	erst_enabled = 1;
 
 	return 0;

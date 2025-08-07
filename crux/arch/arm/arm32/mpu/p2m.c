@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 
 #include <asm/p2m.h>
-#include <xen/bug.h>
-#include <xen/init.h>
+#include <crux/bug.h>
+#include <crux/init.h>
 
 void __init setup_virt_paging(void)
 {

@@ -20,14 +20,14 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
-#include <xen/byteorder.h>
-#include <xen/errno.h>
-#include <xen/lib.h>
-#include <xen/string.h>
-#include <xen/types.h>
-#include <xen/xmalloc.h>
+#include <crux/byteorder.h>
+#include <crux/errno.h>
+#include <crux/lib.h>
+#include <crux/string.h>
+#include <crux/types.h>
+#include <crux/xmalloc.h>
 
 #include <conditional.h>
 #include "security.h"
@@ -77,73 +77,73 @@ static struct policydb_compat_info policydb_compat[] = {
         .version        = POLICYDB_VERSION_BASE,
         .sym_num        = SYM_NUM - 3,
         .ocon_num       = 4,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
         .version        = POLICYDB_VERSION_BOOL,
         .sym_num        = SYM_NUM - 2,
         .ocon_num       = 4,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
         .version        = POLICYDB_VERSION_IPV6,
         .sym_num        = SYM_NUM - 2,
         .ocon_num       = 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
         .version        = POLICYDB_VERSION_NLCLASS,
         .sym_num        = SYM_NUM - 2,
         .ocon_num       = 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
         .version        = POLICYDB_VERSION_MLS,
         .sym_num        = SYM_NUM,
         .ocon_num       = 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
         .version        = POLICYDB_VERSION_AVTAB,
         .sym_num        = SYM_NUM,
         .ocon_num       = 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
 	.version	= POLICYDB_VERSION_RANGETRANS,
 	.sym_num	= SYM_NUM,
 	.ocon_num	= 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
 	.version	= POLICYDB_VERSION_POLCAP,
 	.sym_num	= SYM_NUM,
 	.ocon_num	= 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
 	.version	= POLICYDB_VERSION_PERMISSIVE,
 	.sym_num	= SYM_NUM,
 	.ocon_num	= 5,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
 	.version	= POLICYDB_VERSION_BOUNDARY,
         .sym_num        = SYM_NUM,
         .ocon_num       = OCON_NUM_OLD,
-        .target_type    = TARGET_XEN_OLD,
+        .target_type    = TARGET_CRUX_OLD,
     },
     {
 	.version	= POLICYDB_VERSION_BOUNDARY,
 	.sym_num	= SYM_NUM,
 	.ocon_num	= OCON_DEVICE + 1,
-        .target_type    = TARGET_XEN,
+        .target_type    = TARGET_CRUX,
     },
     {
-	.version	= POLICYDB_VERSION_XEN_DEVICETREE,
+	.version	= POLICYDB_VERSION_CRUX_DEVICETREE,
 	.sym_num	= SYM_NUM,
 	.ocon_num	= OCON_DTREE + 1,
-        .target_type    = TARGET_XEN,
+        .target_type    = TARGET_CRUX,
     },
 };
 
@@ -1229,7 +1229,7 @@ static int cf_check class_read(struct policydb *p, struct hashtab *h, void *fp)
         rc = next_entry(buf, fp, sizeof(u32) * 3);
         if ( rc )
             goto bad;
-        /* these values are ignored by xen */
+        /* these values are ignored by Xen */
     }
 
     if ( p->policyvers >= POLICYDB_VERSION_DEFAULT_TYPE )
@@ -1237,7 +1237,7 @@ static int cf_check class_read(struct policydb *p, struct hashtab *h, void *fp)
         rc = next_entry(buf, fp, sizeof(u32) * 1);
         if ( rc )
             goto bad;
-        /* ignored by xen */
+        /* ignored by Xen */
     }
 
     rc = hashtab_insert(h, key, cladatum);
@@ -1791,9 +1791,9 @@ int policydb_read(struct policydb *p, void *fp)
     }
     policydb_str[len] = 0;
     if ( strcmp(policydb_str, POLICYDB_STRING) == 0 )
-        p->target_type = TARGET_XEN;
+        p->target_type = TARGET_CRUX;
     else if ( strcmp(policydb_str, POLICYDB_STRING_OLD) == 0 )
-        p->target_type = TARGET_XEN_OLD;
+        p->target_type = TARGET_CRUX_OLD;
     else
     {
         printk(KERN_ERR "Flask: %s not a valid policydb string", policydb_str);
@@ -2020,10 +2020,10 @@ int policydb_read(struct policydb *p, void *fp)
                     goto bad;
                 break;
             case OCON_PIRQ:
-                if ( p->target_type != TARGET_XEN )
+                if ( p->target_type != TARGET_CRUX )
                 {
                     printk(KERN_ERR
-                        "Old xen policy does not support pirqcon");
+                        "Old crux policy does not support pirqcon");
                     goto bad;
                 }
                 rc = next_entry(buf, fp, sizeof(u32));
@@ -2035,10 +2035,10 @@ int policydb_read(struct policydb *p, void *fp)
                     goto bad;
                 break;
             case OCON_IOPORT:
-                if ( p->target_type != TARGET_XEN )
+                if ( p->target_type != TARGET_CRUX )
                 {
                     printk(KERN_ERR
-                        "Old xen policy does not support ioportcon");
+                        "Old crux policy does not support ioportcon");
                     goto bad;
                 }
                 rc = next_entry(buf, fp, sizeof(u32) *2);
@@ -2063,13 +2063,13 @@ int policydb_read(struct policydb *p, void *fp)
                 l = c;
                 break;
             case OCON_IOMEM:
-                if ( p->target_type != TARGET_XEN )
+                if ( p->target_type != TARGET_CRUX )
                 {
                     printk(KERN_ERR
-                        "Old xen policy does not support iomemcon");
+                        "Old crux policy does not support iomemcon");
                     goto bad;
                 }
-                if ( p->policyvers >= POLICYDB_VERSION_XEN_DEVICETREE )
+                if ( p->policyvers >= POLICYDB_VERSION_CRUX_DEVICETREE )
                 {
                     u64 b64[2];
                     rc = next_entry(b64, fp, sizeof(u64) *2);
@@ -2103,10 +2103,10 @@ int policydb_read(struct policydb *p, void *fp)
                 l = c;
                 break;
             case OCON_DEVICE:
-                if ( p->target_type != TARGET_XEN )
+                if ( p->target_type != TARGET_CRUX )
                 {
                     printk(KERN_ERR
-                        "Old xen policy does not support pcidevicecon");
+                        "Old crux policy does not support pcidevicecon");
                     goto bad;
                 }
                 rc = next_entry(buf, fp, sizeof(u32));
@@ -2118,10 +2118,10 @@ int policydb_read(struct policydb *p, void *fp)
                     goto bad;
                 break;
             case OCON_DTREE:
-                if ( p->target_type != TARGET_XEN )
+                if ( p->target_type != TARGET_CRUX )
                 {
                     printk(KERN_ERR
-                        "Old xen policy does not support devicetreecon");
+                        "Old crux policy does not support devicetreecon");
                     goto bad;
                 }
                 rc = next_entry(buf, fp, sizeof(u32));

@@ -1,5 +1,5 @@
 /*
- * xen/drivers/char/exynos4210-uart.c
+ * crux/drivers/char/exynos4210-uart.c
  *
  * Driver for Exynos 4210 UART.
  *
@@ -17,12 +17,12 @@
  * GNU General Public License for more details.
  */
 
-#include <xen/console.h>
-#include <xen/errno.h>
-#include <xen/serial.h>
-#include <xen/init.h>
-#include <xen/irq.h>
-#include <xen/mm.h>
+#include <crux/console.h>
+#include <crux/errno.h>
+#include <crux/serial.h>
+#include <crux/init.h>
+#include <crux/irq.h>
+#include <crux/mm.h>
 #include <asm/device.h>
 #include <asm/exynos4210-uart.h>
 #include <asm/io.h>
@@ -66,13 +66,13 @@ static void exynos4210_uart_interrupt(int irq, void *data)
             error_bit = exynos4210_read(uart, UERSTAT);
 
             if ( error_bit & UERSTAT_OVERRUN )
-                dprintk(XENLOG_ERR, "uart: overrun error\n");
+                dprintk(CRUXLOG_ERR, "uart: overrun error\n");
             if ( error_bit & UERSTAT_PARITY )
-                dprintk(XENLOG_ERR, "uart: parity error\n");
+                dprintk(CRUXLOG_ERR, "uart: parity error\n");
             if ( error_bit & UERSTAT_FRAME )
-                dprintk(XENLOG_ERR, "uart: frame error\n");
+                dprintk(CRUXLOG_ERR, "uart: frame error\n");
             if ( error_bit & UERSTAT_BREAK )
-                dprintk(XENLOG_ERR, "uart: break detected\n");
+                dprintk(CRUXLOG_ERR, "uart: break detected\n");
             /* Clear error pending interrupt */
             exynos4210_write(uart, UINTP, UINTM_ERROR);
         }
@@ -199,7 +199,7 @@ static void __init exynos4210_uart_init_postirq(struct serial_port *port)
     uart->irqaction.dev_id  = port;
 
     if ( (rc = setup_irq(uart->irq, 0, &uart->irqaction)) != 0 )
-        dprintk(XENLOG_ERR, "Failed to allocated exynos4210_uart IRQ %d\n",
+        dprintk(CRUXLOG_ERR, "Failed to allocated exynos4210_uart IRQ %d\n",
                 uart->irq);
 
     /* Unmask interrupts */
@@ -335,7 +335,7 @@ static int __init exynos4210_uart_init(struct dt_device_node *dev,
     /* Register with generic serial driver. */
     serial_register_uart(SERHND_DTUART, &exynos4210_uart_driver, uart);
 
-    dt_device_set_used_by(dev, DOMID_XEN);
+    dt_device_set_used_by(dev, DOMID_CRUX);
 
     return 0;
 }

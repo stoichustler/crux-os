@@ -3,10 +3,10 @@
  * Copyright (c) 2015, Roger Pau Monne <roger.pau@citrix.com>
  */
 
-#ifndef __XEN_PUBLIC_HVM_HVM_VCPU_H__
-#define __XEN_PUBLIC_HVM_HVM_VCPU_H__
+#ifndef __CRUX_PUBLIC_HVM_HVM_VCPU_H__
+#define __CRUX_PUBLIC_HVM_HVM_VCPU_H__
 
-#include "../xen.h"
+#include "../crux.h"
 
 struct vcpu_hvm_x86_32 {
     uint32_t eax;
@@ -52,7 +52,7 @@ struct vcpu_hvm_x86_32 {
 
     uint16_t pad2[3];
 };
-typedef struct vcpu_hvm_x86_32 xen_vcpu_hvm_x86_32_t;
+typedef struct vcpu_hvm_x86_32 crux_vcpu_hvm_x86_32_t;
 
 /*
  * The layout of the _ar fields of the segment registers is the
@@ -98,7 +98,7 @@ struct vcpu_hvm_x86_64 {
      * the 32-bit structure should be used instead.
      */
 };
-typedef struct vcpu_hvm_x86_64 xen_vcpu_hvm_x86_64_t;
+typedef struct vcpu_hvm_x86_64 crux_vcpu_hvm_x86_64_t;
 
 struct vcpu_hvm_context {
 #define VCPU_HVM_MODE_32B 0  /* 32bit fields of the structure will be used. */
@@ -109,14 +109,14 @@ struct vcpu_hvm_context {
 
     /* CPU registers. */
     union {
-        xen_vcpu_hvm_x86_32_t x86_32;
-        xen_vcpu_hvm_x86_64_t x86_64;
+        crux_vcpu_hvm_x86_32_t x86_32;
+        crux_vcpu_hvm_x86_64_t x86_64;
     } cpu_regs;
 };
 typedef struct vcpu_hvm_context vcpu_hvm_context_t;
-DEFINE_XEN_GUEST_HANDLE(vcpu_hvm_context_t);
+DEFINE_CRUX_GUEST_HANDLE(vcpu_hvm_context_t);
 
-#endif /* __XEN_PUBLIC_HVM_HVM_VCPU_H__ */
+#endif /* __CRUX_PUBLIC_HVM_HVM_VCPU_H__ */
 
 /*
  * Local variables:

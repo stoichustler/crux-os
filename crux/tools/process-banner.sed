@@ -1,5 +1,5 @@
 #!/bin/sed -rf
-# Process a text input, to turn it into a C string for the XEN_BANNER macro.
+# Process a text input, to turn it into a C string for the CRUX_BANNER macro.
 
 # Strip trailing whitespace.
 s_ *$__
@@ -16,4 +16,4 @@ $!s_$_ \\_
 # Append closing header guard
 $a\
 \
-#endif /* XEN_COMPILE_H */
+#endif /* CRUX_COMPILE_H */

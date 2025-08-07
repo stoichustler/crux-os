@@ -1,10 +1,10 @@
 /*
- * xen/include/asm-arm/pl011-uart.h
+ * crux/include/asm-arm/pl011-uart.h
  *
  * Common constant definition between early printk and the UART driver
  * for the pl011 UART
  *
- * Tim Deegan <tim@xen.org>
+ * Tim Deegan <tim@crux.org>
  * Copyright (c) 2011 Citrix Systems.
  *
  * This program is free software; you can redistribute it and/or modify

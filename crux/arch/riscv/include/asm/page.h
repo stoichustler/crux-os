@@ -5,21 +5,21 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/bug.h>
-#include <xen/const.h>
-#include <xen/errno.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/const.h>
+#include <crux/errno.h>
+#include <crux/types.h>
 
 #include <asm/atomic.h>
 #include <asm/page-bits.h>
 
 #define VPN_MASK                    (PAGETABLE_ENTRIES - 1UL)
 
-#define XEN_PT_LEVEL_ORDER(lvl)     ((lvl) * PAGETABLE_ORDER)
-#define XEN_PT_LEVEL_SHIFT(lvl)     (XEN_PT_LEVEL_ORDER(lvl) + PAGE_SHIFT)
-#define XEN_PT_LEVEL_SIZE(lvl)      (_AT(paddr_t, 1) << XEN_PT_LEVEL_SHIFT(lvl))
-#define XEN_PT_LEVEL_MAP_MASK(lvl)  (~(XEN_PT_LEVEL_SIZE(lvl) - 1))
-#define XEN_PT_LEVEL_MASK(lvl)      (VPN_MASK << XEN_PT_LEVEL_SHIFT(lvl))
+#define CRUX_PT_LEVEL_ORDER(lvl)     ((lvl) * PAGETABLE_ORDER)
+#define CRUX_PT_LEVEL_SHIFT(lvl)     (CRUX_PT_LEVEL_ORDER(lvl) + PAGE_SHIFT)
+#define CRUX_PT_LEVEL_SIZE(lvl)      (_AT(paddr_t, 1) << CRUX_PT_LEVEL_SHIFT(lvl))
+#define CRUX_PT_LEVEL_MAP_MASK(lvl)  (~(CRUX_PT_LEVEL_SIZE(lvl) - 1))
+#define CRUX_PT_LEVEL_MASK(lvl)      (VPN_MASK << CRUX_PT_LEVEL_SHIFT(lvl))
 
 /*
  * PTE format:
@@ -66,7 +66,7 @@
 
 /*
  * The PTE format does not contain the following bits within itself;
- * they are created artificially to inform the xen page table
+ * they are created artificially to inform the Xen page table
  * handling algorithm. These bits should not be explicitly written
  * to the PTE entry.
  */
@@ -78,7 +78,7 @@
 #define PTE_PBMT_MASK   (PTE_PBMT_NOCACHE | PTE_PBMT_IO)
 
 /* Calculate the offsets into the pagetables for a given VA */
-#define pt_linear_offset(lvl, va)   ((va) >> XEN_PT_LEVEL_SHIFT(lvl))
+#define pt_linear_offset(lvl, va)   ((va) >> CRUX_PT_LEVEL_SHIFT(lvl))
 
 #define pt_index(lvl, va) (pt_linear_offset((lvl), (va)) & VPN_MASK)
 

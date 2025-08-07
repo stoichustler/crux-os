@@ -2,7 +2,7 @@
 #ifndef ASM__RISCV__GUEST_ATOMICS_H
 #define ASM__RISCV__GUEST_ATOMICS_H
 
-#include <xen/bug.h>
+#include <crux/bug.h>
 
 #define guest_testop(name)                                                  \
 static inline int guest_##name(struct domain *d, int nr, volatile void *p)  \

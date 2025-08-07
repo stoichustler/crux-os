@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/random.h>
-#include <xen/time.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/random.h>
+#include <crux/time.h>
 
 /*
  * Initial value is chosen by a fair dice roll.

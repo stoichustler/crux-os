@@ -1,7 +1,7 @@
 /*
  * Based on Linux drivers/pci/controller/pci-host-common.c
  * Based on Linux drivers/pci/controller/pci-host-generic.c
- * Based on xen/arch/arm/pci/pci-host-generic.c
+ * Based on crux/arch/arm/pci/pci-host-generic.c
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/init.h>
-#include <xen/pci.h>
+#include <crux/init.h>
+#include <crux/pci.h>
 #include <asm/device.h>
 #include <asm/pci.h>
 

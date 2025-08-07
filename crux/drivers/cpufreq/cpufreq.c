@@ -26,20 +26,20 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include <xen/types.h>
-#include <xen/errno.h>
-#include <xen/delay.h>
-#include <xen/cpumask.h>
-#include <xen/list.h>
-#include <xen/param.h>
-#include <xen/sched.h>
-#include <xen/string.h>
-#include <xen/timer.h>
-#include <xen/xmalloc.h>
-#include <xen/guest_access.h>
-#include <xen/domain.h>
-#include <xen/cpu.h>
-#include <xen/pmstat.h>
+#include <crux/types.h>
+#include <crux/errno.h>
+#include <crux/delay.h>
+#include <crux/cpumask.h>
+#include <crux/list.h>
+#include <crux/param.h>
+#include <crux/sched.h>
+#include <crux/string.h>
+#include <crux/timer.h>
+#include <crux/xmalloc.h>
+#include <crux/guest_access.h>
+#include <crux/domain.h>
+#include <crux/cpu.h>
+#include <crux/pmstat.h>
 #include <asm/io.h>
 #include <asm/processor.h>
 
@@ -61,12 +61,12 @@ bool __initdata cpufreq_governor_internal;
 struct cpufreq_governor *__read_mostly cpufreq_opt_governor;
 LIST_HEAD_READ_MOSTLY(cpufreq_governor_list);
 
-/* set xen as default cpufreq */
-enum cpufreq_controller cpufreq_controller = FREQCTL_xen;
+/* set crux as default cpufreq */
+enum cpufreq_controller cpufreq_controller = FREQCTL_crux;
 
-enum cpufreq_xen_opt __initdata cpufreq_xen_opts[2] = { CPUFREQ_xen,
+enum cpufreq_crux_opt __initdata cpufreq_crux_opts[2] = { CPUFREQ_crux,
                                                         CPUFREQ_none };
-unsigned int __initdata cpufreq_xen_cnt = 1;
+unsigned int __initdata cpufreq_crux_cnt = 1;
 
 static int __init cpufreq_cmdline_parse(const char *s, const char *e);
 
@@ -76,7 +76,7 @@ static int __init cf_check setup_cpufreq_option(const char *str)
     int choice;
     int ret = -EINVAL;
 
-    cpufreq_xen_cnt = 0;
+    cpufreq_crux_cnt = 0;
 
     if ( !arg )
         arg = strchr(str, '\0');
@@ -84,7 +84,7 @@ static int __init cf_check setup_cpufreq_option(const char *str)
 
     if ( choice < 0 && !cmdline_strcmp(str, "dom0-kernel") )
     {
-        xen_processor_pmbits &= ~XEN_PROCESSOR_PM_PX;
+        crux_processor_pmbits &= ~CRUX_PROCESSOR_PM_PX;
         cpufreq_controller = FREQCTL_dom0_kernel;
         opt_dom0_vcpus_pin = 1;
         return 0;
@@ -92,7 +92,7 @@ static int __init cf_check setup_cpufreq_option(const char *str)
 
     if ( choice == 0 || !cmdline_strcmp(str, "none") )
     {
-        xen_processor_pmbits &= ~XEN_PROCESSOR_PM_PX;
+        crux_processor_pmbits &= ~CRUX_PROCESSOR_PM_PX;
         cpufreq_controller = FREQCTL_none;
         return 0;
     }
@@ -108,14 +108,14 @@ static int __init cf_check setup_cpufreq_option(const char *str)
         if ( !arg || arg > end )
             arg = strchr(str, '\0');
 
-        if ( cpufreq_xen_cnt == ARRAY_SIZE(cpufreq_xen_opts) )
+        if ( cpufreq_crux_cnt == ARRAY_SIZE(cpufreq_crux_opts) )
             return -E2BIG;
 
-        if ( choice > 0 || !cmdline_strcmp(str, "xen") )
+        if ( choice > 0 || !cmdline_strcmp(str, "crux") )
         {
-            xen_processor_pmbits |= XEN_PROCESSOR_PM_PX;
-            cpufreq_controller = FREQCTL_xen;
-            cpufreq_xen_opts[cpufreq_xen_cnt++] = CPUFREQ_xen;
+            crux_processor_pmbits |= CRUX_PROCESSOR_PM_PX;
+            cpufreq_controller = FREQCTL_crux;
+            cpufreq_crux_opts[cpufreq_crux_cnt++] = CPUFREQ_crux;
             ret = 0;
             if ( arg[0] && arg[1] )
                 ret = cpufreq_cmdline_parse(arg + 1, end);
@@ -123,9 +123,9 @@ static int __init cf_check setup_cpufreq_option(const char *str)
         else if ( IS_ENABLED(CONFIG_INTEL) && choice < 0 &&
                   !cmdline_strcmp(str, "hwp") )
         {
-            xen_processor_pmbits |= XEN_PROCESSOR_PM_PX;
-            cpufreq_controller = FREQCTL_xen;
-            cpufreq_xen_opts[cpufreq_xen_cnt++] = CPUFREQ_hwp;
+            crux_processor_pmbits |= CRUX_PROCESSOR_PM_PX;
+            cpufreq_controller = FREQCTL_crux;
+            cpufreq_crux_opts[cpufreq_crux_cnt++] = CPUFREQ_hwp;
             ret = 0;
             if ( arg[0] && arg[1] )
                 ret = hwp_cmdline_parse(arg + 1, end);
@@ -192,13 +192,13 @@ int cpufreq_limit_change(unsigned int cpu)
 }
 
 static int get_psd_info(unsigned int cpu, unsigned int *shared_type,
-                        const struct xen_psd_package **domain_info)
+                        const struct crux_psd_package **domain_info)
 {
     int ret = 0;
 
     switch ( processor_pminfo[cpu]->init )
     {
-    case XEN_PX_INIT:
+    case CRUX_PX_INIT:
         *shared_type = processor_pminfo[cpu]->perf.shared_type;
         *domain_info = &processor_pminfo[cpu]->perf.domain_info;
         break;
@@ -221,14 +221,14 @@ int cpufreq_add_cpu(unsigned int cpu)
     struct cpufreq_dom *cpufreq_dom = NULL;
     struct cpufreq_policy new_policy;
     struct cpufreq_policy *policy;
-    const struct xen_psd_package *domain_info;
+    const struct crux_psd_package *domain_info;
     unsigned int shared_type;
 
-    /* to protect the case when Px was not controlled by xen */
+    /* to protect the case when Px was not controlled by crux */
     if ( !processor_pminfo[cpu] || !cpu_online(cpu) )
         return -EINVAL;
 
-    if ( !(processor_pminfo[cpu]->init & XEN_PX_INIT) )
+    if ( !(processor_pminfo[cpu]->init & CRUX_PX_INIT) )
         return -EINVAL;
 
     if (!cpufreq_driver.init)
@@ -268,7 +268,7 @@ int cpufreq_add_cpu(unsigned int cpu)
         list_add(&cpufreq_dom->node, &cpufreq_dom_list_head);
     } else {
         unsigned int firstcpu_shared_type;
-        const struct xen_psd_package *firstcpu_domain_info;
+        const struct crux_psd_package *firstcpu_domain_info;
 
         /* domain sanity check under whatever coordination type */
         firstcpu = cpumask_first(cpufreq_dom->map);
@@ -397,13 +397,13 @@ int cpufreq_del_cpu(unsigned int cpu)
     struct cpufreq_dom *cpufreq_dom = NULL;
     struct cpufreq_policy *policy;
     unsigned int shared_type;
-    const struct xen_psd_package *domain_info;
+    const struct crux_psd_package *domain_info;
 
-    /* to protect the case when Px was not controlled by xen */
+    /* to protect the case when Px was not controlled by crux */
     if ( !processor_pminfo[cpu] || !cpu_online(cpu) )
         return -EINVAL;
 
-    if ( !(processor_pminfo[cpu]->init & XEN_PX_INIT) )
+    if ( !(processor_pminfo[cpu]->init & CRUX_PX_INIT) )
         return -EINVAL;
 
     if (!per_cpu(cpufreq_cpu_policy, cpu))
@@ -460,7 +460,7 @@ int cpufreq_del_cpu(unsigned int cpu)
     return 0;
 }
 
-static void print_PCT(struct xen_pct_register *ptr)
+static void print_PCT(struct crux_pct_register *ptr)
 {
     printk("\t_PCT: descriptor=%d, length=%d, space_id=%d, "
            "bit_width=%d, bit_offset=%d, reserved=%d, address=%"PRId64"\n",
@@ -468,7 +468,7 @@ static void print_PCT(struct xen_pct_register *ptr)
            ptr->bit_offset, ptr->reserved, ptr->address);
 }
 
-static void print_PSS(struct xen_processor_px *ptr, int count)
+static void print_PSS(struct crux_processor_px *ptr, int count)
 {
     int i;
     printk("\t_PSS: state_count=%d\n", count);
@@ -485,7 +485,7 @@ static void print_PSS(struct xen_processor_px *ptr, int count)
     }
 }
 
-static void print_PSD( struct xen_psd_package *ptr)
+static void print_PSD( struct crux_psd_package *ptr)
 {
     printk("\t_PSD: num_entries=%"PRId64" rev=%"PRId64
            " domain=%"PRId64" coord_type=%"PRId64" num_processors=%"PRId64"\n",
@@ -509,7 +509,7 @@ static bool check_psd_pminfo(unsigned int shared_type)
     return true;
 }
 
-int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
+int set_px_pminfo(uint32_t acpi_id, struct crux_processor_performance *perf)
 {
     int ret = 0, cpu;
     struct processor_pminfo *pmpt;
@@ -540,7 +540,7 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
     pmpt->acpi_id = acpi_id;
     pmpt->id = cpu;
 
-    if ( perf->flags & XEN_PX_PCT )
+    if ( perf->flags & CRUX_PX_PCT )
     {
         /* space_id check */
         if ( perf->control_register.space_id !=
@@ -551,9 +551,9 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
         }
 
         memcpy(&pxpt->control_register, &perf->control_register,
-               sizeof(struct xen_pct_register));
+               sizeof(struct crux_pct_register));
         memcpy(&pxpt->status_register, &perf->status_register,
-               sizeof(struct xen_pct_register));
+               sizeof(struct crux_pct_register));
 
         if ( cpufreq_verbose )
         {
@@ -562,7 +562,7 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
         }
     }
 
-    if ( perf->flags & XEN_PX_PSS && !pxpt->states )
+    if ( perf->flags & CRUX_PX_PSS && !pxpt->states )
     {
         /* capability check */
         if ( perf->state_count <= 1 )
@@ -571,7 +571,7 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
             goto out;
         }
 
-        if ( !(pxpt->states = xmalloc_array(struct xen_processor_px,
+        if ( !(pxpt->states = xmalloc_array(struct crux_processor_px,
                                             perf->state_count)) )
         {
             ret = -ENOMEM;
@@ -589,7 +589,7 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
             print_PSS(pxpt->states,pxpt->state_count);
     }
 
-    if ( perf->flags & XEN_PX_PSD )
+    if ( perf->flags & CRUX_PX_PSD )
     {
         if ( !check_psd_pminfo(perf->shared_type) )
         {
@@ -599,29 +599,29 @@ int set_px_pminfo(uint32_t acpi_id, struct xen_processor_performance *perf)
 
         pxpt->shared_type = perf->shared_type;
         memcpy(&pxpt->domain_info, &perf->domain_info,
-               sizeof(struct xen_psd_package));
+               sizeof(struct crux_psd_package));
 
         if ( cpufreq_verbose )
             print_PSD(&pxpt->domain_info);
     }
 
-    if ( perf->flags & XEN_PX_PPC )
+    if ( perf->flags & CRUX_PX_PPC )
     {
         pxpt->platform_limit = perf->platform_limit;
 
         if ( cpufreq_verbose )
             print_PPC(pxpt->platform_limit);
 
-        if ( pmpt->init == XEN_PX_INIT )
+        if ( pmpt->init == CRUX_PX_INIT )
         {
             ret = cpufreq_limit_change(cpu);
             goto out;
         }
     }
 
-    if ( perf->flags == ( XEN_PX_PCT | XEN_PX_PSS | XEN_PX_PSD | XEN_PX_PPC ) )
+    if ( perf->flags == ( CRUX_PX_PCT | CRUX_PX_PSS | CRUX_PX_PSD | CRUX_PX_PPC ) )
     {
-        pmpt->init = XEN_PX_INIT;
+        pmpt->init = CRUX_PX_INIT;
 
         ret = cpufreq_cpu_init(cpu);
         goto out;
@@ -631,7 +631,7 @@ out:
     return ret;
 }
 
-int acpi_set_pdc_bits(unsigned int acpi_id, XEN_GUEST_HANDLE(uint32) pdc)
+int acpi_set_pdc_bits(unsigned int acpi_id, CRUX_GUEST_HANDLE(uint32) pdc)
 {
     uint32_t bits[3];
     int ret;
@@ -646,11 +646,11 @@ int acpi_set_pdc_bits(unsigned int acpi_id, XEN_GUEST_HANDLE(uint32) pdc)
     {
         uint32_t mask = 0;
 
-        if ( xen_processor_pmbits & XEN_PROCESSOR_PM_CX )
+        if ( crux_processor_pmbits & CRUX_PROCESSOR_PM_CX )
             mask |= ACPI_PDC_C_MASK | ACPI_PDC_SMP_C1PT;
-        if ( xen_processor_pmbits & XEN_PROCESSOR_PM_PX )
+        if ( crux_processor_pmbits & CRUX_PROCESSOR_PM_PX )
             mask |= ACPI_PDC_P_MASK | ACPI_PDC_SMP_C1PT;
-        if ( xen_processor_pmbits & XEN_PROCESSOR_PM_TX )
+        if ( crux_processor_pmbits & CRUX_PROCESSOR_PM_TX )
             mask |= ACPI_PDC_T_MASK | ACPI_PDC_SMP_C1PT;
         bits[2] &= (ACPI_PDC_C_MASK | ACPI_PDC_P_MASK | ACPI_PDC_T_MASK |
                     ACPI_PDC_SMP_C1PT) & ~mask;
@@ -737,7 +737,7 @@ static int __init cpufreq_cmdline_parse(const char *s, const char *e)
             (!cpufreq_governors[gov_index]->handle_option ||
              !cpufreq_governors[gov_index]->handle_option(str, val)))
         {
-            printk(XENLOG_WARNING "cpufreq/%s: option '%s' not recognized\n",
+            printk(CRUXLOG_WARNING "cpufreq/%s: option '%s' not recognized\n",
                    cpufreq_governors[gov_index]->name, str);
             rc = -EINVAL;
         }

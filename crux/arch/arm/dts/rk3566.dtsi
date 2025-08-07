@@ -41,14 +41,14 @@
 	chosen {
 		#address-cells = <1>;
 		#size-cells = <1>;
-		xen,xen-bootargs = "console=dtuart dtuart=/uart2 dom0_mem=32M dom0_max_vcpus=1 sched=rtds bootscrub=0";
+		crux,crux-bootargs = "console=dtuart dtuart=/uart2 dom0_mem=32M dom0_max_vcpus=1 sched=rtds bootscrub=0";
 
 		/* DRAM bank 0: 0x00200000 - 0x08200000
 		 *
 		 * allocate 32M (0x200 0000) for service vm.
 		 *
-		 * => load mmc 1:1 0x00200000 boot/xen
-		 * => load mmc 1:1 0x00400000 boot/xen.dtb
+		 * => load mmc 1:1 0x00200000 boot/crux
+		 * => load mmc 1:1 0x00400000 boot/crux.dtb
 		 * => load mmc 1:1 0x02000000 boot/zephyr.bin
 		 * => load mmc 1:1 0x04000000 boot/roux.bin
 		 */
@@ -59,7 +59,7 @@
 		};
 
 		domU1 {
-			compatible = "xen,domain";
+			compatible = "crux,domain";
 			memory = <0x0 0x10000>; // 64M
 			cpus = <2>;
 			vpl011;
@@ -76,7 +76,7 @@
 		 * => load mmc 1:1 0x0c200000 boot/initrd.ext4
 		 */
 		domU2 {
-			compatible = "xen,domain";
+			compatible = "crux,domain";
 			memory = <0x0 0x80000>; // 512M
 			cpus = <4>;
 			/* capabilities = <0x2>; */

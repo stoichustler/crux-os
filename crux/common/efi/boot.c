@@ -1,26 +1,26 @@
 #include "efi.h"
 #include <efi/efiprot.h>
 #include <efi/efipciio.h>
-#include <public/xen.h>
-#include <xen/bitops.h>
-#include <xen/compile.h>
-#include <xen/ctype.h>
-#include <xen/dmi.h>
-#include <xen/domain_page.h>
-#include <xen/init.h>
-#include <xen/keyhandler.h>
-#include <xen/lib.h>
-#include <xen/mm.h>
-#include <xen/multiboot.h>
-#include <xen/param.h>
-#include <xen/pci_regs.h>
-#include <xen/pdx.h>
-#include <xen/pfn.h>
+#include <public/crux.h>
+#include <crux/bitops.h>
+#include <crux/compile.h>
+#include <crux/ctype.h>
+#include <crux/dmi.h>
+#include <crux/domain_page.h>
+#include <crux/init.h>
+#include <crux/keyhandler.h>
+#include <crux/lib.h>
+#include <crux/mm.h>
+#include <crux/multiboot.h>
+#include <crux/param.h>
+#include <crux/pci_regs.h>
+#include <crux/pdx.h>
+#include <crux/pfn.h>
 #if EFI_PAGE_SIZE != PAGE_SIZE
-# error Cannot use xen/pfn.h here!
+# error Cannot use crux/pfn.h here!
 #endif
-#include <xen/string.h>
-#include <xen/stringify.h>
+#include <crux/string.h>
+#include <crux/stringify.h>
 #ifdef CONFIG_X86
 /*
  * Keep this arch-specific modified include in the common file, as moving
@@ -445,13 +445,13 @@ static EFI_FILE_HANDLE __init get_parent_handle(const EFI_LOADED_IMAGE *loaded_i
 
     /*
      * In some cases the image could not come from a specific device.
-     * For instance this can happen if xen was loaded using GRUB2 "linux"
+     * For instance this can happen if Xen was loaded using GRUB2 "linux"
      * command.
      */
     *leaf = NULL;
     if ( !loaded_image->DeviceHandle )
     {
-        PrintStr(L"xen image loaded without providing a device\r\n");
+        PrintStr(L"Xen image loaded without providing a device\r\n");
         return NULL;
     }
 
@@ -481,7 +481,7 @@ static EFI_FILE_HANDLE __init get_parent_handle(const EFI_LOADED_IMAGE *loaded_i
         {
             /*
              * The image could come from an unsupported device.
-             * For instance this can happen if xen was loaded using GRUB2
+             * For instance this can happen if Xen was loaded using GRUB2
              * "chainloader" command and the file was not from ESP.
              */
             PrintStr(L"Unsupported device path component\r\n");
@@ -1292,7 +1292,7 @@ static void __init efi_exit_boot(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *Syste
                                           mdesc_ver, efi_memmap);
     if ( status != EFI_SUCCESS )
     {
-        printk(XENLOG_ERR "EFI: SetVirtualAddressMap() failed (%#lx), disabling runtime services\n",
+        printk(CRUXLOG_ERR "EFI: SetVirtualAddressMap() failed (%#lx), disabling runtime services\n",
                status);
         __clear_bit(EFI_RS, &efi_flags);
     }
@@ -1379,7 +1379,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
                 else if ( wstrcmp(ptr + 1, L"help") == 0 ||
                           (ptr[1] == L'?' && !ptr[2]) )
                 {
-                    PrintStr(L"xen EFI Loader options:\r\n");
+                    PrintStr(L"Xen EFI Loader options:\r\n");
                     PrintStr(L"-basevideo   retain current video mode\r\n");
                     PrintStr(L"-mapbs       map EfiBootServices{Code,Data}\r\n");
                     PrintStr(L"-cfg=<file>  specify configuration file\r\n");
@@ -1401,8 +1401,8 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
             efi_console_set_mode();
     }
 
-    PrintStr(L"xen " XEN_VERSION_STRING XEN_EXTRAVERSION
-	     " (c/s " XEN_CHANGESET ") EFI loader\r\n");
+    PrintStr(L"Xen " CRUX_VERSION_STRING CRUX_EXTRAVERSION
+	     " (c/s " CRUX_CHANGESET ") EFI loader\r\n");
 
     efi_arch_relocate_image(0);
 
@@ -1425,7 +1425,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
 
         /* Read and parse the config file. */
         if ( read_section(loaded_image, L"config", &cfg, NULL) )
-            PrintStr(L"using builtin config file\r\n");
+            PrintStr(L"Using builtin config file\r\n");
         else if ( !cfg_file_name && file_name )
         {
             CHAR16 *tail;
@@ -1439,7 +1439,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
             }
             if ( !tail )
                 blexit(L"No configuration file found.");
-            PrintStr(L"using configuration file '");
+            PrintStr(L"Using configuration file '");
             PrintStr(file_name);
             PrintStr(L"'\r\n");
         }
@@ -1488,7 +1488,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
         }
         else
         {
-            /* Kernel was embedded so xen signature includes it. */
+            /* Kernel was embedded so Xen signature includes it. */
             kernel_verified = true;
         }
 
@@ -1716,7 +1716,7 @@ void __init efi_init_memory(void)
     if ( !efi_enabled(EFI_BOOT) )
         return;
 
-    printk(XENLOG_DEBUG "EFI memory map:%s\n",
+    printk(CRUXLOG_DEBUG "EFI memory map:%s\n",
            map_bs ? " (mapping BootServices)" : "");
     for ( i = 0; i < efi_memmap_size; i += efi_mdesc_size )
     {
@@ -1727,7 +1727,7 @@ void __init efi_init_memory(void)
         paddr_t mem_base;
         unsigned long mem_npages;
 
-        printk(XENLOG_DEBUG " %013" PRIx64 "-%013" PRIx64
+        printk(CRUXLOG_DEBUG " %013" PRIx64 "-%013" PRIx64
                             " type=%u attr=%016" PRIx64 "\n",
                desc->PhysicalStart, desc->PhysicalStart + len - 1,
                desc->Type, desc->Attribute);
@@ -1758,7 +1758,7 @@ void __init efi_init_memory(void)
              */
             case EfiRuntimeServicesCode:
             case EfiRuntimeServicesData:
-                printk(XENLOG_WARNING
+                printk(CRUXLOG_WARNING
                        "Setting RUNTIME attribute for %013" PRIx64 "-%013" PRIx64 "\n",
                        desc->PhysicalStart, desc->PhysicalStart + len - 1);
                 desc->Attribute |= EFI_MEMORY_RUNTIME;
@@ -1793,7 +1793,7 @@ void __init efi_init_memory(void)
             prot |= _PAGE_WP | MAP_SMALL_PAGES;
         else
         {
-            printk(XENLOG_ERR "Unknown cachability for MFNs %#lx-%#lx%s\n",
+            printk(CRUXLOG_ERR "Unknown cachability for MFNs %#lx-%#lx%s\n",
                    smfn, emfn - 1, efi_map_uc ? ", assuming UC" : "");
             if ( !efi_map_uc )
                 continue;
@@ -1811,12 +1811,12 @@ void __init efi_init_memory(void)
         {
             if ( (unsigned long)mfn_to_virt(emfn - 1) >= HYPERVISOR_VIRT_END )
                 prot &= ~_PAGE_GLOBAL;
-            if ( map_pages_to_xen((unsigned long)mfn_to_virt(smfn),
+            if ( map_pages_to_crux((unsigned long)mfn_to_virt(smfn),
                                   _mfn(smfn), emfn - smfn, prot) == 0 )
                 desc->VirtualStart =
                     (unsigned long)maddr_to_virt(desc->PhysicalStart);
             else
-                printk(XENLOG_ERR "Could not map MFNs %#lx-%#lx\n",
+                printk(CRUXLOG_ERR "Could not map MFNs %#lx-%#lx\n",
                        smfn, emfn - 1);
         }
         else if ( !((desc->PhysicalStart + len - 1) >> (VADDR_BITS - 1)) &&
@@ -1831,7 +1831,7 @@ void __init efi_init_memory(void)
         }
         else
         {
-            printk(XENLOG_ERR "No mapping for MFNs %#lx-%#lx\n",
+            printk(CRUXLOG_ERR "No mapping for MFNs %#lx-%#lx\n",
                    smfn, emfn - 1);
         }
     }
@@ -1931,7 +1931,7 @@ void __init efi_init_memory(void)
         }
     }
 
-    /* Insert xen mappings. */
+    /* Insert Xen mappings. */
     for ( i = l4_table_offset(HYPERVISOR_VIRT_START);
           i < l4_table_offset(DIRECTMAP_VIRT_END); ++i )
         efi_l4t[i] = idle_pg_table[i];

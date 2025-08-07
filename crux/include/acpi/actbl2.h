@@ -1207,7 +1207,7 @@ enum acpi_wdat_instructions {
  * WDDT - Watchdog Descriptor Table
  *        Version 1
  *
- * Conforms to "using the Intel ICH Family Watchdog Timer (WDT)",
+ * Conforms to "Using the Intel ICH Family Watchdog Timer (WDT)",
  * Version 001, September 2002
  *
  ******************************************************************************/

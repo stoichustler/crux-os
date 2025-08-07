@@ -2,14 +2,14 @@
 /*
  * hvm/save.h
  *
- * Structure definitions for HVM state that is held by xen and must
+ * Structure definitions for HVM state that is held by Xen and must
  * be saved along with the domain's memory and device-model state.
  *
- * Copyright (c) 2007 xenSource Ltd.
+ * Copyright (c) 2007 XenSource Ltd.
  */
 
-#ifndef __XEN_PUBLIC_HVM_SAVE_H__
-#define __XEN_PUBLIC_HVM_SAVE_H__
+#ifndef __CRUX_PUBLIC_HVM_SAVE_H__
+#define __CRUX_PUBLIC_HVM_SAVE_H__
 
 /*
  * Structures in this header *must* have the same layout in 32bit
@@ -19,7 +19,7 @@
  *
  * Only the state necessary for saving and restoring (i.e. fields
  * that are analogous to actual hardware state) should go in this file.
- * Internal mechanisms should be kept in xen-private headers.
+ * Internal mechanisms should be kept in Xen-private headers.
  */
 
 #if !defined(__GNUC__) || defined(__STRICT_ANSI__)
@@ -44,14 +44,14 @@ struct hvm_save_descriptor {
  * ugliness.
  */
 
-#ifdef __XEN__
+#ifdef __CRUX__
 # define DECLARE_HVM_SAVE_TYPE_COMPAT(_x, _code, _type, _ctype, _fix)     \
     static inline int __HVM_SAVE_FIX_COMPAT_##_x(void *h, uint32_t size)  \
         { return _fix(h, size); }                                         \
     struct __HVM_SAVE_TYPE_##_x { _type t; char c[_code]; char cpt[2];};  \
     struct __HVM_SAVE_TYPE_COMPAT_##_x { _ctype t; }
 
-# include <xen/bug.h> /* BUG() */
+# include <crux/bug.h> /* BUG() */
 # define DECLARE_HVM_SAVE_TYPE(_x, _code, _type)                         \
     static inline int __HVM_SAVE_FIX_COMPAT_##_x(void *h, uint32_t size) \
         { BUG(); return -1; }                                            \
@@ -69,7 +69,7 @@ struct hvm_save_descriptor {
 #define HVM_SAVE_LENGTH(_x) (sizeof (HVM_SAVE_TYPE(_x)))
 #define HVM_SAVE_CODE(_x) (sizeof(((struct __HVM_SAVE_TYPE_##_x *)NULL)->c))
 
-#ifdef __XEN__
+#ifdef __CRUX__
 # define HVM_SAVE_TYPE_COMPAT(_x) __typeof__(((struct __HVM_SAVE_TYPE_COMPAT_##_x *)NULL)->t)
 # define HVM_SAVE_LENGTH_COMPAT(_x) (sizeof (HVM_SAVE_TYPE_COMPAT(_x)))
 
@@ -95,4 +95,4 @@ DECLARE_HVM_SAVE_TYPE(END, 0, struct hvm_save_end);
 #error "unsupported architecture"
 #endif
 
-#endif /* __XEN_PUBLIC_HVM_SAVE_H__ */
+#endif /* __CRUX_PUBLIC_HVM_SAVE_H__ */

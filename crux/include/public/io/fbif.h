@@ -1,13 +1,13 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * fbif.h -- xen virtual frame buffer device
+ * fbif.h -- Xen virtual frame buffer device
  *
  * Copyright (C) 2005 Anthony Liguori <aliguori@us.ibm.com>
  * Copyright (C) 2006 Red Hat, Inc., Markus Armbruster <armbru@redhat.com>
  */
 
-#ifndef __XEN_PUBLIC_IO_FBIF_H__
-#define __XEN_PUBLIC_IO_FBIF_H__
+#ifndef __CRUX_PUBLIC_IO_FBIF_H__
+#define __CRUX_PUBLIC_IO_FBIF_H__
 
 /* Out events (frontend -> backend) */
 
@@ -19,14 +19,14 @@
 /* Event type 1 currently not used */
 /*
  * Framebuffer update notification event
- * Capable frontend sets feature-update in xenstore.
- * Backend requests it by setting request-update in xenstore.
+ * Capable frontend sets feature-update in cruxstore.
+ * Backend requests it by setting request-update in cruxstore.
  */
-#define XENFB_TYPE_UPDATE 2
+#define CRUXFB_TYPE_UPDATE 2
 
-struct xenfb_update
+struct cruxfb_update
 {
-    uint8_t type;    /* XENFB_TYPE_UPDATE */
+    uint8_t type;    /* CRUXFB_TYPE_UPDATE */
     int32_t x;      /* source x */
     int32_t y;      /* source y */
     int32_t width;  /* rect width */
@@ -35,13 +35,13 @@ struct xenfb_update
 
 /*
  * Framebuffer resize notification event
- * Capable backend sets feature-resize in xenstore.
+ * Capable backend sets feature-resize in cruxstore.
  */
-#define XENFB_TYPE_RESIZE 3
+#define CRUXFB_TYPE_RESIZE 3
 
-struct xenfb_resize
+struct cruxfb_resize
 {
-    uint8_t type;    /* XENFB_TYPE_RESIZE */
+    uint8_t type;    /* CRUXFB_TYPE_RESIZE */
     int32_t width;   /* width in pixels */
     int32_t height;  /* height in pixels */
     int32_t stride;  /* stride in bytes */
@@ -49,14 +49,14 @@ struct xenfb_resize
     int32_t offset;  /* offset of the framebuffer in bytes */
 };
 
-#define XENFB_OUT_EVENT_SIZE 40
+#define CRUXFB_OUT_EVENT_SIZE 40
 
-union xenfb_out_event
+union cruxfb_out_event
 {
     uint8_t type;
-    struct xenfb_update update;
-    struct xenfb_resize resize;
-    char pad[XENFB_OUT_EVENT_SIZE];
+    struct cruxfb_update update;
+    struct cruxfb_resize resize;
+    char pad[CRUXFB_OUT_EVENT_SIZE];
 };
 
 /* In events (backend -> frontend) */
@@ -74,44 +74,44 @@ union xenfb_out_event
  * those have been requested), then use the update frequency to guide
  * their periodical refreshs.
  */
-#define XENFB_TYPE_REFRESH_PERIOD 1
-#define XENFB_NO_REFRESH 0
+#define CRUXFB_TYPE_REFRESH_PERIOD 1
+#define CRUXFB_NO_REFRESH 0
 
-struct xenfb_refresh_period
+struct cruxfb_refresh_period
 {
-    uint8_t type;    /* XENFB_TYPE_UPDATE_PERIOD */
+    uint8_t type;    /* CRUXFB_TYPE_UPDATE_PERIOD */
     uint32_t period; /* period of refresh, in ms,
-                      * XENFB_NO_REFRESH if no refresh is needed */
+                      * CRUXFB_NO_REFRESH if no refresh is needed */
 };
 
-#define XENFB_IN_EVENT_SIZE 40
+#define CRUXFB_IN_EVENT_SIZE 40
 
-union xenfb_in_event
+union cruxfb_in_event
 {
     uint8_t type;
-    struct xenfb_refresh_period refresh_period;
-    char pad[XENFB_IN_EVENT_SIZE];
+    struct cruxfb_refresh_period refresh_period;
+    char pad[CRUXFB_IN_EVENT_SIZE];
 };
 
 /* shared page */
 
-#define XENFB_IN_RING_SIZE 1024
-#define XENFB_IN_RING_LEN (XENFB_IN_RING_SIZE / XENFB_IN_EVENT_SIZE)
-#define XENFB_IN_RING_OFFS 1024
-#define XENFB_IN_RING(page) \
-    ((union xenfb_in_event *)((char *)(page) + XENFB_IN_RING_OFFS))
-#define XENFB_IN_RING_REF(page, idx) \
-    (XENFB_IN_RING((page))[(idx) % XENFB_IN_RING_LEN])
+#define CRUXFB_IN_RING_SIZE 1024
+#define CRUXFB_IN_RING_LEN (CRUXFB_IN_RING_SIZE / CRUXFB_IN_EVENT_SIZE)
+#define CRUXFB_IN_RING_OFFS 1024
+#define CRUXFB_IN_RING(page) \
+    ((union cruxfb_in_event *)((char *)(page) + CRUXFB_IN_RING_OFFS))
+#define CRUXFB_IN_RING_REF(page, idx) \
+    (CRUXFB_IN_RING((page))[(idx) % CRUXFB_IN_RING_LEN])
 
-#define XENFB_OUT_RING_SIZE 2048
-#define XENFB_OUT_RING_LEN (XENFB_OUT_RING_SIZE / XENFB_OUT_EVENT_SIZE)
-#define XENFB_OUT_RING_OFFS (XENFB_IN_RING_OFFS + XENFB_IN_RING_SIZE)
-#define XENFB_OUT_RING(page) \
-    ((union xenfb_out_event *)((char *)(page) + XENFB_OUT_RING_OFFS))
-#define XENFB_OUT_RING_REF(page, idx) \
-    (XENFB_OUT_RING((page))[(idx) % XENFB_OUT_RING_LEN])
+#define CRUXFB_OUT_RING_SIZE 2048
+#define CRUXFB_OUT_RING_LEN (CRUXFB_OUT_RING_SIZE / CRUXFB_OUT_EVENT_SIZE)
+#define CRUXFB_OUT_RING_OFFS (CRUXFB_IN_RING_OFFS + CRUXFB_IN_RING_SIZE)
+#define CRUXFB_OUT_RING(page) \
+    ((union cruxfb_out_event *)((char *)(page) + CRUXFB_OUT_RING_OFFS))
+#define CRUXFB_OUT_RING_REF(page, idx) \
+    (CRUXFB_OUT_RING((page))[(idx) % CRUXFB_OUT_RING_LEN])
 
-struct xenfb_page
+struct cruxfb_page
 {
     uint32_t in_cons, in_prod;
     uint32_t out_cons, out_prod;
@@ -137,13 +137,13 @@ struct xenfb_page
 };
 
 /*
- * Wart: xenkbd needs to know default resolution.  Put it here until a
+ * Wart: cruxkbd needs to know default resolution.  Put it here until a
  * better solution is found, but don't leak it to the backend.
  */
 #ifdef __KERNEL__
-#define XENFB_WIDTH 800
-#define XENFB_HEIGHT 600
-#define XENFB_DEPTH 32
+#define CRUXFB_WIDTH 800
+#define CRUXFB_HEIGHT 600
+#define CRUXFB_DEPTH 32
 #endif
 
 #endif

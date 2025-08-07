@@ -1,11 +1,11 @@
-#include <xen/sched.h>
+#include <crux/sched.h>
 
 #include <asm/domain.h>
 #include <asm/processor.h>
 
-#include <public/xen.h>
+#include <public/crux.h>
 
-/* C(hyp,user), hyp is xen internal name, user is user API name. */
+/* C(hyp,user), hyp is Xen internal name, user is user API name. */
 
 #define ALLREGS \
     C(x0,x0);   C(x1,x1);   C(x2,x2);   C(x3,x3);   \

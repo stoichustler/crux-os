@@ -5,9 +5,9 @@
 
 #ifndef __ASSEMBLY__
 
-#include <xen/bug.h>
-#include <xen/types.h>
-#include <public/xen.h>
+#include <crux/bug.h>
+#include <crux/types.h>
+#include <public/crux.h>
 #include <asm/current.h>
 #include <asm/processor.h>
 

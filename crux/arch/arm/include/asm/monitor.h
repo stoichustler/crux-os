@@ -22,7 +22,7 @@
 #ifndef __ASM_ARM_MONITOR_H__
 #define __ASM_ARM_MONITOR_H__
 
-#include <xen/sched.h>
+#include <crux/sched.h>
 #include <public/domctl.h>
 
 #define HAS_ARCH_MONITOR_DOMCTL_EVENT
@@ -30,14 +30,14 @@
 #include <asm-generic/monitor.h>
 
 int arch_monitor_domctl_event(struct domain *d,
-                              struct xen_domctl_monitor_op *mop);
+                              struct crux_domctl_monitor_op *mop);
 
 static inline uint32_t arch_monitor_get_capabilities(struct domain *d)
 {
     uint32_t capabilities = 0;
 
-    capabilities = (1U << XEN_DOMCTL_MONITOR_EVENT_GUEST_REQUEST |
-                    1U << XEN_DOMCTL_MONITOR_EVENT_PRIVILEGED_CALL);
+    capabilities = (1U << CRUX_DOMCTL_MONITOR_EVENT_GUEST_REQUEST |
+                    1U << CRUX_DOMCTL_MONITOR_EVENT_PRIVILEGED_CALL);
 
     return capabilities;
 }

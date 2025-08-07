@@ -14,8 +14,8 @@
 #ifndef _SS_EBITMAP_H_
 #define _SS_EBITMAP_H_
 
-#include <xen/bitmap.h>
-#include <xen/bug.h>
+#include <crux/bitmap.h>
+#include <crux/bug.h>
 
 #define EBITMAP_UNIT_NUMS	((32 - sizeof(void *) - sizeof(u32))	\
 					/ sizeof(unsigned long))

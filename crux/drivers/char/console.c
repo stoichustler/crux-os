@@ -1,38 +1,38 @@
 /******************************************************************************
  * console.c
  *
- * Emergency console I/O for xen and the domain-0 guest OS.
+ * Emergency console I/O for Xen and the domain-0 guest OS.
  *
  * Copyright (c) 2002-2004, K A Fraser.
  *
  * Added printf_ratelimit
  *     Taken from Linux - Author: Andi Kleen (net_ratelimit)
- *     Ported to xen - Steven Rostedt - Red Hat
+ *     Ported to Xen - Steven Rostedt - Red Hat
  */
 
-#include <xen/version.h>
-#include <xen/lib.h>
-#include <xen/init.h>
-#include <xen/event.h>
-#include <xen/console.h>
-#include <xen/param.h>
-#include <xen/serial.h>
-#include <xen/softirq.h>
-#include <xen/keyhandler.h>
-#include <xen/guest_access.h>
-#include <xen/watchdog.h>
-#include <xen/shutdown.h>
-#include <xen/video.h>
-#include <xen/kexec.h>
-#include <xen/warning.h>
+#include <crux/version.h>
+#include <crux/lib.h>
+#include <crux/init.h>
+#include <crux/event.h>
+#include <crux/console.h>
+#include <crux/param.h>
+#include <crux/serial.h>
+#include <crux/softirq.h>
+#include <crux/keyhandler.h>
+#include <crux/guest_access.h>
+#include <crux/watchdog.h>
+#include <crux/shutdown.h>
+#include <crux/video.h>
+#include <crux/kexec.h>
+#include <crux/warning.h>
 #include <asm/div64.h>
-#include <xen/hypercall.h> /* for do_console_io */
-#include <xen/early_printk.h>
-#include <xen/warning.h>
-#include <xen/pv_console.h>
+#include <crux/hypercall.h> /* for do_console_io */
+#include <crux/early_printk.h>
+#include <crux/warning.h>
+#include <crux/pv_console.h>
 #include <asm/setup.h>
-#include <xen/sections.h>
-#include <xen/consoled.h>
+#include <crux/sections.h>
+#include <crux/consoled.h>
 
 #ifdef CONFIG_X86
 #include <asm/guest.h>
@@ -62,7 +62,7 @@ enum {
 };
 
 /* Prefix for hypervisor's diagnostic console messages. */
-#define CONSOLE_PREFIX      ""
+#define CONSOLE_PREFIX      "(CRUX) "
 
 static void console_send(const char *str, size_t len, unsigned int flags);
 
@@ -71,7 +71,7 @@ static char __initdata opt_console[30] = OPT_CONSOLE_STR;
 string_param("console", opt_console);
 
 /* conswitch: a character pair controlling console switching. */
-/* Char 1: CTRL+<char1> is used to switch console input between xen and DOM0 */
+/* Char 1: CTRL+<char1> is used to switch console input between Xen and DOM0 */
 /* Char 2: If this character is 'x', then do not auto-switch to DOM0 when it */
 /*         boots. Any other value, or omitting the char, enables auto-switch */
 static char __read_mostly opt_conswitch[3] = "a";
@@ -82,7 +82,7 @@ static bool __initdata opt_sync_console;
 boolean_param("sync_console", opt_sync_console);
 static const char __initconst warning_sync_console[] =
     "WARNING: CONSOLE OUTPUT IS SYNCHRONOUS\n"
-    "This option is intended to aid debugging of xen by ensuring\n"
+    "This option is intended to aid debugging of Xen by ensuring\n"
     "that all output is synchronously delivered on the serial line.\n"
     "However it can introduce SIGNIFICANT latencies and affect\n"
     "timekeeping. It is NOT recommended for production use!\n";
@@ -91,7 +91,7 @@ static const char __initconst warning_sync_console[] =
 static bool __read_mostly opt_console_to_ring;
 boolean_param("console_to_ring", opt_console_to_ring);
 
-/* console_timestamps: include a timestamp prefix on every xen console line. */
+/* console_timestamps: include a timestamp prefix on every Xen console line. */
 enum con_timestamp_mode
 {
     TSM_NONE,          /* No timestamps */
@@ -141,14 +141,14 @@ static int __read_mostly sercon_handle = -1;
 
 #ifdef CONFIG_X86
 /* Tristate: 0 disabled, 1 user enabled, -1 default enabled */
-int8_t __read_mostly opt_console_xen; /* console=xen */
+int8_t __read_mostly opt_console_crux; /* console=crux */
 #endif
 
 static DEFINE_RSPINLOCK(console_lock);
 
 /*
  * To control the amount of printing, thresholds are added.
- * These thresholds correspond to the XENLOG logging levels.
+ * These thresholds correspond to the CRUXLOG logging levels.
  * There's an upper and lower threshold for non-guest messages and for
  * guest-provoked messages.  This works as follows, for a given log level L:
  *
@@ -160,39 +160,39 @@ static DEFINE_RSPINLOCK(console_lock);
  * the lower threshold equal to the upper.
  */
 #ifdef NDEBUG
-#define XENLOG_UPPER_THRESHOLD       3 /* Do not print DEBUG  */
-#define XENLOG_LOWER_THRESHOLD       3 /* Always print INFO, ERR and WARNING */
-#define XENLOG_GUEST_UPPER_THRESHOLD 2 /* Do not print INFO and DEBUG  */
-#define XENLOG_GUEST_LOWER_THRESHOLD 0 /* Rate-limit ERR and WARNING   */
+#define CRUXLOG_UPPER_THRESHOLD       3 /* Do not print DEBUG  */
+#define CRUXLOG_LOWER_THRESHOLD       3 /* Always print INFO, ERR and WARNING */
+#define CRUXLOG_GUEST_UPPER_THRESHOLD 2 /* Do not print INFO and DEBUG  */
+#define CRUXLOG_GUEST_LOWER_THRESHOLD 0 /* Rate-limit ERR and WARNING   */
 #else
-#define XENLOG_UPPER_THRESHOLD       4 /* Do not discard anything      */
-#define XENLOG_LOWER_THRESHOLD       4 /* Print everything             */
-#define XENLOG_GUEST_UPPER_THRESHOLD 4 /* Do not discard anything      */
-#define XENLOG_GUEST_LOWER_THRESHOLD 4 /* Print everything             */
+#define CRUXLOG_UPPER_THRESHOLD       4 /* Do not discard anything      */
+#define CRUXLOG_LOWER_THRESHOLD       4 /* Print everything             */
+#define CRUXLOG_GUEST_UPPER_THRESHOLD 4 /* Do not discard anything      */
+#define CRUXLOG_GUEST_LOWER_THRESHOLD 4 /* Print everything             */
 #endif
 /*
- * The XENLOG_DEFAULT is the default given to printks that
+ * The CRUXLOG_DEFAULT is the default given to printks that
  * do not have any print level associated with them.
  */
-#define XENLOG_DEFAULT       2 /* XENLOG_INFO */
-#define XENLOG_GUEST_DEFAULT 1 /* XENLOG_WARNING */
+#define CRUXLOG_DEFAULT       2 /* CRUXLOG_INFO */
+#define CRUXLOG_GUEST_DEFAULT 1 /* CRUXLOG_WARNING */
 
-static int __read_mostly xenlog_upper_thresh = XENLOG_UPPER_THRESHOLD;
-static int __read_mostly xenlog_lower_thresh = XENLOG_LOWER_THRESHOLD;
-static int __read_mostly xenlog_guest_upper_thresh =
-    XENLOG_GUEST_UPPER_THRESHOLD;
-static int __read_mostly xenlog_guest_lower_thresh =
-    XENLOG_GUEST_LOWER_THRESHOLD;
+static int __read_mostly cruxlog_upper_thresh = CRUXLOG_UPPER_THRESHOLD;
+static int __read_mostly cruxlog_lower_thresh = CRUXLOG_LOWER_THRESHOLD;
+static int __read_mostly cruxlog_guest_upper_thresh =
+    CRUXLOG_GUEST_UPPER_THRESHOLD;
+static int __read_mostly cruxlog_guest_lower_thresh =
+    CRUXLOG_GUEST_LOWER_THRESHOLD;
 
 static int cf_check parse_loglvl(const char *s);
 static int cf_check parse_guest_loglvl(const char *s);
 
 #ifdef CONFIG_HYPFS
 #define LOGLVL_VAL_SZ 16
-static char xenlog_val[LOGLVL_VAL_SZ];
-static char xenlog_guest_val[LOGLVL_VAL_SZ];
+static char cruxlog_val[LOGLVL_VAL_SZ];
+static char cruxlog_guest_val[LOGLVL_VAL_SZ];
 
-static void xenlog_update_val(int lower, int upper, char *val)
+static void cruxlog_update_val(int lower, int upper, char *val)
 {
     static const char * const lvl2opt[] =
         { "none", "error", "warning", "info", "all" };
@@ -200,23 +200,23 @@ static void xenlog_update_val(int lower, int upper, char *val)
     snprintf(val, LOGLVL_VAL_SZ, "%s/%s", lvl2opt[lower], lvl2opt[upper]);
 }
 
-static void __init cf_check xenlog_init(struct param_hypfs *par)
+static void __init cf_check cruxlog_init(struct param_hypfs *par)
 {
-    xenlog_update_val(xenlog_lower_thresh, xenlog_upper_thresh, xenlog_val);
-    custom_runtime_set_var(par, xenlog_val);
+    cruxlog_update_val(cruxlog_lower_thresh, cruxlog_upper_thresh, cruxlog_val);
+    custom_runtime_set_var(par, cruxlog_val);
 }
 
-static void __init cf_check xenlog_guest_init(struct param_hypfs *par)
+static void __init cf_check cruxlog_guest_init(struct param_hypfs *par)
 {
-    xenlog_update_val(xenlog_guest_lower_thresh, xenlog_guest_upper_thresh,
-                      xenlog_guest_val);
-    custom_runtime_set_var(par, xenlog_guest_val);
+    cruxlog_update_val(cruxlog_guest_lower_thresh, cruxlog_guest_upper_thresh,
+                      cruxlog_guest_val);
+    custom_runtime_set_var(par, cruxlog_guest_val);
 }
 #else
-#define xenlog_val       NULL
-#define xenlog_guest_val NULL
+#define cruxlog_val       NULL
+#define cruxlog_guest_val NULL
 
-static void xenlog_update_val(int lower, int upper, char *val)
+static void cruxlog_update_val(int lower, int upper, char *val)
 {
 }
 #endif
@@ -229,8 +229,8 @@ static void xenlog_update_val(int lower, int upper, char *val)
  * Similar definitions for guest_loglvl, but applies to guest tracing.
  * Defaults: loglvl=warning ; guest_loglvl=none/warning
  */
-custom_runtime_param("loglvl", parse_loglvl, xenlog_init);
-custom_runtime_param("guest_loglvl", parse_guest_loglvl, xenlog_guest_init);
+custom_runtime_param("loglvl", parse_loglvl, cruxlog_init);
+custom_runtime_param("guest_loglvl", parse_guest_loglvl, cruxlog_guest_init);
 
 static atomic_t print_everything = ATOMIC_INIT(0);
 
@@ -259,7 +259,7 @@ static int _parse_loglvl(const char *s, int *lower, int *upper, char *val)
     if ( *upper < *lower )
         *upper = *lower;
 
-    xenlog_update_val(*lower, *upper, val);
+    cruxlog_update_val(*lower, *upper, val);
 
     return *s ? -EINVAL : 0;
 }
@@ -268,9 +268,9 @@ static int cf_check parse_loglvl(const char *s)
 {
     int ret;
 
-    ret = _parse_loglvl(s, &xenlog_lower_thresh, &xenlog_upper_thresh,
-                        xenlog_val);
-    custom_runtime_set_var(param_2_parfs(parse_loglvl), xenlog_val);
+    ret = _parse_loglvl(s, &cruxlog_lower_thresh, &cruxlog_upper_thresh,
+                        cruxlog_val);
+    custom_runtime_set_var(param_2_parfs(parse_loglvl), cruxlog_val);
 
     return ret;
 }
@@ -279,10 +279,10 @@ static int cf_check parse_guest_loglvl(const char *s)
 {
     int ret;
 
-    ret = _parse_loglvl(s, &xenlog_guest_lower_thresh,
-                        &xenlog_guest_upper_thresh, xenlog_guest_val);
+    ret = _parse_loglvl(s, &cruxlog_guest_lower_thresh,
+                        &cruxlog_guest_upper_thresh, cruxlog_guest_val);
     custom_runtime_set_var(param_2_parfs(parse_guest_loglvl),
-                           xenlog_guest_val);
+                           cruxlog_guest_val);
 
     return ret;
 }
@@ -300,22 +300,22 @@ static const char *loglvl_str(int lvl)
     return "???";
 }
 
-static int *__read_mostly upper_thresh_adj = &xenlog_upper_thresh;
-static int *__read_mostly lower_thresh_adj = &xenlog_lower_thresh;
+static int *__read_mostly upper_thresh_adj = &cruxlog_upper_thresh;
+static int *__read_mostly lower_thresh_adj = &cruxlog_lower_thresh;
 static const char *__read_mostly thresh_adj = "standard";
 
 static void cf_check do_toggle_guest(unsigned char key, bool unused)
 {
-    if ( upper_thresh_adj == &xenlog_upper_thresh )
+    if ( upper_thresh_adj == &cruxlog_upper_thresh )
     {
-        upper_thresh_adj = &xenlog_guest_upper_thresh;
-        lower_thresh_adj = &xenlog_guest_lower_thresh;
+        upper_thresh_adj = &cruxlog_guest_upper_thresh;
+        lower_thresh_adj = &cruxlog_guest_lower_thresh;
         thresh_adj = "guest";
     }
     else
     {
-        upper_thresh_adj = &xenlog_upper_thresh;
-        lower_thresh_adj = &xenlog_lower_thresh;
+        upper_thresh_adj = &cruxlog_upper_thresh;
+        lower_thresh_adj = &cruxlog_lower_thresh;
         thresh_adj = "standard";
     }
     printk("'%c' pressed -> %s log level adjustments enabled\n",
@@ -372,9 +372,9 @@ static void conring_puts(const char *str, size_t len)
 }
 
 #ifdef CONFIG_SYSCTL
-long read_console_ring(struct xen_sysctl_readconsole *op)
+long read_console_ring(struct crux_sysctl_readconsole *op)
 {
-    XEN_GUEST_HANDLE_PARAM(char) str;
+    CRUX_GUEST_HANDLE_PARAM(char) str;
     uint32_t idx, len, max, sofar, c, p;
 
     str   = guest_handle_cast(op->buffer, char),
@@ -467,7 +467,7 @@ static int conring_flush(unsigned int flags)
     char *buf;
 
     order = get_order_from_bytes(conring_size + 1);
-    buf = alloc_xenheap_pages(order, 0);
+    buf = alloc_cruxheap_pages(order, 0);
     if ( buf == NULL )
         return -ENOMEM;
 
@@ -486,7 +486,7 @@ static int conring_flush(unsigned int flags)
 
     console_send(buf, sofar, flags);
 
-    free_xenheap_pages(buf, order);
+    free_cruxheap_pages(buf, order);
 
     return 0;
 }
@@ -502,12 +502,12 @@ static void cf_check conring_dump_keyhandler(unsigned char key)
 }
 
 /*
- * CTRL-<switch_char> changes input direction, rotating among xen, Dom0,
- * and the DomUs started from xen at boot.
+ * CTRL-<switch_char> changes input direction, rotating among Xen, Dom0,
+ * and the DomUs started from Xen at boot.
  */
 #define switch_code (opt_conswitch[0]-'a'+1)
 /*
- * console_rx=0 => input to xen
+ * console_rx=0 => input to crux
  * console_rx=1 => input to dom0 (or the sole shim domain)
  * console_rx=N => input to dom(N-1)
  */
@@ -545,7 +545,7 @@ static void console_switch_input(void)
     unsigned int next_rx = console_rx;
 
     /*
-     * Rotate among xen, dom0 and boot-time created domUs while skipping
+     * Rotate among Xen, dom0 and boot-time created domUs while skipping
      * switching serial input to non existing domains.
      */
     for ( ; ; )
@@ -556,7 +556,7 @@ static void console_switch_input(void)
         if ( next_rx++ >= max_console_rx )
         {
             console_rx = 0;
-            printk("### switched console to xen");
+            printk("*** Serial input to Xen");
             break;
         }
 
@@ -573,13 +573,13 @@ static void console_switch_input(void)
                 continue;
 
             console_rx = next_rx;
-            printk("### switched console to dom%u", domid);
+            printk("*** Serial input to DOM%u", domid);
             break;
         }
     }
 
     if ( switch_code )
-        printk(" (type 'CTRL-%c' 3 times to switch)",
+        printk(" (type 'CTRL-%c' three times to switch input)",
                opt_conswitch[0]);
     printk("\n");
 }
@@ -614,7 +614,7 @@ static void __serial_rx(char c)
 #ifdef CONFIG_SBSA_VUART_CONSOLE
     else
         /* Deliver input to the emulated UART. */
-        rc = vpl011_rx_char_xen(d, c);
+        rc = vpl011_rx_char_crux(d, c);
 #endif
 
     if ( consoled_is_enabled() )
@@ -623,7 +623,7 @@ static void __serial_rx(char c)
 
     if ( rc )
         guest_printk(d,
-                     XENLOG_WARNING "failed to process console input: %d\n",
+                     CRUXLOG_WARNING "failed to process console input: %d\n",
                      rc);
 
     console_put_domain(d);
@@ -652,24 +652,24 @@ static void cf_check serial_rx(char c)
 }
 
 #ifdef CONFIG_X86
-static inline void xen_console_write_debug_port(const char *buf, size_t len)
+static inline void crux_console_write_debug_port(const char *buf, size_t len)
 {
     unsigned long tmp;
     asm volatile ( "rep outsb;"
                    : "=&S" (tmp), "=&c" (tmp)
-                   : "0" (buf), "1" (len), "d" (XEN_HVM_DEBUGCONS_IOPORT) );
+                   : "0" (buf), "1" (len), "d" (CRUX_HVM_DEBUGCONS_IOPORT) );
 }
 #endif
 
 static inline void console_debug_puts(const char *str, size_t len)
 {
 #ifdef CONFIG_X86
-    if ( opt_console_xen )
+    if ( opt_console_crux )
     {
-        if ( xen_guest )
-            xen_hypercall_console_write(str, len);
+        if ( crux_guest )
+            crux_hypercall_console_write(str, len);
         else
-            xen_console_write_debug_port(str, len);
+            crux_console_write_debug_port(str, len);
     }
 #endif
 }
@@ -719,7 +719,7 @@ static inline void __putstr(const char *str)
     console_send(str, strlen(str), flags);
 }
 
-static long guest_console_write(XEN_GUEST_HANDLE_PARAM(char) buffer,
+static long guest_console_write(CRUX_GUEST_HANDLE_PARAM(char) buffer,
                                 unsigned int count)
 {
     char kbuf[128];
@@ -773,7 +773,7 @@ static long guest_console_write(XEN_GUEST_HANDLE_PARAM(char) buffer,
             else
             {
                 cd->pbuf[cd->pbuf_idx] = '\0';
-                guest_printk(cd, XENLOG_G_DEBUG "%s%s\n", cd->pbuf, kbuf);
+                guest_printk(cd, CRUXLOG_G_DEBUG "%s%s\n", cd->pbuf, kbuf);
                 cd->pbuf_idx = 0;
             }
             spin_unlock(&cd->pbuf_lock);
@@ -787,7 +787,7 @@ static long guest_console_write(XEN_GUEST_HANDLE_PARAM(char) buffer,
 }
 
 long do_console_io(
-    unsigned int cmd, unsigned int count, XEN_GUEST_HANDLE_PARAM(char) buffer)
+    unsigned int cmd, unsigned int count, CRUX_GUEST_HANDLE_PARAM(char) buffer)
 {
     long rc;
     unsigned int idx, len;
@@ -847,18 +847,18 @@ long do_console_io(
 static int printk_prefix_check(char *p, char **pp)
 {
     int loglvl = -1;
-    int upper_thresh = ACCESS_ONCE(xenlog_upper_thresh);
-    int lower_thresh = ACCESS_ONCE(xenlog_lower_thresh);
+    int upper_thresh = ACCESS_ONCE(cruxlog_upper_thresh);
+    int lower_thresh = ACCESS_ONCE(cruxlog_lower_thresh);
 
     while ( (p[0] == '<') && (p[1] != '\0') && (p[2] == '>') )
     {
         switch ( p[1] )
         {
         case 'G':
-            upper_thresh = ACCESS_ONCE(xenlog_guest_upper_thresh);
-            lower_thresh = ACCESS_ONCE(xenlog_guest_lower_thresh);
+            upper_thresh = ACCESS_ONCE(cruxlog_guest_upper_thresh);
+            lower_thresh = ACCESS_ONCE(cruxlog_guest_lower_thresh);
             if ( loglvl == -1 )
-                loglvl = XENLOG_GUEST_DEFAULT;
+                loglvl = CRUXLOG_GUEST_DEFAULT;
             break;
         case '0' ... '3':
             loglvl = p[1] - '0';
@@ -868,7 +868,7 @@ static int printk_prefix_check(char *p, char **pp)
     }
 
     if ( loglvl == -1 )
-        loglvl = XENLOG_DEFAULT;
+        loglvl = CRUXLOG_DEFAULT;
 
     *pp = p;
 
@@ -1006,7 +1006,7 @@ static void vprintk_common(const char *fmt, va_list args, const char *prefix)
             state->do_print = printk_prefix_check(p, &p);
         if ( state->do_print )
         {
-            if ( !state->continued && (console_rx < 2) )
+            if ( !state->continued )
                 printk_start_of_line(prefix);
             __putstr(p);
         }
@@ -1061,8 +1061,8 @@ void __init console_init_preirq(void)
         else if ( !strncmp(p, "pv", 2) )
             pv_console_init();
 #ifdef CONFIG_X86
-        else if ( !strncmp(p, "xen", 3) )
-            opt_console_xen = 1;
+        else if ( !strncmp(p, "crux", 3) )
+            opt_console_crux = 1;
 #endif
         else if ( !strncmp(p, "none", 4) )
             continue;
@@ -1083,8 +1083,8 @@ void __init console_init_preirq(void)
     }
 
 #ifdef CONFIG_X86
-    if ( opt_console_xen == -1 )
-        opt_console_xen = 0;
+    if ( opt_console_crux == -1 )
+        opt_console_crux = 0;
 #endif
 
     serial_set_rx_handler(sercon_handle, serial_rx);
@@ -1102,14 +1102,13 @@ void __init console_init_preirq(void)
 
     /* HELLO WORLD --- start-of-day banner text. */
     nrspin_lock(&console_lock);
-    __putstr(xen_banner());
+    __putstr(crux_banner());
     nrspin_unlock(&console_lock);
 
-    print_version();
+    /* Locate the buildid, if possible. */
+    crux_build_init();
 
-    /* Locate and print the buildid, if applicable. */
-    xen_build_init();
-    print_build_id();
+    print_version();
 
     if ( opt_sync_console )
     {
@@ -1131,7 +1130,7 @@ void __init console_init_ring(void)
 
     order = get_order_from_bytes(max(opt_conring_size, conring_size));
     memflags = MEMF_bits(crashinfo_maxaddr_bits);
-    while ( (ring = alloc_xenheap_pages(order, memflags)) == NULL )
+    while ( (ring = alloc_cruxheap_pages(order, memflags)) == NULL )
     {
         BUG_ON(order == 0);
         order--;
@@ -1163,19 +1162,19 @@ void __init console_init_postirq(void)
         return;
 
     if ( !opt_conring_size )
-        opt_conring_size = num_present_cpus() << (9 + xenlog_lower_thresh);
+        opt_conring_size = num_present_cpus() << (9 + cruxlog_lower_thresh);
 
     console_init_ring();
 }
 
 void __init console_endboot(void)
 {
-    printk("std. loglevel: %s", loglvl_str(xenlog_lower_thresh));
-    if ( xenlog_upper_thresh != xenlog_lower_thresh )
-        printk(" (rate-limited: %s)", loglvl_str(xenlog_upper_thresh));
-    printk("\nguest loglevel: %s", loglvl_str(xenlog_guest_lower_thresh));
-    if ( xenlog_guest_upper_thresh != xenlog_guest_lower_thresh )
-        printk(" (rate-limited: %s)", loglvl_str(xenlog_guest_upper_thresh));
+    printk("Std. Loglevel: %s", loglvl_str(cruxlog_lower_thresh));
+    if ( cruxlog_upper_thresh != cruxlog_lower_thresh )
+        printk(" (Rate-limited: %s)", loglvl_str(cruxlog_upper_thresh));
+    printk("\nGuest Loglevel: %s", loglvl_str(cruxlog_guest_lower_thresh));
+    if ( cruxlog_guest_upper_thresh != cruxlog_guest_lower_thresh )
+        printk(" (Rate-limited: %s)", loglvl_str(cruxlog_guest_upper_thresh));
     printk("\n");
 
     warning_print();
@@ -1184,7 +1183,7 @@ void __init console_endboot(void)
 
     /*
      * If user specifies so, we fool the switch routine to redirect input
-     * straight back to xen. I use this convoluted method so we still print
+     * straight back to Xen. I use this convoluted method so we still print
      * a useful 'how to switch' message.
      */
     if ( opt_conswitch[1] == 'x' )
@@ -1268,12 +1267,12 @@ void console_end_sync(void)
  * This enforces a rate limit: not more than one kernel message
  * every printk_ratelimit_ms (millisecs).
  */
-int __printk_ratelimit(int ratelimit_ms, int ratelimit_burst)
+int __printk_ratelimit(unsigned int ratelimit_ms, unsigned int ratelimit_burst)
 {
     static DEFINE_SPINLOCK(ratelimit_lock);
     static unsigned long toks = 10 * 5 * 1000;
     static unsigned long last_msg;
-    static int missed;
+    static unsigned int missed;
     unsigned long flags;
     unsigned long long now = NOW(); /* ns */
     unsigned long ms;
@@ -1288,14 +1287,16 @@ int __printk_ratelimit(int ratelimit_ms, int ratelimit_burst)
         toks = ratelimit_burst * ratelimit_ms;
     if ( toks >= ratelimit_ms )
     {
-        int lost = missed;
+        unsigned int lost = missed;
+
         missed = 0;
         toks -= ratelimit_ms;
         spin_unlock(&ratelimit_lock);
         if ( lost )
         {
-            char lost_str[8];
-            snprintf(lost_str, sizeof(lost_str), "%d", lost);
+            char lost_str[10];
+
+            snprintf(lost_str, sizeof(lost_str), "%u", lost);
             /* console_lock may already be acquired by printk(). */
             rspin_lock(&console_lock);
             printk_start_of_line(CONSOLE_PREFIX);
@@ -1312,11 +1313,11 @@ int __printk_ratelimit(int ratelimit_ms, int ratelimit_burst)
     return 0;
 }
 
-/* minimum time in ms between messages */
-static int __read_mostly printk_ratelimit_ms = 5 * 1000;
+/* Minimum time in ms between messages */
+static const unsigned int printk_ratelimit_ms = 5 * 1000;
 
-/* number of messages we send before ratelimiting */
-static int __read_mostly printk_ratelimit_burst = 10;
+/* Number of messages we send before ratelimiting */
+static const unsigned int printk_ratelimit_burst = 10;
 
 int printk_ratelimit(void)
 {

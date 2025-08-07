@@ -5,23 +5,23 @@
  * Architecture-specific mem_access handling routines
  */
 
-#include <xen/mem_access.h>
-#include <xen/monitor.h>
-#include <xen/sched.h>
-#include <xen/vm_event.h>
+#include <crux/mem_access.h>
+#include <crux/monitor.h>
+#include <crux/sched.h>
+#include <crux/vm_event.h>
 #include <public/vm_event.h>
 #include <asm/event.h>
 #include <asm/guest_walk.h>
 
 static int __p2m_get_mem_access(struct domain *d, gfn_t gfn,
-                                xenmem_access_t *access)
+                                cruxmem_access_t *access)
 {
     struct p2m_domain *p2m = p2m_get_hostp2m(d);
     void *i;
     unsigned int index;
 
-    static const xenmem_access_t memaccess[] = {
-#define ACCESS(ac) [p2m_access_##ac] = XENMEM_access_##ac
+    static const cruxmem_access_t memaccess[] = {
+#define ACCESS(ac) [p2m_access_##ac] = CRUXMEM_access_##ac
             ACCESS(n),
             ACCESS(r),
             ACCESS(w),
@@ -42,7 +42,7 @@ static int __p2m_get_mem_access(struct domain *d, gfn_t gfn,
     /* If no setting was ever set, just return rwx. */
     if ( !p2m->mem_access_enabled )
     {
-        *access = XENMEM_access_rwx;
+        *access = CRUXMEM_access_rwx;
         return 0;
     }
 
@@ -67,7 +67,7 @@ static int __p2m_get_mem_access(struct domain *d, gfn_t gfn,
             return -ESRCH;
 
         /* If entry exists then its rwx. */
-        *access = XENMEM_access_rwx;
+        *access = CRUXMEM_access_rwx;
     }
     else
     {
@@ -97,7 +97,7 @@ p2m_mem_access_check_and_get_page(vaddr_t gva, unsigned long flag,
     paddr_t ipa;
     gfn_t gfn;
     mfn_t mfn;
-    xenmem_access_t xma;
+    cruxmem_access_t xma;
     p2m_type_t t;
     struct page_info *page = NULL;
     struct p2m_domain *p2m = p2m_get_hostp2m(v->domain);
@@ -149,22 +149,22 @@ p2m_mem_access_check_and_get_page(vaddr_t gva, unsigned long flag,
     switch ( xma )
     {
     default:
-    case XENMEM_access_rwx:
-    case XENMEM_access_rw:
+    case CRUXMEM_access_rwx:
+    case CRUXMEM_access_rw:
         /*
          * If mem_access contains no rw perm restrictions at all then the original
          * fault was correct.
          */
         goto err;
-    case XENMEM_access_n2rwx:
-    case XENMEM_access_n:
-    case XENMEM_access_x:
+    case CRUXMEM_access_n2rwx:
+    case CRUXMEM_access_n:
+    case CRUXMEM_access_x:
         /*
          * If no r/w is permitted by mem_access, this was a fault caused by mem_access.
          */
         break;
-    case XENMEM_access_wx:
-    case XENMEM_access_w:
+    case CRUXMEM_access_wx:
+    case CRUXMEM_access_w:
         /*
          * If this was a read then it was because of mem_access, but if it was
          * a write then the original get_page_from_gva fault was correct.
@@ -173,10 +173,10 @@ p2m_mem_access_check_and_get_page(vaddr_t gva, unsigned long flag,
             break;
         else
             goto err;
-    case XENMEM_access_r_pw:
-    case XENMEM_access_rx2rw:
-    case XENMEM_access_rx:
-    case XENMEM_access_r:
+    case CRUXMEM_access_r_pw:
+    case CRUXMEM_access_rx2rw:
+    case CRUXMEM_access_rx:
+    case CRUXMEM_access_r:
         /*
          * If this was a write then it was because of mem_access, but if it was
          * a read then the original get_page_from_gva fault was correct.
@@ -219,7 +219,7 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
 {
     int rc;
     bool violation;
-    xenmem_access_t xma;
+    cruxmem_access_t xma;
     vm_event_request_t *req;
     struct vcpu *v = current;
     struct p2m_domain *p2m = p2m_get_hostp2m(v->domain);
@@ -235,32 +235,32 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
     /* Now check for mem_access violation. */
     switch ( xma )
     {
-    case XENMEM_access_rwx:
+    case CRUXMEM_access_rwx:
         violation = false;
         break;
-    case XENMEM_access_rw:
+    case CRUXMEM_access_rw:
         violation = npfec.insn_fetch;
         break;
-    case XENMEM_access_wx:
+    case CRUXMEM_access_wx:
         violation = npfec.read_access;
         break;
-    case XENMEM_access_rx:
-    case XENMEM_access_rx2rw:
+    case CRUXMEM_access_rx:
+    case CRUXMEM_access_rx2rw:
         violation = npfec.write_access;
         break;
-    case XENMEM_access_x:
+    case CRUXMEM_access_x:
         violation = npfec.read_access || npfec.write_access;
         break;
-    case XENMEM_access_w:
+    case CRUXMEM_access_w:
         violation = npfec.read_access || npfec.insn_fetch;
         break;
-    case XENMEM_access_r:
-    case XENMEM_access_r_pw:
+    case CRUXMEM_access_r:
+    case CRUXMEM_access_r_pw:
         violation = npfec.write_access || npfec.insn_fetch;
         break;
     default:
-    case XENMEM_access_n:
-    case XENMEM_access_n2rwx:
+    case CRUXMEM_access_n:
+    case CRUXMEM_access_n2rwx:
         violation = true;
         break;
     }
@@ -269,16 +269,16 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
         return true;
 
     /* First, handle rx2rw and n2rwx conversion automatically. */
-    if ( npfec.write_access && xma == XENMEM_access_rx2rw )
+    if ( npfec.write_access && xma == CRUXMEM_access_rx2rw )
     {
         rc = p2m_set_mem_access(v->domain, gaddr_to_gfn(gpa), 1,
-                                0, ~0, XENMEM_access_rw, 0);
+                                0, ~0, CRUXMEM_access_rw, 0);
         return false;
     }
-    else if ( xma == XENMEM_access_n2rwx )
+    else if ( xma == CRUXMEM_access_n2rwx )
     {
         rc = p2m_set_mem_access(v->domain, gaddr_to_gfn(gpa), 1,
-                                0, ~0, XENMEM_access_rwx, 0);
+                                0, ~0, CRUXMEM_access_rwx, 0);
     }
 
     /* Otherwise, check if there is a vm_event monitor subscriber */
@@ -287,7 +287,7 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
         /* No listener */
         if ( p2m->access_required )
         {
-            gdprintk(XENLOG_INFO, "Memory access permissions failure, "
+            gdprintk(CRUXLOG_INFO, "Memory access permissions failure, "
                                   "no vm_event listener VCPU %d, dom %d\n",
                                   v->vcpu_id, v->domain->domain_id);
             domain_crash(v->domain);
@@ -295,12 +295,12 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
         else
         {
             /* n2rwx was already handled */
-            if ( xma != XENMEM_access_n2rwx )
+            if ( xma != CRUXMEM_access_n2rwx )
             {
                 /* A listener is not required, so clear the access
                  * restrictions. */
                 rc = p2m_set_mem_access(v->domain, gaddr_to_gfn(gpa), 1,
-                                        0, ~0, XENMEM_access_rwx, 0);
+                                        0, ~0, CRUXMEM_access_rwx, 0);
             }
         }
 
@@ -330,7 +330,7 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
         req->u.mem_access.flags |= npfec.write_access   ? MEM_ACCESS_W : 0;
         req->u.mem_access.flags |= npfec.insn_fetch     ? MEM_ACCESS_X : 0;
 
-        if ( monitor_traps(v, (xma != XENMEM_access_n2rwx), req) < 0 )
+        if ( monitor_traps(v, (xma != CRUXMEM_access_n2rwx), req) < 0 )
             domain_crash(v->domain);
 
         xfree(req);
@@ -344,7 +344,7 @@ bool p2m_mem_access_check(paddr_t gpa, vaddr_t gla, const struct npfec npfec)
  * If gfn == INVALID_GFN, sets the default access type.
  */
 long p2m_set_mem_access(struct domain *d, gfn_t gfn, uint32_t nr,
-                        uint32_t start, uint32_t mask, xenmem_access_t access,
+                        uint32_t start, uint32_t mask, cruxmem_access_t access,
                         unsigned int altp2m_idx)
 {
     struct p2m_domain *p2m = p2m_get_hostp2m(d);
@@ -353,7 +353,7 @@ long p2m_set_mem_access(struct domain *d, gfn_t gfn, uint32_t nr,
     long rc = 0;
 
     static const p2m_access_t memaccess[] = {
-#define ACCESS(ac) [XENMEM_access_##ac] = p2m_access_##ac
+#define ACCESS(ac) [CRUXMEM_access_##ac] = p2m_access_##ac
         ACCESS(n),
         ACCESS(r),
         ACCESS(w),
@@ -373,7 +373,7 @@ long p2m_set_mem_access(struct domain *d, gfn_t gfn, uint32_t nr,
     case 0 ... ARRAY_SIZE(memaccess) - 1:
         a = memaccess[access];
         break;
-    case XENMEM_access_default:
+    case CRUXMEM_access_default:
         a = p2m->default_access;
         break;
     default:
@@ -425,8 +425,8 @@ long p2m_set_mem_access(struct domain *d, gfn_t gfn, uint32_t nr,
 }
 
 long p2m_set_mem_access_multi(struct domain *d,
-                              const XEN_GUEST_HANDLE(const_uint64) pfn_list,
-                              const XEN_GUEST_HANDLE(const_uint8) access_list,
+                              const CRUX_GUEST_HANDLE(const_uint64) pfn_list,
+                              const CRUX_GUEST_HANDLE(const_uint8) access_list,
                               uint32_t nr, uint32_t start, uint32_t mask,
                               unsigned int altp2m_idx)
 {
@@ -435,7 +435,7 @@ long p2m_set_mem_access_multi(struct domain *d,
 }
 
 int p2m_get_mem_access(struct domain *d, gfn_t gfn,
-                       xenmem_access_t *access, unsigned int altp2m_idx)
+                       cruxmem_access_t *access, unsigned int altp2m_idx)
 {
     int ret;
     struct p2m_domain *p2m = p2m_get_hostp2m(d);

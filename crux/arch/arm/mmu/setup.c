@@ -1,16 +1,16 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * xen/arch/arm/mmu/setup.c
+ * crux/arch/arm/mmu/setup.c
  *
  * MMU system boot CPU MM bringup code.
  */
 
-#include <xen/init.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/llc-coloring.h>
-#include <xen/sections.h>
-#include <xen/sizes.h>
-#include <xen/vmap.h>
+#include <crux/init.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/llc-coloring.h>
+#include <crux/sections.h>
+#include <crux/sizes.h>
+#include <crux/vmap.h>
 
 #include <asm/setup.h>
 #include <asm/fixmap.h>
@@ -22,43 +22,43 @@
 #define virt_to_mfn(va) _mfn(__virt_to_mfn(va))
 
 #define virt_to_reloc_virt(virt) \
-    (((vaddr_t)(virt)) - XEN_VIRT_START + BOOT_RELOC_VIRT_START)
+    (((vaddr_t)(virt)) - CRUX_VIRT_START + BOOT_RELOC_VIRT_START)
 
 /* Main runtime page tables */
 
 /*
- * For arm32 xen_pgtable are per-PCPU and are allocated before
- * bringing up each CPU. For arm64 xen_pgtable is common to all PCPUs.
+ * For arm32 crux_pgtable are per-PCPU and are allocated before
+ * bringing up each CPU. For arm64 crux_pgtable is common to all PCPUs.
  *
- * xen_second, xen_fixmap and xen_xenmap are always shared between all
+ * crux_second, crux_fixmap and crux_cruxmap are always shared between all
  * PCPUs.
  */
 
 #ifdef CONFIG_ARM_64
-DEFINE_PAGE_TABLE(xen_pgtable);
-static DEFINE_PAGE_TABLE(xen_first);
-#define THIS_CPU_PGTABLE xen_pgtable
+DEFINE_PAGE_TABLE(crux_pgtable);
+static DEFINE_PAGE_TABLE(crux_first);
+#define THIS_CPU_PGTABLE crux_pgtable
 #else
 /* Per-CPU pagetable pages */
-/* xen_pgtable == root of the trie (zeroeth level on 64-bit, first on 32-bit) */
-DEFINE_PER_CPU(lpae_t *, xen_pgtable);
-#define THIS_CPU_PGTABLE this_cpu(xen_pgtable)
+/* crux_pgtable == root of the trie (zeroeth level on 64-bit, first on 32-bit) */
+DEFINE_PER_CPU(lpae_t *, crux_pgtable);
+#define THIS_CPU_PGTABLE this_cpu(crux_pgtable)
 /* Root of the trie for cpu0, other CPU's PTs are dynamically allocated */
 static DEFINE_PAGE_TABLE(cpu0_pgtable);
 #endif
 
 /* Common pagetable leaves */
-/* Second level page table used to cover xen virtual address space */
-static DEFINE_PAGE_TABLE(xen_second);
+/* Second level page table used to cover Xen virtual address space */
+static DEFINE_PAGE_TABLE(crux_second);
 /* Third level page table used for fixmap */
-DEFINE_BOOT_PAGE_TABLE(xen_fixmap);
+DEFINE_BOOT_PAGE_TABLE(crux_fixmap);
 /*
- * Third level page table used to map xen itself with the XN bit set
+ * Third level page table used to map Xen itself with the XN bit set
  * as appropriate.
  */
-static DEFINE_PAGE_TABLES(xen_xenmap, XEN_NR_ENTRIES(2));
+static DEFINE_PAGE_TABLES(crux_cruxmap, CRUX_NR_ENTRIES(2));
 
-/* Limits of the xen heap */
+/* Limits of the Xen heap */
 mfn_t directmap_mfn_start __read_mostly = INVALID_MFN_INITIALIZER;
 mfn_t directmap_mfn_end __read_mostly;
 vaddr_t directmap_virt_end __read_mostly;
@@ -71,12 +71,12 @@ unsigned long directmap_base_pdx __read_mostly;
 static void __init __maybe_unused build_assertions(void)
 {
     /* 2MB aligned regions */
-    BUILD_BUG_ON(XEN_VIRT_START & ~SECOND_MASK);
+    BUILD_BUG_ON(CRUX_VIRT_START & ~SECOND_MASK);
     BUILD_BUG_ON(FIXMAP_ADDR(0) & ~SECOND_MASK);
     BUILD_BUG_ON(BOOT_RELOC_VIRT_START & ~SECOND_MASK);
     /* 1GB aligned regions */
 #ifdef CONFIG_ARM_32
-    BUILD_BUG_ON(XENHEAP_VIRT_START & ~FIRST_MASK);
+    BUILD_BUG_ON(CRUXHEAP_VIRT_START & ~FIRST_MASK);
 #else
     BUILD_BUG_ON(DIRECTMAP_VIRT_START & ~FIRST_MASK);
 #endif
@@ -90,18 +90,18 @@ static void __init __maybe_unused build_assertions(void)
 #define CHECK_OVERLAP_WITH_IDMAP(virt) \
     BUILD_BUG_ON(zeroeth_table_offset(virt) < IDENTITY_MAPPING_AREA_NR_L0)
 
-    CHECK_OVERLAP_WITH_IDMAP(XEN_VIRT_START);
+    CHECK_OVERLAP_WITH_IDMAP(CRUX_VIRT_START);
     CHECK_OVERLAP_WITH_IDMAP(VMAP_VIRT_START);
     CHECK_OVERLAP_WITH_IDMAP(FRAMETABLE_VIRT_START);
     CHECK_OVERLAP_WITH_IDMAP(DIRECTMAP_VIRT_START);
 #undef CHECK_OVERLAP_WITH_IDMAP
 #endif
-    BUILD_BUG_ON(first_table_offset(XEN_VIRT_START));
+    BUILD_BUG_ON(first_table_offset(CRUX_VIRT_START));
 #ifdef CONFIG_ARCH_MAP_DOMAIN_PAGE
     BUILD_BUG_ON(DOMHEAP_VIRT_START & ~FIRST_MASK);
 #endif
     /*
-     * The boot code expects the regions XEN_VIRT_START, FIXMAP_ADDR(0),
+     * The boot code expects the regions CRUX_VIRT_START, FIXMAP_ADDR(0),
      * BOOT_FDT_VIRT_START to use the same 0th (arm64 only) and 1st
      * slot in the page tables.
      */
@@ -112,22 +112,22 @@ static void __init __maybe_unused build_assertions(void)
     BUILD_BUG_ON(level##_table_offset(virt1) == level##_table_offset(virt2))
 
 #ifdef CONFIG_ARM_64
-    CHECK_SAME_SLOT(zeroeth, XEN_VIRT_START, FIXMAP_ADDR(0));
-    CHECK_SAME_SLOT(zeroeth, XEN_VIRT_START, BOOT_FDT_VIRT_START);
+    CHECK_SAME_SLOT(zeroeth, CRUX_VIRT_START, FIXMAP_ADDR(0));
+    CHECK_SAME_SLOT(zeroeth, CRUX_VIRT_START, BOOT_FDT_VIRT_START);
 #endif
-    CHECK_SAME_SLOT(first, XEN_VIRT_START, FIXMAP_ADDR(0));
-    CHECK_SAME_SLOT(first, XEN_VIRT_START, BOOT_FDT_VIRT_START);
+    CHECK_SAME_SLOT(first, CRUX_VIRT_START, FIXMAP_ADDR(0));
+    CHECK_SAME_SLOT(first, CRUX_VIRT_START, BOOT_FDT_VIRT_START);
 
     /*
      * For arm32, the temporary mapping will re-use the domheap
      * first slot and the second slots will match.
      */
 #ifdef CONFIG_ARM_32
-    CHECK_SAME_SLOT(first, TEMPORARY_XEN_VIRT_START, DOMHEAP_VIRT_START);
-    CHECK_DIFFERENT_SLOT(first, XEN_VIRT_START, TEMPORARY_XEN_VIRT_START);
-    CHECK_SAME_SLOT(first, TEMPORARY_XEN_VIRT_START,
+    CHECK_SAME_SLOT(first, TEMPORARY_CRUX_VIRT_START, DOMHEAP_VIRT_START);
+    CHECK_DIFFERENT_SLOT(first, CRUX_VIRT_START, TEMPORARY_CRUX_VIRT_START);
+    CHECK_SAME_SLOT(first, TEMPORARY_CRUX_VIRT_START,
                     TEMPORARY_FIXMAP_VIRT_START);
-    CHECK_SAME_SLOT(second, XEN_VIRT_START, TEMPORARY_XEN_VIRT_START);
+    CHECK_SAME_SLOT(second, CRUX_VIRT_START, TEMPORARY_CRUX_VIRT_START);
     CHECK_SAME_SLOT(second, FIXMAP_VIRT_START, TEMPORARY_FIXMAP_VIRT_START);
 #endif
 
@@ -141,12 +141,12 @@ static void __init __maybe_unused build_assertions(void)
     BUILD_BUG_ON(FIXADDR_TOP >= BOOT_FDT_VIRT_START);
 }
 
-lpae_t __init pte_of_xenaddr(vaddr_t va)
+lpae_t __init pte_of_cruxaddr(vaddr_t va)
 {
     if ( llc_coloring_enabled )
         va = virt_to_reloc_virt(va);
 
-    return mfn_to_xen_entry(virt_to_mfn(va), MT_NORMAL);
+    return mfn_to_crux_entry(virt_to_mfn(va), MT_NORMAL);
 }
 
 void * __init early_fdt_map(paddr_t fdt_paddr)
@@ -172,7 +172,7 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
     /* The FDT is mapped using 2MB superpage */
     BUILD_BUG_ON(BOOT_FDT_VIRT_START % SZ_2M);
 
-    rc = map_pages_to_xen(BOOT_FDT_VIRT_START, maddr_to_mfn(base_paddr),
+    rc = map_pages_to_crux(BOOT_FDT_VIRT_START, maddr_to_mfn(base_paddr),
                           SZ_2M >> PAGE_SHIFT,
                           PAGE_HYPERVISOR_RO | _PAGE_BLOCK);
     if ( rc )
@@ -191,7 +191,7 @@ void * __init early_fdt_map(paddr_t fdt_paddr)
 
     if ( (offset + size) > SZ_2M )
     {
-        rc = map_pages_to_xen(BOOT_FDT_VIRT_START + SZ_2M,
+        rc = map_pages_to_crux(BOOT_FDT_VIRT_START + SZ_2M,
                               maddr_to_mfn(base_paddr + SZ_2M),
                               SZ_2M >> PAGE_SHIFT,
                               PAGE_HYPERVISOR_RO | _PAGE_BLOCK);
@@ -207,19 +207,19 @@ void __init remove_early_mappings(void)
     int rc;
 
     /* destroy the _PAGE_BLOCK mapping */
-    rc = modify_xen_mappings(BOOT_FDT_VIRT_START,
+    rc = modify_crux_mappings(BOOT_FDT_VIRT_START,
                              BOOT_FDT_VIRT_START + BOOT_FDT_VIRT_SIZE,
                              _PAGE_BLOCK);
     BUG_ON(rc);
 }
 
 /*
- * After boot, xen page-tables should not contain mapping that are both
+ * After boot, Xen page-tables should not contain mapping that are both
  * Writable and eXecutables.
  *
  * This should be called on each CPU to enforce the policy.
  */
-static void xen_pt_enforce_wnx(void)
+static void crux_pt_enforce_wnx(void)
 {
     WRITE_SYSREG(READ_SYSREG(SCTLR_EL2) | SCTLR_Axx_ELx_WXN, SCTLR_EL2);
     /*
@@ -227,7 +227,7 @@ static void xen_pt_enforce_wnx(void)
      * before flushing the TLBs.
      */
     isb();
-    flush_xen_tlb_local();
+    flush_crux_tlb_local();
 }
 
 /*
@@ -236,7 +236,7 @@ static void xen_pt_enforce_wnx(void)
  * modules from first_mod to nr_modules.
  *
  * For non-recursive callers first_mod should normally be 0 (all
- * modules and xen itself) or 1 (all modules but not xen).
+ * modules and Xen itself) or 1 (all modules but not Xen).
  */
 paddr_t __init consider_modules(paddr_t s, paddr_t e,
                                 uint32_t size, paddr_t align,
@@ -328,22 +328,22 @@ static void __init create_llc_coloring_mappings(void)
 {
     lpae_t pte;
     unsigned int i;
-    struct boot_module *xen_boot_module = boot_module_find_by_kind(BOOTMOD_XEN);
-    mfn_t start_mfn = maddr_to_mfn(xen_boot_module->start), mfn;
+    struct boot_module *crux_boot_module = boot_module_find_by_kind(BOOTMOD_CRUX);
+    mfn_t start_mfn = maddr_to_mfn(crux_boot_module->start), mfn;
 
-    for_each_xen_colored_mfn ( start_mfn, mfn, i )
+    for_each_crux_colored_mfn ( start_mfn, mfn, i )
     {
-        pte = mfn_to_xen_entry(mfn, MT_NORMAL);
+        pte = mfn_to_crux_entry(mfn, MT_NORMAL);
         pte.pt.table = 1; /* level 3 mappings always have this bit set */
-        xen_xenmap[i] = pte;
+        crux_cruxmap[i] = pte;
     }
 
-    for ( i = 0; i < XEN_NR_ENTRIES(2); i++ )
+    for ( i = 0; i < CRUX_NR_ENTRIES(2); i++ )
     {
-        vaddr_t va = BOOT_RELOC_VIRT_START + (i << XEN_PT_LEVEL_SHIFT(2));
+        vaddr_t va = BOOT_RELOC_VIRT_START + (i << CRUX_PT_LEVEL_SHIFT(2));
 
-        pte = mfn_to_xen_entry(virt_to_mfn(xen_xenmap +
-                                           i * XEN_PT_LPAE_ENTRIES),
+        pte = mfn_to_crux_entry(virt_to_mfn(crux_cruxmap +
+                                           i * CRUX_PT_LPAE_ENTRIES),
                                MT_NORMAL);
         pte.pt.table = 1;
         write_pte(&boot_second[second_table_offset(va)], pte);
@@ -362,7 +362,7 @@ void __init setup_pagetables(void)
 
     /*
      * In case of cache coloring, map the new physical space in the boot page
-     * tables. From now on, pte_of_xenaddr() will translate addresses to this
+     * tables. From now on, pte_of_cruxaddr() will translate addresses to this
      * new space.
      */
     if ( llc_coloring_enabled )
@@ -371,52 +371,52 @@ void __init setup_pagetables(void)
     arch_setup_page_tables();
 
 #ifdef CONFIG_ARM_64
-    pte = pte_of_xenaddr((uintptr_t)xen_first);
+    pte = pte_of_cruxaddr((uintptr_t)crux_first);
     pte.pt.table = 1;
     pte.pt.xn = 0;
-    xen_pgtable[zeroeth_table_offset(XEN_VIRT_START)] = pte;
+    crux_pgtable[zeroeth_table_offset(CRUX_VIRT_START)] = pte;
 
-    p = (void *) xen_first;
+    p = (void *) crux_first;
 #else
     p = (void *) cpu0_pgtable;
 #endif
 
-    /* Map xen second level page-table */
-    p[0] = pte_of_xenaddr((uintptr_t)(xen_second));
+    /* Map crux second level page-table */
+    p[0] = pte_of_cruxaddr((uintptr_t)(crux_second));
     p[0].pt.table = 1;
     p[0].pt.xn = 0;
 
-    /* Break up the xen mapping into pages and protect them separately. */
-    for ( i = 0; i < XEN_NR_ENTRIES(3); i++ )
+    /* Break up the Xen mapping into pages and protect them separately. */
+    for ( i = 0; i < CRUX_NR_ENTRIES(3); i++ )
     {
-        vaddr_t va = XEN_VIRT_START + (i << PAGE_SHIFT);
+        vaddr_t va = CRUX_VIRT_START + (i << PAGE_SHIFT);
 
         if ( !is_kernel(va) )
             break;
-        pte = pte_of_xenaddr(va);
+        pte = pte_of_cruxaddr(va);
         pte.pt.table = 1; /* third level mappings always have this bit set */
         pte.pt.xn = 0; /* Permissions will be enforced later. Allow execution */
-        xen_xenmap[i] = pte;
+        crux_cruxmap[i] = pte;
     }
 
-    /* Initialise xen second level entries ... */
-    /* ... xen's text etc */
-    for ( i = 0; i < XEN_NR_ENTRIES(2); i++ )
+    /* Initialise crux second level entries ... */
+    /* ... Xen's text etc */
+    for ( i = 0; i < CRUX_NR_ENTRIES(2); i++ )
     {
-        vaddr_t va = XEN_VIRT_START + (i << XEN_PT_LEVEL_SHIFT(2));
+        vaddr_t va = CRUX_VIRT_START + (i << CRUX_PT_LEVEL_SHIFT(2));
 
-        pte = pte_of_xenaddr((vaddr_t)(xen_xenmap + i * XEN_PT_LPAE_ENTRIES));
+        pte = pte_of_cruxaddr((vaddr_t)(crux_cruxmap + i * CRUX_PT_LPAE_ENTRIES));
         pte.pt.table = 1;
-        xen_second[second_table_offset(va)] = pte;
+        crux_second[second_table_offset(va)] = pte;
     }
 
     /* ... Fixmap */
-    pte = pte_of_xenaddr((vaddr_t)xen_fixmap);
+    pte = pte_of_cruxaddr((vaddr_t)crux_fixmap);
     pte.pt.table = 1;
-    xen_second[second_table_offset(FIXMAP_ADDR(0))] = pte;
+    crux_second[second_table_offset(FIXMAP_ADDR(0))] = pte;
 
 #ifdef CONFIG_ARM_32
-    per_cpu(xen_pgtable, 0) = cpu0_pgtable;
+    per_cpu(crux_pgtable, 0) = cpu0_pgtable;
 #endif
 
     if ( llc_coloring_enabled )
@@ -430,11 +430,11 @@ void __init setup_pagetables(void)
         switch_ttbr(ttbr);
     }
 
-    /* Protect xen */
-    for ( i = 0; i < XEN_NR_ENTRIES(3); i++ )
+    /* Protect Xen */
+    for ( i = 0; i < CRUX_NR_ENTRIES(3); i++ )
     {
-        vaddr_t va = XEN_VIRT_START + (i << PAGE_SHIFT);
-        lpae_t *entry = xen_xenmap + i;
+        vaddr_t va = CRUX_VIRT_START + (i << PAGE_SHIFT);
+        lpae_t *entry = crux_cruxmap + i;
 
         if ( !is_kernel(va) )
             break;
@@ -464,9 +464,9 @@ void __init setup_pagetables(void)
      * We modified live page-tables. Ensure the TLBs are invalidated
      * before setting enforcing the WnX permissions.
      */
-    flush_xen_tlb_local();
+    flush_crux_tlb_local();
 
-    xen_pt_enforce_wnx();
+    crux_pt_enforce_wnx();
 }
 
 void *__init arch_vmap_virt_end(void)
@@ -484,7 +484,7 @@ void free_init_memory(void)
     uint32_t *p;
     int rc;
 
-    rc = modify_xen_mappings((unsigned long)__init_begin,
+    rc = modify_crux_mappings((unsigned long)__init_begin,
                              (unsigned long)__init_end, PAGE_HYPERVISOR_RW);
     if ( rc )
         panic("Unable to map RW the init section (rc = %d)\n", rc);
@@ -505,7 +505,7 @@ void free_init_memory(void)
     for ( i = 0; i < nr; i++ )
         *(p + i) = insn;
 
-    rc = destroy_xen_mappings((unsigned long)__init_begin,
+    rc = destroy_crux_mappings((unsigned long)__init_begin,
                               (unsigned long)__init_end);
     if ( rc )
         panic("Unable to remove the init section (rc = %d)\n", rc);
@@ -513,7 +513,7 @@ void free_init_memory(void)
     if ( !using_static_heap )
     {
         init_domheap_pages(pa, pa + len);
-        printk("freed %ldkB init memory.\n",
+        printk("Freed %ldkB init memory.\n",
                (long)(__init_end-__init_begin) >> 10);
     }
 }

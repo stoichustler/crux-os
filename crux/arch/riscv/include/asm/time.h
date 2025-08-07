@@ -2,12 +2,12 @@
 #ifndef ASM__RISCV__TIME_H
 #define ASM__RISCV__TIME_H
 
-#include <xen/bug.h>
-#include <xen/lib.h>
-#include <xen/types.h>
+#include <crux/bug.h>
+#include <crux/lib.h>
+#include <crux/types.h>
 #include <asm/csr.h>
 
-/* Clock cycles count at xen startup */
+/* Clock cycles count at Xen startup */
 extern uint64_t boot_clock_cycles;
 
 struct vcpu;
@@ -29,7 +29,7 @@ static inline s_time_t ticks_to_ns(uint64_t ticks)
     return muldiv64(ticks, MILLISECS(1), cpu_khz);
 }
 
-void preinit_xen_time(void);
+void preinit_crux_time(void);
 
 #endif /* ASM__RISCV__TIME_H */
 

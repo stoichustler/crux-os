@@ -2,20 +2,20 @@
 /******************************************************************************
  * tpmif.h
  *
- * TPM I/O interface for xen guest OSes.
+ * TPM I/O interface for Xen guest OSes.
  *
  * Copyright (c) 2005, IBM Corporation
  *
  * Author: Stefan Berger, stefanb@us.ibm.com
  * Grant table support: Mahadevan Gomathisankaran
  *
- * This code has been derived from tools/libxc/xen/io/netif.h
+ * This code has been derived from tools/libxc/crux/io/netif.h
  *
  * Copyright (c) 2003-2004, Keir Fraser
  */
 
-#ifndef __XEN_PUBLIC_IO_TPMIF_H__
-#define __XEN_PUBLIC_IO_TPMIF_H__
+#ifndef __CRUX_PUBLIC_IO_TPMIF_H__
+#define __CRUX_PUBLIC_IO_TPMIF_H__
 
 #include "../grant_table.h"
 
@@ -48,11 +48,11 @@ struct tpmif_tx_interface {
 typedef struct tpmif_tx_interface tpmif_tx_interface_t;
 
 /******************************************************************************
- * TPM I/O interface for xen guest OSes, v2
+ * TPM I/O interface for Xen guest OSes, v2
  *
  * Author: Daniel De Graaf <dgdegra@tycho.nsa.gov>
  *
- * This protocol emulates the request/response behavior of a TPM using a xen
+ * This protocol emulates the request/response behavior of a TPM using a Xen
  * shared memory interface. All interaction with the TPM is at the direction
  * of the frontend, since a TPM (hardware or virtual) is a passive device -
  * the backend only processes commands as requested by the frontend.

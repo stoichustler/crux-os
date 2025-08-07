@@ -13,7 +13,7 @@ all: $(dtb-y)
 
 HOSTCPP  = cpp
 DTSFLAGS = -nostdinc -nostdlib -fno-builtin -x assembler-with-cpp \
-           -include $(XEN_ROOT)/include/generated/autoconf.h
+           -include $(CRUX_ROOT)/include/generated/autoconf.h
 
 %.dtb: %.dts
 	$(Q)echo "  DTC     $@"

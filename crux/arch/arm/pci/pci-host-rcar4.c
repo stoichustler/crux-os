@@ -2,11 +2,11 @@
  *
  * Based on Linux drivers/pci/controller/pci-host-common.c
  * Based on Linux drivers/pci/controller/pci-host-generic.c
- * Based on xen/arch/arm/pci/pci-host-generic.c
+ * Based on crux/arch/arm/pci/pci-host-generic.c
  */
 
-#include <xen/init.h>
-#include <xen/pci.h>
+#include <crux/init.h>
+#include <crux/pci.h>
 
 #include <asm/device.h>
 #include <asm/io.h>

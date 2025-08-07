@@ -9,7 +9,7 @@
 #ifndef _ARM_BITOPS_H
 #define _ARM_BITOPS_H
 
-#include <xen/macros.h>
+#include <crux/macros.h>
 
 #include <asm/asm_defns.h>
 

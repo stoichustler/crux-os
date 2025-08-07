@@ -1,19 +1,19 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
-#include <xen/bootfdt.h>
-#include <xen/bug.h>
-#include <xen/lib.h>
-#include <xen/libfdt/libfdt.h>
-#include <xen/unaligned.h>
+#include <crux/bootfdt.h>
+#include <crux/bug.h>
+#include <crux/lib.h>
+#include <crux/libfdt/libfdt.h>
+#include <crux/unaligned.h>
 
 boot_module_kind __init fdt_node_to_kind(const void *fdt, int node)
 {
-    if ( fdt_node_check_compatible(fdt, node, "xen,linux-zimage") == 0 ||
+    if ( fdt_node_check_compatible(fdt, node, "crux,linux-zimage") == 0 ||
          fdt_node_check_compatible(fdt, node, "multiboot,kernel") == 0 )
         return BOOTMOD_KERNEL;
-    if ( fdt_node_check_compatible(fdt, node, "xen,linux-initrd") == 0 ||
+    if ( fdt_node_check_compatible(fdt, node, "crux,linux-initrd") == 0 ||
          fdt_node_check_compatible(fdt, node, "multiboot,ramdisk") == 0 )
         return BOOTMOD_RAMDISK;
-    if ( fdt_node_check_compatible(fdt, node, "xen,xsm-policy") == 0 )
+    if ( fdt_node_check_compatible(fdt, node, "crux,xsm-policy") == 0 )
         return BOOTMOD_XSM_POLICY;
     if ( fdt_node_check_compatible(fdt, node, "multiboot,device-tree") == 0 )
         return BOOTMOD_GUEST_DTB;
@@ -49,7 +49,7 @@ void __init device_tree_get_reg(const __be32 **cell, uint32_t address_cells,
     }
 
     /*
-     * xen will truncate the address/size if it is greater than the maximum
+     * Xen will truncate the address/size if it is greater than the maximum
      * supported width and it will give an appropriate warning.
      */
     *start = dt_start;

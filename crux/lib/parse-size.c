@@ -1,4 +1,4 @@
-#include <xen/lib.h>
+#include <crux/lib.h>
 
 unsigned long long parse_size_and_unit(const char *s, const char **ps)
 {

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <xen/bitops.h>
+#include <crux/bitops.h>
 #include <asm/system.h>
 
 /*

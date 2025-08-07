@@ -2,13 +2,13 @@
 /*
  *  Copyright (C) 2016 Citrix Systems R&D Ltd.
  */
-#include <xen/errno.h>
-#include <xen/init.h>
-#include <xen/lib.h>
-#include <xen/livepatch_elf.h>
-#include <xen/livepatch.h>
-#include <xen/mm.h>
-#include <xen/vmap.h>
+#include <crux/errno.h>
+#include <crux/init.h>
+#include <crux/lib.h>
+#include <crux/livepatch_elf.h>
+#include <crux/livepatch.h>
+#include <crux/mm.h>
+#include <crux/vmap.h>
 
 #include <asm/cpufeature.h>
 #include <asm/livepatch.h>
@@ -17,7 +17,7 @@
 #undef virt_to_mfn
 #define virt_to_mfn(va) _mfn(__virt_to_mfn(va))
 
-void *vmap_of_xen_text;
+void *vmap_of_crux_text;
 
 int arch_livepatch_safety_check(void)
 {
@@ -29,21 +29,21 @@ int arch_livepatch_quiesce(void)
     mfn_t text_mfn;
     unsigned int text_order;
 
-    if ( vmap_of_xen_text )
+    if ( vmap_of_crux_text )
         return -EINVAL;
 
     text_mfn = virt_to_mfn(_start);
     text_order = get_order_from_bytes(_end - _start);
 
     /*
-     * The text section is read-only. So re-map xen to be able to patch
+     * The text section is read-only. So re-map Xen to be able to patch
      * the code.
      */
-    vmap_of_xen_text = vmap_contig(text_mfn, 1U << text_order);
+    vmap_of_crux_text = vmap_contig(text_mfn, 1U << text_order);
 
-    if ( !vmap_of_xen_text )
+    if ( !vmap_of_crux_text )
     {
-        printk(XENLOG_ERR LIVEPATCH "Failed to setup vmap of hypervisor! (order=%u)\n",
+        printk(CRUXLOG_ERR LIVEPATCH "Failed to setup vmap of hypervisor! (order=%u)\n",
                text_order);
         return -ENOMEM;
     }
@@ -59,10 +59,10 @@ void arch_livepatch_revive(void)
      */
     invalidate_icache();
 
-    if ( vmap_of_xen_text )
-        vunmap(vmap_of_xen_text);
+    if ( vmap_of_crux_text )
+        vunmap(vmap_of_crux_text);
 
-    vmap_of_xen_text = NULL;
+    vmap_of_crux_text = NULL;
 }
 
 int arch_livepatch_verify_func(const struct livepatch_func *func)
@@ -84,7 +84,7 @@ void arch_livepatch_revert(const struct livepatch_func *func,
     uint32_t *new_ptr;
     unsigned int len;
 
-    new_ptr = func->old_addr - (void *)_start + vmap_of_xen_text;
+    new_ptr = func->old_addr - (void *)_start + vmap_of_crux_text;
 
     len = livepatch_insn_len(func, state);
     memcpy(new_ptr, state->insn_buffer, len);
@@ -168,7 +168,7 @@ int arch_livepatch_secure(const void *va, unsigned int pages, enum va_type type)
         return -EINVAL;
     }
 
-    return modify_xen_mappings(start, start + pages * PAGE_SIZE, flags);
+    return modify_crux_mappings(start, start + pages * PAGE_SIZE, flags);
 }
 
 void __init arch_livepatch_init(void)
@@ -178,7 +178,7 @@ void __init arch_livepatch_init(void)
     start = (void *)LIVEPATCH_VMAP_START;
     end = start + LIVEPATCH_VMAP_SIZE;
 
-    vm_init_type(VMAP_XEN, start, end);
+    vm_init_type(VMAP_CRUX, start, end);
 
     cpus_set_cap(LIVEPATCH_FEATURE);
 }

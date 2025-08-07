@@ -1,8 +1,8 @@
 #ifndef __ASM_DOMAIN_H__
 #define __ASM_DOMAIN_H__
 
-#include <xen/cache.h>
-#include <xen/timer.h>
+#include <crux/cache.h>
+#include <crux/timer.h>
 #include <asm/page.h>
 #include <asm/p2m.h>
 #include <asm/vfp.h>

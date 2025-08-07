@@ -1,7 +1,7 @@
 #ifndef __ASM_ARM_HSR_H
 #define __ASM_ARM_HSR_H
 
-#include <xen/types.h>
+#include <crux/types.h>
 
 #if defined(CONFIG_ARM_64)
 # include <asm/arm64/hsr.h>

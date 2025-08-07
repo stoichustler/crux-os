@@ -3,31 +3,31 @@
  * Copyright (c) 2019 Arm ltd.
  */
 
-#include <xen/dm.h>
-#include <xen/guest_access.h>
-#include <xen/hypercall.h>
-#include <xen/ioreq.h>
-#include <xen/nospec.h>
+#include <crux/dm.h>
+#include <crux/guest_access.h>
+#include <crux/hypercall.h>
+#include <crux/ioreq.h>
+#include <crux/nospec.h>
 
 #include <asm/vgic.h>
 
 int dm_op(const struct dmop_args *op_args)
 {
     struct domain *d;
-    struct xen_dm_op op;
+    struct crux_dm_op op;
     bool const_op = true;
     long rc;
     size_t offset;
 
     static const uint8_t op_size[] = {
-        [XEN_DMOP_create_ioreq_server]              = sizeof(struct xen_dm_op_create_ioreq_server),
-        [XEN_DMOP_get_ioreq_server_info]            = sizeof(struct xen_dm_op_get_ioreq_server_info),
-        [XEN_DMOP_map_io_range_to_ioreq_server]     = sizeof(struct xen_dm_op_ioreq_server_range),
-        [XEN_DMOP_unmap_io_range_from_ioreq_server] = sizeof(struct xen_dm_op_ioreq_server_range),
-        [XEN_DMOP_set_ioreq_server_state]           = sizeof(struct xen_dm_op_set_ioreq_server_state),
-        [XEN_DMOP_destroy_ioreq_server]             = sizeof(struct xen_dm_op_destroy_ioreq_server),
-        [XEN_DMOP_set_irq_level]                    = sizeof(struct xen_dm_op_set_irq_level),
-        [XEN_DMOP_nr_vcpus]                         = sizeof(struct xen_dm_op_nr_vcpus),
+        [CRUX_DMOP_create_ioreq_server]              = sizeof(struct crux_dm_op_create_ioreq_server),
+        [CRUX_DMOP_get_ioreq_server_info]            = sizeof(struct crux_dm_op_get_ioreq_server_info),
+        [CRUX_DMOP_map_io_range_to_ioreq_server]     = sizeof(struct crux_dm_op_ioreq_server_range),
+        [CRUX_DMOP_unmap_io_range_from_ioreq_server] = sizeof(struct crux_dm_op_ioreq_server_range),
+        [CRUX_DMOP_set_ioreq_server_state]           = sizeof(struct crux_dm_op_set_ioreq_server_state),
+        [CRUX_DMOP_destroy_ioreq_server]             = sizeof(struct crux_dm_op_destroy_ioreq_server),
+        [CRUX_DMOP_set_irq_level]                    = sizeof(struct crux_dm_op_set_irq_level),
+        [CRUX_DMOP_nr_vcpus]                         = sizeof(struct crux_dm_op_nr_vcpus),
     };
 
     rc = rcu_lock_remote_domain_by_id(op_args->domid, &d);
@@ -38,7 +38,7 @@ int dm_op(const struct dmop_args *op_args)
     if ( rc )
         goto out;
 
-    offset = offsetof(struct xen_dm_op, u);
+    offset = offsetof(struct crux_dm_op, u);
 
     rc = -EFAULT;
     if ( op_args->buf[0].size < offset )
@@ -68,9 +68,9 @@ int dm_op(const struct dmop_args *op_args)
 
     switch ( op.op )
     {
-    case XEN_DMOP_set_irq_level:
+    case CRUX_DMOP_set_irq_level:
     {
-        const struct xen_dm_op_set_irq_level *data =
+        const struct crux_dm_op_set_irq_level *data =
             &op.u.set_irq_level;
         unsigned int i;
 
@@ -112,9 +112,9 @@ int dm_op(const struct dmop_args *op_args)
         break;
     }
 
-    case XEN_DMOP_nr_vcpus:
+    case CRUX_DMOP_nr_vcpus:
     {
-        struct xen_dm_op_nr_vcpus *data = &op.u.nr_vcpus;
+        struct crux_dm_op_nr_vcpus *data = &op.u.nr_vcpus;
 
         data->vcpus = d->max_vcpus;
         const_op = false;

@@ -1,8 +1,8 @@
 #ifndef __ASM_DOMAIN_BUILD_H__
 #define __ASM_DOMAIN_BUILD_H__
 
-#include <xen/fdt-kernel.h>
-#include <xen/sched.h>
+#include <crux/fdt-kernel.h>
+#include <crux/sched.h>
 
 typedef __be32 gic_interrupt_t[3];
 int make_psci_node(void *fdt);
