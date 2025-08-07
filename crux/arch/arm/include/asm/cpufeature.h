@@ -341,7 +341,7 @@ struct cpuinfo_arm {
 
     /*
      * DCZID is only used to check for incoherent values between cores
-     * and taint Xen in this case
+     * and taint crux in this case
      */
     struct {
         register_t bits[1];
@@ -349,7 +349,7 @@ struct cpuinfo_arm {
 
     /*
      * CTR is only used to check for different cache types or policies and
-     * taint Xen in this case
+     * taint crux in this case
      */
     struct {
         register_t bits[1];

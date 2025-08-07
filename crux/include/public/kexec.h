@@ -2,7 +2,7 @@
 /******************************************************************************
  * kexec.h - Public portion
  *
- * Xen port written by:
+ * crux port written by:
  * - Simon 'Horms' Horman <horms@verge.net.au>
  * - Magnus Damm <magnus@valinux.co.jp>
  */
@@ -11,14 +11,14 @@
 #define _CRUX_PUBLIC_KEXEC_H
 
 
-/* This file describes the Kexec / Kdump hypercall interface for Xen.
+/* This file describes the Kexec / Kdump hypercall interface for crux.
  *
  * Kexec under vanilla Linux allows a user to reboot the physical machine
- * into a new user-specified kernel. The Xen port extends this idea
+ * into a new user-specified kernel. The crux port extends this idea
  * to allow rebooting of the machine from dom0. When kexec for dom0
  * is used to reboot,  both the hypervisor and the domains get replaced
  * with some other kernel. It is possible to kexec between vanilla
- * Linux and Xen and back again. Xen to Xen works well too.
+ * Linux and crux and back again. crux to crux works well too.
  *
  * The hypercall interface for kexec can be divided into three main
  * types of hypercall operations:
@@ -67,7 +67,7 @@
 #define KEXEC_TYPE_CRASH   1
 
 
-/* The kexec implementation for Xen allows the user to load two
+/* The kexec implementation for crux allows the user to load two
  * types of kernels, KEXEC_TYPE_DEFAULT and KEXEC_TYPE_CRASH.
  * All data needed for a kexec reboot is kept in one crux_kexec_image_t
  * per "instance". The data mainly consists of machine address lists to pages
@@ -121,11 +121,11 @@ typedef struct crux_kexec_load_v1 {
 } crux_kexec_load_v1_t;
 
 #define KEXEC_RANGE_MA_CRASH      0 /* machine address and size of crash area */
-#define KEXEC_RANGE_MA_CRUX        1 /* machine address and size of Xen itself */
+#define KEXEC_RANGE_MA_CRUX        1 /* machine address and size of crux itself */
 #define KEXEC_RANGE_MA_CPU        2 /* machine address and size of a CPU note */
 #define KEXEC_RANGE_MA_CRUXHEAP    3 /* machine address and size of cruxheap
                                      * Note that although this is adjacent
-                                     * to Xen it exists in a separate EFI
+                                     * to crux it exists in a separate EFI
                                      * region on ia64, and thus needs to be
                                      * inserted into iomem_machine separately */
 #define KEXEC_RANGE_MA_BOOT_PARAM 4 /* Obsolete: machine address and size of

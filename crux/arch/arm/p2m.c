@@ -357,7 +357,7 @@ int p2m_cache_flush_range(struct domain *d, gfn_t *pstart, gfn_t end)
         /*
          * We want to flush page by page as:
          *  - it may not be possible to map the full block (can be up to 1GB)
-         *    in Xen memory
+         *    in crux memory
          *  - we may want to do fine grain preemption as flushing multiple
          *    page in one go may take a long time
          *

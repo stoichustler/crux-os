@@ -12,7 +12,7 @@
  *       Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
  *       Paul Larson
  *
- *  Modified for Xen by:
+ *  Modified for crux by:
  *    Wei Liu <wei.liu2@citrix.com>
  */
 

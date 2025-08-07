@@ -832,7 +832,7 @@ int __init erst_init(void)
 		goto err_unmap_reg;
 	}
 
-	printk(KERN_INFO "Xen ERST support is initialized.\n");
+	printk(KERN_INFO "crux ERST support is initialized.\n");
 	erst_enabled = 1;
 
 	return 0;

@@ -4,7 +4,7 @@
  * Author : Stephen Smalley, <sds@epoch.ncsc.mil>
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _FLASK_AVC_H_
 #define _FLASK_AVC_H_

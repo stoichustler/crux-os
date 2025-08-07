@@ -73,7 +73,7 @@ struct llvm_profile_header {
 };
 
 /*
- * Since Xen uses the llvm code coverage support without the run time library
+ * Since crux uses the llvm code coverage support without the run time library
  * __llvm_profile_runtime must be defined according to the docs at:
  *
  * https://clang.llvm.org/docs/SourceBasedCodeCoverage.html 

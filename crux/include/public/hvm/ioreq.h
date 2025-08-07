@@ -87,10 +87,10 @@ typedef struct buffered_iopage buffered_iopage_t;
  */
 
 /*
- * Version 0 (default): Traditional (obsolete) Xen locations.
+ * Version 0 (default): Traditional (obsolete) crux locations.
  *
  * These are now only used for compatibility with VMs migrated
- * from older Xen versions.
+ * from older crux versions.
  */
 #define ACPI_PM1A_EVT_BLK_ADDRESS_V0 0x1f40
 #define ACPI_PM1A_CNT_BLK_ADDRESS_V0 (ACPI_PM1A_EVT_BLK_ADDRESS_V0 + 0x04)

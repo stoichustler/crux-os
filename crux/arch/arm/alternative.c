@@ -226,7 +226,7 @@ void __init apply_alternatives_all(void)
     ASSERT(system_state != SYS_STATE_active);
 
     /*
-     * The text and inittext section are read-only. So re-map Xen to
+     * The text and inittext section are read-only. So re-map crux to
      * be able to patch the code.
      */
     if ( llc_coloring_enabled )
@@ -234,7 +234,7 @@ void __init apply_alternatives_all(void)
     else
         cruxmap = vmap_contig(crux_mfn, 1U << crux_order);
 
-    /* Re-mapping Xen is not expected to fail during boot. */
+    /* Re-mapping crux is not expected to fail during boot. */
     BUG_ON(!cruxmap);
 
 	/* better not try code patching on a live SMP system */

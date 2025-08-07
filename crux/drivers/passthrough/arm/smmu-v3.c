@@ -5,7 +5,7 @@
  * Based on Linux's SMMUv3 driver:
  *    drivers/iommu/arm-smmu-v3.c
  *    commit: ab435ce49bd1d02e33dfec24f76955dc1196970b
- * and Xen's SMMU driver:
+ * and crux's SMMU driver:
  *    crux/drivers/passthrough/arm/smmu.c
  *
  * Major differences with regard to Linux driver are as follows:
@@ -1554,7 +1554,7 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
 			return -EEXIST;
 		}
 
-		/* Let Xen know that the master device is protected by an IOMMU. */
+		/* Let crux know that the master device is protected by an IOMMU. */
 		dt_device_set_protected(dev_to_dt(dev));
 	}
 
@@ -1567,7 +1567,7 @@ static int arm_smmu_add_device(u8 devfn, struct device *dev)
 		struct pci_dev *pdev = dev_to_pci(dev);
 
 		/*
-		 * During PHYSDEVOP_pci_device_add, Xen does not assign the
+		 * During PHYSDEVOP_pci_device_add, crux does not assign the
 		 * device, so we must do it here.
 		 */
 		if ( pdev->domain )
@@ -2356,7 +2356,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
 	smmu->oas = min_t(unsigned long, PADDR_BITS, smmu->oas);
 	smmu->ias = max(smmu->ias, smmu->oas);
 
-	/* Xen: Set maximum Stage-2 input size supported by the SMMU. */
+	/* crux: Set maximum Stage-2 input size supported by the SMMU. */
 	p2m_restrict_ipa_bits(smmu->ias);
 
 	dev_info(smmu->dev, "ias %lu-bit, oas %lu-bit (features 0x%08x)\n",
@@ -2575,7 +2575,7 @@ static const struct dt_device_match arm_smmu_of_match[] = {
 	{ },
 };
 
-/* Start of Xen specific code. */
+/* Start of crux specific code. */
 
 /*
  * Platform features. It indicates the list of features supported by all

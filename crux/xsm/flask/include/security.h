@@ -5,7 +5,7 @@
  *
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _FLASK_SECURITY_H_
 #define _FLASK_SECURITY_H_

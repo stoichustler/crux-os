@@ -22,7 +22,7 @@
  * - memcpy
  * - grant_ref_t
  * These declarations are provided by string.h of the standard headers,
- * and grant_table.h from the Xen public headers.
+ * and grant_table.h from the crux public headers.
  */
 
 #include "../crux.h"

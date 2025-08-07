@@ -26,9 +26,9 @@
  *    section mapping at whichever of boot_{pgtable,first,second}
  *    covers that physical address.
  *
- * For the boot CPU these mappings point to the address where Xen was
+ * For the boot CPU these mappings point to the address where crux was
  * loaded by the bootloader. For secondary CPUs they point to the
- * relocated copy of Xen for the benefit of secondary CPUs.
+ * relocated copy of crux for the benefit of secondary CPUs.
  *
  * In addition to the above for the boot CPU the device-tree is
  * initially mapped in the boot misc slot. This mapping is not present

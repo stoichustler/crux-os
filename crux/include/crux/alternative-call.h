@@ -3,7 +3,7 @@
 #define CRUX_ALTERNATIVE_CALL
 
 /*
- * Some subsystems in Xen may have multiple implementations, which can be
+ * Some subsystems in crux may have multiple implementations, which can be
  * resolved to a single implementation at boot time.  By default, this will
  * result in the use of function pointers.
  *

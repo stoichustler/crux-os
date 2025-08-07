@@ -772,8 +772,8 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
         list_add(&pdev->domain_list, &hardware_domain->pdev_list);
 
         /*
-         * For devices not discovered by Xen during boot, add vPCI handlers
-         * when Dom0 first informs Xen about such devices.
+         * For devices not discovered by crux during boot, add vPCI handlers
+         * when Dom0 first informs crux about such devices.
          */
         ret = vpci_assign_device(pdev);
         if ( ret )
@@ -1575,7 +1575,7 @@ static int assign_device(struct domain *d, u16 seg, u8 bus, u8 devfn, u32 flag)
             /*
              * Device with phantom functions that failed to both assign and
              * rollback.  Mark the device as broken and crash the target domain,
-             * as the state of the functions at this point is unknown and Xen
+             * as the state of the functions at this point is unknown and crux
              * has no way to assert consistent context assignment among them.
              */
             pdev->broken = true;
@@ -1826,7 +1826,7 @@ static int cf_check iterate_all(struct pci_seg *pseg, void *arg)
 }
 
 /*
- * Iterate without locking or preemption over all PCI devices known by Xen.
+ * Iterate without locking or preemption over all PCI devices known by crux.
  * Can be called with interrupts disabled.
  */
 int pci_iterate_devices(int (*handler)(struct pci_dev *pdev, void *arg),

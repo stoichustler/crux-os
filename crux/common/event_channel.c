@@ -117,7 +117,7 @@ static uint8_t get_crux_consumer(crux_event_channel_notification_t fn)
     return i+1;
 }
 
-/* Get the notification function for a given Xen-bound event channel. */
+/* Get the notification function for a given crux-bound event channel. */
 #define crux_notification_fn(e) (crux_consumers[(e)->crux_consumer-1])
 
 static struct domain *__read_mostly global_virq_handlers[NR_VIRQS];
@@ -712,7 +712,7 @@ int evtchn_close(struct domain *d1, int port1, bool guest)
  again:
     write_lock(&d1->event_lock);
 
-    /* Guest cannot close a Xen-attached event channel. */
+    /* Guest cannot close a crux-attached event channel. */
     if ( unlikely(consumer_is_crux(chn1)) && guest )
     {
         rc = -EINVAL;
@@ -851,7 +851,7 @@ int evtchn_send(struct domain *ld, unsigned int lport)
 
     evtchn_read_lock(lchn);
 
-    /* Guest cannot send via a Xen-attached event channel. */
+    /* Guest cannot send via a crux-attached event channel. */
     if ( unlikely(consumer_is_crux(lchn)) )
     {
         ret = -EINVAL;
@@ -1200,7 +1200,7 @@ int evtchn_bind_vcpu(evtchn_port_t port, unsigned int vcpu_id)
 
     write_lock(&d->event_lock);
 
-    /* Guest cannot re-bind a Xen-attached event channel. */
+    /* Guest cannot re-bind a crux-attached event channel. */
     if ( unlikely(consumer_is_crux(chn)) )
     {
         rc = -EINVAL;

@@ -731,7 +731,7 @@ static int translate_noncontig(struct optee_domain *ctx,
     /*
      * Special case: a buffer with buf_ptr == 0x0 is considered as a
      * NULL pointer by OP-TEE. No translation is needed. This can lead
-     * to an issue as IPA 0x0 is a valid address for Xen. See the
+     * to an issue as IPA 0x0 is a valid address for crux. See the
      * comment near optee_domain_init()
      */
     if ( !param->u.tmem.buf_ptr )
@@ -1359,7 +1359,7 @@ static bool issue_rpc_cmd_free(struct optee_domain *ctx,
     return true;
 }
 
-/* Handles return from Xen-issued RPC */
+/* Handles return from crux-issued RPC */
 static void handle_crux_rpc_return(struct optee_domain *ctx,
                                   struct cpu_user_regs *regs,
                                   struct optee_std_call *call,

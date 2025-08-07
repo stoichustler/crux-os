@@ -77,7 +77,7 @@ static inline void *maddr_to_virt(paddr_t ma)
 }
 #endif
 
-/* Convert between Xen-heap virtual addresses and page-info structures. */
+/* Convert between crux-heap virtual addresses and page-info structures. */
 static inline struct page_info *virt_to_page(const void *v)
 {
     unsigned long va = (unsigned long)v;

@@ -6,7 +6,7 @@
 /*
  * ARM32 layout:
  *   0  -   2M   Unmapped
- *   2M -  10M   Xen text, data, bss
+ *   2M -  10M   crux text, data, bss
  *  10M -  12M   Fixmap: special-purpose 4K mapping slots
  *  12M -  16M   Early boot mapping of FDT
  *  16M -  18M   Livepatch vmap (if compiled in)
@@ -15,22 +15,22 @@
  * 256M -   1G   VMAP: ioremap and early_ioremap use this virtual address
  *                    space
  *
- *   1G -   2G   Xenheap: always-mapped memory
+ *   1G -   2G   cruxheap: always-mapped memory
  *   2G -   4G   Domheap: on-demand-mapped
  *
  * ARM64 layout:
  * 0x0000000000000000 - 0x000009ffffffffff (10TB, L0 slots [0..19])
  *
- *  Reserved to identity map Xen
+ *  Reserved to identity map crux
  *
  * 0x00000a0000000000 - 0x00000a7fffffffff (512GB, L0 slot [20])
  *  (Relative offsets)
  *   0  -   2M   Unmapped
- *   2M -  10M   Xen text, data, bss
+ *   2M -  10M   crux text, data, bss
  *  10M -  12M   Fixmap: special-purpose 4K mapping slots
  *  12M -  16M   Early boot mapping of FDT
  *  16M -  18M   Livepatch vmap (if compiled in)
- *  16M -  24M   Cache-colored Xen text, data, bss (temporary, if compiled in)
+ *  16M -  24M   Cache-colored crux text, data, bss (temporary, if compiled in)
  *
  *   1G -   2G   VMAP: ioremap and early_ioremap
  *
@@ -108,7 +108,7 @@
 
 /*
  * The temporary area is overlapping with the domheap area. This may
- * be used to create an alias of the first slot containing Xen mappings
+ * be used to create an alias of the first slot containing crux mappings
  * when turning on/off the MMU.
  */
 #define TEMPORARY_AREA_FIRST_SLOT    (first_table_offset(DOMHEAP_VIRT_START))

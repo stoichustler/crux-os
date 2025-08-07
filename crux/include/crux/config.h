@@ -31,7 +31,7 @@
 /*
  * The following log levels are as follows:
  *
- *   CRUXLOG_ERR: Fatal errors, either Xen, Guest or Dom0
+ *   CRUXLOG_ERR: Fatal errors, either crux, Guest or Dom0
  *               is about to crash.
  *
  *   CRUXLOG_WARNING: Something bad happened, but we can recover.
@@ -66,7 +66,7 @@
 
 /*
  * Some code is copied directly from Linux.
- * Match some of the Linux log levels to Xen.
+ * Match some of the Linux log levels to crux.
  */
 #define KERN_ERR       CRUXLOG_ERR
 #define KERN_CRIT      CRUXLOG_ERR

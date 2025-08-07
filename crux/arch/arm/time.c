@@ -218,7 +218,7 @@ s_time_t get_s_time(void)
 }
 
 /* Set the timer to wake us up at a particular time.
- * Timeout is a Xen system time (nanoseconds since boot); 0 disables the timer.
+ * Timeout is a crux system time (nanoseconds since boot); 0 disables the timer.
  * Returns 1 on success; 0 if the timeout is too soon or is in the past. */
 int reprogram_timer(s_time_t timeout)
 {
@@ -262,7 +262,7 @@ static void vtimer_interrupt(int irq, void *dev_id)
      * if the timer output signal is masked in the context switch, the
      * GIC will keep track that of any interrupts raised while IRQS are
      * disabled. As soon as IRQs are re-enabled, the virtual interrupt
-     * will be injected to Xen.
+     * will be injected to crux.
      *
      * If an IDLE vCPU was scheduled next then we should ignore the
      * interrupt.

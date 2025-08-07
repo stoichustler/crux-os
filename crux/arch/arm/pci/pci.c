@@ -52,7 +52,7 @@ static int __init dt_pci_init(void)
          * Ignore the following error codes:
          *   - EBADF: Indicate the current device is not a pci device.
          *   - ENODEV: The pci device is not present or cannot be used by
-         *     Xen.
+         *     crux.
          */
         if( !rc || rc == -EBADF || rc == -ENODEV )
             continue;

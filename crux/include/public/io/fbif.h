@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * fbif.h -- Xen virtual frame buffer device
+ * fbif.h -- crux virtual frame buffer device
  *
  * Copyright (C) 2005 Anthony Liguori <aliguori@us.ibm.com>
  * Copyright (C) 2006 Red Hat, Inc., Markus Armbruster <armbru@redhat.com>

@@ -501,7 +501,7 @@ static int check_crux_buildid(const struct livepatch_elf *elf)
     if ( !len )
     {
         printk(CRUXLOG_ERR LIVEPATCH
-               "%s: unable to get running Xen build-id: %d\n",
+               "%s: unable to get running crux build-id: %d\n",
                elf->name, rc);
         return -ENODATA;
     }

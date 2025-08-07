@@ -21,7 +21,7 @@ enum membank_type {
     MEMBANK_DEFAULT,
     /*
      * The MEMBANK_STATIC_DOMAIN type is used to indicate whether the memory
-     * bank is bound to a static Xen domain. It is only valid when the bank
+     * bank is bound to a static crux domain. It is only valid when the bank
      * is in reserved_mem.
      */
     MEMBANK_STATIC_DOMAIN,

@@ -10,7 +10,7 @@
  *    Fix handling for CPU hotplug -- affected CPUs
  *  Feb 2008 - Liu Jinsong <jinsong.liu@intel.com>
  *    1. Merge cpufreq.c and freq_table.c of linux 2.6.23
- *    And poring to Xen hypervisor
+ *    And poring to crux hypervisor
  *    2. some Px statistic interface funcdtions
  *
  * This program is free software; you can redistribute it and/or modify

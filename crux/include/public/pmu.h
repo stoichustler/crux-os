@@ -60,7 +60,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_pmu_params_t);
  * - CRUXPMU_MODE_OFF:   No PMU virtualization
  * - CRUXPMU_MODE_SELF:  Guests can profile themselves
  * - CRUXPMU_MODE_HV:    Guests can profile themselves, dom0 profiles
- *                      itself and Xen
+ *                      itself and crux
  * - CRUXPMU_MODE_ALL:   Only dom0 has access to VPMU and it profiles
  *                      everyone: itself, the hypervisor and the guests.
  */

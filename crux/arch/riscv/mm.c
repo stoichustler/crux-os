@@ -33,7 +33,7 @@ unsigned long __ro_after_init phys_offset; /* = load_start - CRUX_VIRT_START */
 #define LOAD_TO_LINK(addr) ((unsigned long)(addr) - phys_offset)
 
 /*
- * It is expected that Xen won't be more then CRUX_VIRT_SIZE.
+ * It is expected that crux won't be more then CRUX_VIRT_SIZE.
  * The check in crux.lds.S guarantees that.
  *
  * Root page table is shared with the initial mapping and is declared
@@ -43,11 +43,11 @@ unsigned long __ro_after_init phys_offset; /* = load_start - CRUX_VIRT_START */
  * An amount of page tables between root page table and L0 page table
  * (in the case of Sv39 it covers L1 table):
  *   (CONFIG_PAGING_LEVELS - 2) are needed for an identity mapping and
- *   the same amount are needed for Xen.
+ *   the same amount are needed for crux.
  *
  * An amount of L0 page tables:
  *   (512 entries of one L0 page table covers 2MB == 1<<CRUX_PT_LEVEL_SHIFT(1))
- *   CRUX_VIRT_SIZE >> CRUX_PT_LEVEL_SHIFT(1) are needed for Xen and
+ *   CRUX_VIRT_SIZE >> CRUX_PT_LEVEL_SHIFT(1) are needed for crux and
  *   one L0 is needed for identity mapping.
  */
 #define PGTBL_INITIAL_COUNT ((CONFIG_PAGING_LEVELS - 2) * 2 + \
@@ -111,7 +111,7 @@ static void __init setup_initial_mapping(struct mmu_desc *mmu_desc,
 
     if ( (unsigned long)_start % CRUX_PT_LEVEL_SIZE(0) )
     {
-        early_printk("(CRUX) Xen should be loaded at 4k boundary\n");
+        early_printk("(CRUX) crux should be loaded at 4k boundary\n");
         die();
     }
 
@@ -189,7 +189,7 @@ static bool __init check_pgtbl_mode_support(struct mmu_desc *mmu_desc,
 
     if ( (load_start + crux_size) > (aligned_load_start + aligned_page_size) )
     {
-        early_printk("please place Xen to be in range of PAGE_SIZE "
+        early_printk("please place crux to be in range of PAGE_SIZE "
                      "where PAGE_SIZE is CRUX_PT_LEVEL_SIZE( {L3 | L2 | L1} ) "
                      "depending on expected SATP_MODE \n"
                      "CRUX_PT_LEVEL_SIZE is defined in <asm/page.h>\n");
@@ -260,7 +260,7 @@ void __init setup_fixmap_mappings(void)
 /*
  * setup_initial_pagetables:
  *
- * Build the page tables for Xen that map the following:
+ * Build the page tables for crux that map the following:
  *  1. Calculate page table's level numbers.
  *  2. Init mmu description structure.
  *  3. Check that linker addresses range doesn't overlap
@@ -277,7 +277,7 @@ void __init setup_initial_pagetables(void)
 
     /*
      * Access to _start, _end is always PC-relative thereby when access
-     * them we will get load adresses of start and end of Xen.
+     * them we will get load adresses of start and end of crux.
      * To get linker addresses LOAD_TO_LINK() is required to use.
      */
     unsigned long load_start    = (unsigned long)_start;

@@ -2,7 +2,7 @@
 /******************************************************************************
  * version.h
  *
- * Xen version, type, and compile information.
+ * crux version, type, and compile information.
  *
  * Copyright (c) 2005, Nguyen Anh Quynh <aquynh@gmail.com>
  * Copyright (c) 2005, Keir Fraser <keir@cruxsource.com>
@@ -63,19 +63,19 @@ typedef char crux_changeset_info_t[64];
 /*
  * This API is problematic.
  *
- * It is only applicable to guests which share pagetables with Xen (x86 PV
+ * It is only applicable to guests which share pagetables with crux (x86 PV
  * guests), but unfortunately has leaked into other guest types and
  * architectures with an expectation of never failing.
  *
  * It is intended to identify the virtual address split between guest kernel
- * and Xen.
+ * and crux.
  *
  * For 32bit PV guests, there is a split, and it is variable (between two
  * fixed bounds), and this boundary is reported to guests.  The detail missing
  * from the hypercall is that the second boundary is the 32bit architectural
  * boundary at 4G.
  *
- * For 64bit PV guests, Xen lives at the bottom of the upper canonical range.
+ * For 64bit PV guests, crux lives at the bottom of the upper canonical range.
  * This hypercall happens to report the architectural boundary, not the one
  * which would be necessary to make a variable split work.  As such, this
  * hypercall entirely useless for 64bit PV guests, and all inspected
@@ -83,7 +83,7 @@ typedef char crux_changeset_info_t[64];
  * expectations about the split.
  *
  * For architectures where this hypercall is implemented, for backwards
- * compatibility with the expectation of the hypercall never failing Xen will
+ * compatibility with the expectation of the hypercall never failing crux will
  * return 0 instead of failing with -ENOSYS in cases where the guest should
  * not be making the hypercall.
  */
@@ -125,7 +125,7 @@ typedef char crux_commandline_t[1024];
  * Return value is the number of bytes written, or CRUX_Exx on error.
  * Calling with empty parameter returns the size of build_id.
  *
- * Note: structure only kept for backwards compatibility.  Xen operates in
+ * Note: structure only kept for backwards compatibility.  crux operates in
  * terms of crux_varbuf_t.
  */
 struct crux_build_id {
@@ -157,13 +157,13 @@ typedef struct crux_varbuf crux_varbuf_t;
  * the requested subop.
  *
  * Otherwise, the input crux_varbuf_t provides the size of the following
- * buffer.  Xen will fill the buffer, and return the number of bytes written
+ * buffer.  crux will fill the buffer, and return the number of bytes written
  * (e.g. if the input buffer was longer than necessary).
  *
  * Some subops may return binary data.  Some subops may be expected to return
  * textural data.  These are returned without a NUL terminator, and while the
- * contents is expected to be ASCII/UTF-8, Xen makes no guarentees to this
- * effect.  e.g. Xen has no control over the formatting used for the command
+ * contents is expected to be ASCII/UTF-8, crux makes no guarentees to this
+ * effect.  e.g. crux has no control over the formatting used for the command
  * line.
  */
 #define CRUXVER_build_id      10

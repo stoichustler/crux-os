@@ -222,7 +222,7 @@ static int __init riscv_isa_parse_string(const char *isa,
      *
      * What means that isa should contain, at least, I or E.
      *
-     * As Xen isn't expected to be run on microcontrollers and according
+     * As crux isn't expected to be run on microcontrollers and according
      * to device tree binding the first extension should be "i".
      */
     if ( isa[4] != 'i' )
@@ -499,7 +499,7 @@ void __init riscv_fill_hwcap(void)
 
         if ( !riscv_isa_extension_available(NULL, ext.id) )
         {
-            printk("Xen requires extension: %s\n", ext.name);
+            printk("crux requires extension: %s\n", ext.name);
             all_extns_available = false;
         }
     }

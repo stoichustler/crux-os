@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * kbdif.h -- Xen virtual keyboard/mouse
+ * kbdif.h -- crux virtual keyboard/mouse
  *
  * Copyright (C) 2005 Anthony Liguori <aliguori@us.ibm.com>
  * Copyright (C) 2006 Red Hat, Inc., Markus Armbruster <armbru@redhat.com>
@@ -15,23 +15,23 @@
  *****************************************************************************
  *
  * The two halves of a para-virtual driver utilize nodes within
- * XenStore to communicate capabilities and to negotiate operating parameters.
+ * cruxStore to communicate capabilities and to negotiate operating parameters.
  * This section enumerates these nodes which reside in the respective front and
- * backend portions of XenStore, following XenBus convention.
+ * backend portions of cruxStore, following cruxBus convention.
  *
- * All data in XenStore is stored as strings.  Nodes specifying numeric
+ * All data in cruxStore is stored as strings.  Nodes specifying numeric
  * values are encoded in decimal. Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formated node string, without loss of information.
  *
  *****************************************************************************
- *                            Backend XenBus Nodes
+ *                            Backend cruxBus Nodes
  *****************************************************************************
  *
  *---------------------------- Features supported ----------------------------
  *
  * Capable backend advertises supported features by publishing
- * corresponding entries in XenStore and puts 1 as the value of the entry.
+ * corresponding entries in cruxStore and puts 1 as the value of the entry.
  * If a feature is not supported then 0 must be set or feature entry omitted.
  *
  * feature-disable-keyboard
@@ -108,13 +108,13 @@
  *      while reporting input events, pixels, [0; UINT32_MAX].
  *
  *****************************************************************************
- *                            Frontend XenBus Nodes
+ *                            Frontend cruxBus Nodes
  *****************************************************************************
  *
  *------------------------------ Feature request -----------------------------
  *
  * Capable frontend requests features from backend via setting corresponding
- * entries to 1 in XenStore. Requests for features not advertised as supported
+ * entries to 1 in cruxStore. Requests for features not advertised as supported
  * by the backend have no effect.
  *
  * request-abs-pointer
@@ -140,13 +140,13 @@
  * event-channel
  *      Values:         <uint>
  *
- *      The identifier of the Xen event channel used to signal activity
+ *      The identifier of the crux event channel used to signal activity
  *      in the ring buffer.
  *
  * page-gref
  *      Values:         <uint>
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      a sole page in a single page sized event ring buffer.
  *
  * page-ref

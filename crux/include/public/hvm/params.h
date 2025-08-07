@@ -71,7 +71,7 @@
 #endif
 
 /*
- * These are not used by Xen. They are here for convenience of HVM-guest
+ * These are not used by crux. They are here for convenience of HVM-guest
  * cruxbus implementations.
  */
 #define HVM_PARAM_STORE_PFN    1
@@ -110,7 +110,7 @@
 /* Disable timer frequency MSRs (HV_X64_MSR_TSC_FREQUENCY and
  * HV_X64_MSR_APIC_FREQUENCY).
  * This modification restores the viridian feature set to the
- * original 'base' set exposed in releases prior to Xen 4.4.
+ * original 'base' set exposed in releases prior to crux 4.4.
  */
 #define _HVMPV_no_freq 1
 #define HVMPV_no_freq  (1 << _HVMPV_no_freq)

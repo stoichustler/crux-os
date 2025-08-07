@@ -1,5 +1,5 @@
 /*
- *  This file contains the Flask hook function implementations for Xen.
+ *  This file contains the Flask hook function implementations for crux.
  *
  *  Author:  George Coker, <gscoker@alpha.ncsc.mil>
  *

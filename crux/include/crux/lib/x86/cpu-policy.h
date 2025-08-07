@@ -75,13 +75,13 @@ static inline void cpuid_count_leaf(
 #undef XCHG
 
 /**
- * Given the vendor id from CPUID leaf 0, look up Xen's internal integer
+ * Given the vendor id from CPUID leaf 0, look up crux's internal integer
  * vendor ID.  Returns X86_VENDOR_UNKNOWN for any unknown vendor.
  */
 unsigned int x86_cpuid_lookup_vendor(uint32_t ebx, uint32_t ecx, uint32_t edx);
 
 /**
- * Given Xen's internal vendor ID, return a string suitable for printing.
+ * Given crux's internal vendor ID, return a string suitable for printing.
  * Returns "Unknown" for any unrecognised ID.
  */
 const char *x86_cpuid_vendor_to_str(unsigned int vendor);

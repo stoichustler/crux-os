@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015, 2016 ARM Ltd.
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to crux.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -19,7 +19,7 @@
 
 /*
  * We piggy-back on the already used KVM product ID,  but use a different
- * variant (major revision) for Xen.
+ * variant (major revision) for crux.
  */
 #define PRODUCT_ID_KVM          0x4b        /* ASCII code K */
 #define VARIANT_ID_CRUX          0x01

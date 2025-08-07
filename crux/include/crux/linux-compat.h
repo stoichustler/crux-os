@@ -2,7 +2,7 @@
  * linux-compat.h
  *
  * Container for types and other definitions use in Linux (and hence in files
- * we "steal" from there), but which shouldn't be used (anymore) in normal Xen
+ * we "steal" from there), but which shouldn't be used (anymore) in normal crux
  * files.
  */
 

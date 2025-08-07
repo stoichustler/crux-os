@@ -170,7 +170,7 @@ static inline bool lpae_is_superpage(lpae_t pte, unsigned int level)
     }
 
 /*
- * Standard entry type that we'll use to build Xen's own pagetables.
+ * Standard entry type that we'll use to build crux's own pagetables.
  * We put the same permissions at every level, because they're ignored
  * by the walker in non-leaf entries.
  */
@@ -215,7 +215,7 @@ lpae_t mfn_to_crux_entry(mfn_t mfn, unsigned int attr);
  * On 32-bit the zeroeth level does not exist, therefore the total is
  * 39-bits. The ARMv7-A architecture actually specifies a 40-bit input
  * address space for the p2m, with an 8K (1024-entry) top-level table.
- * However Xen only supports 16GB of RAM on 32-bit ARM systems and
+ * However crux only supports 16GB of RAM on 32-bit ARM systems and
  * therefore 39-bits are sufficient.
  */
 

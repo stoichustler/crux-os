@@ -84,7 +84,7 @@ static void noreturn idle_loop(void)
 
 static void ctxt_switch_from(struct vcpu *p)
 {
-    /* When the idle VCPU is running, Xen will always stay in hypervisor
+    /* When the idle VCPU is running, crux will always stay in hypervisor
      * mode. Therefore we don't need to save the context of an idle VCPU.
      */
     if ( is_idle_vcpu(p) )
@@ -168,7 +168,7 @@ static void ctxt_switch_to(struct vcpu *n)
 {
     register_t vpidr;
 
-    /* When the idle VCPU is running, Xen will always stay in hypervisor
+    /* When the idle VCPU is running, crux will always stay in hypervisor
      * mode. Therefore we don't need to restore the context of an idle VCPU.
      */
     if ( is_idle_vcpu(n) )
@@ -670,7 +670,7 @@ int arch_sanitise_domain_config(struct crux_domctl_createdomain *config)
         }
     }
 
-    /* max_vcpus depends on the GIC version, and Xen's compiled limit. */
+    /* max_vcpus depends on the GIC version, and crux's compiled limit. */
     max_vcpus = min(vgic_max_vcpus(config->arch.gic_version), MAX_VIRT_CPUS);
 
     if ( max_vcpus == 0 )

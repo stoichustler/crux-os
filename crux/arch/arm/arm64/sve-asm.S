@@ -134,7 +134,7 @@
 
 /*
  * sve_save and sve_load are different from the Linux version because the
- * buffers to save the context are different from Xen and for example Linux
+ * buffers to save the context are different from crux and for example Linux
  * is using this macro to save/restore also fpsr and fpcr while we do it in C
  */
 

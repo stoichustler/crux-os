@@ -68,7 +68,7 @@ void machine_restart(unsigned int delay_millisecs)
         platform_reset();
         mdelay(100);
         if ( (count % 50) == 0 )
-            printk(CRUXLOG_ERR "Xen: Platform reset did not work properly!\n");
+            printk(CRUXLOG_ERR "crux: Platform reset did not work properly!\n");
         count++;
     }
 }

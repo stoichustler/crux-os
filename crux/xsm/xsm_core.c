@@ -197,7 +197,7 @@ int __init xsm_dt_init(void)
  * A XSM module has a special header
  * ------------------------------------------------
  * uint magic | uint target_len | uchar target[8] |
- * 0xf97cff8c |        8        |    "XenFlask"   |
+ * 0xf97cff8c |        8        |    "cruxFlask"   |
  * ------------------------------------------------
  * 0xf97cff8c is policy magic number (XSM_MAGIC).
  * Here we only check the "magic" of the module.

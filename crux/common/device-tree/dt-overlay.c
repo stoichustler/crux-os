@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Device tree overlay support in Xen.
+ * Device tree overlay support in crux.
  *
  * Copyright (C) 2023, Advanced Micro Devices, Inc. All Rights Reserved.
  * Written by Vikram Garhwal <vikram.garhwal@amd.com>
@@ -204,7 +204,7 @@ static int dt_overlay_add_node(struct dt_device_node *device_node,
     return 0;
 }
 
-/* Basic sanity check for the dtbo tool stack provided to Xen. */
+/* Basic sanity check for the dtbo tool stack provided to crux. */
 static int check_overlay_fdt(const void *overlay_fdt, uint32_t overlay_fdt_size)
 {
     if ( (fdt_totalsize(overlay_fdt) != overlay_fdt_size) ||

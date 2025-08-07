@@ -372,7 +372,7 @@ static int __init early_scan_node(const void *fdt,
     int rc = 0;
 
     /*
-     * If Xen has been booted via UEFI, the memory banks are
+     * If crux has been booted via UEFI, the memory banks are
      * populated. So we should skip the parsing.
      */
     if ( !efi_enabled(EFI_BOOT) &&

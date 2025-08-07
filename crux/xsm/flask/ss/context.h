@@ -13,7 +13,7 @@
  * Author : Stephen Smalley, <sds@epoch.ncsc.mil>
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _SS_CONTEXT_H_
 #define _SS_CONTEXT_H_

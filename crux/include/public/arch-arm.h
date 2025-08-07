@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-arm.h
  *
- * Guest OS interface to ARM Xen.
+ * Guest OS interface to ARM crux.
  *
  * Copyright 2011 (C) Citrix Systems
  */
@@ -26,7 +26,7 @@
  * is an inter-procedure-call scratch register (e.g. for use in linker
  * stubs). This use does not conflict with use during a hypercall.
  *
- * The HVC ISS must contain a Xen specific TAG: CRUX_HYPERCALL_TAG.
+ * The HVC ISS must contain a crux specific TAG: CRUX_HYPERCALL_TAG.
  *
  * The return value is in x0/r0.
  *
@@ -58,7 +58,7 @@
 /*
  * `incontents 55 arm_hcall Supported Hypercalls
  *
- * Xen on ARM makes extensive use of hardware facilities and therefore
+ * crux on ARM makes extensive use of hardware facilities and therefore
  * only a subset of the potential hypercalls are required.
  *
  * Since ARM uses second stage paging any machine/physical addresses
@@ -157,11 +157,11 @@
  *
  * - The grant table is mapped using the HYPERVISOR_memory_op sub-op
  *   CRUXMEM_add_to_physmap, passing CRUXMAPSPACE_grant_table as space
- *   parameter. The memory range specified under the Xen compatible
+ *   parameter. The memory range specified under the crux compatible
  *   hypervisor node on device tree can be used as target gpfn for the
  *   mapping.
  *
- * - Xenstore is initialized by using the two hvm_params
+ * - cruxstore is initialized by using the two hvm_params
  *   HVM_PARAM_STORE_PFN and HVM_PARAM_STORE_EVTCHN. They can be read
  *   with the HYPERVISOR_hvm_op sub-op HVMOP_get_param.
  *
@@ -170,10 +170,10 @@
  *   can be read with the HYPERVISOR_hvm_op sub-op HVMOP_get_param.
  *
  * - Event channel notifications are delivered using the percpu GIC
- *   interrupt specified under the Xen compatible hypervisor node on
+ *   interrupt specified under the crux compatible hypervisor node on
  *   device tree.
  *
- * - The device tree Xen compatible node is fully described under Linux
+ * - The device tree crux compatible node is fully described under Linux
  *   at Documentation/devicetree/bindings/arm/crux.txt.
  */
 

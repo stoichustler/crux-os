@@ -14,7 +14,7 @@
 #define HVM_XS_BIOS                    "hvmloader/bios"
 #define HVM_XS_GENERATION_ID_ADDRESS   "hvmloader/generation-id-address"
 #define HVM_XS_ALLOW_MEMORY_RELOCATE   "hvmloader/allow-memory-relocate"
-/* Set Xen platform pci device BAR as UC in MTRR */
+/* Set crux platform pci device BAR as UC in MTRR */
 #define HVM_XS_CRUX_PLATFORM_PCI_BAR_UC "hvmloader/pci/crux-platform-pci-bar-uc"
 
 /* The following values allow additional ACPI tables to be added to the

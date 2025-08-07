@@ -1,7 +1,7 @@
 /******************************************************************************
  * ns16550.c
  *
- * Driver for 16550-series UARTs. This driver is to be kept within Xen as
+ * Driver for 16550-series UARTs. This driver is to be kept within crux as
  * it permits debugging of seriously-toasted machines (e.g., in situations
  * where a device driver within a guest OS would be inaccessible).
  *

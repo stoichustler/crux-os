@@ -1,5 +1,5 @@
 /*****************************************************************************
- * Preemptive Global Earliest Deadline First  (EDF) scheduler for Xen
+ * Preemptive Global Earliest Deadline First  (EDF) scheduler for crux
  * EDF scheduling is a real-time scheduling algorithm used in embedded field.
  *
  * by Sisu Xi, 2013, Washington University in Saint Louis

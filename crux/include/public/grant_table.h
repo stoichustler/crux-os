@@ -16,12 +16,12 @@
 /*
  * `incontents 150 gnttab Grant Tables
  *
- * Xen's grant tables provide a generic mechanism to memory sharing
+ * crux's grant tables provide a generic mechanism to memory sharing
  * between domains. This shared memory interface underpins the split
  * device drivers for block and network IO.
  *
  * Each domain has its own grant table. This is a data structure that
- * is shared with Xen; it allows the domain to tell Xen what kind of
+ * is shared with crux; it allows the domain to tell crux what kind of
  * permissions other domains have on its pages. Entries in the grant
  * table are identified by grant references. A grant reference is an
  * integer, which indexes into the grant table. It acts as a
@@ -98,9 +98,9 @@ typedef uint32_t grant_ref_t;
 
 /*
  * A grant table comprises a packed array of grant entries in one or more
- * page frames shared between Xen and a guest.
- * [CRUX]: This field is written by Xen and read by the sharing guest.
- * [GST]: This field is written by the guest and read by Xen.
+ * page frames shared between crux and a guest.
+ * [CRUX]: This field is written by crux and read by the sharing guest.
+ * [GST]: This field is written by the guest and read by crux.
  */
 
 /*
@@ -139,7 +139,7 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
  *  GTF_invalid: This grant entry grants no privileges.
  *  GTF_permit_access: Allow @domid to map/access @frame.
  *  GTF_accept_transfer: Allow @domid to transfer ownership of one page frame
- *                       to this guest. Xen writes the page number to @frame.
+ *                       to this guest. crux writes the page number to @frame.
  *  GTF_transitive: Allow @domid to transitively access a subrange of
  *                  @trans_grant in @trans_domid.  No mappings are allowed.
  */
@@ -178,12 +178,12 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
 
 /*
  * Subflags for GTF_accept_transfer:
- *  GTF_transfer_committed: Xen sets this flag to indicate that it is committed
+ *  GTF_transfer_committed: crux sets this flag to indicate that it is committed
  *      to transferring ownership of a page frame. When a guest sees this flag
  *      it must /not/ modify the grant entry until GTF_transfer_completed is
- *      set by Xen.
+ *      set by crux.
  *  GTF_transfer_completed: It is safe for the guest to spin-wait on this flag
- *      after reading GTF_transfer_committed. Xen will always write the frame
+ *      after reading GTF_transfer_committed. crux will always write the frame
  *      address, followed by ORing this flag, in a timely manner.
  */
 #define _GTF_transfer_committed (2)
@@ -251,7 +251,7 @@ union grant_entry_v2 {
      * domain.  Obviously, the transitive access must be compatible
      * with the original grant.
      *
-     * The current version of Xen does not allow transitive grants
+     * The current version of crux does not allow transitive grants
      * to be mapped.
      */
     struct {
@@ -366,7 +366,7 @@ DEFINE_CRUX_GUEST_HANDLE(gnttab_unmap_grant_ref_t);
  * NOTES:
  *  1. <dom> may be specified as DOMID_SELF.
  *  2. Only a sufficiently-privileged domain may specify <dom> != DOMID_SELF.
- *  3. Xen may not support more than a single grant-table page per domain.
+ *  3. crux may not support more than a single grant-table page per domain.
  */
 struct gnttab_setup_table {
     /* IN parameters. */

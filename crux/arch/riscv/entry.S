@@ -4,7 +4,7 @@
 #include <asm/riscv_encoding.h>
 #include <asm/traps.h>
 
-/* WIP: only works while interrupting Xen context */
+/* WIP: only works while interrupting crux context */
 FUNC(handle_trap)
 
     /* Exceptions from crux */

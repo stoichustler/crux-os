@@ -1,7 +1,7 @@
 /*
  * Generic VM initialization for NUMA setups.
  * Copyright 2002,2003 Andi Kleen, SuSE Labs.
- * Adapted for Xen: Ryan Harper <ryanh@us.ibm.com>
+ * Adapted for crux: Ryan Harper <ryanh@us.ibm.com>
  */
 
 #include <crux/init.h>

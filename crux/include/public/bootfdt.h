@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Xen Device Tree boot information
+ * crux Device Tree boot information
  *
- * Information for configuring Xen domains created at boot time.
+ * Information for configuring crux domains created at boot time.
  */
 
 #ifndef __CRUX_PUBLIC_BOOTFDT_H__
@@ -23,7 +23,7 @@
  * backends to other domains.
  */
 #define DOMAIN_CAPS_HARDWARE (1U << 1)
-/* Xenstore domain. */
+/* cruxstore domain. */
 #define DOMAIN_CAPS_CRUXSTORE (1U << 2)
 #define DOMAIN_CAPS_MASK     (DOMAIN_CAPS_CONTROL | DOMAIN_CAPS_HARDWARE | \
                               DOMAIN_CAPS_CRUXSTORE)

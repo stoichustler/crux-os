@@ -23,7 +23,7 @@ struct arch_irq_desc {
 #define NR_LOCAL_IRQS	32
 
 /*
- * This only covers the interrupts that Xen cares about, so SGIs, PPIs and
+ * This only covers the interrupts that crux cares about, so SGIs, PPIs and
  * SPIs. LPIs are too numerous, also only propagated to guests, so they are
  * not included in this number.
  */

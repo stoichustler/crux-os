@@ -4,7 +4,7 @@
 #define __ASM_GENERIC_IRQ_DT_H__
 
 /*
- * These defines correspond to the Xen internal representation of the
+ * These defines correspond to the crux internal representation of the
  * IRQ types. We choose to make them the same as the existing device
  * tree definitions for convenience.
  */

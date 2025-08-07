@@ -2,7 +2,7 @@
 /******************************************************************************
  * crux-x86_32.h
  *
- * Guest OS interface to x86 32-bit Xen.
+ * Guest OS interface to x86 32-bit crux.
  *
  * Copyright (c) 2004-2007, K A Fraser
  */
@@ -14,13 +14,13 @@
  * Hypercall interface:
  *  Input:  %ebx, %ecx, %edx, %esi, %edi (arguments 1-5)
  *  Output: %eax
- * Access is via hypercall page (set up by guest loader or via a Xen MSR):
+ * Access is via hypercall page (set up by guest loader or via a crux MSR):
  *  call hypercall_page + hypercall-number * 32
  * Clobbered: Argument registers (e.g., 2-arg hypercall clobbers %ebx,%ecx)
  */
 
 /*
- * These flat segments are in the Xen-private section of every GDT. Since these
+ * These flat segments are in the crux-private section of every GDT. Since these
  * are also present in the initial GDT, many OSes will be able to avoid
  * installing their own GDT.
  */

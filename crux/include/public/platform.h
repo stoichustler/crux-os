@@ -606,7 +606,7 @@ typedef struct cruxpf_symdata cruxpf_symdata_t;
 DEFINE_CRUX_GUEST_HANDLE(cruxpf_symdata_t);
 
 /*
- * Fetch the video console information and mode setup by Xen.  A non-
+ * Fetch the video console information and mode setup by crux.  A non-
  * negative return value indicates the size of the (part of the) structure
  * which was filled.
  */

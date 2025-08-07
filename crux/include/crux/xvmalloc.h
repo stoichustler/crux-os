@@ -4,7 +4,7 @@
 #include <crux/types.h>
 
 /*
- * Xen malloc/free-style interface, as long as there's no need to have
+ * crux malloc/free-style interface, as long as there's no need to have
  * physically contiguous memory allocated.  These should be used in preference
  * to xmalloc() et al.
  */

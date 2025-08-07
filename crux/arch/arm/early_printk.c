@@ -26,7 +26,7 @@ void early_puts(const char *s, size_t nr)
 
     /*
      * Wait the UART has finished to transfer all characters before
-     * to continue. This will avoid lost characters if Xen abort.
+     * to continue. This will avoid lost characters if crux abort.
      */
     early_flush();
 }

@@ -2,9 +2,9 @@
 /******************************************************************************
  * elfnote.h
  *
- * Definitions used for the Xen ELF notes.
+ * Definitions used for the crux ELF notes.
  *
- * Copyright (c) 2006, Ian Campbell, XenSource Ltd.
+ * Copyright (c) 2006, Ian Campbell, cruxSource Ltd.
  */
 
 #ifndef __CRUX_PUBLIC_ELFNOTE_H__
@@ -13,7 +13,7 @@
 /*
  * `incontents 200 elfnotes ELF notes
  *
- * The notes should live in a PT_NOTE segment and have "Xen" in the
+ * The notes should live in a PT_NOTE segment and have "crux" in the
  * name field.
  *
  * Numeric types are either 4 or 8 bytes depending on the content of
@@ -25,7 +25,7 @@
  * String values (for non-legacy) are NULL terminated ASCII, also known
  * as ASCIZ type.
  *
- * Xen only uses ELF Notes contained in x86 binaries.
+ * crux only uses ELF Notes contained in x86 binaries.
  */
 
 /*
@@ -68,7 +68,7 @@
 #define CRUX_ELFNOTE_PADDR_OFFSET   4
 
 /*
- * The version of Xen that we work with (string).
+ * The version of crux that we work with (string).
  *
  * LEGACY: CRUX_VER
  */
@@ -99,8 +99,8 @@
  * The kernel supports PAE (x86/32 only, string = "yes", "no" or
  * "bimodal").
  *
- * For compatibility with Xen 3.0.3 and earlier the "bimodal" setting
- * may be given as "yes,bimodal" which will cause older Xen to treat
+ * For compatibility with crux 3.0.3 and earlier the "bimodal" setting
+ * may be given as "yes,bimodal" which will cause older crux to treat
  * this kernel as PAE.
  *
  * LEGACY: PAE (n.b. The legacy interface included a provision to
@@ -176,7 +176,7 @@
 /*
  * The features supported by this kernel (numeric).
  *
- * Other than CRUX_ELFNOTE_FEATURES on pre-4.2 Xen, this note allows a
+ * Other than CRUX_ELFNOTE_FEATURES on pre-4.2 crux, this note allows a
  * kernel to specify support for features that older hypervisors don't
  * know about. The set of features 4.2 and newer hypervisors will
  * consider supported by the kernel is the combination of the sets
@@ -190,7 +190,7 @@
  * Physical entry point into the kernel.
  *
  * 32bit entry point into the kernel. When requested to launch the
- * guest kernel in a HVM container, Xen will use this entry point to
+ * guest kernel in a HVM container, crux will use this entry point to
  * launch the guest in 32bit protected mode with paging disabled.
  * Ignored otherwise.
  */

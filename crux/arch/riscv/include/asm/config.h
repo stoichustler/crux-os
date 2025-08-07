@@ -45,7 +45,7 @@
  *                   ..... ( 2 MB gap )
  *  0xffffffffc1200000  0xffffffffc15fffff L2 511          FDT
  *                   ..... ( 2 MB gap )
- *  0xffffffffc0000000  0xffffffffc0ffffff L2 511          Xen
+ *  0xffffffffc0000000  0xffffffffc0ffffff L2 511          crux
  *                   .....                 L2 510          Unused
  *  0x3200000000        0x7f7fffffff       L2 200-509      Direct map
  *                   .....                 L2 199          Unused

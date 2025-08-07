@@ -3,7 +3,7 @@
  * SHA2-256: https://csrc.nist.gov/pubs/fips/180-2/upd1/final
  *
  * Originally derived from Linux.  Modified substantially to optimise for size
- * and Xen's expected usecases.
+ * and crux's expected usecases.
  */
 #include <crux/bitops.h>
 #include <crux/sha2.h>

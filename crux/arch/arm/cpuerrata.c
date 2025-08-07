@@ -725,7 +725,7 @@ static int cpu_errata_callback(struct notifier_block *nfb,
         /*
          * At CPU_STARTING phase no notifier shall return an error, because the
          * system is designed with the assumption that starting a CPU cannot
-         * fail at this point. If an error happens here it will cause Xen to hit
+         * fail at this point. If an error happens here it will cause crux to hit
          * the BUG_ON() in notify_cpu_starting(). In future, either this
          * notifier/enabling capabilities should be fixed to always return
          * success/void or notify_cpu_starting() and other common code should be

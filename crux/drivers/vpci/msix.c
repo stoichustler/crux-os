@@ -89,7 +89,7 @@ static void cf_check control_write(
      * and data fields to be recalculated.
      *
      * In order to avoid the overhead of disabling and enabling all the
-     * entries every time the guest sets the maskall bit, Xen will only
+     * entries every time the guest sets the maskall bit, crux will only
      * perform the disable and enable sequence when the guest has written to
      * the entry.
      */
@@ -509,8 +509,8 @@ static int cf_check msix_write(
     offset = addr & (PCI_MSIX_ENTRY_SIZE - 1);
 
     /*
-     * NB: Xen allows writes to the data/address registers with the entry
-     * unmasked. The specification says this is undefined behavior, and Xen
+     * NB: crux allows writes to the data/address registers with the entry
+     * unmasked. The specification says this is undefined behavior, and crux
      * implements it as storing the written value, which will be made effective
      * in the next mask/unmask cycle. This also mimics the implementation in
      * QEMU.
@@ -562,7 +562,7 @@ static int cf_check msix_write(
             /*
              * If MSI-X is enabled, the function mask is not active, the entry
              * is being unmasked and there have been changes to the address or
-             * data fields Xen needs to disable and enable the entry in order
+             * data fields crux needs to disable and enable the entry in order
              * to pick up the changes.
              */
             update_entry(entry, pdev, vmsix_entry_nr(msix, entry));
@@ -706,7 +706,7 @@ static int cf_check init_msix(struct pci_dev *pdev)
     /*
      * vPCI header initialization will have mapped the whole BAR into the
      * p2m, as MSI-X capability was not yet initialized.  Crave a hole for
-     * the MSI-X table here, so that Xen can trap accesses.
+     * the MSI-X table here, so that crux can trap accesses.
      */
     return vpci_make_msix_hole(pdev);
 }

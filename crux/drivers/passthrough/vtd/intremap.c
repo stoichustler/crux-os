@@ -666,7 +666,7 @@ int enable_intremap(struct vtd_iommu *iommu, int eim)
 
     sts = dmar_readl(iommu->reg, DMAR_GSTS_REG);
 
-    /* Return if already enabled by Xen */
+    /* Return if already enabled by crux */
     if ( (sts & DMA_GSTS_IRES) && iommu->intremap.maddr )
         return 0;
 

@@ -2,7 +2,7 @@
  /*
  * crux/dt-overlay.h
  *
- * Device tree overlay support in Xen.
+ * Device tree overlay support in crux.
  *
  * Copyright (C) 2023, Advanced Micro Devices, Inc. All Rights Reserved.
  * Written by Vikram Garhwal <vikram.garhwal@amd.com>

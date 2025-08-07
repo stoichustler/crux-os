@@ -48,17 +48,17 @@ static DEFINE_PAGE_TABLE(cpu0_pgtable);
 #endif
 
 /* Common pagetable leaves */
-/* Second level page table used to cover Xen virtual address space */
+/* Second level page table used to cover crux virtual address space */
 static DEFINE_PAGE_TABLE(crux_second);
 /* Third level page table used for fixmap */
 DEFINE_BOOT_PAGE_TABLE(crux_fixmap);
 /*
- * Third level page table used to map Xen itself with the XN bit set
+ * Third level page table used to map crux itself with the XN bit set
  * as appropriate.
  */
 static DEFINE_PAGE_TABLES(crux_cruxmap, CRUX_NR_ENTRIES(2));
 
-/* Limits of the Xen heap */
+/* Limits of the crux heap */
 mfn_t directmap_mfn_start __read_mostly = INVALID_MFN_INITIALIZER;
 mfn_t directmap_mfn_end __read_mostly;
 vaddr_t directmap_virt_end __read_mostly;
@@ -214,7 +214,7 @@ void __init remove_early_mappings(void)
 }
 
 /*
- * After boot, Xen page-tables should not contain mapping that are both
+ * After boot, crux page-tables should not contain mapping that are both
  * Writable and eXecutables.
  *
  * This should be called on each CPU to enforce the policy.
@@ -236,7 +236,7 @@ static void crux_pt_enforce_wnx(void)
  * modules from first_mod to nr_modules.
  *
  * For non-recursive callers first_mod should normally be 0 (all
- * modules and Xen itself) or 1 (all modules but not Xen).
+ * modules and crux itself) or 1 (all modules but not crux).
  */
 paddr_t __init consider_modules(paddr_t s, paddr_t e,
                                 uint32_t size, paddr_t align,
@@ -386,7 +386,7 @@ void __init setup_pagetables(void)
     p[0].pt.table = 1;
     p[0].pt.xn = 0;
 
-    /* Break up the Xen mapping into pages and protect them separately. */
+    /* Break up the crux mapping into pages and protect them separately. */
     for ( i = 0; i < CRUX_NR_ENTRIES(3); i++ )
     {
         vaddr_t va = CRUX_VIRT_START + (i << PAGE_SHIFT);
@@ -400,7 +400,7 @@ void __init setup_pagetables(void)
     }
 
     /* Initialise crux second level entries ... */
-    /* ... Xen's text etc */
+    /* ... crux's text etc */
     for ( i = 0; i < CRUX_NR_ENTRIES(2); i++ )
     {
         vaddr_t va = CRUX_VIRT_START + (i << CRUX_PT_LEVEL_SHIFT(2));
@@ -430,7 +430,7 @@ void __init setup_pagetables(void)
         switch_ttbr(ttbr);
     }
 
-    /* Protect Xen */
+    /* Protect crux */
     for ( i = 0; i < CRUX_NR_ENTRIES(3); i++ )
     {
         vaddr_t va = CRUX_VIRT_START + (i << PAGE_SHIFT);

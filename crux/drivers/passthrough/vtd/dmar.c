@@ -1180,7 +1180,7 @@ int cf_check intel_iommu_get_reserved_device_memory(
 }
 
 /*
- * Parse rmrr Xen command line options and add parsed devices and regions into
+ * Parse rmrr crux command line options and add parsed devices and regions into
  * acpi_rmrr_unit list to mapped as RMRRs parsed from ACPI.
  * Format:
  * rmrr=start<-end>=[s1]bdf1[,[s1]bdf2[,...]];start<-end>=[s2]bdf1[,[s2]bdf2[,...]]

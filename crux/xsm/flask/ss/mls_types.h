@@ -11,7 +11,7 @@
  * Copyright (C) 2004-2005 Trusted Computer Solutions, Inc.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _SS_MLS_TYPES_H_
 #define _SS_MLS_TYPES_H_

@@ -98,7 +98,7 @@
  * Requires the vCPU to be paused already (synchronous events only).
  *
  * On a response requires setting the  p2midx field of fast_singlestep to which
- * Xen will switch the vCPU to on the occurance of the first singlestep, after
+ * crux will switch the vCPU to on the occurance of the first singlestep, after
  * which singlestep gets automatically disabled.
  */
 #define VM_EVENT_FLAG_FAST_SINGLESTEP    (1 << 11)

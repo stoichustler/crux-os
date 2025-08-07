@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
 /*
- * Helpers for Xen self-tests of basic logic, including confirming that
+ * Helpers for crux self-tests of basic logic, including confirming that
  * examples which should be calculated by the compiler are.
  */
 #ifndef CRUX_SELF_TESTS_H
@@ -34,7 +34,7 @@
 #endif
 
 /*
- * Check that Xen's runtime logic for fn(val) gives the expected answer.  This
+ * Check that crux's runtime logic for fn(val) gives the expected answer.  This
  * requires using HIDE() to prevent the optimiser from collapsing the logic
  * into a constant.
  *

@@ -5,7 +5,7 @@
  * Contributed by Advanced Micro Devices, Inc.
  * Author: Christoph Egger <Christoph.Egger@amd.com>
  *
- * Guest OS machine check interface to x86 Xen.
+ * Guest OS machine check interface to x86 crux.
  */
 
 /* Full MCA functionality has the following Usecases from the guest side:
@@ -16,21 +16,21 @@
  * 2. Dom0 registers machine check event callback handler
  *    (doable via EVTCHNOP_bind_virq)
  * 3. Dom0 and DomU fetches machine check data
- * 4. Dom0 wants Xen to notify a DomU
+ * 4. Dom0 wants crux to notify a DomU
  * 5. Dom0 gets DomU ID from physical address
- * 6. Dom0 wants Xen to kill DomU (already done for "xm destroy")
+ * 6. Dom0 wants crux to kill DomU (already done for "xm destroy")
  *
  * Nice to have's:
- * 7. Dom0 wants Xen to deactivate a physical CPU
+ * 7. Dom0 wants crux to deactivate a physical CPU
  *    This is better done as separate task, physical CPU hotplugging,
  *    and hypercall(s) should be sysctl's
- * 8. Page migration proposed from Xen NUMA work, where Dom0 can tell Xen to
+ * 8. Page migration proposed from crux NUMA work, where Dom0 can tell crux to
  *    move a DomU (or Dom0 itself) away from a malicious page
  *    producing correctable errors.
  * 9. offlining physical page:
- *    Xen free's and never re-uses a certain physical page.
+ *    crux free's and never re-uses a certain physical page.
  * 10. Testfacility: Allow Dom0 to write values into machine check MSR's
- *     and tell Xen to trigger a machine check
+ *     and tell crux to trigger a machine check
  */
 
 #ifndef __CRUX_PUBLIC_ARCH_X86_MCA_H__
@@ -161,7 +161,7 @@ struct mcinfo_extended {
 
 /* Recovery Action flags. Giving recovery result information to DOM0 */
 
-/* Xen takes successful recovery action, the error is recovered */
+/* crux takes successful recovery action, the error is recovered */
 #define REC_ACTION_RECOVERED (0x1 << 0)
 /* No action is performed by CRUX */
 #define REC_ACTION_NONE (0x1 << 1)

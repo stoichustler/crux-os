@@ -9,7 +9,7 @@
  *              Updated for generic API by Mark Williamson
  *
  * Description: Generic CPU scheduling code
- *              implements support functionality for the Xen scheduler API.
+ *              implements support functionality for the crux scheduler API.
  *
  */
 

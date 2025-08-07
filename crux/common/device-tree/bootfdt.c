@@ -49,7 +49,7 @@ void __init device_tree_get_reg(const __be32 **cell, uint32_t address_cells,
     }
 
     /*
-     * Xen will truncate the address/size if it is greater than the maximum
+     * crux will truncate the address/size if it is greater than the maximum
      * supported width and it will give an appropriate warning.
      */
     *start = dt_start;

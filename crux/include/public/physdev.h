@@ -32,7 +32,7 @@ DEFINE_CRUX_GUEST_HANDLE(physdev_eoi_t);
  * must issue PHYSDEVOP_eoi. The semantics of PHYSDEVOP_eoi change slightly
  * once the guest used this function in that the associated event channel
  * will automatically get unmasked. The page registered is used as a bit
- * array indexed by Xen's PIRQ value.
+ * array indexed by crux's PIRQ value.
  */
 #define PHYSDEVOP_pirq_eoi_gmfn_v1       17
 /*
@@ -40,7 +40,7 @@ DEFINE_CRUX_GUEST_HANDLE(physdev_eoi_t);
  * guest must issue PHYSDEVOP_eoi. This hypercall is very similar to
  * PHYSDEVOP_pirq_eoi_gmfn_v1 but it doesn't change the semantics of
  * PHYSDEVOP_eoi. The page registered is used as a bit array indexed by
- * Xen's PIRQ value.
+ * crux's PIRQ value.
  */
 #define PHYSDEVOP_pirq_eoi_gmfn_v2       28
 struct physdev_pirq_eoi_gmfn {
@@ -88,7 +88,7 @@ DEFINE_CRUX_GUEST_HANDLE(physdev_set_iopl_t);
  * Set the current VCPU's I/O-port permissions bitmap.
  * @arg == pointer to physdev_set_iobitmap structure.
  *
- * When @nr_ports is non-zero, Xen, like real CPUs and the TSS IOPB, always
+ * When @nr_ports is non-zero, crux, like real CPUs and the TSS IOPB, always
  * reads 2 bytes from @bitmap, which might be one byte beyond @nr_ports.
  */
 #define PHYSDEVOP_set_iobitmap           7
@@ -346,7 +346,7 @@ DEFINE_CRUX_GUEST_HANDLE(physdev_dbgp_op_t);
 /*
  * Notify that some PIRQ-bound event channels have been unmasked.
  * ** This command is obsolete since interface version 0x00030202 and is **
- * ** unsupported by newer versions of Xen.                              **
+ * ** unsupported by newer versions of crux.                              **
  */
 #define PHYSDEVOP_IRQ_UNMASK_NOTIFY      4
 

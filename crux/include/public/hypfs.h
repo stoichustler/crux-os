@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /******************************************************************************
- * Xen Hypervisor Filesystem
+ * crux Hypervisor Filesystem
  *
  * Copyright (c) 2019, SUSE Software Solutions Germany GmbH
  *
@@ -59,7 +59,7 @@ struct crux_hypfs_dirlistentry {
  *
  * Possible return values:
  * >0: highest supported interface version
- * <0: negative Xen errno value
+ * <0: negative crux errno value
  */
 #define CRUX_HYPFS_OP_get_version     0
 
@@ -86,7 +86,7 @@ struct crux_hypfs_dirlistentry {
  *
  * Possible return values:
  * 0: success
- * <0 : negative Xen errno value
+ * <0 : negative crux errno value
  */
 #define CRUX_HYPFS_OP_read              1
 
@@ -106,7 +106,7 @@ struct crux_hypfs_dirlistentry {
  *
  * Possible return values:
  * 0: success
- * <0 : negative Xen errno value
+ * <0 : negative crux errno value
  */
 #define CRUX_HYPFS_OP_write_contents    2
 

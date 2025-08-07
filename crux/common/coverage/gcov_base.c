@@ -29,7 +29,7 @@ void __init __gcov_init(struct gcov_info *info)
 
 /*
  * These functions may be referenced by gcc-generated profiling code but serve
- * no function for Xen.
+ * no function for crux.
  */
 void __gcov_exit(void)
 {

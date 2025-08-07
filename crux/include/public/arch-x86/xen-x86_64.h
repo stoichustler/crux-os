@@ -2,7 +2,7 @@
 /******************************************************************************
  * crux-x86_64.h
  *
- * Guest OS interface to x86 64-bit Xen.
+ * Guest OS interface to x86 64-bit crux.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */
@@ -14,14 +14,14 @@
  * Hypercall interface:
  *  Input:  %rdi, %rsi, %rdx, %r10, %r8 (arguments 1-5)
  *  Output: %rax
- * Access is via hypercall page (set up by guest loader or via a Xen MSR):
+ * Access is via hypercall page (set up by guest loader or via a crux MSR):
  *  call hypercall_page + hypercall-number * 32
  * Clobbered: argument registers (e.g., 2-arg hypercall clobbers %rdi,%rsi)
  */
 
 /*
  * 64-bit segment selectors
- * These flat segments are in the Xen-private section of every GDT. Since these
+ * These flat segments are in the crux-private section of every GDT. Since these
  * are also present in the initial GDT, many OSes will be able to avoid
  * installing their own GDT.
  */

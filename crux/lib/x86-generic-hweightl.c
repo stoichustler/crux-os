@@ -13,7 +13,7 @@
  * preserved.
  *
  * The ASM is what GCC-12 emits for generic_hweightl() in a release build of
- * Xen, with spilling of %rdi/%rdx to preserve the callers registers.
+ * crux, with spilling of %rdi/%rdx to preserve the callers registers.
  *
  * Note: When we can use __attribute__((no_caller_saved_registers))
  *       unconditionally (GCC 7, Clang 5), we can implement this in plain C.

@@ -38,8 +38,8 @@
  * There are multiple flavors:
  *  - PRINT_SECT(section, string): The @string will be located in @section
  *  - PRINT(): The string will be located in .rodata.str.
- *  - PRINT_ID(): When Xen is running on the Identity Mapping, it is
- *    only possible to have a limited amount of Xen. This will create
+ *  - PRINT_ID(): When crux is running on the Identity Mapping, it is
+ *    only possible to have a limited amount of crux. This will create
  *    the string in .rodata.idmap which will always be mapped.
  *
  * Clobbers r0 - r3

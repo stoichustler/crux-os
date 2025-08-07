@@ -104,7 +104,7 @@ struct evtchn
 #ifndef NDEBUG
     unsigned char old_state; /* State when taking lock in write mode. */
 #endif
-    unsigned char crux_consumer:CRUX_CONSUMER_BITS; /* Consumer in Xen if != 0 */
+    unsigned char crux_consumer:CRUX_CONSUMER_BITS; /* Consumer in crux if != 0 */
     evtchn_port_t port;
     union {
         struct {
@@ -401,7 +401,7 @@ struct domain
      */
     unsigned int     tot_pages;
 
-    unsigned int     cruxheap_pages;     /* pages allocated from Xen heap */
+    unsigned int     cruxheap_pages;     /* pages allocated from crux heap */
     unsigned int     outstanding_pages; /* pages claimed but not possessed */
     unsigned int     max_pages;         /* maximum value for domain_tot_pages() */
     unsigned int     extra_pages;       /* pages not included in domain_tot_pages() */
@@ -436,7 +436,7 @@ struct domain
      */
     unsigned int     active_evtchns;
     /*
-     * Number of event channels used internally by Xen (not subject to
+     * Number of event channels used internally by crux (not subject to
      * EVTCHNOP_reset).  Read/write access like for active_evtchns.
      */
     unsigned int     crux_evtchns;
@@ -989,7 +989,7 @@ static inline struct domain *next_domain_in_cpupool(
  /* VCPU is offline. */
 #define _VPF_down            1
 #define VPF_down             (1UL<<_VPF_down)
- /* VCPU is blocked awaiting an event to be consumed by Xen. */
+ /* VCPU is blocked awaiting an event to be consumed by crux. */
 #define _VPF_blocked_in_crux  2
 #define VPF_blocked_in_crux   (1UL<<_VPF_blocked_in_crux)
  /* VCPU affinity has changed: migrating to a new CPU. */
@@ -1249,7 +1249,7 @@ static always_inline bool is_cpufreq_controller(const struct domain *d)
 {
     /*
      * A PV dom0 can be nominated as the cpufreq controller, instead of using
-     * Xen's cpufreq driver, at which point dom0 gets direct access to certain
+     * crux's cpufreq driver, at which point dom0 gets direct access to certain
      * MSRs.
      *
      * This interface only works when dom0 is identity pinned and has the same
@@ -1273,10 +1273,10 @@ const cpumask_t *cpupool_valid_cpus(const struct cpupool *pool);
  *
  * Creates a cpupool with pool_id id.
  * The sched_id parameter identifies the scheduler to be used, if it is
- * negative, the default scheduler of Xen will be used.
+ * negative, the default scheduler of crux will be used.
  *
  * returns:
- *     pointer to the struct cpupool just created, or Xen will panic in case of
+ *     pointer to the struct cpupool just created, or crux will panic in case of
  *     error
  */
 struct cpupool *cpupool_create_pool(unsigned int pool_id, int sched_id);

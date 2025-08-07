@@ -475,10 +475,10 @@ void __hwdom_init arch_iommu_hwdom_init(struct domain *d)
             panic("IOMMU failed to add identity range: %d\n", rc);
     }
 
-    /* Remove any areas in-use by Xen. */
+    /* Remove any areas in-use by crux. */
     rc = remove_crux_ranges(map);
     if ( rc )
-        panic("IOMMU failed to remove Xen ranges: %d\n", rc);
+        panic("IOMMU failed to remove crux ranges: %d\n", rc);
 
     iomem.r = map;
     rc = rangeset_report_ranges(d->iomem_caps, 0, ~0UL, map_subtract_iomemcap,
@@ -813,7 +813,7 @@ bool __init iommu_unity_region_ok(const char *prefix, mfn_t start, mfn_t end)
         /*
          * Types which aren't RAM are considered good enough.
          * Note that a page being partially RESERVED, ACPI or UNUSABLE will
-         * force Xen into assuming the whole page as having that type in
+         * force crux into assuming the whole page as having that type in
          * practice.
          */
         if ( type & (RAM_TYPE_RESERVED | RAM_TYPE_ACPI |

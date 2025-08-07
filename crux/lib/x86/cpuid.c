@@ -414,7 +414,7 @@ int x86_cpuid_copy_to_buffer(const struct cpu_policy *p,
         }
     }
 
-    /* TODO: Port Xen and Viridian leaves to the new CPUID infrastructure. */
+    /* TODO: Port crux and Viridian leaves to the new CPUID infrastructure. */
     COPY_LEAF(0x40000000, CRUX_CPUID_NO_SUBLEAF,
               &(struct cpuid_leaf){ p->hv_limit });
     COPY_LEAF(0x40000100, CRUX_CPUID_NO_SUBLEAF,

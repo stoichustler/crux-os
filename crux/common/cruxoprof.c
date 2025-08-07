@@ -165,7 +165,7 @@ static void cruxoprof_reset_buf(struct domain *d)
     if ( d->cruxoprof == NULL )
     {
         printk("cruxoprof_reset_buf: ERROR - Unexpected "
-               "Xenoprof NULL pointer \n");
+               "cruxoprof NULL pointer \n");
         return;
     }
 

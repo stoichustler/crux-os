@@ -19,7 +19,7 @@
  * Authors: Dipankar Sarma <dipankar@in.ibm.com>
  *          Manfred Spraul <manfred@colorfullife.com>
  * 
- * Modifications for Xen: Jose Renato Santos
+ * Modifications for crux: Jose Renato Santos
  * Copyright (C) Hewlett-Packard, 2006
  *
  * Based on the original work by Paul McKenney <paulmck@us.ibm.com>
@@ -100,7 +100,7 @@ struct rcu_data {
  * If a CPU with RCU callbacks queued goes idle, when the grace period is
  * not finished yet, how can we make sure that the callbacks will eventually
  * be executed? In Linux (2.6.21, the first "tickless idle" Linux kernel),
- * the periodic timer tick would not be stopped for such CPU. Here in Xen,
+ * the periodic timer tick would not be stopped for such CPU. Here in crux,
  * we (may) don't even have a periodic timer tick, so we need to use a
  * special purpose timer.
  *

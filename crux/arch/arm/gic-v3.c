@@ -9,7 +9,7 @@
  * Marc Zyngier <marc.zyngier@arm.com>
  *
  * Vijaya Kumar K <vijaya.kumar@caviumnetworks.com>, Cavium Inc
- * ported to Xen
+ * ported to crux
  */
 
 #include <crux/acpi.h>

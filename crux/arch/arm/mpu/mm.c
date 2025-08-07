@@ -27,7 +27,7 @@ uint8_t __ro_after_init max_mpu_regions;
 DECLARE_BITMAP(crux_mpumap_mask, MAX_MPU_REGION_NR) \
     __cacheline_aligned __section(".data");
 
-/* EL2 Xen MPU memory region mapping table. */
+/* EL2 crux MPU memory region mapping table. */
 pr_t __cacheline_aligned __section(".data") crux_mpumap[MAX_MPU_REGION_NR];
 
 static DEFINE_SPINLOCK(crux_mpumap_lock);
@@ -85,7 +85,7 @@ pr_t pr_of_addr(paddr_t base, paddr_t limit, unsigned int flags)
         prbar.reg.sh = LPAE_SH_OUTER;
         break;
     default:
-        /* Xen mappings are SMP coherent */
+        /* crux mappings are SMP coherent */
         prbar.reg.sh = LPAE_SH_INNER;
         break;
     }

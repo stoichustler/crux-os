@@ -58,7 +58,7 @@
 /*
  * The FF-A specification explicitly works with 4K pages as a measure of
  * memory size, for example, FFA_RXTX_MAP takes one parameter "RX/TX page
- * count" which is the number of contiguous 4K pages allocated. Xen may use
+ * count" which is the number of contiguous 4K pages allocated. crux may use
  * a different page size depending on the configuration to avoid confusion
  * with PAGE_SIZE use a special define when it's a page size as in the FF-A
  * specification.

@@ -1,7 +1,7 @@
 /******************************************************************************
  * domain_page.h
  * 
- * Allow temporary mapping of domain page frames into Xen space.
+ * Allow temporary mapping of domain page frames into crux space.
  * 
  * Copyright (c) 2003-2006, Keir Fraser <keir@cruxsource.com>
  */

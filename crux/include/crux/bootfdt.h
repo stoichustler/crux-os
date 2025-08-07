@@ -62,7 +62,7 @@ static inline paddr_t dt_read_paddr(const __be32 *cell, int size)
     }
 
     /*
-     * Xen will truncate the address/size if it is greater than the maximum
+     * crux will truncate the address/size if it is greater than the maximum
      * supported width and it will give an appropriate warning.
      */
     r = dt_r;

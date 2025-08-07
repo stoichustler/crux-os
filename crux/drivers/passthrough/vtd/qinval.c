@@ -397,7 +397,7 @@ int enable_qinval(struct vtd_iommu *iommu)
     if ( !ecap_queued_inval(iommu->ecap) || !iommu_qinval )
         return -ENOENT;
 
-    /* Return if already enabled by Xen */
+    /* Return if already enabled by crux */
     sts = dmar_readl(iommu->reg, DMAR_GSTS_REG);
     if ( (sts & DMA_GSTS_QIES) && iommu->qinval_maddr )
         return 0;

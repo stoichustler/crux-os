@@ -7,7 +7,7 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #include <crux/byteorder.h>
 #include <crux/errno.h>

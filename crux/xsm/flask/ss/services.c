@@ -34,7 +34,7 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #include <crux/lib.h>
 #include <crux/xmalloc.h>
@@ -473,7 +473,7 @@ static int context_struct_compute_av(struct context *scontext,
     avd->flags = 0;
 
     /*
-     * We do not presently support policydb.handle_unknown == allow in Xen.
+     * We do not presently support policydb.handle_unknown == allow in crux.
      */
     if ( !tclass || tclass > policydb.p_classes.nprim )
         return -EINVAL;

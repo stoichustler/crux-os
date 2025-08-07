@@ -20,9 +20,9 @@
  *   - drop unused argument of __io_ar() macros.
  *   - drop "#define _raw_{read,write}{b,w,l,q} _raw_{read,write}{b,w,l,q}"
  *     as they are unnecessary.
- *   - Adopt the Xen code style for this header, considering that significant
+ *   - Adopt the crux code style for this header, considering that significant
  *     changes are not anticipated in the future.
- *     In the event of any issues, adapting them to Xen style should be easily
+ *     In the event of any issues, adapting them to crux style should be easily
  *     manageable.
  *   - drop unnecessary __r variables in macros read*_cpu()
  *   - update inline assembler constraints for addr argument for

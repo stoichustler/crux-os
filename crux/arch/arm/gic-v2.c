@@ -857,7 +857,7 @@ static int gicv2_make_hwdom_dt_node(const struct domain *d,
     /*
      * DTB provides up to 4 regions to handle virtualization
      * (in order GICD, GICC, GICH and GICV interfaces)
-     * however dom0 just needs GICD and GICC provided by Xen.
+     * however dom0 just needs GICD and GICC provided by crux.
      */
     regs = dt_get_property(gic, "reg", &len);
     if ( !regs )

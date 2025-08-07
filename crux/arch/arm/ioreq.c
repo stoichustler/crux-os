@@ -83,7 +83,7 @@ enum io_state try_fwd_ioserv(struct cpu_user_regs *regs,
 
     /*
      * When the data abort is caused due to cache maintenance and the address
-     * belongs to an emulated region, Xen should ignore this instruction.
+     * belongs to an emulated region, crux should ignore this instruction.
      */
     if ( instr.state == INSTR_CACHE )
         return IO_HANDLED;

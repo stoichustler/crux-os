@@ -6,21 +6,21 @@
  * Copyright (c) 2002-2006, K A Fraser <keir@cruxsource.com>
  *
  *                         +---------------------+
- *                          Xen Memory Management
+ *                          crux Memory Management
  *                         +---------------------+
  *
- * Xen has to handle many different address spaces.  It is important not to
+ * crux has to handle many different address spaces.  It is important not to
  * get these spaces mixed up.  The following is a consistent terminology which
  * should be adhered to.
  *
  * mfn: Machine Frame Number
- *   The values Xen puts into its own pagetables.  This is the host physical
+ *   The values crux puts into its own pagetables.  This is the host physical
  *   memory address space with RAM, MMIO etc.
  *
  * gfn: Guest Frame Number
  *   The values a guest puts in its own pagetables.  For an auto-translated
  *   guest (hardware assisted with 2nd stage translation, or shadowed), gfn !=
- *   mfn.  For a non-translated guest which is aware of Xen, gfn == mfn.
+ *   mfn.  For a non-translated guest which is aware of crux, gfn == mfn.
  *
  * pfn: Pseudophysical Frame Number
  *   A linear idea of a guest physical address space. For an auto-translated
@@ -29,7 +29,7 @@
  * dfn: Device DMA Frame Number (definitions in include/crux/iommu.h)
  *   The linear frame numbers of device DMA address space. All initiators for
  *   (i.e. all devices assigned to) a guest share a single DMA address space
- *   and, by default, Xen will ensure dfn == pfn.
+ *   and, by default, crux will ensure dfn == pfn.
  *
  * pdx: Page InDeX
  *   Indices into the frame table holding the per-page's book-keeping
@@ -85,7 +85,7 @@ void init_boot_pages(paddr_t ps, paddr_t pe);
 mfn_t alloc_boot_pages(unsigned long nr_pfns, unsigned long pfn_align);
 void end_boot_allocator(void);
 
-/* Xen suballocator. These functions are interrupt-safe. */
+/* crux suballocator. These functions are interrupt-safe. */
 void init_cruxheap_pages(paddr_t ps, paddr_t pe);
 void cruxheap_max_mfn(unsigned long mfn);
 void *alloc_cruxheap_pages(unsigned int order, unsigned int memflags);
@@ -109,23 +109,23 @@ void free_domstatic_page(struct page_info *page);
 int acquire_domstatic_pages(struct domain *d, mfn_t smfn, unsigned int nr_mfns,
                             unsigned int memflags);
 
-/* Map machine page range in Xen virtual address space. */
+/* Map machine page range in crux virtual address space. */
 int map_pages_to_crux(
     unsigned long virt,
     mfn_t mfn,
     unsigned long nr_mfns,
     pte_attr_t flags);
-/* Alter the permissions of a range of Xen virtual address space. */
+/* Alter the permissions of a range of crux virtual address space. */
 int modify_crux_mappings(unsigned long s, unsigned long e, pte_attr_t nf);
 void modify_crux_mappings_lite(unsigned long s, unsigned long e,
                               pte_attr_t nf);
 int destroy_crux_mappings(unsigned long s, unsigned long e);
-/* Retrieve the MFN mapped by VA in Xen virtual address space. */
+/* Retrieve the MFN mapped by VA in crux virtual address space. */
 mfn_t crux_map_to_mfn(unsigned long va);
 
 /*
  * Create only non-leaf page table entries for the
- * page range in Xen virtual address space.
+ * page range in crux virtual address space.
  */
 int populate_pt_range(unsigned long virt, unsigned long nr_mfns);
 /* Claim handling */
@@ -578,7 +578,7 @@ unsigned int page_get_ram_type(mfn_t mfn);
 bool is_memory_hole(mfn_t start, mfn_t end);
 
 /* Prepare/destroy a ring for a dom0 helper. Helper with talk
- * with Xen on behalf of this domain. */
+ * with crux on behalf of this domain. */
 int prepare_ring_for_helper(struct domain *d, unsigned long gmfn,
                             struct page_info **_page, void **_va);
 void destroy_ring_for_helper(void **_va, struct page_info *page);

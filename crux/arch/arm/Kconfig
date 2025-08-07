@@ -28,11 +28,11 @@ config ARCH_DEFCONFIG
 	default "arch/arm/configs/arm64_defconfig" if ARM_64
 
 config CRUX_START_ADDRESS
-	hex "Xen start address: keep default to use platform defined address"
+	hex "crux start address: keep default to use platform defined address"
 	default 0xFFFFFFFF
 	depends on MPU
 	help
-	  Used to set customized address at which which Xen will be linked on MPU
+	  Used to set customized address at which which crux will be linked on MPU
 	  systems. Must be aligned to 4KB.
 	  0xFFFFFFFF is used as default value to indicate that user has not
 	  customized this address.
@@ -55,7 +55,7 @@ config ARM_PA_BITS_32
 	  On platforms where any physical address can be represented within 32 bits,
 	  user should choose this option. This will help in reduced size of the
 	  binary.
-	  Xen uses "unsigned long" and not "uint32_t" to denote the datatype of
+	  crux uses "unsigned long" and not "uint32_t" to denote the datatype of
 	  physical address. This is done to avoid using a cast each time PAGE_*
 	  macros are used on paddr_t. For eg PAGE_SIZE is defined as unsigned long.
 	  On 32-bit architecture, "unsigned long" is 32-bit wide. Thus, it can be
@@ -87,13 +87,13 @@ config MMU
 	select HAS_PASSTHROUGH
 	select IOMMU_FORCE_PT_SHARE
 	help
-	  Select it if you plan to run Xen on A-profile Armv7+
+	  Select it if you plan to run crux on A-profile Armv7+
 
 config MPU
 	bool "MPU" if UNSUPPORTED
 	select STATIC_MEMORY
 	help
-	  Memory Protection Unit (MPU). Select if you plan to run Xen on ARMv8-R
+	  Memory Protection Unit (MPU). Select if you plan to run crux on ARMv8-R
 	  systems supporting EL2. (UNSUPPORTED)
 endchoice
 
@@ -104,7 +104,7 @@ config ACPI
 	depends on ARM_64 && ARM_EFI
 	help
 
-	  Advanced Configuration and Power Interface (ACPI) support for Xen is
+	  Advanced Configuration and Power Interface (ACPI) support for crux is
 	  an alternative to device tree on ARM64. This requires UEFI.
 
 config ARM_EFI
@@ -113,7 +113,7 @@ config ARM_EFI
 	default y
 	help
 	  This option provides support for boot services through
-	  UEFI firmware. A UEFI stub is provided to allow Xen to
+	  UEFI firmware. A UEFI stub is provided to allow crux to
 	  be booted as an EFI application.
 
 config GICV2
@@ -142,13 +142,13 @@ config OVERLAY_DTB
 	bool "DTB overlay support (UNSUPPORTED)" if UNSUPPORTED
 	depends on SYSCTL
 	help
-	  Dynamic addition/removal of Xen device tree nodes using a dtbo.
+	  Dynamic addition/removal of crux device tree nodes using a dtbo.
 
 config VGICV2
 	bool "vGICv2 interface for domains"
 	default y
 	help
-	  Allow Xen to expose a Generic Interrupt Controller version 2 like to Xen
+	  Allow crux to expose a Generic Interrupt Controller version 2 like to crux
 	  domains. This can be configured at the domain creation.
 	  This option is mandatory when using GICv2.
 	  For GICv3, this allows domain to use GICv2 when the hardware supports it.
@@ -165,7 +165,7 @@ config NEW_VGIC
 	This is an alternative implementation of the ARM GIC interrupt
 	controller emulation, based on the Linux/KVM VGIC. It has a better
 	design and fixes many shortcomings of the existing GIC emulation in
-	Xen. It will eventually replace the existing/old VGIC.
+	crux. It will eventually replace the existing/old VGIC.
 	However at the moment it lacks support for Dom0 using the ITS for
 	using MSIs.
 	Say Y if you want to help testing this new code or if you experience
@@ -220,7 +220,7 @@ config ARM64_PTR_AUTH
 	depends on ARM_64
 	help
 	  Pointer authentication support.
-	  This feature is not supported in Xen.
+	  This feature is not supported in crux.
 
 config ARM64_SVE
 	bool "Enable Scalar Vector Extension support (UNSUPPORTED)" if UNSUPPORTED
@@ -238,14 +238,14 @@ config ARM64_MTE
 	depends on ARM_64
 	help
 	  Memory Tagging Extension support.
-	  This feature is not supported in Xen.
+	  This feature is not supported in crux.
 
 config ARM64_BTI
 	def_bool n
 	depends on ARM_64
 	help
 	  Branch Target Identification support.
-	  This feature is not supported in Xen.
+	  This feature is not supported in crux.
 
 source "arch/arm/tee/Kconfig"
 
@@ -450,11 +450,11 @@ config ARM64_ERRATUM_1508412
 	  non-cacheable memory attributes. The workaround depends on a firmware
 	  counterpart.
 
-	  Xen guests must also have the workaround implemented or they can
+	  crux guests must also have the workaround implemented or they can
 	  deadlock the system.
 
 	  Work around the issue by inserting DMB SY barriers around PAR_EL1
-	  register reads and warning Xen users. The DMB barrier is sufficient
+	  register reads and warning crux users. The DMB barrier is sufficient
 	  to prevent a speculative PAR_EL1 read.
 
 	  If unsure, say Y.

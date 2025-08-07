@@ -29,7 +29,7 @@ struct waitqueue_vcpu {
     struct vcpu *vcpu;
 #ifdef CONFIG_X86
     /*
-     * Xen/x86 does not have per-vcpu hypervisor stacks. So we must save the
+     * crux/x86 does not have per-vcpu hypervisor stacks. So we must save the
      * hypervisor context before sleeping (descheduling), setjmp/longjmp-style.
      */
     void *esp;

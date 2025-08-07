@@ -1,5 +1,5 @@
 /****************************************************************************
- * (C) 2005-2006 - Emmanuel Ackaouy - XenSource Inc.
+ * (C) 2005-2006 - Emmanuel Ackaouy - cruxSource Inc.
  ****************************************************************************
  *
  *        File: common/csched_credit.c
@@ -100,7 +100,7 @@
  * Manage very basic per-unit counters and stats.
  *
  * Useful for debugging live systems. The stats are displayed
- * with runq dumps ('r' on the Xen console).
+ * with runq dumps ('r' on the crux console).
  */
 #ifdef SCHED_STATS
 

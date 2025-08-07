@@ -5,7 +5,7 @@
  *            (C)  2003 Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>.
  *                      Jun Nakajima <jun.nakajima@intel.com>
  *             Feb 2008 Liu Jinsong <jinsong.liu@intel.com>
- *             Porting cpufreq_ondemand.c from Liunx 2.6.23 to Xen hypervisor 
+ *             Porting cpufreq_ondemand.c from Liunx 2.6.23 to crux hypervisor 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

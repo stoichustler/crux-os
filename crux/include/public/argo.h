@@ -185,14 +185,14 @@ struct crux_argo_ring_message_header
  *
  * The send address struct specifies the source and destination addresses
  * for the message being sent, which are used to find the destination ring:
- * Xen first looks for a most-specific match with a registered ring with
+ * crux first looks for a most-specific match with a registered ring with
  *  (id.addr == dst) and (id.partner == sending_domain) ;
  * if that fails, it then looks for a wildcard match (aka multicast receiver)
  * where (id.addr == dst) and (id.partner == DOMID_ANY).
  *
  * For each iov entry, send iov_len bytes from iov_base to the destination ring.
  * If insufficient space exists in the destination ring, it will return -EAGAIN
- * and Xen will notify the caller when sufficient space becomes available.
+ * and crux will notify the caller when sufficient space becomes available.
  *
  * The message type is a 32-bit data field available to communicate message
  * context data (eg. kernel-to-kernel, rather than application layer).
@@ -207,12 +207,12 @@ struct crux_argo_ring_message_header
 /*
  * CRUX_ARGO_OP_notify
  *
- * Asks Xen for information about other rings in the system.
+ * Asks crux for information about other rings in the system.
  *
  * ent->ring is the crux_argo_addr_t of the ring you want information on.
  * Uses the same ring matching rules as CRUX_ARGO_OP_sendv.
  *
- * ent->space_required : if this field is not null then Xen will check
+ * ent->space_required : if this field is not null then crux will check
  * that there is space in the destination ring for this many bytes of payload.
  * If the ring is too small for the requested space_required, it will set the
  * CRUX_ARGO_RING_EMSGSIZE flag on return.
@@ -220,7 +220,7 @@ struct crux_argo_ring_message_header
  * and CANCEL any pending notification for that ent->ring; otherwise it
  * will schedule a notification event and the flag will not be set.
  *
- * These flags are set by Xen when notify replies:
+ * These flags are set by crux when notify replies:
  * CRUX_ARGO_RING_EXISTS     ring exists
  * CRUX_ARGO_RING_SHARED     ring is registered for wildcard partner
  * CRUX_ARGO_RING_EMPTY      ring is empty

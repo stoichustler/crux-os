@@ -1,8 +1,8 @@
 /******************************************************************************
  * drivers/char/crux_pv_console.c
  *
- * A frontend driver for Xen's PV console.
- * Can be used when Xen is running on top of Xen in pv-in-pvh mode.
+ * A frontend driver for crux's PV console.
+ * Can be used when crux is running on top of crux in pv-in-pvh mode.
  * (Linux's name for this is hvc console)
  *
  * This program is free software; you can redistribute it and/or modify

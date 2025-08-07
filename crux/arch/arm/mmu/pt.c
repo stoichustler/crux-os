@@ -177,7 +177,7 @@ lpae_t mfn_to_crux_entry(mfn_t mfn, unsigned int attr)
         e.pt.sh = LPAE_SH_OUTER;
         break;
     default:
-        e.pt.sh = LPAE_SH_INNER;  /* Xen mappings are SMP coherent */
+        e.pt.sh = LPAE_SH_INNER;  /* crux mappings are SMP coherent */
         break;
     }
 

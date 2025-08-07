@@ -31,7 +31,7 @@ typedef uint64_t FDT_BITWISE fdt64_t;
 			 (EXTRACT_BYTE(x, 4) << 24) | (EXTRACT_BYTE(x, 5) << 16) | \
 			 (EXTRACT_BYTE(x, 6) << 8) | EXTRACT_BYTE(x, 7))
 
-/* Xen-specific libfdt error code. */
+/* crux-specific libfdt error code. */
 #define FDT_ERR_CRUX(err) (FDT_ERR_MAX + (err))
 
 static inline uint16_t fdt16_to_cpu(fdt16_t x)

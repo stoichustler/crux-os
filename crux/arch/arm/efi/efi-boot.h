@@ -22,7 +22,7 @@ typedef struct {
 
 /*
  * Binaries will be translated into boot_modules, the maximum number for them is
- * MAX_MODULES where we should remove a unit for Xen and one for Xen DTB
+ * MAX_MODULES where we should remove a unit for crux and one for crux DTB
  */
 #define MAX_UEFI_MODULES (MAX_MODULES - 2)
 static struct file __initdata module_binary;
@@ -65,7 +65,7 @@ static int __init setup_chosen_node(void *fdt, int *addr_cells, int *size_cells)
     if ( !fdt || !addr_cells || !size_cells )
         return -1;
 
-    /* locate chosen node, which is where we add Xen module info. */
+    /* locate chosen node, which is where we add crux module info. */
     node = fdt_subnode_offset(fdt, 0, "chosen");
     if ( node < 0 )
     {
@@ -344,7 +344,7 @@ static void __init *fdt_increase_size(struct file *fdtfile, int add_size)
         /*
          * Create an empty FDT if not provided one, which is the expected case
          * when booted from the UEFI shell on an ACPI only system.  We will use
-         * the FDT to pass the EFI information to Xen, as well as nodes for
+         * the FDT to pass the EFI information to crux, as well as nodes for
          * any modules the stub loads.  The ACPI tables are part of the UEFI
          * system table that is passed in the FDT.
          */
@@ -467,7 +467,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
     int prop_len = 0;
     int chosen;
 
-    /* locate chosen node, which is where we add Xen module info. */
+    /* locate chosen node, which is where we add crux module info. */
     chosen = fdt_subnode_offset(fdt_efi, 0, "chosen");
     if ( chosen < 0 )
         blexit(L"Unable to find chosen node");
@@ -478,7 +478,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
 
     if ( cfgfile_options )
     {
-        PrintStr(L"Using bootargs from Xen configuration file.\r\n");
+        PrintStr(L"Using bootargs from crux configuration file.\r\n");
         prop_len += snprintf(buf + prop_len,
                                EFI_PAGE_SIZE - prop_len, " %s", cfgfile_options);
         if ( prop_len >= EFI_PAGE_SIZE )
@@ -925,7 +925,7 @@ static void noreturn __init efi_arch_halt(void)
 static void __init efi_arch_load_addr_check(const EFI_LOADED_IMAGE *loaded_image)
 {
     if ( (unsigned long)loaded_image->ImageBase & ((1 << 12) - 1) )
-        blexit(L"Xen must be loaded at a 4 KByte boundary.");
+        blexit(L"crux must be loaded at a 4 KByte boundary.");
 }
 
 static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
@@ -935,7 +935,7 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
      * For arm, we may get a device tree from GRUB (or other bootloader)
      * that contains modules that have already been loaded into memory.  In
      * this case, we search for the property crux,uefi-cfg-load in the /chosen
-     * node to decide whether to skip the UEFI Xen configuration file or not.
+     * node to decide whether to skip the UEFI crux configuration file or not.
      */
 
     fdt_efi = lookup_fdt_config_table(SystemTable);
@@ -964,7 +964,7 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
     {
         /*
          * We either have no FDT, or one without modules, so we must have a
-         * Xen EFI configuration file to specify modules.
+         * crux EFI configuration file to specify modules.
          */
         return true;
     }

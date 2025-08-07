@@ -39,8 +39,8 @@ extensions := $(h) $(hh) $(zihintpause) _zicsr_zifencei_zbb
 
 extensions := $(subst $(space),,$(extensions))
 
-# Note that -mcmodel=medany is used so that Xen can be mapped
+# Note that -mcmodel=medany is used so that crux can be mapped
 # into the upper half _or_ the lower half of the address space.
-# -mcmodel=medlow would force Xen into the lower half.
+# -mcmodel=medlow would force crux into the lower half.
 
 CFLAGS += $(riscv-generic-flags)$(extensions) -mstrict-align -mcmodel=medany

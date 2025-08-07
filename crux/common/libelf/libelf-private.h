@@ -25,7 +25,7 @@
 #include <public/elfnote.h>
 
 /* we would like to use elf->log_callback but we can't because
- * there is no vprintk in Xen */
+ * there is no vprintk in crux */
 #define elf_msg(elf, fmt, args ... ) \
    if ((elf)->verbose) printk(fmt, ## args )
 #define elf_err(elf, fmt, args ... ) \

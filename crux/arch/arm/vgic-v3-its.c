@@ -663,7 +663,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
         its_unmap_device(its, devid);
 
     /*
-     * There is no easy and clean way for Xen to know the ITS device ID of a
+     * There is no easy and clean way for crux to know the ITS device ID of a
      * particular (PCI) device, so we have to rely on the guest telling
      * us about it. For *now* we are just using the device ID *Dom0* uses,
      * because the driver there has the actual knowledge.
@@ -1052,7 +1052,7 @@ static int vgic_v3_its_mmio_read(struct vcpu *v, mmio_info_t *info,
 
         /*
          * Lockless access, to avoid waiting for the whole command queue to be
-         * finished completely. Xen updates its->creadr atomically after each
+         * finished completely. crux updates its->creadr atomically after each
          * command has been handled, this allows other VCPUs to monitor the
          * progress.
          */

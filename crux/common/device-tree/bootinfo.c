@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * Derived from Xen 4.19's $crux/arch/arm/setup.c.
+ * Derived from crux 4.19's $crux/arch/arm/setup.c.
  *
  * bookkeeping routines.
  *
@@ -25,7 +25,7 @@ const char * __init boot_module_kind_as_string(boot_module_kind kind)
 {
     switch ( kind )
     {
-    case BOOTMOD_CRUX:     return "Xen";
+    case BOOTMOD_CRUX:     return "crux";
     case BOOTMOD_FDT:     return "Device Tree";
     case BOOTMOD_KERNEL:  return "Kernel";
     case BOOTMOD_RAMDISK: return "Ramdisk";
@@ -262,7 +262,7 @@ struct boot_module __init *add_boot_module(boot_module_kind kind,
 }
 
 /*
- * boot_module_find_by_kind can only be used to return Xen modules (e.g
+ * boot_module_find_by_kind can only be used to return crux modules (e.g
  * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
  * modules.
  */
@@ -306,7 +306,7 @@ void __init add_boot_cmdline(const char *name, const char *cmdline,
 }
 
 /*
- * boot_cmdline_find_by_kind can only be used to return Xen modules (e.g
+ * boot_cmdline_find_by_kind can only be used to return crux modules (e.g
  * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
  * modules.
  */
@@ -394,11 +394,11 @@ static paddr_t __init next_module(paddr_t s, paddr_t *end)
  * Populate the boot allocator.
  * If a static heap was not provided by the admin, all the RAM but the
  * following regions will be added:
- *  - Modules (e.g., Xen, Kernel)
+ *  - Modules (e.g., crux, Kernel)
  *  - Reserved regions
- *  - Xenheap (CONFIG_SEPARATE_CRUXHEAP only)
+ *  - cruxheap (CONFIG_SEPARATE_CRUXHEAP only)
  * If a static heap was provided by the admin, populate the boot
- * allocator with the corresponding regions only, but with Xenheap excluded
+ * allocator with the corresponding regions only, but with cruxheap excluded
  * on CONFIG_SEPARATE_CRUXHEAP.
  */
 void __init populate_boot_allocator(void)

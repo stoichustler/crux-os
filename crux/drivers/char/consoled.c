@@ -1,7 +1,7 @@
 /******************************************************************************
  * drivers/char/consoled.c
  *
- * A backend driver for Xen's PV console.
+ * A backend driver for crux's PV console.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

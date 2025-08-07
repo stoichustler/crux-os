@@ -111,7 +111,7 @@ struct vgic_irq_rank {
     /*
      * Provide efficient access to the priority of an vIRQ while keeping
      * the emulation simple.
-     * Note, this is working fine as long as Xen is using little endian.
+     * Note, this is working fine as long as crux is using little endian.
      */
     union {
         uint8_t priority[32];
@@ -320,7 +320,7 @@ extern void vgic_check_inflight_irqs_pending(struct vcpu *v,
 
 #endif /* !CONFIG_NEW_VGIC */
 
-/*** Common VGIC functions used by Xen arch code ****/
+/*** Common VGIC functions used by crux arch code ****/
 
 /*
  * In the moment vgic_num_irqs() just covers SPIs and the private IRQs,

@@ -198,14 +198,14 @@ void __init llc_coloring_init(void)
         crux_num_colors = MIN(CRUX_DEFAULT_NUM_COLORS, max_nr_colors);
 
         printk(CRUXLOG_WARNING
-               "Xen LLC color config not found. Using first %u colors\n",
+               "crux LLC color config not found. Using first %u colors\n",
                crux_num_colors);
         for ( i = 0; i < crux_num_colors; i++ )
             crux_colors[i] = i;
     }
     else if ( crux_num_colors > max_nr_colors ||
               !check_colors(crux_colors, crux_num_colors) )
-        panic("Bad LLC color config for Xen\n");
+        panic("Bad LLC color config for crux\n");
 
     arch_llc_coloring_init();
 }
@@ -217,7 +217,7 @@ void dump_llc_coloring_info(void)
 
     printk("LLC coloring info:\n");
     printk("    Number of LLC colors supported: %u\n", max_nr_colors);
-    printk("    Xen LLC colors (%u): ", crux_num_colors);
+    printk("    crux LLC colors (%u): ", crux_num_colors);
     print_colors(crux_colors, crux_num_colors);
 }
 

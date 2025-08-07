@@ -2,7 +2,7 @@
 /******************************************************************************
  * displif.h
  *
- * Unified display device I/O interface for Xen guest OSes.
+ * Unified display device I/O interface for crux guest OSes.
  *
  * Copyright (C) 2016-2017 EPAM Systems Inc.
  *
@@ -39,7 +39,7 @@
  * Note: existing fbif can be used together with displif running at the
  * same time, e.g. on Linux one provides framebuffer and another DRM/KMS
  *
- * Note: display resolution (XenStore's "resolution" property) defines
+ * Note: display resolution (cruxStore's "resolution" property) defines
  * visible area of the virtual display. At the same time resolution of
  * the display and frame buffers may differ: buffers can be smaller, equal
  * or bigger than the visible area. This is to enable use-cases, where backend
@@ -71,11 +71,11 @@
  * cruxdispl_resp appropriately (e.g., using RING_FINAL_CHECK_FOR_RESPONSES()).
  *
  * The two halves of a para-virtual display driver utilize nodes within
- * XenStore to communicate capabilities and to negotiate operating parameters.
+ * cruxStore to communicate capabilities and to negotiate operating parameters.
  * This section enumerates these nodes which reside in the respective front and
- * backend portions of XenStore, following the XenBus convention.
+ * backend portions of cruxStore, following the cruxBus convention.
  *
- * All data in XenStore is stored as strings. Nodes specifying numeric
+ * All data in cruxStore is stored as strings. Nodes specifying numeric
  * values are encoded in decimal. Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formated node string, without loss of information.
@@ -121,7 +121,7 @@
  * /local/domain/1/device/vdispl/0/1/evt-event-channel = "18"
  *
  ******************************************************************************
- *                            Backend XenBus Nodes
+ *                            Backend cruxBus Nodes
  ******************************************************************************
  *
  *----------------------------- Protocol version ------------------------------
@@ -133,7 +133,7 @@
  *      by the backend. For example "1,2,3".
  *
  ******************************************************************************
- *                            Frontend XenBus Nodes
+ *                            Frontend cruxBus Nodes
  ******************************************************************************
  *
  *-------------------------------- Addressing ---------------------------------
@@ -199,13 +199,13 @@
  * req-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the Xen connector's control event channel
+ *      The identifier of the crux connector's control event channel
  *      used to signal activity in the ring buffer.
  *
  * req-ring-ref
  *      Values:         <uint32_t>
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      a sole page of connector's control ring buffer.
  *
  *------------------- Connector Event Transport Parameters --------------------
@@ -216,13 +216,13 @@
  * evt-event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the Xen connector's event channel
+ *      The identifier of the crux connector's event channel
  *      used to signal activity in the ring buffer.
  *
  * evt-ring-ref
  *      Values:         <uint32_t>
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      a sole page of connector's event ring buffer.
  */
 
@@ -232,7 +232,7 @@
  ******************************************************************************
  *
  * Tool stack creates front and back state nodes with initial state
- * XenbusStateInitialising.
+ * cruxbusStateInitialising.
  * Tool stack creates and sets up frontend display configuration
  * nodes per domain.
  *
@@ -240,14 +240,14 @@
  *
  * Front                                Back
  * =================================    =====================================
- * XenbusStateInitialising              XenbusStateInitialising
+ * cruxbusStateInitialising              cruxbusStateInitialising
  *                                       o Query backend device identification
  *                                         data.
  *                                       o Open and validate backend device.
  *                                                |
  *                                                |
  *                                                V
- *                                      XenbusStateInitWait
+ *                                      cruxbusStateInitWait
  *
  * o Query frontend configuration
  * o Allocate and initialize
@@ -259,14 +259,14 @@
  *              |
  *              |
  *              V
- * XenbusStateInitialised
+ * cruxbusStateInitialised
  *
  *                                       o Query frontend transport parameters.
  *                                       o Connect to the event channels.
  *                                                |
  *                                                |
  *                                                V
- *                                      XenbusStateConnected
+ *                                      cruxbusStateConnected
  *
  *  o Create and initialize OS
  *    virtual display connectors
@@ -274,48 +274,48 @@
  *              |
  *              |
  *              V
- * XenbusStateConnected
+ * cruxbusStateConnected
  *
- *                                      XenbusStateUnknown
- *                                      XenbusStateClosed
- *                                      XenbusStateClosing
+ *                                      cruxbusStateUnknown
+ *                                      cruxbusStateClosed
+ *                                      cruxbusStateClosing
  * o Remove virtual display device
  * o Remove event channels
  *              |
  *              |
  *              V
- * XenbusStateClosed
+ * cruxbusStateClosed
  *
  *------------------------------- Recovery flow -------------------------------
  *
  * In case of frontend unrecoverable errors backend handles that as
- * if frontend goes into the XenbusStateClosed state.
+ * if frontend goes into the cruxbusStateClosed state.
  *
  * In case of backend unrecoverable errors frontend tries removing
  * the virtualized device. If this is possible at the moment of error,
- * then frontend goes into the XenbusStateInitialising state and is ready for
+ * then frontend goes into the cruxbusStateInitialising state and is ready for
  * new connection with backend. If the virtualized device is still in use and
- * cannot be removed, then frontend goes into the XenbusStateReconfiguring state
+ * cannot be removed, then frontend goes into the cruxbusStateReconfiguring state
  * until either the virtualized device is removed or backend initiates a new
  * connection. On the virtualized device removal frontend goes into the
- * XenbusStateInitialising state.
+ * cruxbusStateInitialising state.
  *
- * Note on XenbusStateReconfiguring state of the frontend: if backend has
+ * Note on cruxbusStateReconfiguring state of the frontend: if backend has
  * unrecoverable errors then frontend cannot send requests to the backend
  * and thus cannot provide functionality of the virtualized device anymore.
  * After backend is back to normal the virtualized device may still hold some
  * state: configuration in use, allocated buffers, client application state etc.
  * In most cases, this will require frontend to implement complex recovery
- * reconnect logic. Instead, by going into XenbusStateReconfiguring state,
+ * reconnect logic. Instead, by going into cruxbusStateReconfiguring state,
  * frontend will make sure no new clients of the virtualized device are
  * accepted, allow existing client(s) to exit gracefully by signaling error
  * state etc.
  * Once all the clients are gone frontend can reinitialize the virtualized
- * device and get into XenbusStateInitialising state again signaling the
+ * device and get into cruxbusStateInitialising state again signaling the
  * backend that a new connection can be made.
  *
  * There are multiple conditions possible under which frontend will go from
- * XenbusStateReconfiguring into XenbusStateInitialising, some of them are OS
+ * cruxbusStateReconfiguring into cruxbusStateInitialising, some of them are OS
  * specific. For example:
  * 1. The underlying OS framework may provide callbacks to signal that the last
  *    client of the virtualized device has gone and the device can be removed
@@ -749,7 +749,7 @@ struct cruxdispl_page_flip_req {
  *   - This command is not available in protocol version 1 and should be
  *     ignored.
  *   - This request is optional and if not supported then visible area
- *     is defined by the relevant XenStore's "resolution" property.
+ *     is defined by the relevant cruxStore's "resolution" property.
  *   - Shared buffer, allocated for EDID storage, must not be less then
  *     CRUXDISPL_EDID_MAX_SIZE octets.
  *
@@ -820,7 +820,7 @@ struct cruxdispl_get_edid_resp {
  *----------------------------------- Events ----------------------------------
  *
  * Events are sent via a shared page allocated by the front and propagated by
- *   evt-event-channel/evt-ring-ref XenStore entries
+ *   evt-event-channel/evt-ring-ref cruxStore entries
  * All event packets have the same length (64 octets)
  * All event packets have common header:
  *         0                1                 2               3        octet
@@ -902,7 +902,7 @@ DEFINE_RING_TYPES(crux_displif, struct cruxdispl_req, struct cruxdispl_resp);
  ******************************************************************************
  * In order to deliver asynchronous events from back to front a shared page is
  * allocated by front and its granted reference propagated to back via
- * XenStore entries (evt-ring-ref/evt-event-channel).
+ * cruxStore entries (evt-ring-ref/evt-event-channel).
  * This page has a common header used by both front and back to synchronize
  * access and control event's ring buffer, while back being a producer of the
  * events and front being a consumer. The rest of the page after the header

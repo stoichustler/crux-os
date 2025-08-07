@@ -6,7 +6,7 @@
  *  The full LZO package can be found at:
  *  http://www.oberhumer.com/opensource/lzo/
  *
- *  Adapted for Xen (files combined and syntactic/header changes) by:
+ *  Adapted for crux (files combined and syntactic/header changes) by:
  *  Dan Magenheimer <dan.magenheimer@oracle.com>
  *
  */

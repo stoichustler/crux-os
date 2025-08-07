@@ -5,7 +5,7 @@
 
 #include <public/crux.h>
 
-/* C(hyp,user), hyp is Xen internal name, user is user API name. */
+/* C(hyp,user), hyp is crux internal name, user is user API name. */
 
 #define ALLREGS \
     C(r0,r0_usr);   C(r1,r1_usr);   C(r2,r2_usr);   C(r3,r3_usr);   \

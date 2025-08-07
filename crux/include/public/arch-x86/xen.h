@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-x86/crux.h
  *
- * Guest OS interface to x86 Xen.
+ * Guest OS interface to x86 crux.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */
@@ -72,10 +72,10 @@ typedef unsigned long crux_pfn_t;
  * `
  */
 /*
- * A number of GDT entries are reserved by Xen. These are not situated at the
+ * A number of GDT entries are reserved by crux. These are not situated at the
  * start of the GDT because some stupid OSes export hard-coded selector values
  * in their ABI. These hard-coded values are always near the start of the GDT,
- * so Xen places itself out of the way, at the far end of the GDT.
+ * so crux places itself out of the way, at the far end of the GDT.
  *
  * NB The LDT is set using the MMUEXT_SET_LDT op of HYPERVISOR_mmuext_op
  */
@@ -126,7 +126,7 @@ typedef unsigned long crux_ulong_t;
  *  Level == 3: Everyone may enter
  *
  * Note: For compatibility with kernels not setting up exception handlers
- *       early enough, Xen will avoid trying to inject #GP (and hence crash
+ *       early enough, crux will avoid trying to inject #GP (and hence crash
  *       the domain) when an RDMSR would require this, but no handler was
  *       set yet. The precise conditions are implementation specific, and
  *       new code may not rely on such behavior anyway.
@@ -294,7 +294,7 @@ struct crux_arch_domainconfig {
 
 /*
  * Select whether to use a relaxed behavior for accesses to MSRs not explicitly
- * handled by Xen instead of injecting a #GP to the guest. Note this option
+ * handled by crux instead of injecting a #GP to the guest. Note this option
  * doesn't allow the guest to read or write to the underlying MSR.
  */
 #define CRUX_X86_MSR_RELAXED (1u << 0)
@@ -308,7 +308,7 @@ struct crux_arch_domainconfig {
 
 /*
  * Representations of architectural CPUID and MSR information.  Used as the
- * serialised version of Xen's internal representation.
+ * serialised version of crux's internal representation.
  */
 typedef struct crux_cpuid_leaf {
 #define CRUX_CPUID_NO_SUBLEAF 0xffffffffu

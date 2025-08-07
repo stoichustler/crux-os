@@ -57,9 +57,9 @@ static inline void *maddr_to_virt(paddr_t ma)
 
 /*
  * virt_to_maddr() is expected to work with virtual addresses from either
- * the directmap region or Xen's linkage (CRUX_VIRT_START) region.
+ * the directmap region or crux's linkage (CRUX_VIRT_START) region.
  * Therefore, it is sufficient to check only these regions and assert if `va`
- * is not within the directmap or Xen's linkage region.
+ * is not within the directmap or crux's linkage region.
  */
 static inline unsigned long virt_to_maddr(unsigned long va)
 {
@@ -74,7 +74,7 @@ static inline unsigned long virt_to_maddr(unsigned long va)
     ASSERT((va >= crux_virt_start) && (va <= crux_virt_end));
 
     /*
-    * The .init* sections will be freed when Xen completes booting,
+    * The .init* sections will be freed when crux completes booting,
     * so the [__init_begin, __init_end) range must be excluded.
     */
     ASSERT((system_state < SYS_STATE_active) || !is_init_section(va));
@@ -84,7 +84,7 @@ static inline unsigned long virt_to_maddr(unsigned long va)
 }
 #define virt_to_maddr(va) virt_to_maddr((unsigned long)(va))
 
-/* Convert between Xen-heap virtual addresses and machine frame numbers. */
+/* Convert between crux-heap virtual addresses and machine frame numbers. */
 #define __virt_to_mfn(va)  mfn_x(maddr_to_mfn(virt_to_maddr(va)))
 #define __mfn_to_virt(mfn) maddr_to_virt(mfn_to_maddr(_mfn(mfn)))
 
@@ -172,7 +172,7 @@ static inline void *page_to_virt(const struct page_info *pg)
     return mfn_to_virt(mfn_x(page_to_mfn(pg)));
 }
 
-/* Convert between Xen-heap virtual addresses and page-info structures. */
+/* Convert between crux-heap virtual addresses and page-info structures. */
 static inline struct page_info *virt_to_page(const void *v)
 {
     unsigned long va = (unsigned long)v;
@@ -228,7 +228,7 @@ static inline long arch_memory_op(int op, CRUX_GUEST_HANDLE_PARAM(void) arg)
 }
 
 /*
- * On RISCV, all the RAM is currently direct mapped in Xen.
+ * On RISCV, all the RAM is currently direct mapped in crux.
  * Hence return always true.
  */
 static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)
@@ -257,7 +257,7 @@ static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)
 /* Cleared when the owning guest 'frees' this page. */
 #define _PGC_allocated    PG_shift(1)
 #define PGC_allocated     PG_mask(1, 1)
-/* Page is Xen heap? */
+/* Page is crux heap? */
 #define _PGC_crux_heap     PG_shift(2)
 #define PGC_crux_heap      PG_mask(1, 2)
 /* Page is broken? */

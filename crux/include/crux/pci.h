@@ -236,7 +236,7 @@ struct pci_dev *pci_get_real_pdev(pci_sbdf_t sbdf);
 void pci_check_disable_device(u16 seg, u8 bus, u8 devfn);
 
 /*
- * Iterate without locking or preemption over all PCI devices known by Xen.
+ * Iterate without locking or preemption over all PCI devices known by crux.
  * Can be called with interrupts disabled.
  */
 int pci_iterate_devices(int (*handler)(struct pci_dev *pdev, void *arg),

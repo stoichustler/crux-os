@@ -208,13 +208,13 @@ static int __init create_domain_cpuinfo(void)
     domain_cpuinfo.pfr64.sve = 0;
     domain_cpuinfo.zfr64.bits[0] = 0;
 
-    /* Hide SMT support as Xen does not support it */
+    /* Hide SMT support as crux does not support it */
     domain_cpuinfo.pfr64.sme = 0;
 
-    /* Hide MTE support as Xen does not support it */
+    /* Hide MTE support as crux does not support it */
     domain_cpuinfo.pfr64.mte = 0;
 
-    /* Hide PAC support as Xen does not support it */
+    /* Hide PAC support as crux does not support it */
     domain_cpuinfo.isa64.apa = 0;
     domain_cpuinfo.isa64.api = 0;
     domain_cpuinfo.isa64.gpa = 0;
@@ -227,7 +227,7 @@ static int __init create_domain_cpuinfo(void)
 #endif
     domain_cpuinfo.pfr32.amu = 0;
 
-    /* Hide RAS support as Xen does not support it */
+    /* Hide RAS support as crux does not support it */
 #ifdef CONFIG_ARM_64
     domain_cpuinfo.pfr64.ras = 0;
     domain_cpuinfo.pfr64.ras_frac = 0;

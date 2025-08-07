@@ -53,10 +53,10 @@
  */
 #define CRUXFEAT_pae_pgdir_above_4gb        4
 
-/* x86: Does this Xen host support the MMU_PT_UPDATE_PRESERVE_AD hypercall? */
+/* x86: Does this crux host support the MMU_PT_UPDATE_PRESERVE_AD hypercall? */
 #define CRUXFEAT_mmu_pt_update_preserve_ad  5
 
-/* x86: Does this Xen host support the MMU_{CLEAR,COPY}_PAGE hypercall? */
+/* x86: Does this crux host support the MMU_{CLEAR,COPY}_PAGE hypercall? */
 #define CRUXFEAT_highmem_assist             6
 
 /*
@@ -65,7 +65,7 @@
  */
 #define CRUXFEAT_gnttab_map_avail_bits      7
 
-/* x86: Does this Xen host support the HVM callback vector type? */
+/* x86: Does this crux host support the HVM callback vector type? */
 #define CRUXFEAT_hvm_callback_vector        8
 
 /* x86: pvclock algorithm is safe to use on HVM */
@@ -77,7 +77,7 @@
 /* operation as Dom0 is supported */
 #define CRUXFEAT_dom0                      11
 
-/* Xen also maps grant references at pfn = mfn.
+/* crux also maps grant references at pfn = mfn.
  * This feature flag is deprecated and should not be used.
 #define CRUXFEAT_grant_map_identity        12
  */
@@ -103,7 +103,7 @@
  * CRUXFEAT_direct_mapped is set; otherwise CRUXFEAT_not_direct_mapped
  * is set.
  *
- * If neither flag is set (e.g. older Xen releases) the assumptions are:
+ * If neither flag is set (e.g. older crux releases) the assumptions are:
  * - not auto_translated domains (x86 only) are always direct-mapped
  * - on x86, auto_translated domains are not direct-mapped
  * - on ARM, Dom0 is direct-mapped, DomUs are not
@@ -121,10 +121,10 @@
 #define CRUXFEAT_vcpu_time_phys_area       19
 
 /*
- * If set, Xen will passthrough all MSI-X vector ctrl writes to device model,
+ * If set, crux will passthrough all MSI-X vector ctrl writes to device model,
  * not only those unmasking an entry. This allows device model to properly keep
  * track of the MSI-X table without having to read it from the device behind
- * Xen's backs. This information is relevant only for device models.
+ * crux's backs. This information is relevant only for device models.
  */
 #define CRUXFEAT_dm_msix_all_writes        20
 

@@ -445,13 +445,13 @@ static EFI_FILE_HANDLE __init get_parent_handle(const EFI_LOADED_IMAGE *loaded_i
 
     /*
      * In some cases the image could not come from a specific device.
-     * For instance this can happen if Xen was loaded using GRUB2 "linux"
+     * For instance this can happen if crux was loaded using GRUB2 "linux"
      * command.
      */
     *leaf = NULL;
     if ( !loaded_image->DeviceHandle )
     {
-        PrintStr(L"Xen image loaded without providing a device\r\n");
+        PrintStr(L"crux image loaded without providing a device\r\n");
         return NULL;
     }
 
@@ -481,7 +481,7 @@ static EFI_FILE_HANDLE __init get_parent_handle(const EFI_LOADED_IMAGE *loaded_i
         {
             /*
              * The image could come from an unsupported device.
-             * For instance this can happen if Xen was loaded using GRUB2
+             * For instance this can happen if crux was loaded using GRUB2
              * "chainloader" command and the file was not from ESP.
              */
             PrintStr(L"Unsupported device path component\r\n");
@@ -1379,7 +1379,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
                 else if ( wstrcmp(ptr + 1, L"help") == 0 ||
                           (ptr[1] == L'?' && !ptr[2]) )
                 {
-                    PrintStr(L"Xen EFI Loader options:\r\n");
+                    PrintStr(L"crux EFI Loader options:\r\n");
                     PrintStr(L"-basevideo   retain current video mode\r\n");
                     PrintStr(L"-mapbs       map EfiBootServices{Code,Data}\r\n");
                     PrintStr(L"-cfg=<file>  specify configuration file\r\n");
@@ -1401,7 +1401,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
             efi_console_set_mode();
     }
 
-    PrintStr(L"Xen " CRUX_VERSION_STRING CRUX_EXTRAVERSION
+    PrintStr(L"crux " CRUX_VERSION_STRING CRUX_EXTRAVERSION
 	     " (c/s " CRUX_CHANGESET ") EFI loader\r\n");
 
     efi_arch_relocate_image(0);
@@ -1488,7 +1488,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
         }
         else
         {
-            /* Kernel was embedded so Xen signature includes it. */
+            /* Kernel was embedded so crux signature includes it. */
             kernel_verified = true;
         }
 
@@ -1931,7 +1931,7 @@ void __init efi_init_memory(void)
         }
     }
 
-    /* Insert Xen mappings. */
+    /* Insert crux mappings. */
     for ( i = l4_table_offset(HYPERVISOR_VIRT_START);
           i < l4_table_offset(DIRECTMAP_VIRT_END); ++i )
         efi_l4t[i] = idle_pg_table[i];

@@ -406,7 +406,7 @@ static void __init allocate_memory_11(struct domain *d,
  * When PCI passthrough is available we want to keep the
  * "linux,pci-domain" in sync for every host bridge.
  *
- * Xen may not have a driver for all the host bridges. So we have
+ * crux may not have a driver for all the host bridges. So we have
  * to write an heuristic to detect whether a device node describes
  * a host bridge.
  *
@@ -465,7 +465,7 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
 
     /*
      * We always skip the IOMMU device when creating DT for hwdom if there is
-     * an appropriate driver for it in Xen (device_get_class(iommu_node)
+     * an appropriate driver for it in crux (device_get_class(iommu_node)
      * returns DEVICE_IOMMU).
      * We should also skip the IOMMU specific properties of the master device
      * behind that IOMMU in order to avoid exposing an half complete IOMMU
@@ -529,7 +529,7 @@ static int __init write_properties(struct domain *d, struct kernel_info *kinfo,
         if ( dt_property_name_is_equal(prop, "crux,passthrough") )
             continue;
 
-        /* Remember and skip the status property as Xen may modify it later */
+        /* Remember and skip the status property as crux may modify it later */
         if ( dt_property_name_is_equal(prop, "status") )
         {
             status = prop;
@@ -1365,7 +1365,7 @@ static int __init make_gic_node(const struct domain *d, void *fdt,
     const char *name;
 
     /*
-     * Xen currently supports only a single GIC. Discard any secondary
+     * crux currently supports only a single GIC. Discard any secondary
      * GIC entries.
      */
     if ( node != dt_interrupt_controller )
@@ -1465,7 +1465,7 @@ int __init make_timer_node(const struct kernel_info *kinfo)
         return res;
 
     /*
-     * The timer IRQ is emulated by Xen.
+     * The timer IRQ is emulated by crux.
      * It always exposes an active-low level-sensitive interrupt.
      */
 
@@ -1511,7 +1511,7 @@ int __init make_timer_node(const struct kernel_info *kinfo)
 
 /*
  * This function is used as part of the device tree generation for Dom0
- * on ACPI systems, and DomUs started directly from Xen based on device
+ * on ACPI systems, and DomUs started directly from crux based on device
  * tree information.
  */
 int __init make_chosen_node(const struct kernel_info *kinfo)
@@ -1576,7 +1576,7 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
         DT_MATCH_COMPATIBLE("arm,armv8-pmuv3"),
         DT_MATCH_PATH("/cpus"),
         DT_MATCH_TYPE("memory"),
-        /* The memory mapped timer is not supported by Xen. */
+        /* The memory mapped timer is not supported by crux. */
         DT_MATCH_COMPATIBLE("arm,armv7-timer-mem"),
         { /* sentinel */ },
     };
@@ -1623,15 +1623,15 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
     if ( dt_match_node(timer_matches, node) )
         return make_timer_node(kinfo);
 
-    /* Skip nodes used by Xen */
+    /* Skip nodes used by crux */
     if ( dt_device_used_by(node) == DOMID_CRUX )
     {
-        dt_dprintk("  Skip it (used by Xen)\n");
+        dt_dprintk("  Skip it (used by crux)\n");
         return 0;
     }
 
     /*
-     * Even if the IOMMU device is not used by Xen, it should not be
+     * Even if the IOMMU device is not used by crux, it should not be
      * passthrough to DOM0
      */
     if ( device_get_class(node) == DEVICE_IOMMU )
@@ -1659,7 +1659,7 @@ static int __init handle_node(struct domain *d, struct kernel_info *kinfo,
     }
 
     /*
-     * Xen is using some path for its own purpose. Warn if a node
+     * crux is using some path for its own purpose. Warn if a node
      * already exists with the same path.
      */
     if ( dt_match_node(reserved_matches, node) )
@@ -1840,7 +1840,7 @@ static void __init find_gnttab_region(struct domain *d,
                                       struct kernel_info *kinfo)
 {
     /*
-     * The region used by Xen on the memory will never be mapped in DOM0
+     * The region used by crux on the memory will never be mapped in DOM0
      * memory layout. Therefore it can be used for the grant table.
      *
      * Only use the text section as it's always present and will contain
@@ -1853,7 +1853,7 @@ static void __init find_gnttab_region(struct domain *d,
     /*
      * The gnttab region must be under 4GB in order to work with DOM0
      * using short page table.
-     * In practice it's always the case because Xen is always located
+     * In practice it's always the case because crux is always located
      * below 4GB, but be safe.
      */
     BUG_ON((kinfo->gnttab_start + kinfo->gnttab_size) > GB(4));

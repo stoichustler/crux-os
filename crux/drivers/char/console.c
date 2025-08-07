@@ -1,13 +1,13 @@
 /******************************************************************************
  * console.c
  *
- * Emergency console I/O for Xen and the domain-0 guest OS.
+ * Emergency console I/O for crux and the domain-0 guest OS.
  *
  * Copyright (c) 2002-2004, K A Fraser.
  *
  * Added printf_ratelimit
  *     Taken from Linux - Author: Andi Kleen (net_ratelimit)
- *     Ported to Xen - Steven Rostedt - Red Hat
+ *     Ported to crux - Steven Rostedt - Red Hat
  */
 
 #include <crux/version.h>
@@ -71,7 +71,7 @@ static char __initdata opt_console[30] = OPT_CONSOLE_STR;
 string_param("console", opt_console);
 
 /* conswitch: a character pair controlling console switching. */
-/* Char 1: CTRL+<char1> is used to switch console input between Xen and DOM0 */
+/* Char 1: CTRL+<char1> is used to switch console input between crux and DOM0 */
 /* Char 2: If this character is 'x', then do not auto-switch to DOM0 when it */
 /*         boots. Any other value, or omitting the char, enables auto-switch */
 static char __read_mostly opt_conswitch[3] = "a";
@@ -82,7 +82,7 @@ static bool __initdata opt_sync_console;
 boolean_param("sync_console", opt_sync_console);
 static const char __initconst warning_sync_console[] =
     "WARNING: CONSOLE OUTPUT IS SYNCHRONOUS\n"
-    "This option is intended to aid debugging of Xen by ensuring\n"
+    "This option is intended to aid debugging of crux by ensuring\n"
     "that all output is synchronously delivered on the serial line.\n"
     "However it can introduce SIGNIFICANT latencies and affect\n"
     "timekeeping. It is NOT recommended for production use!\n";
@@ -91,7 +91,7 @@ static const char __initconst warning_sync_console[] =
 static bool __read_mostly opt_console_to_ring;
 boolean_param("console_to_ring", opt_console_to_ring);
 
-/* console_timestamps: include a timestamp prefix on every Xen console line. */
+/* console_timestamps: include a timestamp prefix on every crux console line. */
 enum con_timestamp_mode
 {
     TSM_NONE,          /* No timestamps */
@@ -502,8 +502,8 @@ static void cf_check conring_dump_keyhandler(unsigned char key)
 }
 
 /*
- * CTRL-<switch_char> changes input direction, rotating among Xen, Dom0,
- * and the DomUs started from Xen at boot.
+ * CTRL-<switch_char> changes input direction, rotating among crux, Dom0,
+ * and the DomUs started from crux at boot.
  */
 #define switch_code (opt_conswitch[0]-'a'+1)
 /*
@@ -545,7 +545,7 @@ static void console_switch_input(void)
     unsigned int next_rx = console_rx;
 
     /*
-     * Rotate among Xen, dom0 and boot-time created domUs while skipping
+     * Rotate among crux, dom0 and boot-time created domUs while skipping
      * switching serial input to non existing domains.
      */
     for ( ; ; )
@@ -556,7 +556,7 @@ static void console_switch_input(void)
         if ( next_rx++ >= max_console_rx )
         {
             console_rx = 0;
-            printk("*** Serial input to Xen");
+            printk("*** Serial input to crux");
             break;
         }
 
@@ -1183,7 +1183,7 @@ void __init console_endboot(void)
 
     /*
      * If user specifies so, we fool the switch routine to redirect input
-     * straight back to Xen. I use this convoluted method so we still print
+     * straight back to crux. I use this convoluted method so we still print
      * a useful 'how to switch' message.
      */
     if ( opt_conswitch[1] == 'x' )

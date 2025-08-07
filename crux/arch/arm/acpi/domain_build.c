@@ -54,7 +54,7 @@ static int __init acpi_iomem_deny_access(struct domain *d)
     }
     else
     {
-        printk("Failed to get SPCR table, Xen console may be unavailable\n");
+        printk("Failed to get SPCR table, crux console may be unavailable\n");
     }
 
     /* Deny MMIO access for GIC regions */

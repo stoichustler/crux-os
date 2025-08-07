@@ -1,7 +1,7 @@
 /******************************************************************************
  * xsm/silo.c
  *
- * SILO module for XSM (Xen Security Modules)
+ * SILO module for XSM (crux Security Modules)
  *
  * Copyright (c) 2018 Citrix Systems Ltd.
  *

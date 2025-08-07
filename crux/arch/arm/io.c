@@ -151,7 +151,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
     /*
      * At this point, we know that the stage1 translation table is either in an
      * emulated MMIO region or its address is invalid . This is not expected by
-     * Xen and thus it forwards the abort to the guest.
+     * crux and thus it forwards the abort to the guest.
      */
     if ( info->dabt.s1ptw )
     {
@@ -160,7 +160,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
     }
 
     /*
-     * When the data abort is caused due to cache maintenance, Xen should check
+     * When the data abort is caused due to cache maintenance, crux should check
      * if the address belongs to an emulated MMIO region or not. The behavior
      * will differ accordingly.
      */
@@ -172,7 +172,7 @@ void try_decode_instruction(const struct cpu_user_regs *regs,
 
     /*
      * Armv8 processor does not provide a valid syndrome for decoding some
-     * instructions. So in order to process these instructions, Xen must
+     * instructions. So in order to process these instructions, crux must
      * decode them.
      */
     rc = decode_instruction(regs, info);
@@ -217,14 +217,14 @@ enum io_state try_handle_mmio(struct cpu_user_regs *regs,
 
     /*
      * When the data abort is caused due to cache maintenance and the address
-     * belongs to an emulated region, Xen should ignore this instruction.
+     * belongs to an emulated region, crux should ignore this instruction.
      */
     if ( info->dabt_instr.state == INSTR_CACHE )
         return IO_HANDLED;
 
     /*
      * At this point, we know that the instruction is either valid or has been
-     * decoded successfully. Thus, Xen should be allowed to execute the
+     * decoded successfully. Thus, crux should be allowed to execute the
      * instruction on the emulated MMIO region.
      */
     if ( info->dabt.write )

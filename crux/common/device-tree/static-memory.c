@@ -169,7 +169,7 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
      * The property 'memory' should match the amount of memory given to the
      * guest.
      * Currently, it is only possible to either acquire static memory or let
-     * Xen allocate. *Mixing* is not supported.
+     * crux allocate. *Mixing* is not supported.
      */
     if ( kinfo->unassigned_mem )
     {
@@ -241,7 +241,7 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
      * The property 'memory' should match the amount of memory given to
      * the guest.
      * Currently, it is only possible to either acquire static memory or
-     * let Xen allocate. *Mixing* is not supported.
+     * let crux allocate. *Mixing* is not supported.
      */
     if ( kinfo->unassigned_mem != 0 )
     {

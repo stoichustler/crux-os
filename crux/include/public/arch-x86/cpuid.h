@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-x86/cpuid.h
  *
- * CPUID interface to Xen.
+ * CPUID interface to crux.
  *
  * Copyright (c) 2007 Citrix Systems, Inc.
  *
@@ -14,11 +14,11 @@
 #define __CRUX_PUBLIC_ARCH_X86_CPUID_H__
 
 /*
- * For compatibility with other hypervisor interfaces, the Xen cpuid leaves
+ * For compatibility with other hypervisor interfaces, the crux cpuid leaves
  * can be found at the first otherwise unused 0x100 aligned boundary starting
  * from 0x40000000.
  *
- * e.g If viridian extensions are enabled for an HVM domain, the Xen cpuid
+ * e.g If viridian extensions are enabled for an HVM domain, the crux cpuid
  * leaves will start at 0x40000100
  */
 
@@ -27,19 +27,19 @@
 
 /*
  * Leaf 1 (0x40000x00)
- * EAX: Largest Xen-information leaf. All leaves up to an including @EAX
- *      are supported by the Xen host.
- * EBX-EDX: "XenVMMXenVMM" signature, allowing positive identification
- *      of a Xen host.
+ * EAX: Largest crux-information leaf. All leaves up to an including @EAX
+ *      are supported by the crux host.
+ * EBX-EDX: "cruxVMMcruxVMM" signature, allowing positive identification
+ *      of a crux host.
  */
-#define CRUX_CPUID_SIGNATURE_EBX 0x566e6558 /* "XenV" */
+#define CRUX_CPUID_SIGNATURE_EBX 0x566e6558 /* "cruxV" */
 #define CRUX_CPUID_SIGNATURE_ECX 0x65584d4d /* "MMXe" */
 #define CRUX_CPUID_SIGNATURE_EDX 0x4d4d566e /* "nVMM" */
 
 /*
  * Leaf 2 (0x40000x01)
- * EAX[31:16]: Xen major version.
- * EAX[15: 0]: Xen minor version.
+ * EAX[31:16]: crux major version.
+ * EAX[15: 0]: crux minor version.
  * EBX-EDX: Reserved (currently all zeroes).
  */
 
@@ -47,7 +47,7 @@
  * Leaf 3 (0x40000x02)
  * EAX: Number of hypercall transfer pages. This register is always guaranteed
  *      to specify one hypercall page.
- * EBX: Base address of Xen-specific MSRs.
+ * EBX: Base address of crux-specific MSRs.
  * ECX: Features 1. Unused bits are set to zero.
  * EDX: Features 2. Unused bits are set to zero.
  */

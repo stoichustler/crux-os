@@ -2,7 +2,7 @@
 # For a description of the syntax of this configuration file,
 # see docs/misc/kconfig-language.txt
 #
-mainmenu "Xen/$(SRCARCH) $(CRUX_FULLVERSION) Configuration"
+mainmenu "crux/$(SRCARCH) $(CRUX_FULLVERSION) Configuration"
 
 source "scripts/Kconfig.include"
 
@@ -82,11 +82,11 @@ config DEFCONFIG_LIST
 config EXPERT
 	bool "Configure EXPERT features"
 	help
-	  This option allows certain base Xen options and settings
+	  This option allows certain base crux options and settings
 	  to be disabled or tweaked. This is for specialized environments
-	  which can tolerate a "non-standard" Xen.
+	  which can tolerate a "non-standard" crux.
 	  Only use this if you really know what you are doing.
-	  Xen binaries built with this option enabled are not security
+	  crux binaries built with this option enabled are not security
 	  supported.
 	default n
 
@@ -94,7 +94,7 @@ config UNSUPPORTED
 	bool "Configure UNSUPPORTED features"
 	default EXPERT
 	help
-	  This option allows certain unsupported Xen options to be changed,
+	  This option allows certain unsupported crux options to be changed,
 	  which includes non-security-supported, experimental, and tech
 	  preview features as defined by SUPPORT.md. (Note that if an option
 	  doesn't depend on UNSUPPORTED it doesn't imply that is supported.)

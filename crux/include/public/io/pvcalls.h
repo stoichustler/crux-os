@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * pvcalls.h -- Xen PV Calls Protocol
+ * pvcalls.h -- crux PV Calls Protocol
  *
  * Refer to docs/misc/pvcalls.markdown for the specification
  *

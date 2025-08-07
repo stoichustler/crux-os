@@ -833,7 +833,7 @@ static void iommu_enable_translation(struct acpi_drhd_unit *drhd)
     u32 sts;
     unsigned long flags;
     struct vtd_iommu *iommu = drhd->iommu;
-    static const char crash_fmt[] = "%s; crash Xen for security purpose\n";
+    static const char crash_fmt[] = "%s; crash crux for security purpose\n";
 
     if ( drhd->gfx_only )
     {
@@ -3015,7 +3015,7 @@ static void cf_check vtd_resume(void)
     }
 
     if ( init_vtd_hw(true) != 0 && force_iommu )
-         panic("IOMMU setup failed, crash Xen for security purpose\n");
+         panic("IOMMU setup failed, crash crux for security purpose\n");
 
     for_each_drhd_unit ( drhd )
     {

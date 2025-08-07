@@ -2,7 +2,7 @@
 /******************************************************************************
  * netif.h
  *
- * Unified network-device I/O interface for Xen guest OSes.
+ * Unified network-device I/O interface for crux guest OSes.
  *
  * Copyright (c) 2003-2004, Keir Fraser
  */
@@ -14,7 +14,7 @@
 #include "../grant_table.h"
 
 /*
- * Older implementation of Xen network frontend / backend has an
+ * Older implementation of crux network frontend / backend has an
  * implicit dependency on the MAX_SKB_FRAGS as the maximum number of
  * ring slots a skb can use. Netfront / netback may not work as
  * expected when frontend and backend have different MAX_SKB_FRAGS.
@@ -92,7 +92,7 @@
  * /local/domain/1/device/vif/0/queue-1/event-channel-tx = "<evtchn-tx1>"
  * /local/domain/1/device/vif/0/queue-1/event-channel-rx = "<evtchn-rx1>"
  *
- * If there is any inconsistency in the XenStore data, the backend may
+ * If there is any inconsistency in the cruxStore data, the backend may
  * choose not to connect any queues, instead treating the request as an
  * error. This includes scenarios where more (or fewer) queues were
  * requested than the frontend provided details for.

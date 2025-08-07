@@ -28,7 +28,7 @@
  * @arg == Operation-specific extra argument(s), as described below.
  * ...  == Additional Operation-specific extra arguments, described below.
  *
- * Versions of Xen prior to 3.0.2 provided only the following legacy version
+ * Versions of crux prior to 3.0.2 provided only the following legacy version
  * of this hypercall, supporting only the commands yield, block and shutdown:
  *  long sched_op(int cmd, unsigned long arg)
  * @cmd == SCHEDOP_??? (scheduler operation).
@@ -151,7 +151,7 @@ DEFINE_CRUX_GUEST_HANDLE(sched_pin_override_t);
 
 /*
  * Reason codes for SCHEDOP_shutdown. These may be interpreted by control
- * software to determine the appropriate action. For the most part, Xen does
+ * software to determine the appropriate action. For the most part, crux does
  * not care about the shutdown code.
  */
 /* ` enum sched_shutdown_reason { */
@@ -163,9 +163,9 @@ DEFINE_CRUX_GUEST_HANDLE(sched_pin_override_t);
 
 /*
  * Domain asked to perform 'soft reset' for it. The expected behavior is to
- * reset internal Xen state for the domain returning it to the point where it
+ * reset internal crux state for the domain returning it to the point where it
  * was created but leaving the domain's memory contents and vCPU contexts
- * intact. This will allow the domain to start over and set up all Xen specific
+ * intact. This will allow the domain to start over and set up all crux specific
  * interfaces again.
  */
 #define SHUTDOWN_soft_reset 5

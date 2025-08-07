@@ -124,7 +124,7 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
 
     /*
      * Make sure there are no mappings in the MSIX MMIO areas, so that accesses
-     * can be trapped (and emulated) by Xen when the memory decoding bit is
+     * can be trapped (and emulated) by crux when the memory decoding bit is
      * enabled.
      *
      * FIXME: punching holes after the p2m has been set up might be racy for
@@ -576,7 +576,7 @@ static void cf_check bar_write(
         val &= PCI_BASE_ADDRESS_MEM_MASK;
 
     /*
-     * Xen only cares whether the BAR is mapped into the p2m, so allow BAR
+     * crux only cares whether the BAR is mapped into the p2m, so allow BAR
      * writes as long as the BAR is not mapped into the p2m.
      */
     if ( bar->enabled )
@@ -592,14 +592,14 @@ static void cf_check bar_write(
 
     /*
      * Update the cached address, so that when memory decoding is enabled
-     * Xen can map the BAR into the guest p2m.
+     * crux can map the BAR into the guest p2m.
      */
     bar->addr &= ~(0xffffffffULL << (hi ? 32 : 0));
     bar->addr |= (uint64_t)val << (hi ? 32 : 0);
     /* Update guest address, so hardware domain BAR is identity mapped. */
     bar->guest_addr = bar->addr;
 
-    /* Make sure Xen writes back the same value for the BAR RO bits. */
+    /* Make sure crux writes back the same value for the BAR RO bits. */
     if ( !hi )
     {
         val |= bar->type == VPCI_BAR_MEM32 ? PCI_BASE_ADDRESS_MEM_TYPE_32
@@ -637,7 +637,7 @@ static void cf_check guest_mem_bar_write(const struct pci_dev *pdev,
     guest_addr &= ~(bar->size - 1);
 
     /*
-     * Xen only cares whether the BAR is mapped into the p2m, so allow BAR
+     * crux only cares whether the BAR is mapped into the p2m, so allow BAR
      * writes as long as the BAR is not mapped into the p2m.
      */
     if ( bar->enabled )

@@ -198,7 +198,7 @@ static int __init parse_acpi_param(const char *arg)
     if ( !arg )
         return -EINVAL;
 
-    /* Interpret the parameter for use within Xen. */
+    /* Interpret the parameter for use within crux. */
     if ( !parse_bool(arg, NULL) )
         param_acpi_off = true;
     else if ( !strcmp(arg, "force") ) /* force ACPI to be enabled */

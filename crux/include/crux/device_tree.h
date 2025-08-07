@@ -554,7 +554,7 @@ static inline struct dt_device_node *dt_find_node_by_path(const char *path)
  * dt_find_node_by_gpath - Same as dt_find_node_by_path but retrieve the
  * path from the guest
  *
- * @u_path: Xen Guest handle to the buffer containing the path
+ * @u_path: crux Guest handle to the buffer containing the path
  * @u_plen: Length of the buffer
  * @node: TODO
  *

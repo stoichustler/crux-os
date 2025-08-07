@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-x86_32.h
  *
- * Guest OS interface to x86 32-bit Xen.
+ * Guest OS interface to x86 32-bit crux.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */

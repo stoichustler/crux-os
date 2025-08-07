@@ -4,7 +4,7 @@
 $(call cc-options-add,CFLAGS,CC,$(EMBEDDED_EXTRA_CFLAGS))
 $(call cc-option-add,CFLAGS,CC,-Wnested-externs)
 
-# Prevent floating-point variables from creeping into Xen.
+# Prevent floating-point variables from creeping into crux.
 CFLAGS-$(CONFIG_ARM_32) += -msoft-float
 CFLAGS-$(CONFIG_ARM_32) += -mcpu=cortex-a15
 CFLAGS-$(CONFIG_ARM_32) += -mno-unaligned-access

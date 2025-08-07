@@ -19,7 +19,7 @@ struct alt_instr {
 	uint8_t  repl_len;	/* size of new instruction(s), <= orig_len */
 };
 
-/* Xen: helpers used by common code. */
+/* crux: helpers used by common code. */
 #define __ALT_PTR(a,f)		((const void *)&(a)->f + (a)->f)
 #define ALT_ORIG_PTR(a)		__ALT_PTR(a, orig_offset)
 #define ALT_REPL_PTR(a)		__ALT_PTR(a, repl_offset)

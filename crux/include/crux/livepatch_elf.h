@@ -8,7 +8,7 @@
 #include <crux/types.h>
 #include <crux/elfstructs.h>
 
-/* The following describes an Elf file as consumed by Xen Live Patch. */
+/* The following describes an Elf file as consumed by crux Live Patch. */
 struct livepatch_elf_sec {
     const Elf_Shdr *sec;                 /* Hooked up in elf_resolve_sections.*/
     const char *name;                    /* Human readable name hooked in

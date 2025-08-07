@@ -238,7 +238,7 @@ void __init discard_initial_modules(void)
     remove_early_mappings();
 }
 
-/* Relocate the FDT in Xen heap */
+/* Relocate the FDT in crux heap */
 static void __init relocate_fdt(const void **dtb_vaddr, size_t dtb_size)
 {
     void *fdt = xmalloc_bytes(dtb_size);
@@ -333,7 +333,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
               "Please check your bootloader.\n",
               fdt_paddr);
 
-    /* Register Xen's load address as a boot module. */
+    /* Register crux's load address as a boot module. */
     crux_boot_module = add_boot_module(BOOTMOD_CRUX,
                              virt_to_maddr(_start),
                              (paddr_t)(uintptr_t)(_end - _start), false);
@@ -485,7 +485,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
     if ( !is_dom0less_mode() )
         create_dom0();
     else
-        printk(CRUXLOG_INFO "Xen dom0less mode detected\n");
+        printk(CRUXLOG_INFO "crux dom0less mode detected\n");
 
     if ( acpi_disabled )
     {
@@ -525,7 +525,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
 
 static int __init init_crux_cap_info(void)
 {
-    /* Interface name is always crux-3.0-* for Xen-3.x. */
+    /* Interface name is always crux-3.0-* for crux-3.x. */
 
 #ifdef CONFIG_ARM_64
     safe_strcat(crux_cap_info, "crux-3.0-aarch64 ");

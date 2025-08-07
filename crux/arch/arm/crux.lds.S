@@ -1,6 +1,6 @@
 /* Excerpts written by Martin Mares <mj@atrey.karlin.mff.cuni.cz> */
-/* Modified for i386/x86-64 Xen by Keir Fraser */
-/* Modified for ARM Xen by Ian Campbell */
+/* Modified for i386/x86-64 crux by Keir Fraser */
+/* Modified for ARM crux by Ian Campbell */
 
 #include <crux/cache.h>
 #include <crux/lib.h>
@@ -221,7 +221,7 @@ ASSERT(IS_ALIGNED(_start,       4096), "starting address should be aligned to 4K
 #endif
 
 /*
- * We require that Xen is loaded at a page boundary, so this ensures that any
+ * We require that crux is loaded at a page boundary, so this ensures that any
  * code running on the identity map cannot cross a section boundary.
  */
 ASSERT(IS_ALIGNED(_idmap_start, PAGE_SIZE), "_idmap_start should be page-aligned")
@@ -238,5 +238,5 @@ ASSERT(IS_ALIGNED(__bss_end,        POINTER_ALIGN), "__bss_end is misaligned")
 /* To simplify the logic in head.S, we want to _end to be page aligned */
 ASSERT(IS_ALIGNED(_end,             PAGE_SIZE), "_end is not page aligned")
 #ifdef CONFIG_MMU
-ASSERT((_end - _start) <= CRUX_VIRT_SIZE, "Xen is too big")
+ASSERT((_end - _start) <= CRUX_VIRT_SIZE, "crux is too big")
 #endif

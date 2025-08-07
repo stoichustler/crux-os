@@ -6,14 +6,14 @@
  * Last modified: 17 APR 08, 1700 PDT
  * ----------------------------------------------------------------------- */
 
-/* start for Xen */
+/* start for crux */
 #include <crux/init.h>
 #include <crux/byteswap.h>
 #include <crux/types.h>
 #include <crux/lib.h>
 #include <crypto/vmac.h>
 #define UINT64_C(x)  x##ULL
-/* end for Xen */
+/* end for crux */
 
 /* Enable code tuned for 64-bit registers; otherwise tuned for 32-bit */
 #ifndef VMAC_ARCH_64

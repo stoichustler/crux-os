@@ -14,7 +14,7 @@
 register struct pcpu_info *tp asm ( "tp" );
 
 struct pcpu_info {
-    unsigned int processor_id; /* Xen CPU id */
+    unsigned int processor_id; /* crux CPU id */
     unsigned long hart_id; /* physical CPU id */
 } __cacheline_aligned;
 

@@ -7,7 +7,7 @@
 #include <crux/types.h>
 #include <asm/csr.h>
 
-/* Clock cycles count at Xen startup */
+/* Clock cycles count at crux startup */
 extern uint64_t boot_clock_cycles;
 
 struct vcpu;

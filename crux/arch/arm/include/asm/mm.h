@@ -14,7 +14,7 @@
 # error "unknown ARM variant"
 #endif
 
-/* Align Xen to a 2 MiB boundary. */
+/* Align crux to a 2 MiB boundary. */
 #define CRUX_PADDR_ALIGN (1 << 21)
 
 /*
@@ -129,7 +129,7 @@ struct page_info
  /* Cleared when the owning guest 'frees' this page. */
 #define _PGC_allocated    PG_shift(1)
 #define PGC_allocated     PG_mask(1, 1)
-  /* Page is Xen heap? */
+  /* Page is crux heap? */
 #define _PGC_crux_heap     PG_shift(2)
 #define PGC_crux_heap      PG_mask(1, 2)
 #ifdef CONFIG_STATIC_MEMORY
@@ -263,11 +263,11 @@ static inline uint64_t gvirt_to_maddr(vaddr_t va, paddr_t *pa,
     return 0;
 }
 
-/* Convert between Xen-heap virtual addresses and machine addresses. */
+/* Convert between crux-heap virtual addresses and machine addresses. */
 #define __pa(x)             (virt_to_maddr(x))
 #define __va(x)             (maddr_to_virt(x))
 
-/* Convert between Xen-heap virtual addresses and machine frame numbers. */
+/* Convert between crux-heap virtual addresses and machine frame numbers. */
 #define __virt_to_mfn(va) (virt_to_maddr(va) >> PAGE_SHIFT)
 #define __mfn_to_virt(mfn) (maddr_to_virt((paddr_t)(mfn) << PAGE_SHIFT))
 
@@ -304,7 +304,7 @@ struct page_info *get_page_from_gva(struct vcpu *v, vaddr_t va,
 #define SHARED_M2P_ENTRY         (~0UL - 1UL)
 #define SHARED_M2P(_e)           ((_e) == SHARED_M2P_ENTRY)
 
-/* Xen always owns P2M on ARM */
+/* crux always owns P2M on ARM */
 #define set_gpfn_from_mfn(mfn, pfn) do { (void) (mfn), (void)(pfn); } while (0)
 #define mfn_to_gfn(d, mfn) ((void)(d), _gfn(mfn_x(mfn)))
 

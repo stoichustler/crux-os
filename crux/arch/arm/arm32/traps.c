@@ -39,7 +39,7 @@ void do_trap_undefined_instruction(struct cpu_user_regs *regs)
     if ( !is_active_kernel_text(pc) )
         goto die;
 
-    /* PC should be always a multiple of 4, as Xen is using ARM instruction set */
+    /* PC should be always a multiple of 4, as crux is using ARM instruction set */
     if ( regs->pc & 0x3 )
         goto die;
 

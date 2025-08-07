@@ -57,7 +57,7 @@ static struct {
     /*
      * Number of physical LPIs the host supports. This is a property of
      * the GIC hardware. We depart from the habit of naming these things
-     * "physical" in Xen, as the GICv3/4 spec uses the term "physical LPI"
+     * "physical" in crux, as the GICv3/4 spec uses the term "physical LPI"
      * in a different context to differentiate them from "virtual LPIs".
      */
     unsigned long int max_host_lpi_ids;

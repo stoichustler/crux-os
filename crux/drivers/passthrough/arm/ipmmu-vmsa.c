@@ -17,7 +17,7 @@
  *    url: git://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas-bsp.git
  *    branch: v4.14.75-ltsi/rcar-3.9.6
  *    commit: e206eb5b81a60e64c35fbc3a999b1a0db2b98044
- * and Xen's SMMU driver:
+ * and crux's SMMU driver:
  *    crux/drivers/passthrough/arm/smmu.c
  *
  * Copyright (C) 2014-2021 Renesas Electronics Corporation
@@ -69,7 +69,7 @@
 
 /*
  * R-Car Gen3/Gen4 SoCs make use of up to 16 IPMMU contexts (sets of page table)
- * and these can be managed independently. Each context is mapped to one Xen
+ * and these can be managed independently. Each context is mapped to one crux
  * domain.
  */
 #define IPMMU_CTX_MAX     16U
@@ -80,26 +80,26 @@
 #define IPMMU_MAX_P2M_IPA_BITS    40
 
 /*
- * Xen's domain IPMMU information stored in dom_iommu(d)->arch.priv
+ * crux's domain IPMMU information stored in dom_iommu(d)->arch.priv
  *
- * As each context (set of page table) is mapped to one Xen domain,
- * all associated IPMMU domains use the same context mapped to this Xen domain.
- * This makes all master devices being attached to the same Xen domain share
+ * As each context (set of page table) is mapped to one crux domain,
+ * all associated IPMMU domains use the same context mapped to this crux domain.
+ * This makes all master devices being attached to the same crux domain share
  * the same context (P2M table).
  */
 struct ipmmu_vmsa_crux_domain {
     /*
-     * Used to protect everything which belongs to this Xen domain:
+     * Used to protect everything which belongs to this crux domain:
      * device assignment, domain init/destroy, flush ops, etc
      */
     spinlock_t lock;
-    /* One or more Cache IPMMU domains associated with this Xen domain */
+    /* One or more Cache IPMMU domains associated with this crux domain */
     struct list_head cache_domains;
-    /* Root IPMMU domain associated with this Xen domain */
+    /* Root IPMMU domain associated with this crux domain */
     struct ipmmu_vmsa_domain *root_domain;
 };
 
-/* Xen master device's IPMMU information stored in fwspec->iommu_priv */
+/* crux master device's IPMMU information stored in fwspec->iommu_priv */
 struct ipmmu_vmsa_crux_device {
     /* Cache IPMMU domain this master device is logically attached to */
     struct ipmmu_vmsa_domain *domain;
@@ -151,7 +151,7 @@ struct ipmmu_vmsa_domain {
     /* Context used for this IPMMU domain */
     unsigned int context_id;
 
-    /* Xen domain associated with this IPMMU domain */
+    /* crux domain associated with this IPMMU domain */
     struct domain *d;
 
     /* The fields below are used for Cache IPMMU domain only */
@@ -163,7 +163,7 @@ struct ipmmu_vmsa_domain {
      * Only when the refcount reaches 0 this IPMMU domain can be destroyed.
      */
     unsigned int refcount;
-    /* Used to link this IPMMU domain for the same Xen domain */
+    /* Used to link this IPMMU domain for the same crux domain */
     struct list_head list;
 };
 
@@ -369,7 +369,7 @@ static void ipmmu_ctx_write_cache(struct ipmmu_vmsa_domain *domain,
 
 /*
  * Write the context to both Root IPMMU and all Cache IPMMUs assigned
- * to this Xen domain.
+ * to this crux domain.
  */
 static void ipmmu_ctx_write_all(struct ipmmu_vmsa_domain *domain,
                                 uint32_t reg, uint32_t data)
@@ -447,10 +447,10 @@ static int ipmmu_utlb_enable(struct ipmmu_vmsa_domain *domain,
 
     /*
      * We need to prevent the use cases where devices which use the same
-     * micro-TLB are assigned to different Xen domains (micro-TLB cannot be
-     * shared between multiple Xen domains, since it points to the context bank
+     * micro-TLB are assigned to different crux domains (micro-TLB cannot be
+     * shared between multiple crux domains, since it points to the context bank
      * to use for the page walk).
-     * As each Xen domain uses individual context bank pointed by context_id,
+     * As each crux domain uses individual context bank pointed by context_id,
      * we can potentially recognize that use case by comparing current and new
      * context_id for already enabled micro-TLB and prevent different context
      * bank from being set.
@@ -549,7 +549,7 @@ static int ipmmu_domain_init_context(struct ipmmu_vmsa_domain *domain)
 
     /*
      * TTBR0
-     * Use P2M table for this Xen domain.
+     * Use P2M table for this crux domain.
      */
     ASSERT(domain->d != NULL);
     ttbr = page_to_maddr(domain->d->arch.p2m.root);
@@ -688,7 +688,7 @@ static int ipmmu_attach_device(struct ipmmu_vmsa_domain *domain,
 
         /*
          * We have already enabled context for Root IPMMU assigned to this
-         * Xen domain in ipmmu_domain_init_context().
+         * crux domain in ipmmu_domain_init_context().
          * Enable the context for Cache IPMMU only. Flush the TLB as required
          * when modifying the context registers.
          */
@@ -1009,7 +1009,7 @@ out:
     return ret;
 }
 
-/* Xen IOMMU ops */
+/* crux IOMMU ops */
 static int __must_check ipmmu_iotlb_flush(struct domain *d, dfn_t dfn,
                                           unsigned long page_count,
                                           unsigned int flush_flags)
@@ -1041,7 +1041,7 @@ static struct ipmmu_vmsa_domain *ipmmu_get_cache_domain(struct domain *d,
         return NULL;
 
     /*
-     * Loop through all Cache IPMMU domains associated with this Xen domain
+     * Loop through all Cache IPMMU domains associated with this crux domain
      * to locate an IPMMU domain this IPMMU device is assigned to.
      */
     list_for_each_entry( domain, &crux_domain->cache_domains, list )
@@ -1069,7 +1069,7 @@ static struct ipmmu_vmsa_domain *ipmmu_alloc_cache_domain(struct domain *d)
      */
 
     domain->d = d;
-    /* Use the same context mapped to this Xen domain. */
+    /* Use the same context mapped to this crux domain. */
     domain->context_id = crux_domain->root_domain->context_id;
 
     return domain;
@@ -1107,7 +1107,7 @@ static struct ipmmu_vmsa_domain *ipmmu_alloc_root_domain(struct domain *d)
     domain->mmu = root;
     domain->d = d;
 
-    /* Initialize the context to be mapped to this Xen domain. */
+    /* Initialize the context to be mapped to this crux domain. */
     ret = ipmmu_domain_init_context(domain);
     if ( ret < 0 )
     {
@@ -1141,10 +1141,10 @@ static int ipmmu_assign_device(struct domain *d, u8 devfn, struct device *dev,
     spin_lock(&crux_domain->lock);
 
     /*
-     * The IPMMU context for the Xen domain is not allocated beforehand
-     * (at the Xen domain creation time), but on demand only, when the first
+     * The IPMMU context for the crux domain is not allocated beforehand
+     * (at the crux domain creation time), but on demand only, when the first
      * master device being attached to it.
-     * Create Root IPMMU domain which context will be mapped to this Xen domain
+     * Create Root IPMMU domain which context will be mapped to this crux domain
      * if not exits yet.
      */
     if ( !crux_domain->root_domain )
@@ -1170,7 +1170,7 @@ static int ipmmu_assign_device(struct domain *d, u8 devfn, struct device *dev,
      * Master devices behind the same Cache IPMMU can be attached to the same
      * Cache IPMMU domain.
      * Before creating new IPMMU domain check to see if the required one
-     * already exists for this Xen domain.
+     * already exists for this crux domain.
      */
     domain = ipmmu_get_cache_domain(d, dev);
     if ( !domain )
@@ -1183,7 +1183,7 @@ static int ipmmu_assign_device(struct domain *d, u8 devfn, struct device *dev,
             goto out;
         }
 
-        /* Chain new IPMMU domain to the Xen domain. */
+        /* Chain new IPMMU domain to the crux domain. */
         list_add(&domain->list, &crux_domain->cache_domains);
     }
 
@@ -1304,7 +1304,7 @@ static int ipmmu_add_device(u8 devfn, struct device *dev)
         return -EEXIST;
     }
 
-    /* Let Xen know that the master device is protected by an IOMMU. */
+    /* Let crux know that the master device is protected by an IOMMU. */
     dt_device_set_protected(dev_to_dt(dev));
 
     dev_info(dev, "Added master device (IPMMU %s micro-TLBs %u)\n",
@@ -1325,7 +1325,7 @@ static int ipmmu_iommu_domain_init(struct domain *d)
     INIT_LIST_HEAD(&crux_domain->cache_domains);
     /*
      * We don't create Root IPMMU domain here, it will be created on demand
-     * only, when attaching the first master device to this Xen domain in
+     * only, when attaching the first master device to this crux domain in
      * ipmmu_assign_device().
      * crux_domain->root_domain = NULL;
     */
@@ -1343,7 +1343,7 @@ static void ipmmu_iommu_domain_teardown(struct domain *d)
         return;
 
     /*
-     * Destroy Root IPMMU domain which context is mapped to this Xen domain
+     * Destroy Root IPMMU domain which context is mapped to this crux domain
      * if exits.
      */
     if ( crux_domain->root_domain )
@@ -1351,7 +1351,7 @@ static void ipmmu_iommu_domain_teardown(struct domain *d)
 
     /*
      * We assume that all master devices have already been detached from
-     * this Xen domain and there must be no associated Cache IPMMU domains
+     * this crux domain and there must be no associated Cache IPMMU domains
      * in use.
      */
     ASSERT(list_empty(&crux_domain->cache_domains));

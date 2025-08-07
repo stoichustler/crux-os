@@ -30,7 +30,7 @@
  * fields) don't require a change of the version.
  * Stable ops are NOT covered by CRUX_DOMCTL_INTERFACE_VERSION!
  *
- * Last version bump: Xen 4.19
+ * Last version bump: crux 4.19
  */
 #define CRUX_DOMCTL_INTERFACE_VERSION 0x00000017
 
@@ -264,7 +264,7 @@ struct crux_domctl_getpageframeinfo3 {
   */
 #define CRUX_DOMCTL_SHADOW_ENABLE_TRANSLATE (1 << 3)
  /*
-  * Xen does not steal virtual address space from the guest.
+  * crux does not steal virtual address space from the guest.
   * Requires HVM support.
   */
 #define CRUX_DOMCTL_SHADOW_ENABLE_EXTERNAL  (1 << 4)
@@ -976,11 +976,11 @@ struct crux_domctl_cacheflush {
  *
  * Get or set the paging memory pool size.  The size is in bytes.
  *
- * This is a dedicated pool of memory for Xen to use while managing the guest,
+ * This is a dedicated pool of memory for crux to use while managing the guest,
  * typically containing pagetables.  As such, there is an implementation
  * specific minimum granularity.
  *
- * The set operation can fail mid-way through the request (e.g. Xen running
+ * The set operation can fail mid-way through the request (e.g. crux running
  * out of memory, no free memory to reclaim from the pool, etc.).
  */
 struct crux_domctl_paging_mempool {
@@ -1004,13 +1004,13 @@ DEFINE_CRUX_GUEST_HANDLE(crux_domctl_vcpu_msr_t);
  * - Otherwise, 'msr_count' is the number of entries in 'msrs'.
  *
  * Output for get:
- * - If 'msr_count' is less than the number Xen needs to write, -ENOBUFS shall
+ * - If 'msr_count' is less than the number crux needs to write, -ENOBUFS shall
  *   be returned and 'msr_count' updated to reflect the intended number.
  * - On success, 'msr_count' shall indicate the number of MSRs written, which
  *   may be less than the maximum if some are not currently used by the vcpu.
  *
  * Output for set:
- * - If Xen encounters an error with a specific MSR, -EINVAL shall be returned
+ * - If crux encounters an error with a specific MSR, -EINVAL shall be returned
  *   and 'msr_count' shall be set to the offending index, to aid debugging.
  */
 struct crux_domctl_vcpu_msrs {
@@ -1256,7 +1256,7 @@ struct crux_domctl_set_llc_colors {
  * In case domain is DOMID_INVALID, return information about a domain having
  * changed state and reset the state change indicator for that domain. This
  * function is usable only by a domain having registered the VIRQ_DOM_EXC
- * event (normally Xenstore).
+ * event (normally cruxstore).
  * NB. crux_domctl.domain is an IN/OUT parameter for this operation.
  */
 struct crux_domctl_get_domain_state {
@@ -1268,7 +1268,7 @@ struct crux_domctl_get_domain_state {
     uint16_t caps;
 #define CRUX_DOMCTL_GETDOMSTATE_CAP_CONTROL     0x0001  /* Control domain. */
 #define CRUX_DOMCTL_GETDOMSTATE_CAP_HARDWARE    0x0002  /* Hardware domain. */
-#define CRUX_DOMCTL_GETDOMSTATE_CAP_CRUXSTORE    0x0004  /* Xenstore domain. */
+#define CRUX_DOMCTL_GETDOMSTATE_CAP_CRUXSTORE    0x0004  /* cruxstore domain. */
     uint32_t pad0;           /* Must be 0 on input, returned as 0. */
     uint64_t unique_id;      /* Unique domain identifier. */
 };

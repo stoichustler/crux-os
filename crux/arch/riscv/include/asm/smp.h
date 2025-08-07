@@ -12,7 +12,7 @@ DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_mask);
 DECLARE_PER_CPU(cpumask_var_t, cpu_core_mask);
 
 /*
- * Mapping between Xen logical cpu index and hartid.
+ * Mapping between crux logical cpu index and hartid.
  */
 static inline unsigned long cpuid_to_hartid(unsigned long cpuid)
 {

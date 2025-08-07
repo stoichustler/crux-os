@@ -1,7 +1,7 @@
 /******************************************************************************
  * cruxoprof.h
  * 
- * Xenoprof: Xenoprof enables performance profiling in Xen
+ * cruxoprof: cruxoprof enables performance profiling in crux
  * 
  * Copyright (C) 2005 Hewlett-Packard Co.
  * written by Aravind Menon & Jose Renato Santos

@@ -1,7 +1,7 @@
 /******************************************************************************
  * sched_arinc653.c
  *
- * An ARINC653-compatible scheduling algorithm for use in Xen.
+ * An ARINC653-compatible scheduling algorithm for use in crux.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -71,7 +71,7 @@
  */
 typedef struct arinc653_unit_s
 {
-    /* unit points to Xen's struct sched_unit so we can get to it from an
+    /* unit points to crux's struct sched_unit so we can get to it from an
      * arinc653_unit_t pointer. */
     struct sched_unit * unit;
     /* awake holds whether the UNIT has been woken with vcpu_wake() */
@@ -96,7 +96,7 @@ typedef struct sched_entry_s
     /* runtime holds the number of nanoseconds that the UNIT for this
      * schedule entry should be allowed to run per major frame. */
     s_time_t            runtime;
-    /* unit holds a pointer to the Xen sched_unit structure */
+    /* unit holds a pointer to the crux sched_unit structure */
     struct sched_unit * unit;
 } sched_entry_t;
 
@@ -140,7 +140,7 @@ typedef struct a653sched_priv_s
     s_time_t next_major_frame;
 
     /**
-     * pointers to all Xen UNIT structures for iterating through
+     * pointers to all crux UNIT structures for iterating through
      */
     struct list_head unit_list;
 
@@ -203,7 +203,7 @@ static struct sched_unit *find_unit(
 }
 
 /**
- * This function updates the pointer to the Xen UNIT structure for each entry
+ * This function updates the pointer to the crux UNIT structure for each entry
  * in the ARINC 653 schedule.
  *
  * @param ops       Pointer to this instance of the scheduler structure
@@ -432,7 +432,7 @@ a653sched_alloc_udata(const struct scheduler *ops, struct sched_unit *unit,
 
     /*
      * Initialize our ARINC 653 scheduler-specific information for the UNIT.
-     * The UNIT starts "asleep." When Xen is ready for the UNIT to run, it
+     * The UNIT starts "asleep." When crux is ready for the UNIT to run, it
      * will call the vcpu_wake scheduler callback function and our scheduler
      * will mark the UNIT awake.
      */
@@ -475,7 +475,7 @@ a653sched_free_udata(const struct scheduler *ops, void *priv)
 }
 
 /**
- * Xen scheduler callback function to sleep a UNIT
+ * crux scheduler callback function to sleep a UNIT
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -495,7 +495,7 @@ a653sched_unit_sleep(const struct scheduler *ops, struct sched_unit *unit)
 }
 
 /**
- * Xen scheduler callback function to wake up a UNIT
+ * crux scheduler callback function to wake up a UNIT
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -510,7 +510,7 @@ a653sched_unit_wake(const struct scheduler *ops, struct sched_unit *unit)
 }
 
 /**
- * Xen scheduler callback function to select a UNIT to run.
+ * crux scheduler callback function to select a UNIT to run.
  * This is the main scheduler routine.
  *
  * @param ops       Pointer to this instance of the scheduler structure
@@ -610,7 +610,7 @@ a653sched_do_schedule(
 }
 
 /**
- * Xen scheduler callback function to select a resource for the UNIT to run on
+ * crux scheduler callback function to select a resource for the UNIT to run on
  *
  * @param ops       Pointer to this instance of the scheduler structure
  * @param unit      Pointer to struct sched_unit
@@ -640,7 +640,7 @@ a653sched_pick_resource(const struct scheduler *ops,
 }
 
 /**
- * Xen scheduler callback to change the scheduler of a cpu
+ * crux scheduler callback to change the scheduler of a cpu
  *
  * @param new_ops   Pointer to this instance of the scheduler structure
  * @param cpu       The cpu that is changing scheduler
@@ -663,7 +663,7 @@ a653_switch_sched(struct scheduler *new_ops, unsigned int cpu,
 
 #ifdef CONFIG_SYSCTL
 /**
- * Xen scheduler callback function to perform a global (not domain-specific)
+ * crux scheduler callback function to perform a global (not domain-specific)
  * adjustment. It is used by the ARINC 653 scheduler to put in place a new
  * ARINC 653 schedule or to retrieve the schedule currently in place.
  *
@@ -704,10 +704,10 @@ a653sched_adjust_global(const struct scheduler *ops,
 #endif /* CONFIG_SYSCTL */
 
 /**
- * This structure defines our scheduler for Xen.
- * The entries tell Xen where to find our scheduler-specific
+ * This structure defines our scheduler for crux.
+ * The entries tell crux where to find our scheduler-specific
  * callback functions.
- * The symbol must be visible to the rest of Xen at link time.
+ * The symbol must be visible to the rest of crux at link time.
  */
 static const struct scheduler sched_arinc653_def = {
     .name           = "ARINC 653 Scheduler",

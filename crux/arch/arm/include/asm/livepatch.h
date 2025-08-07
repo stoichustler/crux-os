@@ -17,7 +17,7 @@ extern void *vmap_of_crux_text;
 
 /* These ranges are only for unconditional branches. */
 #ifdef CONFIG_ARM_32
-/* ARM32: A4.3 IN ARM DDI 0406C.c -  we are using only ARM instructions in Xen.*/
+/* ARM32: A4.3 IN ARM DDI 0406C.c -  we are using only ARM instructions in crux.*/
 #define ARCH_LIVEPATCH_RANGE SZ_32M
 #else
 /* ARM64: C1.3.2 in ARM DDI 0487A.j */

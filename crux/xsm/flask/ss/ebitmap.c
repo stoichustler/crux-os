@@ -8,7 +8,7 @@
  *      Applied standard bit operations to improve bitmap scanning.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #include <crux/bitmap.h>
 #include <crux/byteorder.h>

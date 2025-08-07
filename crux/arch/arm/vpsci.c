@@ -124,7 +124,7 @@ static register_t do_psci_0_2_cpu_suspend(uint32_t power_state,
 
     /*
      * Power off requests are treated as performing standby
-     * as this simplifies Xen implementation.
+     * as this simplifies crux implementation.
      */
 
     vcpu_block_unless_event_pending(v);

@@ -427,7 +427,7 @@ class resource
 #  source = domain making the hypercall
 #  target = domain which will no longer have access to the resource
     remove
-# checked when using some core Xen devices (target crux_t)
+# checked when using some core crux devices (target crux_t)
 #  source = domain which will have access to the resource
 #  target = crux_t
     use
@@ -533,9 +533,9 @@ class version
     crux_pagesize
 # An value that the control stack can choose.
     crux_guest_handle
-# Xen command line.
+# crux command line.
     crux_commandline
-# Xen build id
+# crux build id
     crux_build_id
 }
 

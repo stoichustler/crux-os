@@ -66,15 +66,15 @@ int do_bug_frame(const struct cpu_user_regs *regs, unsigned long pc)
     switch ( id )
     {
     case BUGFRAME_warn:
-        printk("Xen WARN at %s%s:%d\n", prefix, filename, lineno);
+        printk("crux WARN at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
 
         break;
 
     case BUGFRAME_bug:
-        printk("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        printk("crux BUG at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
-        panic("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        panic("crux BUG at %s%s:%d\n", prefix, filename, lineno);
 
     case BUGFRAME_assert:
         /* ASSERT: decode the predicate string pointer. */

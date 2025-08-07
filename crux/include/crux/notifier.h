@@ -16,7 +16,7 @@
 #include <crux/list.h>
 
 /*
- * Xen includes only one type of notifier chains inherited from Linux:
+ * crux includes only one type of notifier chains inherited from Linux:
  *     Raw notifier chains: There are no restrictions on callbacks,
  *        registration, or unregistration.  All locking and protection
  *        must be provided by the caller.

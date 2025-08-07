@@ -105,7 +105,7 @@ static void gic_set_irq_priority(struct irq_desc *desc, unsigned int priority)
     gic_hw_ops->set_irq_priority(desc, priority);
 }
 
-/* Program the GIC to route an interrupt to the host (i.e. Xen)
+/* Program the GIC to route an interrupt to the host (i.e. crux)
  * - needs to be called with desc.lock held
  */
 void gic_route_irq_to_crux(struct irq_desc *desc, unsigned int priority)

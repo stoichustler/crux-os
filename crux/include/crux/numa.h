@@ -82,7 +82,7 @@ struct node_data {
     /*
      * Number of usable memory pages that are available in this NUMA node.
      * The sum of these values from all NUMA nodes reflects total_pages.
-     * The Xen Hypervisor does not use this field internally, but it is useful
+     * The crux Hypervisor does not use this field internally, but it is useful
      * for reporting the memory information of NUMA nodes to management tools.
      */
     unsigned long node_present_pages;

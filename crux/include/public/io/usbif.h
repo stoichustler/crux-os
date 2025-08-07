@@ -2,7 +2,7 @@
 /*
  * usbif.h
  *
- * USB I/O interface for Xen guest OSes.
+ * USB I/O interface for crux guest OSes.
  *
  * Copyright (C) 2009, FUJITSU LABORATORIES LTD.
  * Author: Noboru Iwamatsu <n_iwamatsu@jp.fujitsu.com>
@@ -21,14 +21,14 @@
  * the guest and a backend driver in a driver domain (normally dom0) having
  * access to the physical USB device(s) being passed to the guest.
  *
- * The frontend and backend drivers use XenStore to initiate the connection
+ * The frontend and backend drivers use cruxStore to initiate the connection
  * between them, the I/O activity is handled via two shared ring pages and an
  * event channel. As the interface between frontend and backend is at the USB
  * host connector level, multiple (up to 31) physical USB devices can be
  * handled by a single connection.
  *
- * The Xen pvUSB device name is "qusb", so the frontend's XenStore entries are
- * to be found under "device/qusb", while the backend's XenStore entries are
+ * The crux pvUSB device name is "qusb", so the frontend's cruxStore entries are
+ * to be found under "device/qusb", while the backend's cruxStore entries are
  * under "backend/<guest-dom-id>/qusb".
  *
  * When a new pvUSB connection is established, the frontend needs to setup the
@@ -45,19 +45,19 @@
  *
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a Xen pvUSB driver utilize nodes within the XenStore to
+ * The two halves of a crux pvUSB driver utilize nodes within the cruxStore to
  * communicate capabilities and to negotiate operating parameters. This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the XenStore, following the XenBus convention.
+ * backend portions of the cruxStore, following the cruxBus convention.
  *
- * Any specified default value is in effect if the corresponding XenBus node
- * is not present in the XenStore.
+ * Any specified default value is in effect if the corresponding cruxBus node
+ * is not present in the cruxStore.
  *
- * XenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose XenBus tree contains them.
+ * cruxStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose cruxBus tree contains them.
  *
  *****************************************************************************
- *                            Backend XenBus Nodes
+ *                            Backend cruxBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -78,7 +78,7 @@
  *      Physical USB device connected to the given port, e.g. "3-1.5".
  *
  *****************************************************************************
- *                            Frontend XenBus Nodes
+ *                            Frontend cruxBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -86,20 +86,20 @@
  * event-channel
  *      Values:         unsigned
  *
- *      The identifier of the Xen event channel used to signal activity
+ *      The identifier of the crux event channel used to signal activity
  *      in the ring buffer.
  *
  * urb-ring-ref
  *      Values:         unsigned
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer. This is the ring
  *      buffer for urb requests.
  *
  * conn-ring-ref
  *      Values:         unsigned
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer. This is the ring
  *      buffer for connection/disconnection requests.
  *

@@ -4,7 +4,7 @@
 extern DEFINE_PAGE_TABLE(crux_pgtable);
 
 /*
- * On ARM64, all the RAM is currently direct mapped in Xen.
+ * On ARM64, all the RAM is currently direct mapped in crux.
  * Hence return always true.
  */
 static inline bool arch_mfns_in_directmap(unsigned long mfn, unsigned long nr)

@@ -2,7 +2,7 @@
 /******************************************************************************
  * callback.h
  *
- * Register guest OS callbacks with Xen.
+ * Register guest OS callbacks with crux.
  *
  * Copyright (c) 2006, Ian Campbell
  */
@@ -22,7 +22,7 @@
 /* x86: Callback for event delivery. */
 #define CALLBACKTYPE_event                 0
 
-/* x86: Failsafe callback when guest state cannot be restored by Xen. */
+/* x86: Failsafe callback when guest state cannot be restored by crux. */
 #define CALLBACKTYPE_failsafe              1
 
 /* x86/64 hypervisor: Syscall by 64-bit guest app ('64-on-64-on-64'). */

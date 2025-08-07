@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Structure definitions for HVM state that is held by Xen and must
+ * Structure definitions for HVM state that is held by crux and must
  * be saved along with the domain's memory and device-model state.
  *
- * Copyright (c) 2007 XenSource Ltd.
+ * Copyright (c) 2007 cruxSource Ltd.
  */
 
 #ifndef __CRUX_PUBLIC_HVM_SAVE_X86_H__
@@ -21,7 +21,7 @@
 struct hvm_save_header {
     uint32_t magic;             /* Must be HVM_FILE_MAGIC */
     uint32_t version;           /* File format version */
-    uint64_t changeset;         /* Version of Xen that saved this file */
+    uint64_t changeset;         /* Version of crux that saved this file */
     uint32_t cpuid;             /* CPUID[0x01][%eax] on the saving machine */
     uint32_t gtsc_khz;        /* Guest's TSC frequency in kHz */
 };

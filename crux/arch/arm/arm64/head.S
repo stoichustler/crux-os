@@ -326,7 +326,7 @@ FUNC_LOCAL(check_cpu_mode)
         ret
 1:
         /* OK, we're boned. */
-        PRINT_ID("- Xen must be entered in NS EL2 mode -\r\n")
+        PRINT_ID("- crux must be entered in NS EL2 mode -\r\n")
         PRINT_ID("- Please update the bootloader -\r\n")
         b fail
 END(check_cpu_mode)
@@ -502,13 +502,13 @@ END(lookup_processor_type)
 
 #ifdef CONFIG_ARM_EFI
 /*
- *  Function to transition from EFI loader in C, to Xen entry point.
+ *  Function to transition from EFI loader in C, to crux entry point.
  *  void noreturn efi_crux_start(void *fdt_ptr, uint32_t fdt_size);
  */
 FUNC(efi_crux_start)
         /*
          * Preserve x0 (fdt pointer) across call to __flush_dcache_area,
-         * restore for entry into Xen.
+         * restore for entry into crux.
          */
         mov   x20, x0
 
@@ -529,10 +529,10 @@ FUNC(efi_crux_start)
         tlbi  alle2
 
         /*
-         * Turn off cache and MMU as Xen expects. EFI enables them, but also
+         * Turn off cache and MMU as crux expects. EFI enables them, but also
          * mandates a 1:1 (unity) VA->PA mapping, so we can turn off the
-         * MMU while executing EFI code before entering Xen.
-         * The EFI loader calls this to start Xen.
+         * MMU while executing EFI code before entering crux.
+         * The EFI loader calls this to start crux.
          */
 
         /* Turn off Dcache and MMU */
@@ -542,13 +542,13 @@ FUNC(efi_crux_start)
         msr   sctlr_el2, x0
         isb
 
-        /* Jump to Xen entry point */
+        /* Jump to crux entry point */
         mov   x0, x20
         mov   x1, xzr
         mov   x2, xzr
         mov   x3, xzr
         /*
-         * The EFI stub and Xen may share some information living in
+         * The EFI stub and crux may share some information living in
          * BSS. Don't zero BSS to avoid loosing them.
          *
          * Note that the EFI firmware has already zeroed BSS for us

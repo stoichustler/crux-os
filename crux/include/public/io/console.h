@@ -2,7 +2,7 @@
 /******************************************************************************
  * console.h
  *
- * Console I/O interface for Xen guest OSes.
+ * Console I/O interface for crux guest OSes.
  *
  * Copyright (c) 2005, Keir Fraser
  */

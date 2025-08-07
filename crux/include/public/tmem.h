@@ -2,7 +2,7 @@
 /******************************************************************************
  * tmem.h
  *
- * Guest OS interface to Xen Transcendent Memory.
+ * Guest OS interface to crux Transcendent Memory.
  *
  * Copyright (c) 2004, K A Fraser
  */

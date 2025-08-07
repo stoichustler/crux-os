@@ -1,7 +1,7 @@
 /*
  * drivers/char/xhci-dbc.c
  *
- * Xen port for the xue debugger
+ * crux port for the xue debugger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ struct xhci_erst_segment {
 
 #define DBC_STRINGS_COUNT 4
 #define DBC_STRING_LANGID "\x09\x04"
-#define DBC_STRING_MANUFACTURER "Xen"
+#define DBC_STRING_MANUFACTURER "crux"
 #define DBC_STRING_PRODUCT "Debug console"
 #define DBC_STRING_SERIAL "0"
 

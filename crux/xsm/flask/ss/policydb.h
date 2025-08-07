@@ -21,7 +21,7 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #ifndef _SS_POLICYDB_H_
 #define _SS_POLICYDB_H_
@@ -271,7 +271,7 @@ extern int policydb_read(struct policydb *p, void *fp);
 #define OBJECT_R_VAL 1
 
 #define POLICYDB_MAGIC FLASK_MAGIC
-#define POLICYDB_STRING "XenFlask"
+#define POLICYDB_STRING "cruxFlask"
 #define POLICYDB_STRING_OLD "SE Linux"
 #define TARGET_CRUX 1
 #define TARGET_CRUX_OLD 0

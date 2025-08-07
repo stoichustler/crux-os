@@ -225,7 +225,7 @@ static void notif_vm_pend_intr(uint16_t vm_id)
     struct vcpu *v;
 
     /*
-     * vm_id == 0 means a notifications pending for Xen itself, but
+     * vm_id == 0 means a notifications pending for crux itself, but
      * we don't support that yet.
      */
     if ( !vm_id )

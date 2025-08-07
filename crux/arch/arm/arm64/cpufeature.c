@@ -609,7 +609,7 @@ void update_system_features(const struct cpuinfo_arm *new)
 	 * could result in too much or too little memory being zeroed if a
 	 * process is preempted and migrated between CPUs.
 	 *
-	 * ftr_dczid is using STRICT comparison so we will taint Xen if different
+	 * ftr_dczid is using STRICT comparison so we will taint crux if different
 	 * values are found.
 	 */
 	SANITIZE_REG(dczid, 0, dczid);

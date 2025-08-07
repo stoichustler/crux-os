@@ -221,14 +221,14 @@ int __init kernel_uimage_probe(struct kernel_info *info,
     info->entry = be32_to_cpu(uimage.ep);
 
     /*
-     * While uboot considers 0x0 to be a valid load/start address, for Xen
+     * While uboot considers 0x0 to be a valid load/start address, for crux
      * to maintain parity with zImage, we consider 0x0 to denote position
-     * independent image. That means Xen is free to load such an image at
+     * independent image. That means crux is free to load such an image at
      * any valid address.
      */
     if ( info->zimage.start == 0 )
         printk(CRUXLOG_INFO
-               "No load address provided. Xen will decide where to load it.\n");
+               "No load address provided. crux will decide where to load it.\n");
     else
         printk(CRUXLOG_INFO
                "Provided load address: %"PRIpaddr" and entry address: %"PRIpaddr"\n",
@@ -236,7 +236,7 @@ int __init kernel_uimage_probe(struct kernel_info *info,
 
     /*
      * If the image supports position independent execution, then user cannot
-     * provide an entry point as Xen will load such an image at any appropriate
+     * provide an entry point as crux will load such an image at any appropriate
      * memory address. Thus, we need to return error.
      */
     if ( (info->zimage.start == 0) && (info->entry != 0) )
@@ -287,8 +287,8 @@ int __init kernel_uimage_probe(struct kernel_info *info,
     /*
      * If there is a uImage header, then we do not parse zImage or zImage64
      * header. In other words if the user provides a uImage header on top of
-     * zImage or zImage64 header, Xen uses the attributes of uImage header only.
-     * Thus, Xen uses uimage.load attribute to determine the load address and
+     * zImage or zImage64 header, crux uses the attributes of uImage header only.
+     * Thus, crux uses uimage.load attribute to determine the load address and
      * zimage.text_offset is ignored.
      */
     info->zimage.text_offset = 0;

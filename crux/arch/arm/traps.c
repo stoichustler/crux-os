@@ -55,7 +55,7 @@ boolean_param("partial-emulation", partial_emulation);
 
 /* The base of the stack must always be double-word aligned, which means
  * that both the kernel half of struct cpu_user_regs (which is pushed in
- * entry.S) and struct cpu_info (which lives at the bottom of a Xen
+ * entry.S) and struct cpu_info (which lives at the bottom of a crux
  * stack) must be doubleword-aligned in size.  */
 static void __init __maybe_unused build_assertions(void)
 {
@@ -110,7 +110,7 @@ register_t get_default_cptr_flags(void)
      * Trap all coprocessor registers (0-13) except cp10 and
      * cp11 for VFP.
      *
-     * /!\ All coprocessors except cp10 and cp11 cannot be used in Xen.
+     * /!\ All coprocessors except cp10 and cp11 cannot be used in crux.
      *
      * On ARM64 the TCPx bits which we set here (0..9,12,13) are all
      * RES1, i.e. they would trap whether we did this write or not.
@@ -164,7 +164,7 @@ void init_traps(void)
     WRITE_SYSREG(get_default_cptr_flags(), CPTR_EL2);
 
     /*
-     * Configure HCR_EL2 with the bare minimum to run Xen until a guest
+     * Configure HCR_EL2 with the bare minimum to run crux until a guest
      * is scheduled. {A,I,F}MO bits are set to allow EL2 receiving
      * interrupts.
      */
@@ -183,7 +183,7 @@ static void print_crux_info(void)
 {
     char taint_str[TAINT_STRING_MAX_LEN];
 
-    printk("----[ Xen-%d.%d%s  %s  %s  %s ]----\n",
+    printk("----[ crux-%d.%d%s  %s  %s  %s ]----\n",
            crux_major_version(), crux_minor_version(), crux_extra_version(),
 #ifdef CONFIG_ARM_32
            "arm32",
@@ -1128,7 +1128,7 @@ static void show_trace(const struct cpu_user_regs *regs)
 {
     register_t *frame, next, addr, low, high;
 
-    printk("Xen call trace:\n");
+    printk("crux call trace:\n");
 
     printk("   [<%p>] %pS (PC)\n", _p(regs->pc), _p(regs->pc));
     printk("   [<%p>] %pS (LR)\n", _p(regs->lr), _p(regs->lr));
@@ -1167,7 +1167,7 @@ void show_stack(const struct cpu_user_regs *regs)
     if ( guest_mode(regs) )
         return show_guest_stack(current, regs);
 
-    printk("Xen stack trace from sp=%p:\n  ", stack);
+    printk("crux stack trace from sp=%p:\n  ", stack);
 
     for ( i = 0; i < (debug_stack_lines*stack_words_per_line); i++ )
     {
@@ -1272,14 +1272,14 @@ int do_bug_frame(const struct cpu_user_regs *regs, vaddr_t pc)
     switch ( id )
     {
     case BUGFRAME_warn:
-        printk("Xen WARN at %s%s:%d\n", prefix, filename, lineno);
+        printk("crux WARN at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
         return 0;
 
     case BUGFRAME_bug:
-        printk("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        printk("crux BUG at %s%s:%d\n", prefix, filename, lineno);
         show_execution_state(regs);
-        panic("Xen BUG at %s%s:%d\n", prefix, filename, lineno);
+        panic("crux BUG at %s%s:%d\n", prefix, filename, lineno);
 
     case BUGFRAME_assert:
         /* ASSERT: decode the predicate string pointer. */
@@ -1753,7 +1753,7 @@ static inline bool hpfar_is_valid(bool s1ptw, uint8_t fsc)
      *  does not carry erratum #834220
      *
      * Note that technically HPFAR is valid for other cases, but they
-     * are currently not supported by Xen.
+     * are currently not supported by crux.
      */
     return s1ptw || (fsc == FSC_FLT_TRANS && !check_workaround_834220());
 }
@@ -1761,7 +1761,7 @@ static inline bool hpfar_is_valid(bool s1ptw, uint8_t fsc)
 /*
  * Try to map the MMIO regions for some special cases:
  * 1. When using ACPI, most of the MMIO regions will be mapped on-demand
- *    in stage-2 page tables for the hardware domain because Xen is not
+ *    in stage-2 page tables for the hardware domain because crux is not
  *    able to know from the EFI memory map the MMIO regions.
  * 2. For guests using GICv2, the GICv2 CPU interface mapping is created
  *    on the first access of the MMIO region.
@@ -1899,7 +1899,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
 
             /*
              * If the instruction abort could not be resolved by setting the
-             * appropriate bits in the translation table, then Xen should
+             * appropriate bits in the translation table, then crux should
              * forward the abort to the guest.
              */
             if ( !is_data )
@@ -1909,7 +1909,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
         try_decode_instruction(regs, &info);
 
         /*
-         * If Xen could not decode the instruction or encountered an error
+         * If crux could not decode the instruction or encountered an error
          * while decoding, then it should forward the abort to the guest.
          */
         if ( info.dabt_instr.state == INSTR_ERROR )
@@ -1924,7 +1924,7 @@ static void do_trap_stage2_abort_guest(struct cpu_user_regs *regs,
             case IO_HANDLED:
                 /*
                  * If the instruction was decoded and has executed successfully
-                 * on the MMIO region, then Xen should execute the next part of
+                 * on the MMIO region, then crux should execute the next part of
                  * the instruction. (for eg increment the rn if it is a
                  * post-indexing instruction.
                  */

@@ -2,7 +2,7 @@
 /******************************************************************************
  * crux.h
  *
- * Guest OS interface to Xen.
+ * Guest OS interface to crux.
  *
  * Copyright (c) 2004, K A Fraser
  */
@@ -157,7 +157,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
 /*
  * VIRTUAL INTERRUPTS
  *
- * Virtual interrupts that a guest OS may receive from Xen.
+ * Virtual interrupts that a guest OS may receive from crux.
  *
  * There are three types:
  *
@@ -180,7 +180,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
 #define VIRQ_DOM_EXC    3  /* G. Exceptional event for some domain.          */
 #define VIRQ_TBUF       4  /* G. Trace buffer has records available.         */
 #define VIRQ_DEBUGGER   6  /* G. A domain has paused for debugging.          */
-#define VIRQ_CRUXOPROF   7  /* V. XenOprofile interrupt: new sample available */
+#define VIRQ_CRUXOPROF   7  /* V. cruxOprofile interrupt: new sample available */
 #define VIRQ_CON_RING   8  /* G. Bytes received on console                   */
 #define VIRQ_PCPU_STATE 9  /* G. PCPU state changed                          */
 #define VIRQ_MEM_EVENT  10 /* G. A memory event has occurred                 */
@@ -226,18 +226,18 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
  * FD. If attempting to map an I/O page then the caller assumes the privilege
  * of the FD.
  * FD == DOMID_IO: Permit /only/ I/O mappings, at the priv level of the caller.
- * FD == DOMID_CRUX: Map restricted areas of Xen's heap space.
+ * FD == DOMID_CRUX: Map restricted areas of crux's heap space.
  * ptr[:2]  -- Machine address of the page-table entry to modify.
  * val      -- Value to write.
  *
  * There also certain implicit requirements when using this hypercall. The
  * pages that make up a pagetable must be mapped read-only in the guest.
- * This prevents uncontrolled guest updates to the pagetable. Xen strictly
+ * This prevents uncontrolled guest updates to the pagetable. crux strictly
  * enforces this, and will disallow any pagetable update which will end up
  * mapping pagetable page RW, and will disallow using any writable page as a
  * pagetable. In practice it means that when constructing a page table for a
  * process, thread, etc, we MUST be very dilligient in following these rules:
- *  1). Start with top-level page (PGD or in Xen language: L4). Fill out
+ *  1). Start with top-level page (PGD or in crux language: L4). Fill out
  *      the entries.
  *  2). Keep on going, filling out the upper (PUD or L3), and middle (PMD
  *      or L2).
@@ -303,7 +303,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
  *  HYPERVISOR_mmuext_op serve as mechanism to set a pagetable to be 4MB
  *  (or 2MB) instead of using the PAGE_PSE bit.
  *
- *  The reason that the PAGE_PSE (bit 7) is not being utilized is due to Xen
+ *  The reason that the PAGE_PSE (bit 7) is not being utilized is due to crux
  *  using it as the Page Attribute Table (PAT) bit - for details on it please
  *  refer to Intel SDM 10.12. The PAT allows to set the caching attributes of
  *  pages instead of using MTRRs.
@@ -315,7 +315,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
  *  +-----+-----+----+----+----+-----+----+----+
  *  | UC  | UC- | WT | WB | UC | UC- | WT | WB |  <= BIOS (default when machine boots)
  *  +-----+-----+----+----+----+-----+----+----+
- *  | rsv | rsv | WP | WC | UC | UC- | WT | WB |  <= Xen
+ *  | rsv | rsv | WP | WC | UC | UC- | WT | WB |  <= crux
  *  +-----+-----+----+----+----+-----+----+----+
  *
  *  The lookup of this index table translates to looking up
@@ -326,7 +326,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
  *  If all bits are off, then we are using PAT0. If bit 3 turned on,
  *  then we are using PAT1, if bit 3 and bit 4, then PAT2..
  *
- *  As you can see, the Linux PAT1 translates to PAT4 under Xen. Which means
+ *  As you can see, the Linux PAT1 translates to PAT4 under crux. Which means
  *  that if a guest that follows Linux's PAT setup and would like to set Write
  *  Combined on pages it MUST use PAT4 entry. Meaning that Bit 7 (PAGE_PAT) is
  *  set. For example, under Linux it only uses PAT0, PAT1, and PAT2 for the
@@ -336,7 +336,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_ulong_t);
  *   WC = PWT (bit 3 on)
  *   UC = PWT | PCD (bit 3 and 4 are on).
  *
- * To make it work with Xen, it needs to translate the WC bit as so:
+ * To make it work with crux, it needs to translate the WC bit as so:
  *
  *  PWT (so bit 3 on) --> PAT (so bit 7 is on) and clear bit 3
  *
@@ -503,14 +503,14 @@ DEFINE_CRUX_GUEST_HANDLE(mmuext_op_t);
  *
  * List of commands:
  *
- *  * CONSOLEIO_write: Write the buffer to Xen console.
+ *  * CONSOLEIO_write: Write the buffer to crux console.
  *      For the hardware domain, all the characters in the buffer will
  *      be written. Characters will be printed directly to the console.
  *      For all the other domains, only the printable characters will be
  *      written. Characters may be buffered until a newline (i.e '\n') is
  *      found.
  *      @return 0 on success, otherwise return an error code.
- *  * CONSOLEIO_read: Attempts to read up to @count characters from Xen
+ *  * CONSOLEIO_read: Attempts to read up to @count characters from crux
  *      console. The maximum buffer size (i.e. @count) supported is 2GB.
  *      @return the number of characters read on success, otherwise return
  *      an error code.
@@ -592,7 +592,7 @@ DEFINE_CRUX_GUEST_HANDLE(mmuext_op_t);
 
 /*
  * DOMID_CRUX is used to allow privileged domains to map restricted parts of
- * Xen's heap space (e.g., the machine_to_phys table).
+ * crux's heap space (e.g., the machine_to_phys table).
  * This only makes sense as
  * - HYPERVISOR_mmu_update()'s, HYPERVISOR_mmuext_op()'s, or
  *   HYPERVISOR_update_va_mapping_otherdomain()'s "foreigndom" argument,
@@ -694,10 +694,10 @@ typedef struct vcpu_time_info vcpu_time_info_t;
 
 struct vcpu_info {
     /*
-     * 'evtchn_upcall_pending' is written non-zero by Xen to indicate
+     * 'evtchn_upcall_pending' is written non-zero by crux to indicate
      * a pending notification for a particular VCPU. It is then cleared
      * by the guest OS /before/ checking for pending work, thus avoiding
-     * a set-and-check race. Note that the mask is only accessed by Xen
+     * a set-and-check race. Note that the mask is only accessed by crux
      * on the CPU that is currently hosting the VCPU. This means that the
      * pending and mask flags can be updated by the guest without special
      * synchronisation (i.e., no need for the x86 LOCK prefix).
@@ -734,11 +734,11 @@ typedef struct vcpu_info vcpu_info_t;
 
 /*
  * `incontents 200 startofday_shared Start-of-day shared data structure
- * Xen/kernel shared data -- pointer provided in start_info.
+ * crux/kernel shared data -- pointer provided in start_info.
  *
  * This structure is defined to be both smaller than a page, and the
  * only data on the shared page, but may vary in actual size even within
- * compatible Xen versions; guests should not rely on the size
+ * compatible crux versions; guests should not rely on the size
  * of this structure remaining constant.
  */
 struct shared_info {
@@ -765,10 +765,10 @@ struct shared_info {
      *     to be processed. This bit is cleared by the guest.
      *  2. MASK -- if this bit is clear then a 0->1 transition of PENDING
      *     will cause an asynchronous upcall to be scheduled. This bit is only
-     *     updated by the guest. It is read-only within Xen. If a channel
+     *     updated by the guest. It is read-only within crux. If a channel
      *     becomes pending while the channel is masked then the 'edge' is lost
      *     (i.e., when the channel is unmasked, the guest must manually handle
-     *     pending notifications as no upcall will be scheduled by Xen).
+     *     pending notifications as no upcall will be scheduled by crux).
      *
      * To expedite scanning of pending notifications, any 0->1 pending
      * transition on an unmasked channel causes a corresponding bit in a
@@ -888,7 +888,7 @@ typedef struct start_info start_info_t;
 #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
 #define SIF_MULTIBOOT_MOD (1<<2)  /* Is mod_start a multiboot module? */
 #define SIF_MOD_START_PFN (1<<3)  /* Is mod_start a PFN? */
-#define SIF_VIRT_P2M_4TOOLS (1<<4) /* Do Xen tools understand a virt. mapped */
+#define SIF_VIRT_P2M_4TOOLS (1<<4) /* Do crux tools understand a virt. mapped */
                                    /* P->M making the 3 level tree obsolete? */
 #define SIF_PM_MASK       (0xFF<<8) /* reserve 1 byte for crux-pm options */
 

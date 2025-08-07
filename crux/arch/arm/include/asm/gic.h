@@ -410,7 +410,7 @@ static inline unsigned int gic_get_nr_lrs(void)
  * For private IRQs this only works for those of the current CPU.
  *
  * This function should only be called for interrupts routed to the
- * guest. The flow of interrupts routed to Xen is not able cope with
+ * guest. The flow of interrupts routed to crux is not able cope with
  * software changes to the active state.
  */
 static inline void gic_set_active_state(struct irq_desc *irqd, bool state)

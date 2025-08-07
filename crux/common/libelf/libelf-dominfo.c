@@ -298,7 +298,7 @@ static unsigned elf_crux_parse_notes(struct elf_binary *elf,
         note_name = elf_note_name(elf, note);
         if ( note_name == NULL )
             continue;
-        if ( strcmp(note_name, "Xen") )
+        if ( strcmp(note_name, "crux") )
             continue;
         if ( elf_crux_parse_note(elf, parms, note) )
             return ELF_NOTE_INVALID;
@@ -415,7 +415,7 @@ static elf_errorstatus elf_crux_note_check(struct elf_binary *elf,
         unsigned machine = elf_uval(elf, elf->ehdr, e_machine);
         if ( (machine == EM_386) || (machine == EM_X86_64) )
         {
-            elf_err(elf, "ERROR: Not a Xen-ELF image: "
+            elf_err(elf, "ERROR: Not a crux-ELF image: "
                     "No ELF notes or '__crux_guest' section found\n");
             return -1;
         }
@@ -435,7 +435,7 @@ static elf_errorstatus elf_crux_note_check(struct elf_binary *elf,
         return 0;
     }
 
-    /* Check the contents of the Xen notes or guest string. */
+    /* Check the contents of the crux notes or guest string. */
     if ( ((strlen(parms->loader) == 0) ||
           strncmp(parms->loader, "generic", 7)) &&
          ((strlen(parms->guest_os) == 0) ||
@@ -452,7 +452,7 @@ static elf_errorstatus elf_crux_note_check(struct elf_binary *elf,
     if ( (strlen(parms->crux_ver) == 0) ||
          strncmp(parms->crux_ver, "crux-3.0", 7) )
     {
-        elf_err(elf, "ERROR: Xen will only load images built for Xen v3.0 "
+        elf_err(elf, "ERROR: crux will only load images built for crux v3.0 "
                 "(Not '%.*s')\n",
                 (int)sizeof(parms->crux_ver), parms->crux_ver);
         return -1;

@@ -16,19 +16,19 @@
 /*
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a Xen pvSCSI driver utilize nodes within the XenStore to
+ * The two halves of a crux pvSCSI driver utilize nodes within the cruxStore to
  * communicate capabilities and to negotiate operating parameters.  This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the XenStore, following the XenBus convention.
+ * backend portions of the cruxStore, following the cruxBus convention.
  *
- * Any specified default value is in effect if the corresponding XenBus node
- * is not present in the XenStore.
+ * Any specified default value is in effect if the corresponding cruxBus node
+ * is not present in the cruxStore.
  *
- * XenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose XenBus tree contains them.
+ * cruxStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose cruxBus tree contains them.
  *
  *****************************************************************************
- *                            Backend XenBus Nodes
+ *                            Backend cruxBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -62,7 +62,7 @@
  *      SG elements specified directly in the request.
  *
  *****************************************************************************
- *                            Frontend XenBus Nodes
+ *                            Frontend cruxBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -70,13 +70,13 @@
  * event-channel
  *      Values:         unsigned
  *
- *      The identifier of the Xen event channel used to signal activity
+ *      The identifier of the crux event channel used to signal activity
  *      in the ring buffer.
  *
  * ring-ref
  *      Values:         unsigned
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer.
  *
  * protocol
@@ -88,7 +88,7 @@
  */
 
 /*
- * Xenstore format in practice
+ * cruxstore format in practice
  * ===========================
  *
  * The backend driver uses a single_host:many_devices notation to manage domU
@@ -176,10 +176,10 @@
  * seg[] array and the number of valid scsiif_request_segment elements is to be
  * set in nr_segments.
  *
- * If "feature-sg-grant" in the Xenstore is set it is possible to specify more
+ * If "feature-sg-grant" in the cruxstore is set it is possible to specify more
  * than VSCSIIF_SG_TABLESIZE scsiif_request_segment elements via indirection.
  * The maximum number of allowed scsiif_request_segment elements is the value
- * of the "feature-sg-grant" entry from Xenstore. When using indirection the
+ * of the "feature-sg-grant" entry from cruxstore. When using indirection the
  * seg[] array doesn't contain specifications of the data buffers, but
  * references to scsiif_request_segment arrays, which in turn reference the
  * data buffers. While nr_segments holds the number of populated seg[] entries

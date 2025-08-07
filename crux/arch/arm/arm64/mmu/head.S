@@ -14,7 +14,7 @@
 #define PT_DEV    0xe71 /* nG=1 AF=1 SH=10 AP=01 NS=1 ATTR=100 T=0 P=1 */
 #define PT_DEV_L3 0xe73 /* nG=1 AF=1 SH=10 AP=01 NS=1 ATTR=100 T=1 P=1 */
 
-/* Convenience defines to get slot used by Xen mapping. */
+/* Convenience defines to get slot used by crux mapping. */
 #define CRUX_ZEROETH_SLOT    zeroeth_table_offset(CRUX_VIRT_START)
 #define CRUX_FIRST_SLOT      first_table_offset(CRUX_VIRT_START)
 #define CRUX_SECOND_SLOT     second_table_offset(CRUX_VIRT_START)
@@ -139,7 +139,7 @@
  * Clobbers x0 - x4
  */
 FUNC_LOCAL(create_page_tables)
-        /* Prepare the page-tables for mapping Xen */
+        /* Prepare the page-tables for mapping crux */
         ldr   x0, =CRUX_VIRT_START
         create_table_entry boot_pgtable, boot_first, x0, 0, x1, x2, x3
         create_table_entry boot_first, boot_second, x0, 1, x1, x2, x3
@@ -159,7 +159,7 @@ FUNC_LOCAL(create_page_tables)
 .endr
 
         /*
-         * Find the size of Xen in pages and multiply by the size of a
+         * Find the size of crux in pages and multiply by the size of a
          * PTE. This will then be compared in the mapping loop below.
          *
          * Note the multiplication is just to avoid using an extra
@@ -167,11 +167,11 @@ FUNC_LOCAL(create_page_tables)
          */
         ldr   x0, =_start            /* x0 := vaddr(_start) */
         ldr   x1, =_end              /* x1 := vaddr(_end) */
-        sub   x0, x1, x0             /* x0 := effective size of Xen */
-        lsr   x0, x0, #PAGE_SHIFT    /* x0 := Number of pages for Xen */
+        sub   x0, x1, x0             /* x0 := effective size of crux */
+        lsr   x0, x0, #PAGE_SHIFT    /* x0 := Number of pages for crux */
         lsl   x0, x0, #3             /* x0 := Number of pages * PTE size */
 
-        /* Map Xen */
+        /* Map crux */
         adr_l x4, boot_third
 
         lsr   x2, x19, #THIRD_SHIFT  /* Base address for 4K mapping */
@@ -184,11 +184,11 @@ FUNC_LOCAL(create_page_tables)
 1:      str   x2, [x4, x1]           /* Map vaddr(start) */
         add   x2, x2, #PAGE_SIZE     /* Next page */
         add   x1, x1, #8             /* Next slot */
-        cmp   x1, x0                 /* Loop until we map all of Xen */
+        cmp   x1, x0                 /* Loop until we map all of crux */
         b.lt  1b
 
         /*
-         * If Xen is loaded at exactly CRUX_VIRT_START then we don't
+         * If crux is loaded at exactly CRUX_VIRT_START then we don't
          * need an additional 1:1 mapping, the virtual mapping will
          * suffice.
          */
@@ -199,7 +199,7 @@ FUNC_LOCAL(create_page_tables)
 1:
         /*
          * Setup the 1:1 mapping so we can turn the MMU on. Note that
-         * only the first page of Xen will be part of the 1:1 mapping.
+         * only the first page of crux will be part of the 1:1 mapping.
          */
 
         /*
@@ -229,7 +229,7 @@ FUNC_LOCAL(create_page_tables)
         /*
          * Find the second slot used. If the slot is CRUX_SECOND_SLOT, then the
          * 1:1 mapping will use its own set of page-tables from the
-         * third level. For slot CRUX_SECOND_SLOT, Xen is not yet able to handle
+         * third level. For slot CRUX_SECOND_SLOT, crux is not yet able to handle
          * it.
          */
         get_table_slot x0, x19, 2     /* x0 := second slot */
@@ -284,7 +284,7 @@ FUNC_LOCAL(enable_mmu)
          */
         flush_crux_tlb_local
 
-        /* Write Xen's PT's paddr into TTBR0_EL2 */
+        /* Write crux's PT's paddr into TTBR0_EL2 */
         msr   TTBR0_EL2, x4
         isb
 
@@ -361,7 +361,7 @@ FUNC(enable_boot_cpu_mm)
 1:
         mov   lr, x6
         /*
-         * The 1:1 map may clash with other parts of the Xen virtual memory
+         * The 1:1 map may clash with other parts of the crux virtual memory
          * layout. As it is not used anymore, remove it completely to
          * avoid having to worry about replacing existing mapping
          * afterwards. Function will return to the virtual address requested
@@ -432,7 +432,7 @@ FUNC_LOCAL(fail)
 END(fail)
 
 /*
- * Copy Xen to new location and switch TTBR
+ * Copy crux to new location and switch TTBR
  * x0    ttbr
  * x1    source address
  * x2    destination address

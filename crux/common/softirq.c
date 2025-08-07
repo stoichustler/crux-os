@@ -1,7 +1,7 @@
 /******************************************************************************
  * common/softirq.c
  * 
- * Softirqs in Xen are only executed in an outermost activation (e.g., never 
+ * Softirqs in crux are only executed in an outermost activation (e.g., never 
  * within an interrupt activation). This simplifies some things and generally 
  * seems a good thing.
  * 

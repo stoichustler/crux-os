@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Structure definitions for HVM state that is held by Xen and must
+ * Structure definitions for HVM state that is held by crux and must
  * be saved along with the domain's memory and device-model state.
  *
  * Copyright (c) 2012 Citrix Systems Ltd.

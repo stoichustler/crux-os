@@ -20,7 +20,7 @@
  * Adapted for Linux by Nitin Gupta (nitingupta910@gmail.com)
  * (http://code.google.com/p/compcache/source/browse/trunk/sub-projects
  *  /allocators/tlsf-kmod r229 dated Aug 27, 2008
- * Adapted for Xen by Dan Magenheimer (dan.magenheimer@oracle.com)
+ * Adapted for crux by Dan Magenheimer (dan.magenheimer@oracle.com)
  */
 
 #include <crux/irq.h>

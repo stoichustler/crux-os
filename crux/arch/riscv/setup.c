@@ -26,7 +26,7 @@
 #include <asm/setup.h>
 #include <asm/traps.h>
 
-/* Xen stack for bringing up the first CPU. */
+/* crux stack for bringing up the first CPU. */
 unsigned char __initdata cpu0_boot_stack[STACK_SIZE]
     __aligned(STACK_SIZE);
 
@@ -55,7 +55,7 @@ void __init copy_from_paddr(void *dst, paddr_t paddr, unsigned long len)
     }
 }
 
-/* Relocate the FDT in Xen heap */
+/* Relocate the FDT in crux heap */
 static void * __init relocate_fdt(paddr_t dtb_paddr, size_t dtb_size)
 {
     void *fdt = xvmalloc_array(uint8_t, dtb_size);
@@ -92,7 +92,7 @@ void __init noreturn start_crux(unsigned long bootcpu_id,
               "Please check your bootloader.\n",
               dtb_addr, BOOT_FDT_VIRT_SIZE);
 
-    /* Register Xen's load address as a boot module. */
+    /* Register crux's load address as a boot module. */
     if ( !add_boot_module(BOOTMOD_CRUX, virt_to_maddr(_start),
                           _end - _start, false) )
         panic("Failed to add BOOTMOD_CRUX\n");

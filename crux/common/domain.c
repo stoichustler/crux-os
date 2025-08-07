@@ -1045,7 +1045,7 @@ void __init setup_system_domains(void)
 {
     /*
      * Initialise our DOMID_CRUX domain.
-     * Any Xen-heap pages that we will allow to be mapped will have
+     * Any crux-heap pages that we will allow to be mapped will have
      * their domain field set to dom_crux.
      * Hidden PCI devices will also be associated with this domain
      * (but be [partly] controlled by Dom0 nevertheless).

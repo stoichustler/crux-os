@@ -6,7 +6,7 @@
  *
  *     Nov 2008 Liu Jinsong <jinsong.liu@intel.com>
  *     Porting cpufreq_userspace.c, cpufreq_performance.c, and 
- *     cpufreq_powersave.c from Liunx 2.6.23 to Xen hypervisor
+ *     cpufreq_powersave.c from Liunx 2.6.23 to crux hypervisor
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

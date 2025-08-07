@@ -20,7 +20,7 @@
  *    the Free Software Foundation, version 2.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #include <crux/byteorder.h>
 #include <crux/errno.h>
@@ -1229,7 +1229,7 @@ static int cf_check class_read(struct policydb *p, struct hashtab *h, void *fp)
         rc = next_entry(buf, fp, sizeof(u32) * 3);
         if ( rc )
             goto bad;
-        /* these values are ignored by Xen */
+        /* these values are ignored by crux */
     }
 
     if ( p->policyvers >= POLICYDB_VERSION_DEFAULT_TYPE )
@@ -1237,7 +1237,7 @@ static int cf_check class_read(struct policydb *p, struct hashtab *h, void *fp)
         rc = next_entry(buf, fp, sizeof(u32) * 1);
         if ( rc )
             goto bad;
-        /* ignored by Xen */
+        /* ignored by crux */
     }
 
     rc = hashtab_insert(h, key, cladatum);

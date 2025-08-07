@@ -29,7 +29,7 @@ struct bug_frame {
 /* Many versions of GCC doesn't support the asm %c parameter which would
  * be preferable to this unpleasantness. We use mergeable string
  * sections to avoid multiple copies of the string appearing in the
- * Xen image. BUGFRAME_run_fn needs to be handled separately.
+ * crux image. BUGFRAME_run_fn needs to be handled separately.
  */
 #define BUG_FRAME(type, line, file, has_msg, msg) do {                      \
     BUILD_BUG_ON((line) >> 16);                                             \
@@ -54,7 +54,7 @@ struct bug_frame {
 } while (0)
 
 /*
- * GCC will not allow to use "i"  when PIE is enabled (Xen doesn't set the
+ * GCC will not allow to use "i"  when PIE is enabled (crux doesn't set the
  * flag but instead rely on the default value from the compiler). So the
  * easiest way to implement run_in_exception_handler() is to pass the to
  * be called function in a fixed register.

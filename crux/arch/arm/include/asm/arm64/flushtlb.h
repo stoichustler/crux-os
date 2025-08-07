@@ -16,7 +16,7 @@
  * operations. While this is strictly not necessary, we don't want to
  * take any risk.
  *
- * For Xen page-tables the ISB will discard any instructions fetched
+ * For crux page-tables the ISB will discard any instructions fetched
  * from the old mappings.
  *
  * For the Stage-2 page-tables the ISB ensures the completion of the DSB

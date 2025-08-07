@@ -44,7 +44,7 @@
  *     are not supported
  *   - doesn't support signalling the secondary scheduler of pending
  *     notification for secure partitions
- *   - doesn't support notifications for Xen itself
+ *   - doesn't support notifications for crux itself
  *
  * There are some large locked sections with ffa_tx_buffer_lock and
  * ffa_rx_buffer_lock. Especially the ffa_tx_buffer_lock spinlock used
@@ -211,7 +211,7 @@ static void handle_features(struct cpu_user_regs *regs)
     case FFA_RXTX_MAP_32:
         /*
          * We currently support 4k pages only, report that as 00 in
-         * bit[0:1] in w0. This needs to be revised if Xen page size
+         * bit[0:1] in w0. This needs to be revised if crux page size
          * differs from FFA_PAGE_SIZE (SZ_4K).
          */
         BUILD_BUG_ON(PAGE_SIZE != FFA_PAGE_SIZE);
@@ -329,7 +329,7 @@ static int ffa_domain_init(struct domain *d)
     /*
      * We are using the domain_id + 1 as the FF-A ID for VMs as FF-A ID 0 is
      * reserved for the hypervisor and we only support secure endpoints using
-     * FF-A IDs with BIT 15 set to 1 so make sure those are not used by Xen.
+     * FF-A IDs with BIT 15 set to 1 so make sure those are not used by crux.
      */
     BUILD_BUG_ON(DOMID_FIRST_RESERVED >= UINT16_MAX);
     BUILD_BUG_ON((DOMID_MASK & BIT(15, U)) != 0);
@@ -455,7 +455,7 @@ static bool ffa_probe(void)
      * that we can map memory using that granularity. See also the comment
      * above the FFA_PAGE_SIZE define.
      *
-     * It is possible to support a PAGE_SIZE larger than 4K in Xen, but
+     * It is possible to support a PAGE_SIZE larger than 4K in crux, but
      * until that is fully handled in this code make sure that we only use
      * 4K page sizes.
      */
@@ -503,8 +503,8 @@ static bool ffa_probe(void)
 
     /*
      * If the call succeed and the version returned is higher or equal to
-     * the one Xen requested, the version requested by Xen will be the one
-     * used. If the version returned is lower but compatible with Xen, Xen
+     * the one crux requested, the version requested by crux will be the one
+     * used. If the version returned is lower but compatible with crux, crux
      * will use that version instead.
      * A version with a different major or lower than the minimum version
      * we support is rejected before.

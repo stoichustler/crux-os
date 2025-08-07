@@ -17,7 +17,7 @@
 #define PT_UPPER(x) (PT_##x & 0xf00)
 #define PT_LOWER(x) (PT_##x & 0x0ff)
 
-/* Convenience defines to get slot used by Xen mapping. */
+/* Convenience defines to get slot used by crux mapping. */
 #define CRUX_FIRST_SLOT      first_table_offset(CRUX_VIRT_START)
 #define CRUX_SECOND_SLOT     second_table_offset(CRUX_VIRT_START)
 
@@ -44,7 +44,7 @@
 .endm
 
 /*
- * Enforce Xen page-tables do not contain mapping that are both
+ * Enforce crux page-tables do not contain mapping that are both
  * Writable and eXecutables.
  *
  * This should be called on each secondary CPU.
@@ -175,7 +175,7 @@
  * Clobbers r0 - r5
  */
 FUNC_LOCAL(create_page_tables)
-        /* Prepare the page-tables for mapping Xen */
+        /* Prepare the page-tables for mapping crux */
         mov_w r0, CRUX_VIRT_START
 
         /*
@@ -197,7 +197,7 @@ FUNC_LOCAL(create_page_tables)
         create_table_entry boot_second, crux_fixmap, r0, 2
 
         /*
-         * Find the size of Xen in pages and multiply by the size of a
+         * Find the size of crux in pages and multiply by the size of a
          * PTE. This will then be compared in the mapping loop below.
          *
          * Note the multiplication is just to avoid using an extra
@@ -205,8 +205,8 @@ FUNC_LOCAL(create_page_tables)
          */
         mov_w r0, _start            /* r0 := vaddr(_start) */
         mov_w r1, _end              /* r1 := vaddr(_end) */
-        sub   r0, r1, r0            /* r0 := effective size of Xen */
-        lsr   r0, r0, #PAGE_SHIFT   /* r0 := Number of pages for Xen */
+        sub   r0, r1, r0            /* r0 := effective size of crux */
+        lsr   r0, r0, #PAGE_SHIFT   /* r0 := Number of pages for crux */
         lsl   r0, r0, #3            /* r0 := Number of pages * PTE size */
 
         /* Setup boot_third: */
@@ -223,12 +223,12 @@ FUNC_LOCAL(create_page_tables)
 1:      strd  r2, r3, [r4, r1]       /* Map vaddr(start) */
         add   r2, r2, #PAGE_SIZE     /* Next page */
         add   r1, r1, #8             /* Next slot */
-        cmp   r1, r0                 /* Loop until we map all of Xen */
+        cmp   r1, r0                 /* Loop until we map all of crux */
         blo   1b
 
         /*
          * Setup the 1:1 mapping so we can turn the MMU on. Note that
-         * only the first page of Xen will be part of the 1:1 mapping.
+         * only the first page of crux will be part of the 1:1 mapping.
          */
         create_table_entry boot_pgtable, boot_second_id, r9, 1
         create_table_entry boot_second_id, boot_third_id, r9, 2
@@ -257,7 +257,7 @@ use_temporary_mapping:
          */
         PRINT("- Create temporary mapping -\r\n")
 
-        /* Map boot_second (cover Xen mappings) to the temporary 1st slot */
+        /* Map boot_second (cover crux mappings) to the temporary 1st slot */
         mov_w r0, TEMPORARY_CRUX_VIRT_START
         create_table_entry boot_pgtable, boot_second, r0, 1
 
@@ -300,7 +300,7 @@ FUNC_LOCAL(enable_mmu)
          */
         flush_crux_tlb_local r0
 
-        /* Write Xen's PT's paddr into the HTTBR */
+        /* Write crux's PT's paddr into the HTTBR */
         adr_l r0, boot_pgtable
         mov   r1, #0                 /* r0:r1 is paddr (boot_pagetable) */
         mcrr  CP64(r0, r1, HTTBR)
@@ -351,7 +351,7 @@ FUNC_LOCAL(enable_mmu)
         /*
          * At this point, either the 1:1 map or the temporary mapping
          * will be present. The former may clash with other parts of the
-         * Xen virtual memory layout. As both of them are not used
+         * crux virtual memory layout. As both of them are not used
          * anymore, remove them completely to avoid having to worry
          * about replacing existing mapping afterwards.
          *
@@ -369,9 +369,9 @@ END(enable_mmu)
  *
  *  - If it is not clashing, we can directly jump to the address in
  *    the runtime mapping.
- *  - If it is clashing, create_page_tables() would have mapped Xen to
+ *  - If it is clashing, create_page_tables() would have mapped crux to
  *    a temporary virtual address. We need to switch to the temporary
- *    mapping so we can remove the identity mapping and map Xen at the
+ *    mapping so we can remove the identity mapping and map crux at the
  *    correct position.
  *
  * Inputs
@@ -536,7 +536,7 @@ FUNC_LOCAL(remove_identity_mapping)
 END(remove_identity_mapping)
 
 /*
- * Remove the temporary mapping of Xen starting at TEMPORARY_CRUX_VIRT_START.
+ * Remove the temporary mapping of crux starting at TEMPORARY_CRUX_VIRT_START.
  *
  * Clobbers r0 - r3
  */

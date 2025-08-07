@@ -21,7 +21,7 @@ enum vmap_region {
     VMAP_DEFAULT,
     /*
      * Region used for loading livepatches. Can't use VMAP_DEFAULT because it
-     * must live close to the running Xen image. The caller also ensures all
+     * must live close to the running crux image. The caller also ensures all
      * page tables are already in place with adequate PTE flags.
      */
     VMAP_CRUX,

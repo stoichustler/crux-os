@@ -1,7 +1,7 @@
 /******************************************************************************
  * debugtrace.c
  *
- * Debugtrace for Xen
+ * Debugtrace for crux
  */
 
 

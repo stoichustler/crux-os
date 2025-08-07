@@ -796,9 +796,9 @@ static void p2m_put_page(const lpae_t pte, unsigned int level)
     ASSERT(p2m_is_valid(pte));
 
     /*
-     * TODO: Currently we don't handle level 1 super-page, Xen is not
+     * TODO: Currently we don't handle level 1 super-page, crux is not
      * preemptible and therefore some work is needed to handle such
-     * superpages, for which at some point Xen might end up freeing memory
+     * superpages, for which at some point crux might end up freeing memory
      * and therefore for such a big mapping it could end up in a very long
      * operation.
      */
@@ -1522,7 +1522,7 @@ int p2m_init(struct domain *d)
 
     /*
      * Some IOMMUs don't support coherent PT walk. When the p2m is
-     * shared with the CPU, Xen has to make sure that the PT changes have
+     * shared with the CPU, crux has to make sure that the PT changes have
      * reached the memory
      */
     p2m->clean_pte = is_iommu_enabled(d) &&

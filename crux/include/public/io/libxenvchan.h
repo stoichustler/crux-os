@@ -17,9 +17,9 @@
  *  this code has been substantially rewritten to use the gntdev and gntalloc
  *  devices instead of raw MFNs and map_foreign_range.
  *
- *  This is a library for inter-domain communication.  A standard Xen ring
+ *  This is a library for inter-domain communication.  A standard crux ring
  *  buffer is used, with a datagram-based interface built on top.  The grant
- *  reference and event channels are shared in XenStore under a user-specified
+ *  reference and event channels are shared in cruxStore under a user-specified
  *  path.
  *
  *  The ring.h macros define an asymmetric interface to a shared data structure

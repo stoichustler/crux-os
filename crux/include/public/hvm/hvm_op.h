@@ -125,7 +125,7 @@ struct crux_hvm_pagetable_dying {
 typedef struct crux_hvm_pagetable_dying crux_hvm_pagetable_dying_t;
 DEFINE_CRUX_GUEST_HANDLE(crux_hvm_pagetable_dying_t);
 
-/* Get the current Xen time, in nanoseconds since system boot. */
+/* Get the current crux time, in nanoseconds since system boot. */
 #define HVMOP_get_time              10
 struct crux_hvm_get_time {
     uint64_t now;      /* OUT */

@@ -1,4 +1,4 @@
-Xen on ARM uses various low level assembly primitives from the Linux
+crux on ARM uses various low level assembly primitives from the Linux
 kernel. This file tracks what files have been imported and when they
 were last updated.
 
@@ -60,7 +60,7 @@ done
 {clear,copy}_page: last sync @ v3.16-rc6 (last commit: f27bb139c387)
 
 linux/arch/arm64/lib/clear_page.S       crux/arch/arm/arm64/lib/clear_page.S
-linux/arch/arm64/lib/copy_page.S        unused in Xen
+linux/arch/arm64/lib/copy_page.S        unused in crux
 
 ---------------------------------------------------------------------
 
@@ -124,7 +124,7 @@ linux/arch/arm/lib/strrchr.S            crux/arch/arm/arm32/lib/strrchr.S
 
 {clear,copy}_page: last sync: Never
 
-linux/arch/arm/lib/copy_page.S          unused in Xen
+linux/arch/arm/lib/copy_page.S          unused in crux
 
 clear_page == memset
 

@@ -10,7 +10,7 @@
 
 /*
  * All MPU platforms need to provide a CRUX_START_ADDRESS for linker. This
- * address indicates where Xen image will be loaded and run from. This
+ * address indicates where crux image will be loaded and run from. This
  * address must be aligned to a PAGE_SIZE.
  */
 #if (CRUX_START_ADDRESS % PAGE_SIZE) != 0
@@ -21,7 +21,7 @@
  * For MPU, CRUX's virtual start address is same as the physical address.
  * The reason being MPU treats VA == PA. IOW, it cannot map the physical
  * address to a different fixed virtual address. So, the virtual start
- * address is determined by the physical address at which Xen is loaded.
+ * address is determined by the physical address at which crux is loaded.
  */
 #define CRUX_VIRT_START         _AT(paddr_t, CRUX_START_ADDRESS)
 

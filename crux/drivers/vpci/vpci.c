@@ -950,7 +950,7 @@ bool vpci_ecam_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int len,
      *    should take care not to cause the generation of such accesses
      *    when accessing a RCRB unless the Root Complex will support the
      *    access.
-     *  Xen however supports 8byte accesses by splitting them into two
+     *  crux however supports 8byte accesses by splitting them into two
      *  4byte accesses.
      */
     *data = vpci_read(sbdf, reg, min(4u, len));

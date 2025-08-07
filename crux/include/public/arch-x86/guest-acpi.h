@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-x86/guest-acpi.h
  *
- * Guest ACPI interface to x86 Xen.
+ * Guest ACPI interface to x86 crux.
  *
  */
 

@@ -261,7 +261,7 @@ int handle_device(struct domain *d, struct dt_device_node *dev, p2m_type_t p2mt,
      * We want to avoid mapping the MMIO in dom0 for the following cases:
      *   - The device is owned by dom0 (i.e. it has been flagged for
      *     passthrough).
-     *   - PCI host bridges with driver in Xen. They will later be mapped by
+     *   - PCI host bridges with driver in crux. They will later be mapped by
      *     pci_host_bridge_mappings().
      */
     struct map_range_data mr_data = {

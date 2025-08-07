@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT */
 /*
- * Details of the "wire" protocol between Xen Store Daemon and client
+ * Details of the "wire" protocol between crux Store Daemon and client
  * library or guest kernel.
  *
  * Copyright (C) 2005 Rusty Russell IBM Corporation
@@ -96,7 +96,7 @@ enum xs_watch_type
 };
 
 /*
- * `incontents 150 cruxstore_struct XenStore wire protocol.
+ * `incontents 150 cruxstore_struct cruxStore wire protocol.
  *
  * Inter-domain shared memory communications. */
 #define CRUXSTORE_RING_SIZE 1024
@@ -137,7 +137,7 @@ struct cruxstore_domain_interface {
 
 /*
  * The evtchn_port field is the domain's event channel for cruxstored to signal.
- * It is filled in by Xen for dom0less/Hyperlaunch domains.  It is only used
+ * It is filled in by crux for dom0less/Hyperlaunch domains.  It is only used
  * when non-zero.  Otherwise the event channel from XS_INTRODUCE is used.
  */
 

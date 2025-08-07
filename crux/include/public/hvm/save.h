@@ -2,10 +2,10 @@
 /*
  * hvm/save.h
  *
- * Structure definitions for HVM state that is held by Xen and must
+ * Structure definitions for HVM state that is held by crux and must
  * be saved along with the domain's memory and device-model state.
  *
- * Copyright (c) 2007 XenSource Ltd.
+ * Copyright (c) 2007 cruxSource Ltd.
  */
 
 #ifndef __CRUX_PUBLIC_HVM_SAVE_H__
@@ -19,7 +19,7 @@
  *
  * Only the state necessary for saving and restoring (i.e. fields
  * that are analogous to actual hardware state) should go in this file.
- * Internal mechanisms should be kept in Xen-private headers.
+ * Internal mechanisms should be kept in crux-private headers.
  */
 
 #if !defined(__GNUC__) || defined(__STRICT_ANSI__)

@@ -39,7 +39,7 @@ static int hvm_allow_set_param(const struct domain *d, unsigned int param)
     case HVM_PARAM_MONITOR_RING_PFN:
         return d == current->domain ? -EPERM : 0;
 
-        /* Writeable only by Xen, hole, deprecated, or out-of-range. */
+        /* Writeable only by crux, hole, deprecated, or out-of-range. */
     default:
         return -EINVAL;
     }

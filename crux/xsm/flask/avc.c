@@ -14,7 +14,7 @@
  *      as published by the Free Software Foundation.
  */
 
-/* Ported to Xen 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
+/* Ported to crux 3.0, George Coker, <gscoker@alpha.ncsc.mil> */
 
 #include <crux/lib.h>
 #include <crux/xmalloc.h>

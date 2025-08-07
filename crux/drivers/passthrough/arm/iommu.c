@@ -78,7 +78,7 @@ int __init iommu_hardware_setup(void)
          * Ignore the following error codes:
          *   - EBADF: Indicate the current is not an IOMMU
          *   - ENODEV: The IOMMU is not present or cannot be used by
-         *     Xen.
+         *     crux.
          */
         else if ( rc != -EBADF && rc != -ENODEV )
             return rc;

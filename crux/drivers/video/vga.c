@@ -43,7 +43,7 @@ void (*video_puts)(const char *s, size_t nr) = vga_noop_puts;
  *      (NB. menu modes are displayed in hex, so mode numbers here must
  *           be prefixed with '0x' (e.g., 'vga=mode-0x0318'))
  * 
- * The option 'keep' causes Xen to continue to print to the VGA console even 
+ * The option 'keep' causes crux to continue to print to the VGA console even 
  * after domain 0 starts to boot. The default behaviour is to relinquish
  * control of the console to domain 0.
  */
@@ -94,7 +94,7 @@ void __init video_endboot(void)
     if ( video_puts == vga_noop_puts )
         return;
 
-    printk("Xen is %s VGA console.\n",
+    printk("crux is %s VGA console.\n",
            vgacon_keep ? "keeping" : "relinquishing");
 
     if ( !vgacon_keep )

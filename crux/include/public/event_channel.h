@@ -15,12 +15,12 @@
 /*
  * `incontents 150 evtchn Event Channels
  *
- * Event channels are the basic primitive provided by Xen for event
- * notifications. An event is the Xen equivalent of a hardware
+ * Event channels are the basic primitive provided by crux for event
+ * notifications. An event is the crux equivalent of a hardware
  * interrupt. They essentially store one bit of information, the event
  * of interest is signalled by transitioning this bit from 0 to 1.
  *
- * Notifications are received by a guest via an upcall from Xen,
+ * Notifications are received by a guest via an upcall from crux,
  * indicating when an event arrives (setting the bit). Further
  * notifications are masked until the bit is cleared again (therefore,
  * guests must check the value of the bit after re-enabling event

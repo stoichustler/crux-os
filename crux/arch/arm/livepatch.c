@@ -36,7 +36,7 @@ int arch_livepatch_quiesce(void)
     text_order = get_order_from_bytes(_end - _start);
 
     /*
-     * The text section is read-only. So re-map Xen to be able to patch
+     * The text section is read-only. So re-map crux to be able to patch
      * the code.
      */
     vmap_of_crux_text = vmap_contig(text_mfn, 1U << text_order);

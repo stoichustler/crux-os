@@ -101,7 +101,7 @@ int sbi_remote_sfence_vma(const cpumask_t *cpu_mask, vaddr_t start,
  *  - start_addr and size are both 0, or
  *  - size is equal to 2^XLEN-1.
  *
- * @cpu_mask a cpu mask containing all the target CPUs (in Xen space).
+ * @cpu_mask a cpu mask containing all the target CPUs (in crux space).
  * @param start virtual address start
  * @param size virtual address range size
  */
@@ -113,7 +113,7 @@ int sbi_remote_hfence_gvma(const cpumask_t *cpu_mask, vaddr_t start,
  * instructions, covering the range of guest physical addresses
  * in [start_addr, start_addr + size) only for the given VMID.
  *
- * @cpu_mask a cpu mask containing all the target CPUs (in Xen space).
+ * @cpu_mask a cpu mask containing all the target CPUs (in crux space).
  * @param start virtual address start
  * @param size virtual address range size
  * @param vmid virtual machine id

@@ -390,7 +390,7 @@ struct iommu_ops {
 };
 
 /*
- * To be called by Xen internally, to register extra RMRR/IVMD ranges for RAM
+ * To be called by crux internally, to register extra RMRR/IVMD ranges for RAM
  * pages.
  * Needs to be called before IOMMU initialization.
  */

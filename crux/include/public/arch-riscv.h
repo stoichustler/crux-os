@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 /*
- * Guest OS interface to RISC-V Xen.
+ * Guest OS interface to RISC-V crux.
  * Initially based on the ARM implementation.
  */
 

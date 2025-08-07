@@ -29,7 +29,7 @@ extern bool partial_emulation;
  * GUEST_BUG_ON *MUST* *NOT* be used to check for guest controllable state!
  *
  * Compared with regular BUG_ON it dumps the guest vcpu state instead
- * of Xen's state.
+ * of crux's state.
  */
 #define guest_bug_on_failed(p)                          \
 do {                                                    \

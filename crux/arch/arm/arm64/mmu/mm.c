@@ -26,7 +26,7 @@ static DEFINE_PAGE_TABLE(crux_third_id);
  * We need to prepare the identity mapping for both the boot page tables
  * and runtime page tables.
  *
- * The logic to create the entry is slightly different because Xen may
+ * The logic to create the entry is slightly different because crux may
  * be running at a different location at runtime.
  */
 static void __init prepare_boot_identity_mapping(void)
@@ -161,7 +161,7 @@ void __init relocate_and_switch_ttbr(uint64_t ttbr)
     pte.pt.ro = 1;
     write_pte(&crux_third_id[third_table_offset(id_addr)], pte);
 
-    /* Relocate Xen and switch TTBR */
+    /* Relocate crux and switch TTBR */
     fn(ttbr, _start, (void *)BOOT_RELOC_VIRT_START, _end - _start);
 
     /*

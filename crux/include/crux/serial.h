@@ -64,7 +64,7 @@ struct uart_driver {
     void (*init_preirq)(struct serial_port *port);
     void (*init_irq)(struct serial_port *port);
     void (*init_postirq)(struct serial_port *port);
-    /* Hook to clean up after Xen bootstrap (before domain 0 runs). */
+    /* Hook to clean up after crux bootstrap (before domain 0 runs). */
     void (*endboot)(struct serial_port *port);
 #ifdef CONFIG_SYSTEM_SUSPEND
     /* Driver suspend/resume. */

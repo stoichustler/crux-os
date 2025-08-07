@@ -2,7 +2,7 @@
 /******************************************************************************
  * arch-x86_64.h
  *
- * Guest OS interface to x86 64-bit Xen.
+ * Guest OS interface to x86 64-bit crux.
  *
  * Copyright (c) 2004-2006, K A Fraser
  */

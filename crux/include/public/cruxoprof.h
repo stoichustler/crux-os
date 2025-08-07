@@ -43,7 +43,7 @@
 #define MAX_OPROF_DOMAINS   25
 #define CRUXOPROF_CPU_TYPE_SIZE 64
 
-/* Xenoprof performance events (not Xen events) */
+/* cruxoprof performance events (not crux events) */
 struct event_log {
     uint64_t eip;
     uint8_t mode;
@@ -55,7 +55,7 @@ struct event_log {
 /* Transient events for the cruxoprof->oprofile cpu buf */
 #define CRUXOPROF_TRACE_BEGIN 1
 
-/* Xenoprof buffer shared between Xen and domain - 1 per VCPU */
+/* cruxoprof buffer shared between crux and domain - 1 per VCPU */
 struct cruxoprof_buf {
     uint32_t event_head;
     uint32_t event_tail;

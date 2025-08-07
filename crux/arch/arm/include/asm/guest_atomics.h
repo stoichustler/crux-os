@@ -11,12 +11,12 @@
  *
  * If it did timeout, then it means we didn't manage to update the
  * memory. This is possibly because the guest is misbehaving (i.e tight
- * store loop) but can also happen for other reasons (i.e nested Xen).
+ * store loop) but can also happen for other reasons (i.e nested crux).
  * In that case pause the domain and retry the operation, this time
  * without a timeout.
  *
  * Note, those helpers rely on other part of the code to prevent sharing
- * a page between Xen and multiple domain.
+ * a page between crux and multiple domain.
  */
 
 DECLARE_PER_CPU(unsigned int, guest_safe_atomic_max);

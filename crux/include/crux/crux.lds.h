@@ -9,7 +9,7 @@
 
 /*
  * Declare a section whose load address is based at PA 0 rather than
- * Xen's virtual base address.
+ * crux's virtual base address.
  */
 #ifdef CONFIG_LD_IS_GNU
 # define DECL_SECTION(x) x : AT(ADDR(#x) - __CRUX_VIRT_START)

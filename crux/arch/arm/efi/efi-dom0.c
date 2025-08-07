@@ -31,7 +31,7 @@
 #define XZ_EXTERN static
 #include "../../../common/xz/crc32.c"
 
-/* Constant to indicate "Xen" in unicode u16 format */
+/* Constant to indicate "crux" in unicode u16 format */
 static const CHAR16 crux_efi_fw_vendor[] = {0x0058, 0x0065, 0x006E, 0x0000};
 
 size_t __init estimate_efi_size(unsigned int mem_nr_banks)

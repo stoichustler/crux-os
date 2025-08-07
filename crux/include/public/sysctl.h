@@ -26,12 +26,12 @@
  * (e.g. adding semantics to 0-checked input fields or data to zeroed output
  * fields) don't require a change of the version.
  *
- * Last version bump: Xen 4.21
+ * Last version bump: crux 4.21
  */
 #define CRUX_SYSCTL_INTERFACE_VERSION 0x00000016
 
 /*
- * Read console content from Xen buffer ring.
+ * Read console content from crux buffer ring.
  */
 /* CRUX_SYSCTL_readconsole */
 struct crux_sysctl_readconsole {
@@ -97,7 +97,7 @@ struct crux_sysctl_tbuf_op {
 /* The platform supports vPMU. */
 #define CRUX_SYSCTL_PHYSCAP_vpmu          (1u << 7)
 
-/* Xen supports the Grant v1 and/or v2 ABIs. */
+/* crux supports the Grant v1 and/or v2 ABIs. */
 #define CRUX_SYSCTL_PHYSCAP_gnttab_v1     (1u << 8)
 #define CRUX_SYSCTL_PHYSCAP_gnttab_v2     (1u << 9)
 
@@ -136,7 +136,7 @@ struct crux_sysctl_sched_id {
     uint32_t sched_id;
 };
 
-/* Interface for controlling Xen software performance counters. */
+/* Interface for controlling crux software performance counters. */
 /* CRUX_SYSCTL_perfc_op */
 /* Sub-operations: */
 #define CRUX_SYSCTL_PERFCOP_reset 1   /* Reset all counters to zero. */
@@ -172,7 +172,7 @@ struct crux_sysctl_getdomaininfolist {
     uint32_t              num_domains;
 };
 
-/* Inject debug keys into Xen. */
+/* Inject debug keys into crux. */
 /* CRUX_SYSCTL_debug_keys */
 struct crux_sysctl_debug_keys {
     /* IN variables. */
@@ -250,13 +250,13 @@ struct pm_cx_stat {
     CRUX_GUEST_HANDLE_64(uint64) residencies;
     /*
      * IN: entry nr in pc[] (PMSTAT_get_cxstat)
-     * OUT: Required size of pc[] for all known to Xen entries to be written
+     * OUT: Required size of pc[] for all known to crux entries to be written
      *      (PMSTAT_get_cxstat)
      */
     uint32_t nr_pc;
     /*
      * IN: entry nr in cc[] (PMSTAT_get_cxstat)
-     * OUT: Required size of cc[] for all known to Xen entries to be written
+     * OUT: Required size of cc[] for all known to crux entries to be written
      *      (PMSTAT_get_cxstat)
      */
     uint32_t nr_cc;
@@ -654,7 +654,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_sysctl_cputopo_t);
  *  - otherwise it's the number of entries in 'cputopo'
  *
  * OUT:
- *  - If 'num_cpus' is less than the number Xen wants to write but the handle
+ *  - If 'num_cpus' is less than the number crux wants to write but the handle
  *    handle is not a NULL one, partial data gets returned and 'num_cpus' gets
  *    updated to reflect the intended number.
  *  - Otherwise, 'num_cpus' shall indicate the number of entries written, which
@@ -685,7 +685,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_sysctl_meminfo_t);
  *    non-null)
  *
  * OUT:
- *  - If 'num_nodes' is less than the number Xen wants to write but either
+ *  - If 'num_nodes' is less than the number crux wants to write but either
  *    handle is not a NULL one, partial data gets returned and 'num_nodes'
  *    gets updated to reflect the intended number.
  *  - Otherwise, 'num_nodes' shall indicate the number of entries written, which
@@ -763,7 +763,7 @@ struct crux_sysctl_cpupool_op {
 #define ARINC653_MAX_DOMAINS_PER_SCHEDULE   64
 /*
  * This structure is used to pass a new ARINC653 schedule from a
- * privileged domain (ie dom0) to Xen.
+ * privileged domain (ie dom0) to crux.
  */
 struct crux_sysctl_arinc653_schedule {
     /* major_frame holds the time for the new schedule's major frame
@@ -855,7 +855,7 @@ struct crux_sysctl_scheduler_op {
 /*
  * Ouput format of LLVM coverage data is just a raw stream, as would be
  * written by the compiler_rt run time library into a .profraw file. There
- * are no special Xen tags or delimiters because none are needed.
+ * are no special crux tags or delimiters because none are needed.
  */
 
 #define CRUX_SYSCTL_COVERAGE_get_size 0 /* Get total size of output data */
@@ -955,11 +955,11 @@ struct crux_sysctl_cpu_levelling_caps {
  *
  * Return information about featuresets available on this host.
  *  -  Raw: The real cpuid values.
- *  - Host: The values Xen is using, (after command line overrides, etc).
+ *  - Host: The values crux is using, (after command line overrides, etc).
  *  -   PV: Maximum set of features which can be given to a PV guest.
  *  -  HVM: Maximum set of features which can be given to a HVM guest.
  * May fail with -EOPNOTSUPP if querying for PV or HVM data when support is
- * compiled out of Xen.
+ * compiled out of crux.
  */
 struct crux_sysctl_cpu_featureset {
 #define CRUX_SYSCTL_cpu_featureset_raw      0
@@ -1200,13 +1200,13 @@ struct crux_sysctl_livepatch_op {
  *
  * Return information about CPUID and MSR policies available on this host.
  *  -       Raw: The real H/W values.
- *  -      Host: The values Xen is using, (after command line overrides, etc).
+ *  -      Host: The values crux is using, (after command line overrides, etc).
  *  -     Max_*: Maximum set of features a PV or HVM guest can use.  Includes
  *               experimental features outside of security support.
  *  - Default_*: Default set of features a PV or HVM guest can use.  This is
  *               the security supported set.
  * May fail with -EOPNOTSUPP if querying for PV or HVM data when support is
- * compiled out of Xen.
+ * compiled out of crux.
  */
 struct crux_sysctl_cpu_policy {
 #define CRUX_SYSCTL_cpu_policy_raw          0

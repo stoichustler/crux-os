@@ -15,13 +15,13 @@
 /* Trace classes */
 #define TRC_CLS_SHIFT 16
 #define TRC_GEN      0x0001f000    /* General trace            */
-#define TRC_SCHED    0x0002f000    /* Xen Scheduler trace      */
-#define TRC_DOM0OP   0x0004f000    /* Xen DOM0 operation trace */
-#define TRC_HVM      0x0008f000    /* Xen HVM trace            */
-#define TRC_MEM      0x0010f000    /* Xen memory trace         */
-#define TRC_PV       0x0020f000    /* Xen PV traces            */
-#define TRC_SHADOW   0x0040f000    /* Xen shadow tracing       */
-#define TRC_HW       0x0080f000    /* Xen hardware-related traces */
+#define TRC_SCHED    0x0002f000    /* crux Scheduler trace      */
+#define TRC_DOM0OP   0x0004f000    /* crux DOM0 operation trace */
+#define TRC_HVM      0x0008f000    /* crux HVM trace            */
+#define TRC_MEM      0x0010f000    /* crux memory trace         */
+#define TRC_PV       0x0020f000    /* crux PV traces            */
+#define TRC_SHADOW   0x0040f000    /* crux shadow tracing       */
+#define TRC_HW       0x0080f000    /* crux hardware-related traces */
 #define TRC_GUEST    0x0800f000    /* Guest-generated traces   */
 #define TRC_ALL      0x0ffff000
 #define TRC_HD_TO_EVENT(x) ((x)&0x0fffffff)
@@ -299,7 +299,7 @@ struct t_buf {
      *     (((2^32 - 1) % X) + 1) % X != (2^32) % X
      */
     uint32_t cons;   /* Offset of next item to be consumed by control tools. */
-    uint32_t prod;   /* Offset of next item to be produced by Xen.           */
+    uint32_t prod;   /* Offset of next item to be produced by crux.           */
     /*  Records follow immediately after the meta-data header.    */
 };
 

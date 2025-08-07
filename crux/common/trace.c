@@ -1,7 +1,7 @@
 /******************************************************************************
  * common/trace.c
  *
- * Xen Trace Buffer
+ * crux Trace Buffer
  *
  * Copyright (C) 2004 by Intel Research Cambridge
  *
@@ -11,7 +11,7 @@
  *
  * Copyright (C) 2005 Bin Ren
  *
- * The trace buffer code is designed to allow debugging traces of Xen to be
+ * The trace buffer code is designed to allow debugging traces of crux to be
  * generated on UP / SMP machines.  Each trace entry is timestamped so that
  * it's possible to reconstruct a chronological record of trace events.
  */

@@ -10,7 +10,7 @@
  *
  *  Uses gcc-internal data definitions.
  *
- *  Imported from Linux and modified for Xen by
+ *  Imported from Linux and modified for crux by
  *    Wei Liu <wei.liu2@citrix.com>
  */
 

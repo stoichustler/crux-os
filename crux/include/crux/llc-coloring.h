@@ -34,7 +34,7 @@ static inline void domain_llc_coloring_free(struct domain *d) {}
 #endif
 
 /*
- * Iterate over each Xen mfn in the colored space.
+ * Iterate over each crux mfn in the colored space.
  * @start_mfn:  the first mfn that needs to be colored.
  * @mfn:        the current mfn.
  * @i:          loop index.

@@ -38,7 +38,7 @@ FUNC_LOCAL(enable_mpu)
 END(enable_mpu)
 
 /*
- * Maps the various sections of Xen (described in crux.lds.S) as different MPU
+ * Maps the various sections of crux (described in crux.lds.S) as different MPU
  * regions.
  *
  * Clobbers r0 - r5
@@ -55,33 +55,33 @@ FUNC(enable_boot_cpu_mm)
 
     /* x0: region sel */
     mov   r0, #0
-    /* Xen text section. */
+    /* crux text section. */
     mov_w   r1, _stext
     mov_w   r2, _etext
     prepare_crux_region r0, r1, r2, r4, r5, r3, attr_prbar=REGION_TEXT_PRBAR
 
-    /* Xen read-only data section. */
+    /* crux read-only data section. */
     mov_w   r1, _srodata
     mov_w   r2, _erodata
     prepare_crux_region r0, r1, r2, r4, r5, r3, attr_prbar=REGION_RO_PRBAR
 
-    /* Xen read-only after init and data section. (RW data) */
+    /* crux read-only after init and data section. (RW data) */
     mov_w   r1, __ro_after_init_start
     mov_w   r2, __init_begin
     prepare_crux_region r0, r1, r2, r4, r5, r3
 
-    /* Xen code section. */
+    /* crux code section. */
     mov_w   r1, __init_begin
     mov_w   r2, __init_data_begin
     prepare_crux_region r0, r1, r2, r4, r5, r3, attr_prbar=REGION_TEXT_PRBAR
 
-    /* Xen data and BSS section. */
+    /* crux data and BSS section. */
     mov_w   r1, __init_data_begin
     mov_w   r2, __bss_end
     prepare_crux_region r0, r1, r2, r4, r5, r3
 
 #ifdef CONFIG_EARLY_PRINTK
-    /* Xen early UART section. */
+    /* crux early UART section. */
     mov_w   r1, CONFIG_EARLY_UART_BASE_ADDRESS
     mov_w   r2, (CONFIG_EARLY_UART_BASE_ADDRESS + CONFIG_EARLY_UART_SIZE)
     prepare_crux_region r0, r1, r2, r4, r5, r3, attr_prbar=REGION_DEVICE_PRBAR, attr_prlar=REGION_DEVICE_PRLAR

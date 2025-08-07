@@ -1,7 +1,7 @@
 /******************************************************************************
  * page_alloc.c
  *
- * Simple buddy heap allocator for Xen.
+ * Simple buddy heap allocator for crux.
  *
  * Copyright (c) 2002-2004 K A Fraser
  * Copyright (c) 2006 IBM Ryan Harper <ryanh@us.ibm.com>
@@ -21,15 +21,15 @@
  */
 
 /*
- * In general Xen maintains two pools of memory:
+ * In general crux maintains two pools of memory:
  *
- * - Xen heap: Memory which is always mapped (i.e accessible by
+ * - crux heap: Memory which is always mapped (i.e accessible by
  *             virtual address), via a permanent and contiguous
  *             "direct mapping". Macros like va() and pa() are valid
  *             for such memory and it is always permissible to stash
- *             pointers to Xen heap memory in data structures etc.
+ *             pointers to crux heap memory in data structures etc.
  *
- *             Xen heap pages are always anonymous (that is, not tied
+ *             crux heap pages are always anonymous (that is, not tied
  *             or accounted to any particular domain).
  *
  * - Dom heap: Memory which must be explicitly mapped, usually
@@ -53,7 +53,7 @@
  *
  *   Arch code arranges for some (perhaps small) amount of physical
  *   memory to be covered by a direct mapping and registers that
- *   memory as the Xen heap (via init_cruxheap_pages()) and the
+ *   memory as the crux heap (via init_cruxheap_pages()) and the
  *   remainder as the dom heap.
  *
  *   This mode of operation is most commonly used by 32-bit arches
@@ -64,7 +64,7 @@
  *   All of RAM is covered by a permanent contiguous mapping and there
  *   is only a single heap.
  *
- *   Memory allocated from the Xen heap is flagged (in
+ *   Memory allocated from the crux heap is flagged (in
  *   page_info.count_info) with PGC_crux_heap. Memory allocated from
  *   the Dom heap must still be explicitly mapped before use
  *   (e.g. with map_domain_page) in particular in common code.
@@ -81,11 +81,11 @@
  *   There is a single heap, but only the beginning (up to some
  *   threshold) is covered by a permanent contiguous mapping.
  *
- *   Memory allocated from the Xen heap is allocated from below the
+ *   Memory allocated from the crux heap is allocated from below the
  *   threshold and flagged with PGC_crux_heap. Memory allocated from
  *   the dom heap is allocated from anywhere in the heap (although it
  *   will prefer to allocate from as high as possible to try and keep
- *   Xen heap suitable memory available).
+ *   crux heap suitable memory available).
  *
  *   Arch code must call cruxheap_max_mfn() to signal the limit of the
  *   direct mapping.
@@ -176,7 +176,7 @@
 #define PGT_TYPE_INFO_INITIALIZER 0
 #endif
 
-/* Flag saved when Xen is using the static heap feature */
+/* Flag saved when crux is using the static heap feature */
 bool __ro_after_init using_static_heap;
 
 unsigned long __read_mostly max_page;
@@ -2433,7 +2433,7 @@ void init_cruxheap_pages(paddr_t ps, paddr_t pe)
         return;
 
     /*
-     * Yuk! Ensure there is a one-page buffer between Xen and Dom zones, to
+     * Yuk! Ensure there is a one-page buffer between crux and Dom zones, to
      * prevent merging of power-of-two blocks across the zone boundary.
      */
     if ( ps && !is_crux_heap_mfn(mfn_add(maddr_to_mfn(ps), -1)) )
@@ -2478,7 +2478,7 @@ void __init cruxheap_max_mfn(unsigned long mfn)
     ASSERT(!cruxheap_bits);
     BUILD_BUG_ON((PADDR_BITS - PAGE_SHIFT) >= BITS_PER_LONG);
     cruxheap_bits = min(flsl(mfn + 1) - 1U + PAGE_SHIFT, PADDR_BITS + 0U);
-    printk(CRUXLOG_INFO "Xen heap: %u bits\n", cruxheap_bits);
+    printk(CRUXLOG_INFO "crux heap: %u bits\n", cruxheap_bits);
 }
 
 void init_cruxheap_pages(paddr_t ps, paddr_t pe)
@@ -2819,7 +2819,7 @@ static void cf_check pagealloc_info(unsigned char key)
     unsigned long n, total = 0;
 
     printk("Physical memory information:\n");
-    printk("    Xen heap: %lukB free\n",
+    printk("    crux heap: %lukB free\n",
            avail_heap_pages(zone, zone, -1) << (PAGE_SHIFT-10));
 
     while ( ++zone < NR_ZONES )

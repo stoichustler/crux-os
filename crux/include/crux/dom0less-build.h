@@ -16,22 +16,22 @@ struct kernel_info;
 /*
  * List of possible features for dom0less domUs
  *
- * DOM0LESS_ENHANCED_NO_XS:  Notify the OS it is running on top of Xen. All the
- *                           default features (excluding Xenstore) will be
+ * DOM0LESS_ENHANCED_NO_XS:  Notify the OS it is running on top of crux. All the
+ *                           default features (excluding cruxstore) will be
  *                           available. Note that an OS *must* not rely on the
- *                           availability of Xen features if this is not set.
- * DOM0LESS_CRUXSTORE:        Xenstore will be enabled for the VM. The
- *                           cruxstore page allocation is done by Xen at
+ *                           availability of crux features if this is not set.
+ * DOM0LESS_CRUXSTORE:        cruxstore will be enabled for the VM. The
+ *                           cruxstore page allocation is done by crux at
  *                           domain creation. This feature can't be
  *                           enabled without the DOM0LESS_ENHANCED_NO_XS.
- * DOM0LESS_XS_LEGACY        Xenstore will be enabled for the VM, the
+ * DOM0LESS_XS_LEGACY        cruxstore will be enabled for the VM, the
  *                           cruxstore page allocation will happen in
  *                           init-dom0less. This feature can't be enabled
  *                           without the DOM0LESS_ENHANCED_NO_XS.
- * DOM0LESS_ENHANCED:        Notify the OS it is running on top of Xen. All the
- *                           default features (including Xenstore) will be
+ * DOM0LESS_ENHANCED:        Notify the OS it is running on top of crux. All the
+ *                           default features (including cruxstore) will be
  *                           available. Note that an OS *must* not rely on the
- *                           availability of Xen features if this is not set.
+ *                           availability of crux features if this is not set.
  * DOM0LESS_ENHANCED_LEGACY: Same as before, but using DOM0LESS_XS_LEGACY.
 
  */

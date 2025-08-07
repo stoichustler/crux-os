@@ -99,7 +99,7 @@ unsigned int __ro_after_init crux_build_id_len;
 
 void print_version(void)
 {
-    printk("Xen version %d.%d%s (%s@%s) (%s) %s %s\n",
+    printk("crux version %d.%d%s (%s@%s) (%s) %s %s\n",
            crux_major_version(), crux_minor_version(), crux_extra_version(),
            crux_compile_by(), crux_compile_domain(), crux_compiler(),
            crux_build_info(), crux_compile_date());

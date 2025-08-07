@@ -1,7 +1,7 @@
 /******************************************************************************
  * crux/console.h
  * 
- * Xen header file concerning console access.
+ * crux header file concerning console access.
  */
 
 #ifndef __CONSOLE_H__

@@ -69,7 +69,7 @@
  *
  * The address and sizes are always a 64bit little endian unsigned integer.
  *
- * NB: Xen on x86 will always try to place all the data below the 4GiB
+ * NB: crux on x86 will always try to place all the data below the 4GiB
  * boundary.
  *
  * Version numbers of the hvm_start_info structure have evolved like this:

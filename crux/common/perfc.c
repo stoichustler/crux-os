@@ -32,7 +32,7 @@ void cf_check perfc_printall(unsigned char key)
     unsigned int i, j;
     s_time_t now = NOW();
 
-    printk("Xen performance counters SHOW  (now = %"PRI_stime")\n", now);
+    printk("crux performance counters SHOW  (now = %"PRI_stime")\n", now);
 
     for ( i = j = 0; i < NR_PERFCTRS; i++ )
     {
@@ -120,7 +120,7 @@ void cf_check perfc_reset(unsigned char key)
     s_time_t now = NOW();
 
     if ( key != '\0' )
-        printk("Xen performance counters RESET (now = %"PRI_stime")\n", now);
+        printk("crux performance counters RESET (now = %"PRI_stime")\n", now);
 
     /* leave STATUS counters alone -- don't reset */
 

@@ -549,7 +549,7 @@ void do_cp14_32(struct cpu_user_regs *regs, const union hsr hsr)
     }
 
     /*
-     * Xen doesn't expose a real (or emulated) Debug Communications Channel
+     * crux doesn't expose a real (or emulated) Debug Communications Channel
      * (DCC) to a domain. Yet the Arm ARM implies this is not an optional
      * feature. So some domains may start to probe it. For instance, the
      * HVC_DCC driver in Linux (since f377775dc083 and at least up to v6.7),

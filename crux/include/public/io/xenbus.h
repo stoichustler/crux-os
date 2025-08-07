@@ -2,53 +2,53 @@
 /*****************************************************************************
  * cruxbus.h
  *
- * Xenbus protocol details.
+ * cruxbus protocol details.
  *
- * Copyright (C) 2005 XenSource Ltd.
+ * Copyright (C) 2005 cruxSource Ltd.
  */
 
 #ifndef _CRUX_PUBLIC_IO_CRUXBUS_H
 #define _CRUX_PUBLIC_IO_CRUXBUS_H
 
 /*
- * The state of either end of the Xenbus, i.e. the current communication
+ * The state of either end of the cruxbus, i.e. the current communication
  * status of initialisation across the bus.  States here imply nothing about
  * the state of the connection between the driver and the kernel's device
  * layers.
  */
 enum cruxbus_state {
-    XenbusStateUnknown       = 0,
+    cruxbusStateUnknown       = 0,
 
-    XenbusStateInitialising  = 1,
+    cruxbusStateInitialising  = 1,
 
     /*
      * InitWait: Finished early initialisation but waiting for information
      * from the peer or hotplug scripts.
      */
-    XenbusStateInitWait      = 2,
+    cruxbusStateInitWait      = 2,
 
     /*
      * Initialised: Waiting for a connection from the peer.
      */
-    XenbusStateInitialised   = 3,
+    cruxbusStateInitialised   = 3,
 
-    XenbusStateConnected     = 4,
+    cruxbusStateConnected     = 4,
 
     /*
      * Closing: The device is being closed due to an error or an unplug event.
      */
-    XenbusStateClosing       = 5,
+    cruxbusStateClosing       = 5,
 
-    XenbusStateClosed        = 6,
+    cruxbusStateClosed        = 6,
 
     /*
      * Reconfiguring: The device is being reconfigured.
      */
-    XenbusStateReconfiguring = 7,
+    cruxbusStateReconfiguring = 7,
 
-    XenbusStateReconfigured  = 8
+    cruxbusStateReconfigured  = 8
 };
-typedef enum cruxbus_state XenbusState;
+typedef enum cruxbus_state cruxbusState;
 
 #endif /* _CRUX_PUBLIC_IO_CRUXBUS_H */
 

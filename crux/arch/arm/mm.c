@@ -223,7 +223,7 @@ int cruxmem_add_to_physmap_one(
         else
             /*
              * Mandate the caller to first unmap the page before mapping it
-             * again. This is to prevent Xen creating an unwanted hole in
+             * again. This is to prevent crux creating an unwanted hole in
              * the P2M. For instance, this could happen if the firmware stole
              * a RAM address for mapping the shared_info page into but forgot
              * to unmap it afterwards.

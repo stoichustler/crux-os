@@ -124,7 +124,7 @@ void __init setup_mm(void)
      *
      *  - must be contiguous
      *  - must be 32 MiB aligned
-     *  - must not include Xen itself or the boot modules
+     *  - must not include crux itself or the boot modules
      *  - must be at most 1GB or 1/32 the total RAM in the system (or static
           heap if enabled) if less
      *  - must be at least 32M
@@ -159,7 +159,7 @@ void __init setup_mm(void)
 
     domheap_pages = heap_pages - cruxheap_pages;
 
-    printk("Xen heap: %"PRIpaddr"-%"PRIpaddr" (%lu pages%s)\n",
+    printk("crux heap: %"PRIpaddr"-%"PRIpaddr" (%lu pages%s)\n",
            e - (pfn_to_paddr(cruxheap_pages)), e, cruxheap_pages,
            opt_cruxheap_megabytes ? ", from command-line" : "");
     printk("Dom heap: %lu pages\n", domheap_pages);
@@ -169,7 +169,7 @@ void __init setup_mm(void)
      * directmap mappings. So populate the boot allocator first.
      *
      * This requires us to set directmap_mfn_{start, end} first so the
-     * direct-mapped Xenheap region can be avoided.
+     * direct-mapped cruxheap region can be avoided.
      */
     directmap_mfn_start = _mfn((e >> PAGE_SHIFT) - cruxheap_pages);
     directmap_mfn_end = mfn_add(directmap_mfn_start, cruxheap_pages);

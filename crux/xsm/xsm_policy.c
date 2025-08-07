@@ -14,7 +14,7 @@
  *  as published by the Free Software Foundation.
  *
  *
- *  This file contains the XSM policy init functions for Xen.
+ *  This file contains the XSM policy init functions for crux.
  *
  */
 

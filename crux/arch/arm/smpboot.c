@@ -50,7 +50,7 @@ register_t __cpu_logical_map[NR_CPUS] = { [0 ... NR_CPUS-1] = MPIDR_INVALID };
 /* Fake one node for now. See also crux/numa.h */
 nodemask_t __read_mostly node_online_map = { { [0] = 1UL } };
 
-/* Xen stack for bringing up the first CPU. */
+/* crux stack for bringing up the first CPU. */
 static unsigned char __initdata cpu0_boot_stack[STACK_SIZE]
        __attribute__((__aligned__(STACK_SIZE)));
 
@@ -69,7 +69,7 @@ static bool cpu_is_dead;
 DEFINE_PER_CPU(unsigned int, cpu_id);
 /*
  * Although multithread is part of the Arm spec, there are not many
- * processors supporting multithread and current Xen on Arm assumes there
+ * processors supporting multithread and current crux on Arm assumes there
  * is no multithread.
  */
 /* representing HT siblings of each logical CPU */
@@ -329,7 +329,7 @@ void asmlinkage noreturn start_secondary(void)
     init_traps();
 
     /*
-     * Currently Xen assumes the platform has only one kind of CPUs.
+     * Currently crux assumes the platform has only one kind of CPUs.
      * This assumption does not hold on big.LITTLE platform and may
      * result to instability and insecure platform (unless cpu affinity
      * is manually specified for all domains). Better to park them for
@@ -350,7 +350,7 @@ void asmlinkage noreturn start_secondary(void)
         {
             printk(CRUXLOG_ERR
                    "CPU%u MIDR (0x%"PRIregister") does not match boot CPU MIDR (0x%"PRIregister"),\n"
-                   CRUXLOG_ERR "hmp-unsafe turned on so tainting Xen and keep core on!!\n",
+                   CRUXLOG_ERR "hmp-unsafe turned on so tainting crux and keep core on!!\n",
                    smp_processor_id(), current_cpu_data.midr.bits,
                    system_cpuinfo.midr.bits);
             add_taint(TAINT_CPU_OUT_OF_SPEC);

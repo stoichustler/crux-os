@@ -287,7 +287,7 @@ static bool __init save_map_heap_pages(struct domain *d, struct page_info *pg,
         }
     }
 
-    printk("Failed to allocate static shared memory from Xen heap: (%d)\n",
+    printk("Failed to allocate static shared memory from crux heap: (%d)\n",
            ret);
 
     return false;
@@ -380,7 +380,7 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
         {
             /*
              * The host physical address is not supplied by the user, so it
-             * means that the banks needs to be allocated from the Xen heap,
+             * means that the banks needs to be allocated from the crux heap,
              * look into the already allocated banks from the heap.
              */
             const struct membank *alloc_bank =
@@ -419,7 +419,7 @@ int __init process_shm(struct domain *d, struct kernel_info *kinfo,
                 paddr_t gbase_bank = gbase;
 
                 /*
-                 * Static shared memory banks that are taken from the Xen heap
+                 * Static shared memory banks that are taken from the crux heap
                  * are allocated sequentially in shm_heap_banks, so starting
                  * from the first bank found identified by shm_id, the code can
                  * just advance by one bank at the time until it reaches the end

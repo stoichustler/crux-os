@@ -17,7 +17,7 @@
 /*
  * IOREQ Servers
  *
- * The interface between an I/O emulator and Xen is called an IOREQ Server.
+ * The interface between an I/O emulator and crux is called an IOREQ Server.
  * A domain supports a single 'legacy' IOREQ Server which is instantiated if
  * parameter...
  *
@@ -25,7 +25,7 @@
  * ioreq structures), or...
  * HVM_PARAM_BUFIOREQ_PFN is read (to get the gfn containing the buffered
  * ioreq ring), or...
- * HVM_PARAM_BUFIOREQ_EVTCHN is read (to get the event channel that Xen uses
+ * HVM_PARAM_BUFIOREQ_EVTCHN is read (to get the event channel that crux uses
  * to request buffered I/O emulation).
  *
  * The following hypercalls facilitate the creation of IOREQ Servers for
@@ -432,7 +432,7 @@ typedef struct crux_dm_op_set_irq_level crux_dm_op_set_irq_level_t;
 /*
  * CRUX_DMOP_nr_vcpus: Query the number of vCPUs a domain has.
  *
- * This is the number of vcpu objects allocated in Xen for the domain, and is
+ * This is the number of vcpu objects allocated in crux for the domain, and is
  * fixed from creation time.  This bound is applicable to e.g. the vcpuid
  * parameter of CRUX_DMOP_inject_event, or number of struct ioreq objects
  * mapped via CRUXMEM_acquire_resource.

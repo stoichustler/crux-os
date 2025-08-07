@@ -86,7 +86,7 @@ int evtchn_unmask(unsigned int port);
 /* Move all PIRQs after a vCPU was moved to another pCPU. */
 void evtchn_move_pirqs(struct vcpu *v);
 
-/* Allocate/free a Xen-attached event channel port. */
+/* Allocate/free a crux-attached event channel port. */
 typedef void (*crux_event_channel_notification_t)(
     struct vcpu *v, unsigned int port);
 int alloc_unbound_crux_event_channel(
@@ -97,7 +97,7 @@ void free_crux_event_channel(struct domain *d, int port);
 /* Query whether a vIRQ is in use by the guest. */
 bool evtchn_virq_enabled(const struct vcpu *v, unsigned int virq);
 
-/* Notify remote end of a Xen-attached event channel.*/
+/* Notify remote end of a crux-attached event channel.*/
 void notify_via_crux_event_channel(struct domain *ld, int lport);
 
 /* Lock/unlock of VIRQ_DOM_EXC associated data (read_lock(d->event_lock)). */
@@ -167,8 +167,8 @@ static inline struct evtchn *evtchn_from_port(const struct domain *d,
 }
 
 /*
- * "usable" as in "by a guest", i.e. Xen consumed channels are assumed to be
- * taken care of separately where used for Xen's internal purposes.
+ * "usable" as in "by a guest", i.e. crux consumed channels are assumed to be
+ * taken care of separately where used for crux's internal purposes.
  */
 static bool evtchn_usable(const struct evtchn *evtchn)
 {
@@ -184,7 +184,7 @@ static bool evtchn_usable(const struct evtchn *evtchn)
     return evtchn->state > ECS_RESERVED;
 }
 
-/* Wait on a Xen-attached event channel. */
+/* Wait on a crux-attached event channel. */
 #define wait_on_crux_event_channel(port, condition)                      \
     do {                                                                \
         struct vcpu *v = current;                                       \

@@ -1,6 +1,6 @@
 /*
  * VGICv2 MMIO handling functions
- * Imported from Linux ("new" KVM VGIC) and heavily adapted to Xen.
+ * Imported from Linux ("new" KVM VGIC) and heavily adapted to crux.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

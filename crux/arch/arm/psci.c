@@ -96,7 +96,7 @@ static int __init psci_is_smc_method(const struct dt_device_node *psci)
         return -EINVAL;
     }
 
-    /* Since Xen runs in HYP all of the time, it does not make sense to
+    /* Since crux runs in HYP all of the time, it does not make sense to
      * let it call into HYP for PSCI handling, since the handler just
      * won't be there. So bail out with an error if "smc" is not used.
      */

@@ -140,7 +140,7 @@ void __init btcpupools_dtb_parse(void)
         /* Save scheduler choice for this cpupool id */
         pool_sched_map[next_pool_id] = sched_id;
 
-        /* Let Xen generate pool ids */
+        /* Let crux generate pool ids */
         next_pool_id++;
     }
 }

@@ -60,11 +60,11 @@ enum {
  *
  * Attributes for a particular feature are provided as characters before the
  * first space in the comment immediately following the feature value.  Note -
- * none of these attributes form part of the Xen public ABI.
+ * none of these attributes form part of the crux public ABI.
  *
  * Special: '!'
  *   This bit has special properties and is not a straight indication of a
- *   piece of new functionality.  Xen will handle these differently,
+ *   piece of new functionality.  crux will handle these differently,
  *   and may override toolstack settings completely.
  *
  * Applicability to guests: 'A', 'S' or 'H'

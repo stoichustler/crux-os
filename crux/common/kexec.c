@@ -1,7 +1,7 @@
 /******************************************************************************
- * kexec.c - Achitecture independent kexec code for Xen
+ * kexec.c - Achitecture independent kexec code for crux
  *
- * Xen port written by:
+ * crux port written by:
  * - Simon 'Horms' Horman <horms@verge.net.au>
  * - Magnus Damm <magnus@valinux.co.jp>
  */
@@ -76,7 +76,7 @@ enum low_crashinfo low_crashinfo_mode = LOW_CRASHINFO_INVALID;
 /* This value is only considered if low_crash_mode is set to MIN or ALL, so
  * setting a default here is safe. Default to 4GB.  This is because the current
  * KEXEC_CMD_get_range compat hypercall trucates 64bit pointers to 32 bits. The
- * typical usecase for crashinfo_maxaddr will be for 64bit Xen with 32bit dom0
+ * typical usecase for crashinfo_maxaddr will be for 64bit crux with 32bit dom0
  * and 32bit crash kernel. */
 static paddr_t __initdata crashinfo_maxaddr = 4ULL << 30;
 
@@ -332,7 +332,7 @@ void kexec_crash_save_cpu(void)
     elf_core_save_regs(&prstatus->pr_reg, cruxcore);
 }
 
-/* Set up the single Xen-specific-info crash note. */
+/* Set up the single crux-specific-info crash note. */
 crash_crux_info_t *kexec_crash_save_info(void)
 {
     int cpu = smp_processor_id();
@@ -436,12 +436,12 @@ static size_t sizeof_cpu_notes(const unsigned long cpu)
     /* All CPUs present a PRSTATUS and crash_crux_core note. */
     size_t bytes =
         + sizeof_note("CORE", sizeof(ELF_Prstatus)) +
-        + sizeof_note("Xen", sizeof(crash_crux_core_t));
+        + sizeof_note("crux", sizeof(crash_crux_core_t));
 
     /* CPU0 also presents the crash_crux_info note. */
     if ( ! cpu )
         bytes = bytes +
-            sizeof_note("Xen", sizeof(crash_crux_info_t));
+            sizeof_note("crux", sizeof(crash_crux_info_t));
 
     return bytes;
 }
@@ -514,15 +514,15 @@ static int kexec_init_cpu_notes(const unsigned long cpu)
             setup_note(note, "CORE", NT_PRSTATUS, sizeof(ELF_Prstatus));
             note = ELFNOTE_NEXT(note);
 
-            /* Set up Xen CORE note. */
-            setup_note(note, "Xen", CRUX_ELFNOTE_CRASH_REGS,
+            /* Set up crux CORE note. */
+            setup_note(note, "crux", CRUX_ELFNOTE_CRASH_REGS,
                        sizeof(crash_crux_core_t));
 
             if ( ! cpu )
             {
-                /* Set up Xen Crash Info note. */
+                /* Set up crux Crash Info note. */
                 crux_crash_note = note = ELFNOTE_NEXT(note);
-                setup_note(note, "Xen", CRUX_ELFNOTE_CRASH_INFO,
+                setup_note(note, "crux", CRUX_ELFNOTE_CRASH_INFO,
                            sizeof(crash_crux_info_t));
             }
         }
@@ -600,7 +600,7 @@ static int __init cf_check kexec_init(void)
         crash_heap_end = crash_heap_current + crash_heap_size;
     }
 
-    /* crash_notes may be allocated anywhere Xen can reach in memory.
+    /* crash_notes may be allocated anywhere crux can reach in memory.
        Only the individual CPU crash notes themselves must be allocated
        in lower memory if requested. */
     crash_notes = xzalloc_array(crash_note_range_t, nr_cpu_ids);

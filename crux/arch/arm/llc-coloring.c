@@ -66,9 +66,9 @@ unsigned int __init get_llc_way_size(void)
 }
 
 /*
- * get_crux_paddr - get physical address to relocate Xen to
+ * get_crux_paddr - get physical address to relocate crux to
  *
- * Xen is relocated to as near to the top of RAM as possible and
+ * crux is relocated to as near to the top of RAM as possible and
  * aligned to a CRUX_PADDR_ALIGN boundary.
  */
 static paddr_t __init get_crux_paddr(paddr_t crux_size)
@@ -93,7 +93,7 @@ static paddr_t __init get_crux_paddr(paddr_t crux_size)
                 continue;
 
 #ifdef CONFIG_ARM_32
-            /* Xen must be under 4GB */
+            /* crux must be under 4GB */
             if ( e > GB(4) )
                 e = GB(4);
             if ( e < bank->start )
@@ -108,9 +108,9 @@ static paddr_t __init get_crux_paddr(paddr_t crux_size)
     }
 
     if ( !paddr )
-        panic("Not enough memory to relocate Xen\n");
+        panic("Not enough memory to relocate crux\n");
 
-    printk("Placing Xen at 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
+    printk("Placing crux at 0x%"PRIpaddr"-0x%"PRIpaddr"\n",
            paddr, paddr + min_size);
 
     return paddr;

@@ -56,7 +56,7 @@ FUNC(start)
          */
         call    reset_stack
 
-        /* Xen's boot cpu id is equal to 0 so setup TP register for it */
+        /* crux's boot cpu id is equal to 0 so setup TP register for it */
         li      a0, 0
         call    setup_tp
 

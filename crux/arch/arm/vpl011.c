@@ -71,7 +71,7 @@ static void vpl011_update_interrupt_status(struct domain *d)
 
 /*
  * vpl011_write_data_crux writes chars from the vpl011 out buffer to the
- * console. Only to be used when the backend is Xen.
+ * console. Only to be used when the backend is crux.
  */
 static void vpl011_write_data_crux(struct domain *d, uint8_t data)
 {
@@ -113,7 +113,7 @@ static void vpl011_write_data_crux(struct domain *d, uint8_t data)
     }
 
     /*
-     * When backend is in Xen, we tell guest we are always ready for new data
+     * When backend is in crux, we tell guest we are always ready for new data
      * to be written. This is fulfilled by having:
      * - TXI/TXFE -> always set,
      * - TXFF/BUSY -> never set.
@@ -261,7 +261,7 @@ static void vpl011_update_tx_fifo_status(struct vpl011 *vpl011,
     struct cruxcons_interface *intf = vpl011->backend.dom.ring_buf;
     unsigned int fifo_threshold = sizeof(intf->out) - SBSA_UART_FIFO_LEVEL;
 
-    /* No TX FIFO handling when backend is in Xen */
+    /* No TX FIFO handling when backend is in crux */
     ASSERT(vpl011->backend_in_domain);
 
     BUILD_BUG_ON(sizeof(intf->out) < SBSA_UART_FIFO_SIZE);
@@ -378,6 +378,14 @@ static int vpl011_mmio_read(struct vcpu *v,
         VPL011_UNLOCK(d, flags);
         return 1;
 
+    case CR: /* HUSTLER: For roux RTOS as domU */
+        if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
+
+        VPL011_LOCK(d, flags);
+        *r = vreg_reg32_extract(vpl011->uartcr, info);
+        VPL011_UNLOCK(d, flags);
+        return 1;
+
     case RIS:
         if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
 
@@ -468,6 +476,15 @@ static int vpl011_mmio_write(struct vcpu *v,
     case MIS:
         goto write_ignore;
 
+    case CR: /* HUSTLER: For roux RTOS as domU */
+        if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
+
+        VPL011_LOCK(d, flags);
+        vreg_reg32_update(&vpl011->uartcr, r, info);
+        vpl011_update_interrupt_status(v->domain);
+        VPL011_UNLOCK(d, flags);
+        return 1;
+
     case IMSC:
         if ( !vpl011_reg32_check_access(dabt) ) goto bad_width;
 
@@ -521,7 +538,7 @@ static void vpl011_data_avail(struct domain *d,
     if ( in_fifo_level > 0 )
         vpl011->uartfr &= ~RXFE;
 
-    /* Set the FIFO_FULL bit if the Xen buffer is full. */
+    /* Set the FIFO_FULL bit if the crux buffer is full. */
     if ( in_fifo_level == in_size )
         vpl011->uartfr |= RXFF;
 
@@ -551,7 +568,7 @@ static void vpl011_data_avail(struct domain *d,
         vpl011->uartfr &= ~BUSY;
 
         /*
-         * When backend is in Xen, we are always ready for new data to be
+         * When backend is in crux, we are always ready for new data to be
          * written (i.e. no TX FIFO handling), therefore we do not want
          * to change the TX FIFO status in such case.
          */
@@ -575,7 +592,7 @@ int vpl011_rx_char_crux(struct domain *d, char c)
     struct vpl011_crux_backend *intf = vpl011->backend.crux;
     CRUXCONS_RING_IDX in_cons, in_prod, in_fifo_level;
 
-    /* Forward input iff the vpl011 backend is in Xen. */
+    /* Forward input iff the vpl011 backend is in crux. */
     if ( vpl011->backend_in_domain )
         return -ENODEV;
 
@@ -664,7 +681,7 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
         else
         {
             printk(CRUXLOG_ERR
-                   "vpl011: Unable to re-use the Xen UART information.\n");
+                   "vpl011: Unable to re-use the crux UART information.\n");
             return -EINVAL;
         }
 
@@ -678,7 +695,7 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
         if ( uart->size < GUEST_PL011_SIZE )
         {
             printk(CRUXLOG_ERR
-                   "vpl011: Can't re-use the Xen UART MMIO region as it is too small.\n");
+                   "vpl011: Can't re-use the crux UART MMIO region as it is too small.\n");
             return -EINVAL;
         }
     }
@@ -689,14 +706,14 @@ int domain_vpl011_init(struct domain *d, struct vpl011_init_info *info)
     }
 
     /*
-     * info is NULL when the backend is in Xen.
+     * info is NULL when the backend is in crux.
      * info is != NULL when the backend is in a domain.
      */
     if ( info != NULL )
     {
         vpl011->backend_in_domain = true;
 
-        /* Map the guest PFN to Xen address space. */
+        /* Map the guest PFN to crux address space. */
         rc =  prepare_ring_for_helper(d,
                                       gfn_x(info->gfn),
                                       &vpl011->backend.dom.ring_page,

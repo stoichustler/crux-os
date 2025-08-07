@@ -16,7 +16,7 @@ extern lpae_t boot_second_id[CRUX_PT_LPAE_ENTRIES];
 extern lpae_t boot_third[CRUX_PT_LPAE_ENTRIES * CRUX_NR_ENTRIES(2)];
 extern lpae_t boot_third_id[CRUX_PT_LPAE_ENTRIES];
 
-/* Find where Xen will be residing at runtime and return a PT entry */
+/* Find where crux will be residing at runtime and return a PT entry */
 lpae_t pte_of_cruxaddr(vaddr_t va);
 
 #endif /* __ARM_MMU_SETUP_H__ */

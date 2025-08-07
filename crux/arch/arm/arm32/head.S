@@ -171,7 +171,7 @@ FUNC_LOCAL(check_cpu_mode)
         moveq pc, lr                 /* Yes, return */
 
         /* OK, we're boned. */
-        PRINT("- Xen must be entered in NS Hyp mode -\r\n")
+        PRINT("- crux must be entered in NS Hyp mode -\r\n")
         PRINT("- Please update the bootloader -\r\n")
         b     fail
 END(check_cpu_mode)

@@ -33,8 +33,8 @@ config RISCV_ISA_C
 	default y
 	help
 	  Add "C" to the ISA subsets that the toolchain is allowed to
-	  emit when building Xen, which results in compressed instructions
-	  in the Xen binary.
+	  emit when building crux, which results in compressed instructions
+	  in the crux binary.
 
 	  If unsure, say Y.
 

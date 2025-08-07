@@ -2,7 +2,7 @@
 /******************************************************************************
  * crux-compat.h
  *
- * Guest OS interface to Xen.  Compatibility layer.
+ * Guest OS interface to crux.  Compatibility layer.
  *
  * Copyright (c) 2006, Christian Limpach
  */
@@ -13,7 +13,7 @@
 #define __CRUX_LATEST_INTERFACE_VERSION__ 0x00041300
 
 #if defined(__CRUX__) || defined(__CRUX_TOOLS__)
-/* Xen is built with matching headers and implements the latest interface. */
+/* crux is built with matching headers and implements the latest interface. */
 #define __CRUX_INTERFACE_VERSION__ __CRUX_LATEST_INTERFACE_VERSION__
 #elif !defined(__CRUX_INTERFACE_VERSION__)
 /* Guests which do not specify a version get the legacy interface. */

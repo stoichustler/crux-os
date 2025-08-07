@@ -2,7 +2,7 @@
 /******************************************************************************
  * blkif.h
  *
- * Unified block-device I/O interface for Xen guest OSes.
+ * Unified block-device I/O interface for crux guest OSes.
  *
  * Copyright (c) 2003-2004, Keir Fraser
  * Copyright (c) 2012, Spectra Logic Corporation
@@ -34,30 +34,30 @@
 /*
  * Feature and Parameter Negotiation
  * =================================
- * The two halves of a Xen block driver utilize nodes within the XenStore to
+ * The two halves of a crux block driver utilize nodes within the cruxStore to
  * communicate capabilities and to negotiate operating parameters.  This
  * section enumerates these nodes which reside in the respective front and
- * backend portions of the XenStore, following the XenBus convention.
+ * backend portions of the cruxStore, following the cruxBus convention.
  *
- * All data in the XenStore is stored as strings.  Nodes specifying numeric
+ * All data in the cruxStore is stored as strings.  Nodes specifying numeric
  * values are encoded in decimal.  Integer value ranges listed below are
  * expressed as fixed sized integer types capable of storing the conversion
  * of a properly formatted node string, without loss of information.
  *
- * Any specified default value is in effect if the corresponding XenBus node
- * is not present in the XenStore.
+ * Any specified default value is in effect if the corresponding cruxBus node
+ * is not present in the cruxStore.
  *
- * XenStore nodes in sections marked "PRIVATE" are solely for use by the
- * driver side whose XenBus tree contains them.
+ * cruxStore nodes in sections marked "PRIVATE" are solely for use by the
+ * driver side whose cruxBus tree contains them.
  *
- * XenStore nodes marked "DEPRECATED" in their notes section should only be
+ * cruxStore nodes marked "DEPRECATED" in their notes section should only be
  * used to provide interoperability with legacy implementations.
  *
- * See the XenBus state transition diagram below for details on when XenBus
+ * See the cruxBus state transition diagram below for details on when cruxBus
  * nodes must be published and when they can be queried.
  *
  *****************************************************************************
- *                            Backend XenBus Nodes
+ *                            Backend cruxBus Nodes
  *****************************************************************************
  *
  *------------------ Backend Device Identification (PRIVATE) ------------------
@@ -263,7 +263,7 @@
  *      "physical-sector-size", if that node is present.
  *
  *****************************************************************************
- *                            Frontend XenBus Nodes
+ *                            Frontend cruxBus Nodes
  *****************************************************************************
  *
  *----------------------- Request Transport Parameters -----------------------
@@ -271,14 +271,14 @@
  * event-channel
  *      Values:         <uint32_t>
  *
- *      The identifier of the Xen event channel used to signal activity
+ *      The identifier of the crux event channel used to signal activity
  *      in the ring buffer.
  *
  * ring-ref
  *      Values:         <uint32_t>
  *      Notes:          6
  *
- *      The Xen grant reference granting permission for the backend to map
+ *      The crux grant reference granting permission for the backend to map
  *      the sole page in a single page sized ring buffer.
  *
  * ring-ref%u
@@ -286,7 +286,7 @@
  *      Notes:          6
  *
  *      For a frontend providing a multi-page ring, a "number of ring pages"
- *      sized list of nodes, each containing a Xen grant reference granting
+ *      sized list of nodes, each containing a crux grant reference granting
  *      permission for the backend to map the page of the ring located
  *      at page index "%u".  Page indexes are zero based.
  *
@@ -376,7 +376,7 @@
  *
  * Notes
  * -----
- * (1) Multi-page ring buffer scheme first developed in the Citrix XenServer
+ * (1) Multi-page ring buffer scheme first developed in the Citrix cruxServer
  *     PV drivers.
  * (2) Multi-page ring buffer scheme first used in some RedHat distributions
  *     including a distribution deployed on certain nodes of the Amazon
@@ -385,7 +385,7 @@
  *     in slightly different forms, by both Citrix and RedHat/Amazon.
  *     For full interoperability, block front and backends should publish
  *     identical ring parameters, adjusted for unit differences, to the
- *     XenStore nodes used in both schemes.
+ *     cruxStore nodes used in both schemes.
  * (4) Devices that support discard functionality may internally allocate space
  *     (discardable extents) in units that are larger than the exported logical
  *     block size. If the backing device has such discardable extents the
@@ -478,11 +478,11 @@
  *                                   Startup                                 *
  *****************************************************************************
  *
- * Tool stack creates front and back nodes with state XenbusStateInitialising.
+ * Tool stack creates front and back nodes with state cruxbusStateInitialising.
  *
  * Front                                Back
  * =================================    =====================================
- * XenbusStateInitialising              XenbusStateInitialising
+ * cruxbusStateInitialising              cruxbusStateInitialising
  *  o Query virtual device               o Query backend device identification
  *    properties.                          data.
  *  o Setup OS device instance.          o Open and validate backend device.
@@ -491,7 +491,7 @@
  *                                                      |
  *                                                      |
  *                                                      V
- *                                      XenbusStateInitWait
+ *                                      cruxbusStateInitWait
  *
  * o Query backend features and
  *   transport parameters.
@@ -503,7 +503,7 @@
  *              |
  *              |
  *              V
- * XenbusStateInitialised
+ * cruxbusStateInitialised
  *
  *                                       o Query frontend transport parameters.
  *                                       o Connect to the request ring and
@@ -512,7 +512,7 @@
  *                                                      |
  *                                                      |
  *                                                      V
- *                                      XenbusStateConnected
+ *                                      cruxbusStateConnected
  *
  *  o Query backend device properties.
  *  o Finalize OS virtual device
@@ -520,20 +520,20 @@
  *              |
  *              |
  *              V
- * XenbusStateConnected
+ * cruxbusStateConnected
  *
  * Note: Drivers that do not support any optional features, or the negotiation
  *       of transport parameters, can skip certain states in the state machine:
  *
- *       o A frontend may transition to XenbusStateInitialised without
- *         waiting for the backend to enter XenbusStateInitWait.  In this
+ *       o A frontend may transition to cruxbusStateInitialised without
+ *         waiting for the backend to enter cruxbusStateInitWait.  In this
  *         case, default transport parameters are in effect and any
  *         transport parameters published by the frontend must contain
  *         their default values.
  *
- *       o A backend may transition to XenbusStateInitialised, bypassing
- *         XenbusStateInitWait, without waiting for the frontend to first
- *         enter the XenbusStateInitialised state.  In this case, default
+ *       o A backend may transition to cruxbusStateInitialised, bypassing
+ *         cruxbusStateInitWait, without waiting for the frontend to first
+ *         enter the cruxbusStateInitialised state.  In this case, default
  *         transport parameters are in effect and any transport parameters
  *         published by the backend must contain their default values.
  *
@@ -555,14 +555,14 @@
  * execution of the barrier request.  All writes issued after the barrier
  * request must not execute until after the completion of the barrier request.
  *
- * Optional.  See "feature-barrier" XenBus node documentation above.
+ * Optional.  See "feature-barrier" cruxBus node documentation above.
  */
 #define BLKIF_OP_WRITE_BARRIER     2
 /*
  * Commit any uncommitted contents of the backing device's volatile cache
  * to stable storage.
  *
- * Optional.  See "feature-flush-cache" XenBus node documentation above.
+ * Optional.  See "feature-flush-cache" cruxBus node documentation above.
  */
 #define BLKIF_OP_FLUSH_DISKCACHE   3
 /*
@@ -587,7 +587,7 @@
  *     Interface%20manuals/100293068c.pdf
  *
  * Optional.  See "feature-discard", "discard-alignment",
- * "discard-granularity", and "discard-secure" in the XenBus node
+ * "discard-granularity", and "discard-secure" in the cruxBus node
  * documentation above.
  */
 #define BLKIF_OP_DISCARD           5

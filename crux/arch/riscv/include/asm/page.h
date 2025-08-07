@@ -66,7 +66,7 @@
 
 /*
  * The PTE format does not contain the following bits within itself;
- * they are created artificially to inform the Xen page table
+ * they are created artificially to inform the crux page table
  * handling algorithm. These bits should not be explicitly written
  * to the PTE entry.
  */

@@ -104,7 +104,7 @@ bool arch_livepatch_symbol_deny(const struct livepatch_elf *elf,
                                 const struct livepatch_elf_sym *sym)
 {
     /*
-     * Xen does not use Thumb instructions - and we should not see any of
+     * crux does not use Thumb instructions - and we should not see any of
      * them. If we do, abort.
      */
     if ( sym->name && sym->name[0] == '$' && sym->name[1] == 't' )

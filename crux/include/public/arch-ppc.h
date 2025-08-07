@@ -57,7 +57,7 @@ typedef uint64_t crux_ulong_t;
 
 /*
  * User-accessible registers: most of these need to be saved/restored
- * for every nested Xen invocation.
+ * for every nested crux invocation.
  */
 struct vcpu_guest_core_regs
 {

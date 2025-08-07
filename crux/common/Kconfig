@@ -4,7 +4,7 @@ menu "Common Features"
 config COMPAT
 	bool
 	help
-	  32-bit interface support on 64-bit Xen which is used for both
+	  32-bit interface support on 64-bit crux which is used for both
 	  HVM and PV guests. HVMLoader makes 32-bit hypercalls irrespective
 	  of the destination runmode of the guest.
 
@@ -22,8 +22,8 @@ config DOM0LESS_BOOT
 	select DEVICE_TREE_PARSE
 	default y
 	help
-	  Dom0less boot support enables Xen to create and start domU guests during
-	  Xen boot without the need of a control domain (Dom0), which could be
+	  Dom0less boot support enables crux to create and start domU guests during
+	  crux boot without the need of a control domain (Dom0), which could be
 	  present anyway.
 
 config DOMAIN_BUILD_HELPERS
@@ -36,7 +36,7 @@ config GRANT_TABLE
 	  Grant table provides a generic mechanism to memory sharing
 	  between domains. This shared memory interface underpins the
 	  split device drivers for block and network IO in a classic
-	  Xen setup.
+	  crux setup.
 
 	  If unsure, say Y.
 
@@ -66,7 +66,7 @@ config PDX_COMPRESSION
 	  banks.
 
 	  If your platform does have sparse RAM banks, enabling PDX
-	  compression may reduce the memory overhead of Xen, but does carry a
+	  compression may reduce the memory overhead of crux, but does carry a
 	  runtime performance cost.
 
 	  If your platform does not have sparse RAM banks, do not enable PDX
@@ -191,9 +191,9 @@ config INDIRECT_THUNK
 	depends on CC_HAS_INDIRECT_THUNK
 	default y
 	help
-	  Compile Xen with out-of-line indirect call and jumps.
+	  Compile crux with out-of-line indirect call and jumps.
 
-	  This allows Xen to mitigate a variety of speculative vulnerabilities
+	  This allows crux to mitigate a variety of speculative vulnerabilities
 	  by choosing a hardware-dependent instruction sequence to implement
 	  (e.g. function pointers) safely.  "Retpoline" is one such sequence.
 
@@ -202,9 +202,9 @@ config RETURN_THUNK
 	depends on CC_HAS_RETURN_THUNK
 	default INDIRECT_THUNK
 	help
-	  Compile Xen with out-of-line returns.
+	  Compile crux with out-of-line returns.
 
-	  This allows Xen to mitigate a variety of speculative vulnerabilities
+	  This allows crux to mitigate a variety of speculative vulnerabilities
 	  by choosing a hardware-dependent instruction sequence to implement
 	  function returns safely.
 
@@ -212,7 +212,7 @@ config SPECULATIVE_HARDEN_ARRAY
 	bool "Speculative Array Hardening"
 	default y
 	help
-	  Compile Xen with extra hardening for some array accesses.
+	  Compile crux with extra hardening for some array accesses.
 
 	  When enabled, specific array accesses which have been deemed liable
 	  to be speculatively abused will be hardened to avoid out-of-bounds
@@ -226,7 +226,7 @@ config SPECULATIVE_HARDEN_BRANCH
 	default y
 	depends on X86
 	help
-	  Compile Xen with extra hardening for some conditional branches.
+	  Compile crux with extra hardening for some conditional branches.
 
 	  When enabled, specific conditions which have been deemed liable to
 	  be speculatively abused will be hardened to avoid entering the wrong
@@ -242,7 +242,7 @@ config SPECULATIVE_HARDEN_GUEST_ACCESS
 	default y
 	depends on PV
 	help
-	  Compile Xen with extra hardening for PV guest memory access.
+	  Compile crux with extra hardening for PV guest memory access.
 
 	  When enabled, code paths accessing PV guest memory will have guest
 	  controlled addresses massaged such that memory accesses through them
@@ -253,7 +253,7 @@ config SPECULATIVE_HARDEN_LOCK
 	default y
 	depends on X86
 	help
-	  Compile Xen with extra hardening for locked regions.
+	  Compile crux with extra hardening for locked regions.
 
 	  This option is disabled by default at run time, and needs to be
 	  enabled on the command line.
@@ -291,7 +291,7 @@ config HYPFS
 	bool "Hypervisor file system support"
 	default y
 	help
-	  Support Xen hypervisor file system. This file system is used to
+	  Support crux hypervisor file system. This file system is used to
 	  present various hypervisor internal data to dom0 and in some
 	  cases to allow modifying settings. Disabling the support will
 	  result in some features not being available, e.g. runtime parameter
@@ -324,9 +324,9 @@ config KEXEC
 	default y
 	depends on HAS_KEXEC
 	help
-	  Allows a running Xen hypervisor to be replaced with another OS
+	  Allows a running crux hypervisor to be replaced with another OS
 	  without rebooting. This is primarily used to execute a crash
-	  environment to collect information on a Xen hypervisor or dom0 crash.
+	  environment to collect information on a crux hypervisor or dom0 crash.
 
 	  If unsure, say Y.
 
@@ -341,22 +341,22 @@ config EFI_SET_VIRTUAL_ADDRESS_MAP
       If unsure, say N.
 
 config CRUXOPROF
-	bool "Xen Oprofile Support" if EXPERT
+	bool "crux Oprofile Support" if EXPERT
 	depends on X86
 	help
-	  Xen OProfile (Xenoprof) is a system-wide profiler for Xen virtual
-	  machine environments, capable of profiling the Xen virtual machine
+	  crux OProfile (cruxoprof) is a system-wide profiler for crux virtual
+	  machine environments, capable of profiling the crux virtual machine
 	  monitor, multiple Linux guest operating systems, and applications
 	  running on them.
 
 	  If unsure, say Y.
 
 config XSM
-	bool "Xen Security Modules support"
+	bool "crux Security Modules support"
 	default ARM
 	help
-	  Enables the security framework known as Xen Security Modules which
-	  allows administrators fine-grained control over a Xen domain and
+	  Enables the security framework known as crux Security Modules which
+	  allows administrators fine-grained control over a crux domain and
 	  its capabilities by defining permissible interactions between domains,
 	  the hypervisor itself, and related resources such as memory and
 	  devices.
@@ -388,7 +388,7 @@ config XSM_FLASK_AVC_STATS
 	  If unsure, say Y.
 
 config XSM_FLASK_POLICY
-	bool "Compile Xen with a built-in FLASK security policy"
+	bool "Compile crux with a built-in FLASK security policy"
 	default y if "$(CRUX_HAS_CHECKPOLICY)" = "y"
 	depends on XSM_FLASK
 	help
@@ -480,7 +480,7 @@ config LIVEPATCH
 	depends on "$(CRUX_HAS_BUILD_ID)" = "y" && SYSCTL && HAS_VMAP
 	select CC_SPLIT_SECTIONS
 	help
-	  Allows a running Xen hypervisor to be dynamically patched using
+	  Allows a running crux hypervisor to be dynamically patched using
 	  binary patches without rebooting. This is primarily used to binarily
 	  patch in the field an hypervisor with XSA fixes.
 
@@ -510,7 +510,7 @@ config ENFORCE_UNIQUE_SYMBOLS
 	  names, and attempting to a duplicate symbol in a livepatch will
 	  result in incorrect livepatch application.
 
-	  This option should be used to ensure that a build of Xen can have a
+	  This option should be used to ensure that a build of crux can have a
 	  livepatch build and apply correctly.
 
 config SUPPRESS_DUPLICATE_SYMBOL_WARNINGS
@@ -562,7 +562,7 @@ config DTB_FILE
 	help
 	  When using a bootloader that has no device tree support or when there
 	  is no bootloader at all, use this option to specify the absolute path
-	  to a device tree that will be linked directly inside Xen binary.
+	  to a device tree that will be linked directly inside crux binary.
 
 	  This is an optional config. Leave empty if not needed.
 
@@ -571,8 +571,8 @@ config TRACEBUFFER
 	default y
 	depends on SYSCTL
 	help
-	  Enable tracing infrastructure and pre-defined tracepoints within Xen.
-	  This will allow live information about Xen's execution and performance
+	  Enable tracing infrastructure and pre-defined tracepoints within crux.
+	  This will allow live information about crux's execution and performance
 	  to be collected at run time for debugging or performance analysis.
 	  Memory and execution overhead when not active is minimal.
 
@@ -599,7 +599,7 @@ config BUDDY_ALLOCATOR_SIZE
 	default "64"
 	depends on LLC_COLORING
 	help
-	  Amount of memory reserved for the buddy allocator to serve Xen heap,
+	  Amount of memory reserved for the buddy allocator to serve crux heap,
 	  working alongside the colored one.
 
 config SYSTEM_SUSPEND_ALWAYS_ON
@@ -625,7 +625,7 @@ config SYSCTL
 	default y
 	help
 	  This option shall only be disabled on some dom0less systems, or
-	  PV shim on x86, to reduce Xen footprint.
+	  PV shim on x86, to reduce crux footprint.
 
 endmenu
 

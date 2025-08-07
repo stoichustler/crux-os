@@ -64,7 +64,7 @@ static u8 *__read_mostly igd_reg_va;
 static spinlock_t igd_lock;
 
 /*
- * QUIRK to workaround Xen boot issue on Calpella/Ironlake OEM BIOS
+ * QUIRK to workaround crux boot issue on Calpella/Ironlake OEM BIOS
  * not enabling VT-d properly in IGD.  The workaround is to not enabling
  * IGD VT-d translation if VT is not enabled in IGD.
  */
@@ -181,7 +181,7 @@ static void __init snb_errata_init(void)
  */
 
 /*
- * map IGD MMIO+0x2000 page to allow Xen access to IGD 3D register.
+ * map IGD MMIO+0x2000 page to allow crux access to IGD 3D register.
  */
 static void __init map_igd_reg(void)
 {
@@ -624,7 +624,7 @@ void __init quirk_iommu_caps(struct vtd_iommu *iommu)
      * There are issues changing the walk length under in-flight DMA, which
      * has manifested as incompatibility between EPT/IOMMU sharing and the
      * workaround for CVE-2018-12207 / XSA-304.  Hide the superpages
-     * capabilities in the IOMMU, which will prevent Xen from sharing the EPT
+     * capabilities in the IOMMU, which will prevent crux from sharing the EPT
      * and IOMMU pagetables.
      *
      * Detection of SandyBridge unfortunately has to be done by processor
