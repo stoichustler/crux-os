@@ -31,8 +31,7 @@
 /* This implementation is optimized for performance.  For code size a generic
    implementation of this function from newlib/libc/string/strcpy.c will be
    used.  */
-#include <picolibc.h>
-#if !defined (__OPTIMIZE_SIZE__) && !defined (__PREFER_SIZE_OVER_SPEED) \
+#if !defined (__OPTIMIZE_SIZE__) && !defined (PREFER_SIZE_OVER_SPEED) \
     && !defined (__ARC_RF16__)
 
 #include "asm.h"
@@ -89,4 +88,4 @@ ENTRY (strcpy)
 ENDFUNC (strcpy)
 #endif /* __ARC601__ || !__ARC_BARREL_SHIFTER__ */
 
-#endif /* !__OPTIMIZE_SIZE__ && !__PREFER_SIZE_OVER_SPEED */
+#endif /* !__OPTIMIZE_SIZE__ && !PREFER_SIZE_OVER_SPEED */

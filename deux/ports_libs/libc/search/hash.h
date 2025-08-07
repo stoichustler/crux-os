@@ -39,14 +39,14 @@
 #include <stdint.h>
 
 /* Check that newlib understands the byte order of its target system.  */
-#ifndef _BYTE_ORDER
-#error _BYTE_ORDER not defined by sys/param.h
+#ifndef BYTE_ORDER
+#error BYTE_ORDER not defined by sys/param.h
 #endif
 
 /* Define DB endianness constants based on target endianness.  */
 #define DB_LITTLE_ENDIAN 1234
 #define DB_BIG_ENDIAN 4321
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 #define DB_BYTE_ORDER DB_LITTLE_ENDIAN
 #else
 #define DB_BYTE_ORDER DB_BIG_ENDIAN
@@ -55,7 +55,7 @@
 /* Operations */
 typedef enum {
 	HASH_GET, HASH_PUT, HASH_PUTNEW, HASH_DELETE, HASH_FIRST, HASH_NEXT
-} HASH_ACTION;
+} ACTION;
 
 /* Buffer Management structures */
 typedef struct _bufhead BUFHEAD;
@@ -77,13 +77,6 @@ struct _bufhead {
 
 typedef BUFHEAD **SEGMENT;
 
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-/* 'bsize' is used directly with malloc/realloc which confuses -fanalyzer */
-#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-#endif
-
 /* Hash Table Information */
 typedef struct hashhdr {		/* Disk resident portion */
 	int32_t		magic;		/* Magic NO for hash tables */
@@ -104,7 +97,7 @@ typedef struct hashhdr {		/* Disk resident portion */
 	int32_t		ffactor;	/* Fill factor */
 	int32_t		nkeys;		/* Number of keys in hash table */
 	int32_t		hdrpages;	/* Size of table header */
-	uint32_t	h_charkey;	/* value of hash(CHARKEY) */
+	int32_t		h_charkey;	/* value of hash(CHARKEY) */
 #define NCACHED	32			/* number of bit maps and spare 
 					 * points */
 	int32_t		spares[NCACHED];/* spare pages for overflow */

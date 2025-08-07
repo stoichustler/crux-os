@@ -80,20 +80,15 @@
  *	down depends on the machine and the number being converted.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
 #include <string.h>
+#include <reent.h>
 #include "mprec.h"
-#include "atexit.h"
 
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
-#pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local struct _Bigint *_tls_mp_p5s;
+_Thread_local struct _Bigint **_tls_mp_freelist;
 #endif
 
 /* This is defined in sys/reent.h as (sizeof (size_t) << 3) now, as in NetBSD.
@@ -102,76 +97,59 @@
    based on BSD code.
 #define _Kmax 15
 */
-/* This value is used in stdlib/misc.c.  reent/reent.c has to know it
-   as well to make sure the freelist is correctly free'd.  Therefore
-   we define it here, rather than in stdlib/misc.c, as before. */
-#define _Kmax (sizeof (size_t) << 3)
-
-static __THREAD_LOCAL char *__dtoa_result;
-static __THREAD_LOCAL int __dtoa_result_len;
-
-char *__alloc_dtoa_result(int len)
-{
-  if (len > __dtoa_result_len) {
-    if (__mprec_register_exit() != 0)
-      return NULL;
-    if (__dtoa_result)
-      free(__dtoa_result);
-    __dtoa_result = malloc(len);
-    if (__dtoa_result)
-      __dtoa_result_len = len;
-  }
-  return __dtoa_result;
-}
-
-static __THREAD_LOCAL int _mprec_exit_registered;
-
-static void
-__mprec_exit(void)
-{
-  if (__dtoa_result) {
-    free(__dtoa_result);
-    __dtoa_result = NULL;
-    __dtoa_result_len = 0;
-  }
-}
-
-int
-__mprec_register_exit(void)
-{
-  if (!_mprec_exit_registered) {
-    _mprec_exit_registered = 1;
-    return atexit(__mprec_exit);
-  }
-  return 0;
-}
 
 _Bigint *
-Balloc (int k)
+Balloc (struct _reent *ptr, int k)
 {
   int x;
   _Bigint *rv ;
 
-  x = 1 << k;
-  /* Allocate an mprec Bigint */
-  rv = (_Bigint *) calloc(1,
-			  sizeof (_Bigint) +
-			  (x) * sizeof(rv->_x[0]));
-  if (rv == NULL) return NULL;
-  rv->_k = k;
-  rv->_maxwds = x;
+  _REENT_CHECK_MP(ptr);
+  if (_REENT_MP_FREELIST(ptr) == NULL)
+    {
+      /* Allocate a list of pointers to the mprec objects */
+      _REENT_MP_FREELIST(ptr) = (struct _Bigint **) _calloc_r (ptr, 
+						      sizeof (struct _Bigint *),
+						      _Kmax + 1);
+      if (_REENT_MP_FREELIST(ptr) == NULL)
+	{
+	  return NULL;
+	}
+    }
+
+  if ((rv = _REENT_MP_FREELIST(ptr)[k]) != 0)
+    {
+      _REENT_MP_FREELIST(ptr)[k] = rv->_next;
+    }
+  else
+    {
+      x = 1 << k;
+      /* Allocate an mprec Bigint and stick in in the freelist */
+      rv = (_Bigint *) _calloc_r (ptr,
+				  1,
+				  sizeof (_Bigint) +
+				  (x-1) * sizeof(rv->_x));
+      if (rv == NULL) return NULL;
+      rv->_k = k;
+      rv->_maxwds = x;
+    }
   rv->_sign = rv->_wds = 0;
   return rv;
 }
 
 void
-Bfree (_Bigint * v)
+Bfree (struct _reent *ptr, _Bigint * v)
 {
-  free(v);
+  _REENT_CHECK_MP(ptr);
+  if (v)
+    {
+      v->_next = _REENT_MP_FREELIST(ptr)[v->_k];
+      _REENT_MP_FREELIST(ptr)[v->_k] = v;
+    }
 }
 
 _Bigint *
-multadd (
+multadd (struct _reent *ptr,
 	_Bigint * b,
 	int m,
 	int a)
@@ -182,9 +160,6 @@ multadd (
   __ULong xi, z;
 #endif
   _Bigint *b1;
-
-  if (!b)
-    return NULL;
 
   wds = b->_wds;
   x = b->_x;
@@ -208,13 +183,9 @@ multadd (
     {
       if (wds >= b->_maxwds)
 	{
-	  b1 = Balloc (b->_k + 1);
-	  if (!b1) {
-	    Bfree(b);
-	    return NULL;
-	  }
+	  b1 = eBalloc (ptr, b->_k + 1);
 	  Bcopy (b1, b);
-	  Bfree (b);
+	  Bfree (ptr, b);
 	  b = b1;
 	}
       b->_x[wds++] = a;
@@ -224,7 +195,7 @@ multadd (
 }
 
 _Bigint *
-s2b (
+s2b (struct _reent * ptr,
 	const char *s,
 	int nd0,
 	int nd,
@@ -237,15 +208,11 @@ s2b (
   x = (nd + 8) / 9;
   for (k = 0, y = 1; x > y; y <<= 1, k++);
 #ifdef Pack_32
-  b = Balloc (k);
-  if (!b)
-    return NULL;
+  b = eBalloc (ptr, k);
   b->_x[0] = y9;
   b->_wds = 1;
 #else
-  b = Balloc (k + 1);
-  if (!b)
-    return NULL;
+  b = eBalloc (ptr, k + 1);
   b->_x[0] = y9 & 0xffff;
   b->_wds = (b->_x[1] = y9 >> 16) ? 2 : 1;
 #endif
@@ -255,14 +222,14 @@ s2b (
     {
       s += 9;
       do
-	b = multadd (b, 10, *s++ - '0');
+	b = multadd (ptr, b, 10, *s++ - '0');
       while (++i < nd0);
       s++;
     }
   else
     s += 10;
   for (; i < nd; i++)
-    b = multadd (b, 10, *s++ - '0');
+    b = multadd (ptr, b, 10, *s++ - '0');
   return b;
 }
 
@@ -343,7 +310,7 @@ lo0bits (__ULong *y)
     {
       k++;
       x >>= 1;
-      if (!(x & 1))
+      if (!x & 1)
 	return 32;
     }
   *y = x;
@@ -351,20 +318,18 @@ lo0bits (__ULong *y)
 }
 
 _Bigint *
-i2b (int i)
+i2b (struct _reent * ptr, int i)
 {
   _Bigint *b;
 
-  b = Balloc (1);
-  if (b) {
-    b->_x[0] = i;
-    b->_wds = 1;
-  }
+  b = eBalloc (ptr, 1);
+  b->_x[0] = i;
+  b->_wds = 1;
   return b;
 }
 
 _Bigint *
-mult (_Bigint * a, _Bigint * b)
+mult (struct _reent * ptr, _Bigint * a, _Bigint * b)
 {
   _Bigint *c;
   int k, wa, wb, wc;
@@ -373,9 +338,6 @@ mult (_Bigint * a, _Bigint * b)
 #ifdef Pack_32
   __ULong z2;
 #endif
-
-  if (!a || !b)
-    return NULL;
 
   if (a->_wds < b->_wds)
     {
@@ -389,9 +351,7 @@ mult (_Bigint * a, _Bigint * b)
   wc = wa + wb;
   if (wc > a->_maxwds)
     k++;
-  c = Balloc (k);
-  if (!c)
-    return NULL;
+  c = eBalloc (ptr, k);
   for (x = c->_x, xa = x + wc; x < xa; x++)
     *x = 0;
   xa = a->_x;
@@ -461,45 +421,50 @@ mult (_Bigint * a, _Bigint * b)
 }
 
 _Bigint *
-pow5mult (_Bigint * b, int k)
+pow5mult (struct _reent * ptr, _Bigint * b, int k)
 {
   _Bigint *b1, *p5, *p51;
   int i;
   static const int p05[3] = {5, 25, 125};
 
   if ((i = k & 3) != 0)
-    b = multadd (b, p05[i - 1], 0);
+    b = multadd (ptr, b, p05[i - 1], 0);
 
   if (!(k >>= 2))
     return b;
-  p5 = i2b (625);
+  _REENT_CHECK_MP(ptr);
+  if (!(p5 = _REENT_MP_P5S(ptr)))
+    {
+      /* first time */
+      p5 = _REENT_MP_P5S(ptr) = i2b (ptr, 625);
+      p5->_next = 0;
+    }
   for (;;)
     {
       if (k & 1)
 	{
-	  b1 = mult (b, p5);
-	  Bfree (b);
+	  b1 = mult (ptr, b, p5);
+	  Bfree (ptr, b);
 	  b = b1;
 	}
       if (!(k >>= 1))
 	break;
-      p51 = mult (p5, p5);
-      Bfree(p5);
+      if (!(p51 = p5->_next))
+	{
+	  p51 = p5->_next = mult (ptr, p5, p5);
+	  p51->_next = 0;
+	}
       p5 = p51;
     }
-  Bfree(p5);
   return b;
 }
 
 _Bigint *
-lshift (_Bigint * b, int k)
+lshift (struct _reent * ptr, _Bigint * b, int k)
 {
   int i, k1, n, n1;
   _Bigint *b1;
   __ULong *x, *x1, *xe, z;
-
-  if (!b)
-    return NULL;
 
 #ifdef Pack_32
   n = k >> 5;
@@ -510,10 +475,7 @@ lshift (_Bigint * b, int k)
   n1 = n + b->_wds + 1;
   for (i = b->_maxwds; n1 > i; i <<= 1)
     k1++;
-  b1 = Balloc (k1);
-  if (!b1)
-    goto bail;
-
+  b1 = eBalloc (ptr, k1);
   x1 = b1->_x;
   for (i = 0; i < n; i++)
     *x1++ = 0;
@@ -553,8 +515,7 @@ lshift (_Bigint * b, int k)
       *x1++ = *x++;
     while (x < xe);
   b1->_wds = n1 - 1;
-bail:
-  Bfree (b);
+  Bfree (ptr, b);
   return b1;
 }
 
@@ -563,9 +524,6 @@ cmp (_Bigint * a, _Bigint * b)
 {
   __ULong *xa, *xa0, *xb, *xb0;
   int i, j;
-
-  if (!a || !b)
-    return 0;
 
   i = a->_wds;
   j = b->_wds;
@@ -592,7 +550,7 @@ cmp (_Bigint * a, _Bigint * b)
 }
 
 _Bigint *
-diff (
+diff (struct _reent * ptr,
 	_Bigint * a, _Bigint * b)
 {
   _Bigint *c;
@@ -606,9 +564,7 @@ diff (
   i = cmp (a, b);
   if (!i)
     {
-      c = Balloc (0);
-      if (!c)
-	return NULL;
+      c = eBalloc (ptr, 0);
       c->_wds = 1;
       c->_x[0] = 0;
       return c;
@@ -622,9 +578,7 @@ diff (
     }
   else
     i = 0;
-  c = Balloc (a->_k);
-  if (!c)
-    return NULL;
+  c = eBalloc (ptr, a->_k);
   c->_sign = i;
   wa = a->_wds;
   xa = a->_x;
@@ -717,7 +671,7 @@ ulp (double _x)
 	  word0 (a) = 0;
 	  L -= Exp_shift;
 #ifndef _DOUBLE_IS_32BITS
-          word1 (a) = L >= 31 ? 1 : (__uint32_t) 1 << (31 - L);
+         word1 (a) = L >= 31 ? 1 : 1 << (31 - L);
 #endif
 	}
     }
@@ -728,10 +682,7 @@ ulp (double _x)
 double
 b2d (_Bigint * a, int *e)
 {
-  __ULong *xa, *xa0, y, z;
-#if !defined(Pack_32) || !defined(_DOUBLE_IS_32BITS)
-  __ULong w;
-#endif
+  __ULong *xa, *xa0, w, y, z;
   int k;
   union double_union d;
 #ifdef VAX
@@ -754,8 +705,8 @@ b2d (_Bigint * a, int *e)
   if (k < Ebits)
     {
       d0 = Exp_1 | y >> (Ebits - k);
-#ifndef _DOUBLE_IS_32BITS
       w = xa > xa0 ? *--xa : 0;
+#ifndef _DOUBLE_IS_32BITS
       d1 = y << ((32 - Ebits) + k) | w >> (Ebits - k);
 #endif
       goto ret_d;
@@ -805,7 +756,7 @@ ret_d:
 }
 
 _Bigint *
-d2b (
+d2b (struct _reent * ptr,
 	double _d,
 	int *e,
 	int *bits)
@@ -814,10 +765,7 @@ d2b (
   union double_union d;
   _Bigint *b;
   int de, i, k;
-  __ULong *x, z;
-#if !defined(Pack_32) || !defined(_DOUBLE_IS_32BITS)
-  __ULong y;
-#endif
+  __ULong *x, y, z;
 #ifdef VAX
   __ULong d0, d1;
 #endif
@@ -832,12 +780,10 @@ d2b (
 #endif
 
 #ifdef Pack_32
-  b = Balloc (1);
+  b = eBalloc (ptr, 1);
 #else
-  b = Balloc (2);
+  b = eBalloc (ptr, 2);
 #endif
-  if (!b)
-    return NULL;
   x = b->_x;
 
   z = d0 & Frac_mask;

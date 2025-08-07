@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_FLOAT
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -89,7 +89,7 @@ log2_inline (uint32_t ix)
 #undef T
 #define N (1 << EXP2F_TABLE_BITS)
 #define T __exp2f_data.tab
-#define SIGN_BIAS ((uint32_t) 1 << (EXP2F_TABLE_BITS + 11))
+#define SIGN_BIAS (1 << (EXP2F_TABLE_BITS + 11))
 
 /* The output of log2 and thus the input of exp2 is either scaled by N
    (in case of fast toint intrinsics) or not.  The unscaled xd must be
@@ -120,7 +120,7 @@ exp2_inline (double_t xd, uint32_t sign_bias)
   t = T[ki % N];
   ski = ki + sign_bias;
   t += ski << (52 - EXP2F_TABLE_BITS);
-  s = asfloat64 (t);
+  s = asdouble (t);
   z = C[0] * r + C[1];
   r2 = r * r;
   y = C[2] * r + 1;
@@ -139,9 +139,9 @@ checkint (uint32_t iy)
     return 0;
   if (e > 0x7f + 23)
     return 2;
-  if (iy & (((uint32_t) 1 << (0x7f + 23 - e)) - 1))
+  if (iy & ((1 << (0x7f + 23 - e)) - 1))
     return 0;
-  if (iy & ((uint32_t) 1 << (0x7f + 23 - e)))
+  if (iy & (1 << (0x7f + 23 - e)))
     return 1;
   return 2;
 }
@@ -149,7 +149,7 @@ checkint (uint32_t iy)
 static inline int
 zeroinfnan (uint32_t ix)
 {
-  return 2 * ix - 1 >= 2u * (uint32_t) 0x7f800000 - 1;
+  return 2 * ix - 1 >= 2u * 0x7f800000 - 1;
 }
 
 float
@@ -171,11 +171,11 @@ powf (float x, float y)
 	    return issignalingf_inline (x) ? x + y : 1.0f;
 	  if (ix == 0x3f800000)
 	    return issignalingf_inline (y) ? x + y : 1.0f;
-	  if (2 * ix > 2u * (uint32_t) 0x7f800000 || 2 * iy > 2u * (uint32_t) 0x7f800000)
+	  if (2 * ix > 2u * 0x7f800000 || 2 * iy > 2u * 0x7f800000)
 	    return x + y;
-	  if (2 * ix == 2 * (uint32_t) 0x3f800000)
+	  if (2 * ix == 2 * 0x3f800000)
 	    return 1.0f;
-	  if ((2 * ix < 2 * (uint32_t) 0x3f800000) == !(iy & (uint32_t) 0x80000000))
+	  if ((2 * ix < 2 * 0x3f800000) == !(iy & 0x80000000))
 	    return 0.0f; /* |x|<1 && y==inf or |x|>1 && y==-inf.  */
 	  return y * y;
 	}
@@ -187,13 +187,11 @@ powf (float x, float y)
 	      x2 = -x2;
 	      sign_bias = 1;
 	    }
-          if (!(iy & 0x80000000))
-              return opt_barrier_float(x2);
 #if WANT_ERRNO
-          if (2 * ix == 0)
-              return __math_divzerof (sign_bias);
+	  if (2 * ix == 0 && iy & 0x80000000)
+	    return __math_divzerof (sign_bias);
 #endif
-          return 1 / x2;
+	  return iy & 0x80000000 ? 1 / x2 : x2;
 	}
       /* x and y are non-zero finite.  */
       if (ix & 0x80000000)
@@ -211,11 +209,11 @@ powf (float x, float y)
 	  /* Normalize subnormal x so exponent becomes negative.  */
 	  ix = asuint (x * 0x1p23f);
 	  ix &= 0x7fffffff;
-	  ix -= (uint32_t) 23 << 23;
+	  ix -= 23 << 23;
 	}
     }
   double_t logx = log2_inline (ix);
-  double_t ylogx = (double) y * logx; /* Note: cannot overflow, y is single prec.  */
+  double_t ylogx = y * logx; /* Note: cannot overflow, y is single prec.  */
   if (__builtin_expect ((asuint64 (ylogx) >> 47 & 0xffff)
 			  >= asuint64 (126.0 * POWF_SCALE) >> 47,
 			0))
@@ -224,8 +222,8 @@ powf (float x, float y)
       if (ylogx > 0x1.fffffffd1d571p+6 * POWF_SCALE)
 	/* |x^y| > 0x1.ffffffp127.  */
 	return __math_oflowf (sign_bias);
-#if WANT_ROUNDING && WANT_ERRNO
-      if (ylogx > 0x1.fffffffa3aae2p+6 * POWF_SCALE)
+      if (WANT_ROUNDING && WANT_ERRNO
+	  && ylogx > 0x1.fffffffa3aae2p+6 * POWF_SCALE)
 	/* |x^y| > 0x1.fffffep127, check if we round away from 0.  */
 	if ((!sign_bias
 	     && eval_as_float (1.0f + opt_barrier_float (0x1p-25f)) != 1.0f)
@@ -233,7 +231,6 @@ powf (float x, float y)
 		&& eval_as_float (-1.0f - opt_barrier_float (0x1p-25f))
 		     != -1.0f))
 	  return __math_oflowf (sign_bias);
-#endif
       if (ylogx <= -150.0 * POWF_SCALE)
 	return __math_uflowf (sign_bias);
 #if WANT_ERRNO_UFLOW
@@ -243,12 +240,4 @@ powf (float x, float y)
     }
   return (float) exp2_inline (ylogx, sign_bias);
 }
-
-#ifdef __strong_reference
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(powf, _powf);
-#endif
-
-#endif /* !__OBSOLETE_MATH_FLOAT */
+#endif /* !__OBSOLETE_MATH */

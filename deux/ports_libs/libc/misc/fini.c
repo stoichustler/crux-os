@@ -12,31 +12,28 @@
 
 /* Handle ELF .{pre_init,init,fini}_array sections.  */
 #include <sys/types.h>
-#include <sys/_initfini.h>
 
-#ifdef __INIT_FINI_ARRAY
+#ifdef _HAVE_INITFINI_ARRAY
+extern void (*__fini_array_start []) (void) __attribute__((weak));
+extern void (*__fini_array_end []) (void) __attribute__((weak));
 
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
+#ifdef _HAVE_INIT_FINI
+extern void _fini (void);
 #endif
 
 /* Run all the cleanup routines.  */
 void
 __libc_fini_array (void)
 {
-    void (**fn)(void);
-    void (**fn_start)(void);
+  size_t count;
+  size_t i;
+  
+  count = __fini_array_end - __fini_array_start;
+  for (i = count; i > 0; i--)
+    __fini_array_start[i-1] ();
 
-    fn = __fini_array_end;
-    fn_start = __fini_array_start;
-    while (fn != fn_start)
-        (*--fn)();
-
-#ifdef __INIT_FINI_FUNCS
-    if (_fini)
-        _fini ();
+#ifdef _HAVE_INIT_FINI
+  _fini ();
 #endif
 }
 #endif

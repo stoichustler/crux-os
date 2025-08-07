@@ -29,8 +29,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include <picolibc.h>
-
 #include <string.h>
 #include <stddef.h>
 #include <spu_intrinsics.h>

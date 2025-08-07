@@ -20,17 +20,34 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
 
 #include "local.h"
 
-#undef vsprintf
+#ifndef _REENT_ONLY
 
 int
-vsprintf (
+vsprintf (char *__restrict str,
+       const char *__restrict fmt,
+       va_list ap)
+{
+  return _vsprintf_r (_REENT, str, fmt, ap);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+vsiprintf (char *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vsprintf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int
+_vsprintf_r (struct _reent *ptr,
        char *__restrict str,
        const char *__restrict fmt,
        va_list ap)
@@ -43,9 +60,13 @@ vsprintf (
   f._bf._base = f._p = (unsigned char *) str;
   f._bf._size = f._w = INT_MAX;
   f._file = -1;  /* No file. */
-  ret = svfprintf ( &f, fmt, ap);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
   *f._p = 0;
   return ret;
 }
 
-__nano_reference(vsprintf, vsiprintf);
+#ifdef _NANO_FORMATTED_IO
+int
+_vsiprintf_r (struct _reent *, char *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vsprintf_r")));
+#endif

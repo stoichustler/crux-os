@@ -1,4 +1,3 @@
-/* Copyright (c) 2003 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 	<<wcwidth>>---number of column positions of a wide-character code
@@ -8,7 +7,7 @@ INDEX
 
 SYNOPSIS
 	#include <wchar.h>
-	int wcwidth(const wchar_t <[wc]>);
+	int wcwidth(const wint_t <[wc]>);
 
 DESCRIPTION
 	The <<wcwidth>> function shall determine the number of column
@@ -89,24 +88,23 @@ PORTABILITY
  * Latest version: http://www.cl.cam.ac.uk/~mgk25/ucs/wcwidth.c
  */
 
-#define _XOPEN_SOURCE
+#include <_ansi.h>
 #include <wchar.h>
-#include <stdint.h>
-#ifndef __MB_CAPABLE
+#ifndef _MB_CAPABLE
 #include <wctype.h> /* iswprint, iswcntrl */
 #endif
 #include "local.h"
 
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
 struct interval
 {
-  uint32_t first;
-  uint32_t last;
+  int first;
+  int last;
 };
 
 /* auxiliary function for binary search in interval table */
 static int
-bisearch(uint32_t ucs, const struct interval *table, int max)
+bisearch(wint_t ucs, const struct interval *table, int max)
 {
   int min = 0;
   int mid;
@@ -126,7 +124,7 @@ bisearch(uint32_t ucs, const struct interval *table, int max)
 
   return 0;
 }
-#endif /* __MB_CAPABLE */
+#endif /* _MB_CAPABLE */
 
 /* The following function defines the column width of an ISO 10646
  * character as follows:
@@ -166,10 +164,9 @@ bisearch(uint32_t ucs, const struct interval *table, int max)
  */
 
 int
-__wcwidth (const wint_t _ucs)
+__wcwidth (const wint_t ucs)
 {
-  uint32_t ucs = (uint32_t) _ucs;
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
   /* sorted list of non-overlapping intervals of East Asian Ambiguous chars */
   static const struct interval ambiguous[] =
 #include "ambiguous.t"
@@ -197,7 +194,7 @@ __wcwidth (const wint_t _ucs)
     return -1;
 
   /* Test for surrogate pair values. */
-  if (ucs >= (uint32_t) 0xd800 && ucs <= (uint32_t) 0xdfff)
+  if (ucs >= 0xd800 && ucs <= 0xdfff)
     return -1;
 
   /* check CJK width mode (1: ambiguous-wide, 0: normal, -1: disabled) */
@@ -223,19 +220,22 @@ __wcwidth (const wint_t _ucs)
     return 2;
   else
     return 1;
-#else /* !__MB_CAPABLE */
+#else /* !_MB_CAPABLE */
   if (iswprint (ucs))
     return 1;
   if (iswcntrl (ucs) || ucs == L'\0')
     return 0;
   return -1;
-#endif /* __MB_CAPABLE */
+#endif /* _MB_CAPABLE */
 }
 
 int
-wcwidth (const wchar_t wc)
+wcwidth (const wint_t wc)
 {
   wint_t wi = wc;
 
+#ifdef _MB_CAPABLE
+  wi = _jp2uc (wi);
+#endif /* _MB_CAPABLE */
   return __wcwidth (wi);
 }

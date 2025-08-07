@@ -131,12 +131,13 @@ THIS SOFTWARE.
 /* Original file gdtoa-strtod.c Modified 06-21-2006 by Jeff Johnston to work within newlib.  */
 
 #define _GNU_SOURCE
+#include <_ansi.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mprec.h"
 #include "gdtoa.h"
-#include "local.h"
+#include "../locale/setlocale.h"
 
 /* #ifndef NO_FENV_H */
 /* #include <fenv.h> */
@@ -239,8 +240,8 @@ ULtod (__ULong *L,
 #endif /* !NO_HEX_FP */
 
 double
-strtod_l (const char *__restrict s00, char **__restrict se,
-	  locale_t loc)
+_strtod_l (struct _reent *ptr, const char *__restrict s00, char **__restrict se,
+	   locale_t loc)
 {
 #ifdef Avoid_Underflow
 	int scale;
@@ -262,14 +263,12 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #ifdef Honor_FLT_ROUNDS
 	int rounding;
 #endif
-#ifdef DECIMAL_POINT_L
-	const char *decimal_point = DECIMAL_POINT_L(loc);
+#ifdef __HAVE_LOCALE_INFO__
+	const char *decimal_point = __get_numeric_locale(loc)->decimal_point;
 	const int dec_len = strlen (decimal_point);
 #else
 	const char *decimal_point = ".";
 	const int dec_len = 1;
-
-        (void) loc;
 #endif
 
 	delta = bs = bd = NULL;
@@ -278,11 +277,11 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 	for(s = s00;;s++) switch(*s) {
 		case '-':
 			sign = 1;
-                        __fallthrough;
+			/* no break */
 		case '+':
 			if (*++s)
 				goto break2;
-                        __fallthrough;
+			/* no break */
 		case 0:
 			goto ret0;
 		case '\t':
@@ -319,17 +318,17 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #else
 #define fpi1 fpi
 #endif
-			switch((i = gethex(&s, &fpi1, &exp, &bb, sign, loc)) & STRTOG_Retmask) {
+			switch((i = gethex(ptr, &s, &fpi1, &exp, &bb, sign, loc)) & STRTOG_Retmask) {
 			  case STRTOG_NoNumber:
 				s = s00;
 				sign = 0;
-				__fallthrough;
+				/* FALLTHROUGH */
 			  case STRTOG_Zero:
 				break;
 			  default:
 				if (bb) {
 					copybits(bits, fpi.nbits, bb);
-					Bfree(bb);
+					Bfree(ptr,bb);
 					}
 				ULtod(rv.i, bits, exp, i);
 #ifndef NO_ERRNO
@@ -399,7 +398,6 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 		switch(c = *++s) {
 			case '-':
 				esign = 1;
-                                __fallthrough;
 			case '+':
 				c = *++s;
 			}
@@ -597,7 +595,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 			if (e1 > DBL_MAX_10_EXP) {
  ovfl:
 #ifndef NO_ERRNO
-				errno = ERANGE;
+				_REENT_ERRNO(ptr) = ERANGE;
 #endif
 				/* Can't trust HUGE_VAL */
 #ifdef IEEE_Arith
@@ -704,7 +702,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
  undfl:
 					dval(rv) = 0.;
 #ifndef NO_ERRNO
-					errno = ERANGE;
+					_REENT_ERRNO(ptr) = ERANGE;
 #endif
 					if (bd0)
 						goto retfree;
@@ -729,19 +727,19 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 
 	/* Put digits into bd: true value = bd * 10^e */
 
-	bd0 = s2b(s0, nd0, nd, y);
+	bd0 = s2b(ptr, s0, nd0, nd, y);
 	if (bd0 == NULL)
 		goto ovfl;
 
 	for(;;) {
-		bd = Balloc(bd0->_k);
+		bd = Balloc(ptr,bd0->_k);
 		if (bd == NULL)
 			goto ovfl;
 		Bcopy(bd, bd0);
-		bb = d2b(dval(rv), &bbe, &bbbits);	/* rv = bb * 2^bbe */
+		bb = d2b(ptr,dval(rv), &bbe, &bbbits);	/* rv = bb * 2^bbe */
 		if (bb == NULL)
 			goto ovfl;
-		bs = i2b(1);
+		bs = i2b(ptr,1);
 		if (bs == NULL)
 			goto ovfl;
 
@@ -806,36 +804,36 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 			bs2 -= i;
 			}
 		if (bb5 > 0) {
-			bs = pow5mult(bs, bb5);
+			bs = pow5mult(ptr, bs, bb5);
 			if (bs == NULL)
 				goto ovfl;
-			bb1 = mult(bs, bb);
+			bb1 = mult(ptr, bs, bb);
 			if (bb1 == NULL)
 				goto ovfl;
-			Bfree( bb);
+			Bfree(ptr, bb);
 			bb = bb1;
 			}
 		if (bb2 > 0) {
-			bb = lshift(bb, bb2);
+			bb = lshift(ptr, bb, bb2);
 			if (bb == NULL)
 				goto ovfl;
 			}
 		if (bd5 > 0) {
-			bd = pow5mult( bd, bd5);
+			bd = pow5mult(ptr, bd, bd5);
 			if (bd == NULL)
 				goto ovfl;
 			}
 		if (bd2 > 0) {
-			bd = lshift(bd, bd2);
+			bd = lshift(ptr, bd, bd2);
 			if (bd == NULL)
 				goto ovfl;
 			}
 		if (bs2 > 0) {
-			bs = lshift(bs, bs2);
+			bs = lshift(ptr, bs, bs2);
 			if (bs == NULL)
 				goto ovfl;
 			}
-		delta = diff(bb, bd);
+		delta = diff(ptr, bb, bd);
 		if (delta == NULL)
 			goto ovfl;
 		dsign = delta->_sign;
@@ -869,7 +867,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 						if (y)
 #endif
 						  {
-						  delta = lshift(delta,Log2P);
+						  delta = lshift(ptr, delta,Log2P);
 						  if (cmp(delta, bs) <= 0)
 							adj = -0.5;
 						  }
@@ -960,7 +958,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #endif
 				break;
 				}
-			delta = lshift(delta,Log2P);
+			delta = lshift(ptr,delta,Log2P);
 			if (cmp(delta, bs) > 0)
 				goto drop_down;
 			break;
@@ -1013,8 +1011,8 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #ifdef Avoid_Underflow
 				if (scale) {
 					L = dword0(rv) & Exp_mask;
-					if (L <= (Long) ((2*P+1)*Exp_msk1)) {
-                                                if (L > (Long)((P+2)*Exp_msk1))
+					if (L <= (2*P+1)*Exp_msk1) {
+						if (L > (P+2)*Exp_msk1)
 							/* round even ==> */
 							/* accept rv */
 							break;
@@ -1223,10 +1221,10 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 			}
 #endif
  cont:
-		Bfree(bb);
-		Bfree(bd);
-		Bfree(bs);
-		Bfree(delta);
+		Bfree(ptr,bb);
+		Bfree(ptr,bd);
+		Bfree(ptr,bs);
+		Bfree(ptr,delta);
 		}
 #ifdef SET_INEXACT
 	if (inexact) {
@@ -1251,7 +1249,7 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 #ifndef NO_ERRNO
 		/* try to avoid the bug of testing an 8087 register value */
 		if ((dword0(rv) & Exp_mask) == 0)
-			errno = ERANGE;
+			_REENT_ERRNO(ptr) = ERANGE;
 #endif
 		}
 #endif /* Avoid_Underflow */
@@ -1263,11 +1261,11 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 		}
 #endif
  retfree:
-	Bfree(bb);
-	Bfree(bd);
-	Bfree(bs);
-	Bfree(bd0);
-	Bfree(delta);
+	Bfree(ptr,bb);
+	Bfree(ptr,bd);
+	Bfree(ptr,bs);
+	Bfree(ptr,bd0);
+	Bfree(ptr,delta);
  ret:
 	if (se)
 		*se = (char *)s;
@@ -1275,28 +1273,40 @@ strtod_l (const char *__restrict s00, char **__restrict se,
 }
 
 double
-strtod (const char *__restrict s00,
+_strtod_r (struct _reent *ptr,
+	const char *__restrict s00,
 	char **__restrict se)
 {
-  return strtod_l (s00, se, __get_current_locale ());
+  return _strtod_l (ptr, s00, se, __get_current_locale ());
 }
 
-#if defined(__HAVE_LONG_DOUBLE) && defined(_LDBL_EQ_DBL)
-#ifdef __strong_reference
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wattribute-alias="
-#endif
-extern long double strtold(const char *, char **) __attribute__ ((__alias__ ("strtod")));
-#else
-long double
-strtold (const char * nptr, char ** endptr)
+#ifndef _REENT_ONLY
+
+double
+strtod_l (const char *__restrict s00, char **__restrict se, locale_t loc)
 {
-	return (long double) strtod(nptr, endptr);
+  return _strtod_l (_REENT, s00, se, loc);
 }
+
+double
+strtod (const char *__restrict s00, char **__restrict se)
+{
+  return _strtod_l (_REENT, s00, se, __get_current_locale ());
+}
+
+float
+strtof_l (const char *__restrict s00, char **__restrict se, locale_t loc)
+{
+  double val = _strtod_l (_REENT, s00, se, loc);
+  if (isnan (val))
+    return signbit (val) ? -nanf ("") : nanf ("");
+  float retval = (float) val;
+#ifndef NO_ERRNO
+  if (isinf (retval) && !isinf (val))
+    _REENT_ERRNO(_REENT) = ERANGE;
 #endif
-#endif
+  return retval;
+}
 
 /*
  * These two functions are not quite correct as they return true for
@@ -1321,30 +1331,18 @@ isdenormf(float f)
 }
 
 float
-strtof_l (const char *__restrict s00, char **__restrict se, locale_t loc)
+strtof (const char *__restrict s00,
+	char **__restrict se)
 {
-  double val = strtod_l (s00, se, loc);
+  double val = _strtod_l (_REENT, s00, se, __get_current_locale ());
   if (isnan (val))
     return signbit (val) ? -nanf ("") : nanf ("");
   float retval = (float) val;
 #ifndef NO_ERRNO
   if ((isinf (retval) && !isinf (val)) || (isdenormf(retval) && !isdenorm(val)))
-    errno = ERANGE;
+    _REENT_ERRNO(_REENT) = ERANGE;
 #endif
   return retval;
 }
 
-float
-strtof (const char *__restrict s00,
-	char **__restrict se)
-{
-  double val = strtod_l (s00, se, __get_current_locale ());
-  if (isnan (val))
-    return signbit (val) ? -nanf ("") : nanf ("");
-  float retval = (float) val;
-#ifndef NO_ERRNO
-  if ((isinf (retval) && !isinf (val)) || (isdenormf(retval) && !isdenorm(val)))
-    errno = ERANGE;
 #endif
-  return retval;
-}

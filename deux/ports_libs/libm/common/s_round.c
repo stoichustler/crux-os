@@ -43,10 +43,14 @@ SEEALSO
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-round64(__float64 x)
+#ifdef __STDC__
+	double round(double x)
+#else
+	double round(x)
+	double x;
+#endif
 {
   /* Most significant word, least significant word. */
   __int32_t msw, exponent_less_1023;
@@ -89,14 +93,14 @@ round64(__float64 x)
     }
   else
     {
-      __uint32_t exponent_mask = (__uint32_t) 0xffffffff >> (exponent_less_1023 - 20);
+      __uint32_t exponent_mask = 0xffffffff >> (exponent_less_1023 - 20);
       __uint32_t tmp;
 
       if ((lsw & exponent_mask) == 0)
         /* x is an integral value. */
         return x;
 
-      tmp = lsw + ((__uint32_t) 1 << (51 - exponent_less_1023));
+      tmp = lsw + (1 << (51 - exponent_less_1023));
       if (tmp < lsw)
         msw += 1;
       lsw = tmp;
@@ -108,6 +112,4 @@ round64(__float64 x)
   return x;
 }
 
-_MATH_ALIAS_d_d(round)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

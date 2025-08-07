@@ -63,14 +63,24 @@ SEEALSO
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-static const __float64
-two54   =  _F_64(1.80143985094819840000e+16), /* 0x43500000, 0x00000000 */
-twom54  =  _F_64(5.55111512312578270212e-17); /* 0x3C900000, 0x00000000 */
+#ifdef __STDC__
+static const double
+#else
+static double
+#endif
+two54   =  1.80143985094819840000e+16, /* 0x43500000, 0x00000000 */
+twom54  =  5.55111512312578270212e-17, /* 0x3C900000, 0x00000000 */
+huge   = 1.0e+300,
+tiny   = 1.0e-300;
 
-__float64
-scalbn64(__float64 x, int n)
+#ifdef __STDC__
+	double scalbn (double x, int n)
+#else
+	double scalbn (x,n)
+	double x; int n;
+#endif
 {
 	__int32_t  k,hx,lx;
 	EXTRACT_WORDS(hx,lx,x);
@@ -80,42 +90,20 @@ scalbn64(__float64 x, int n)
 	    x *= two54; 
 	    GET_HIGH_WORD(hx,x);
 	    k = ((hx&0x7ff00000)>>20) - 54; 
-#if __SIZEOF_INT__ > 2
-            if (n< -50000) return __math_uflow(hx<0); 	/*underflow*/
-#endif
+            if (n< -50000) return tiny*x; 	/*underflow*/
 	    }
         if (k==0x7ff) return x+x;		/* NaN or Inf */
-#if __SIZEOF_INT__ > 2
         if (n > 50000) 	/* in case integer overflow in n+k */
-            return __math_oflow(hx<0);	        /*overflow*/
-#endif
+	    return huge*copysign(huge,x);	/*overflow*/
         k = k+n; 
-        if (k >  0x7fe) return __math_oflow(hx<0); /* overflow  */
+        if (k >  0x7fe) return huge*copysign(huge,x); /* overflow  */
         if (k > 0) 				/* normal result */
 	    {SET_HIGH_WORD(x,(hx&0x800fffff)|(k<<20)); return x;}
         if (k <= -54)
-	    return __math_uflow(hx<0); 	        /*underflow*/
+	    return tiny*copysign(tiny,x); 	/*underflow*/
         k += 54;				/* subnormal result */
 	SET_HIGH_WORD(x,(hx&0x800fffff)|(k<<20));
-        return check_uflow(x*twom54);
+        return x*twom54;
 }
 
-#ifdef __strong_reference
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(scalbn64, ldexp64);
-#else
-
-__float64
-ldexp64(__float64 value, int exp)
-{
-    return scalbn64(value, exp);
-}
-
-#endif
-
-_MATH_ALIAS_d_di(scalbn)
-_MATH_ALIAS_d_di(ldexp)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

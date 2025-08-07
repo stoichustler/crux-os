@@ -33,15 +33,16 @@
 #include <math.h>
 #include "cephes_subrl.h"
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 ccosl(long double complex z)
 {
+	long double complex w;
 	long double ch, sh;
 
 	_cchshl(cimagl(z), &ch, &sh);
-	return (long double complex) (cosl(creall(z)) * ch) - (sinl(creall(z)) * sh) * (long double complex) I;
+	w = cosl(creall(z)) * ch - (sinl(creall(z)) * sh) * I;
+	return w;
 }
-
 #endif

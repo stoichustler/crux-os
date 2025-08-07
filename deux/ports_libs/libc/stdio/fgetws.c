@@ -48,11 +48,11 @@ SYNOPSIS
                         FILE *__restrict <[fp]>);
 
 	#include <wchar.h>
-	wchar_t *fgetws( wchar_t *<[ws]>,
+	wchar_t *_fgetws_r(struct _reent *<[ptr]>, wchar_t *<[ws]>,
                            int <[n]>, FILE *<[fp]>);
 
 	#include <wchar.h>
-	wchar_t *fgetws_unlocked( wchar_t *<[ws]>,
+	wchar_t *_fgetws_unlocked_r(struct _reent *<[ptr]>, wchar_t *<[ws]>,
                            int <[n]>, FILE *<[fp]>);
 
 DESCRIPTION
@@ -85,7 +85,8 @@ PORTABILITY
 <<fgetws_unlocked>> is a GNU extension.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -98,7 +99,7 @@ PORTABILITY
 #endif
 
 wchar_t *
-fgetws (
+_fgetws_r (struct _reent *ptr,
 	wchar_t * ws,
 	int n,
 	FILE * fp)
@@ -118,7 +119,7 @@ fgetws (
       goto error;
     }
 
-  if (fp->_r <= 0 && _srefill ( fp))
+  if (fp->_r <= 0 && __srefill_r (ptr, fp))
     /* EOF */
     goto error;
   wsp = ws;
@@ -126,7 +127,7 @@ fgetws (
     {
       src = (char *) fp->_p;
       nl = memchr (fp->_p, '\n', fp->_r);
-      nconv = mbsnrtowcs (wsp, &src,
+      nconv = _mbsnrtowcs_r (ptr, wsp, &src,
 			     /* Read all bytes up to the next NL, or up to the
 				end of the buffer if there is no NL. */
 			     nl != NULL ? (nl - fp->_p + 1) : fp->_r,
@@ -154,7 +155,7 @@ fgetws (
       wsp += nconv;
     }
   while (wsp[-1] != L'\n' && n > 1 && (fp->_r > 0
-	 || _srefill ( fp) == 0));
+	 || __srefill_r (ptr, fp) == 0));
   if (wsp == ws)
     /* EOF */
     goto error;
@@ -168,4 +169,15 @@ fgetws (
 error:
   _newlib_flockfile_end (fp);
   return NULL;
+}
+
+wchar_t *
+fgetws (wchar_t *__restrict ws,
+	int n,
+	FILE *__restrict fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT (reent, fp);
+  return _fgetws_r (reent, ws, n, fp);
 }

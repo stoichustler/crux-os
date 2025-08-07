@@ -38,16 +38,14 @@
 #define	_REGEX_H_
 
 #include <sys/cdefs.h>
-#define __need_ptrdiff_t
-#include <stddef.h>
 
 /* types */
-typedef ptrdiff_t regoff_t;
+typedef off_t regoff_t;
 
 typedef struct {
-	unsigned int re_magic;
+	int re_magic;
 	size_t re_nsub;		/* number of parenthesized subexpressions */
-	const char *re_endp;	/* end pointer for REG_PEND */
+	__const char *re_endp;	/* end pointer for REG_PEND */
 	struct re_guts *re_g;	/* none of your business :-) */
 } regex_t;
 
@@ -94,12 +92,12 @@ typedef struct {
 #define	REG_LARGE	01000	/* force large representation */
 #define	REG_BACKR	02000	/* force use of backref code */
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 int	regcomp(regex_t *__restrict, const char *__restrict, int);
 size_t	regerror(int, const regex_t *__restrict, char *__restrict, size_t);
 int	regexec(const regex_t *__restrict, const char *__restrict,
 			size_t, regmatch_t [__restrict_arr], int);
 void	regfree(regex_t *);
-_END_STD_C
+__END_DECLS
 
 #endif /* !_REGEX_H_ */

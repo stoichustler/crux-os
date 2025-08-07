@@ -13,13 +13,11 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <unistd.h>
 #include <signal.h>
 #include "exit-value.h"
 
-void __noreturn
+void __attribute__((noreturn))
 abort (void)
 {
   write (2, "GCN Kernel Aborted\n", 19);

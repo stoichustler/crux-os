@@ -46,11 +46,11 @@ SYNOPSIS
 	int fputws_unlocked(const wchar_t *__restrict <[ws]>, FILE *__restrict <[fp]>);
 
 	#include <wchar.h>
-	int fputws( const wchar_t *<[ws]>,
+	int _fputws_r(struct _reent *<[ptr]>, const wchar_t *<[ws]>,
                       FILE *<[fp]>);
 
 	#include <wchar.h>
-	int fputws_unlocked( const wchar_t *<[ws]>,
+	int _fputws_unlocked_r(struct _reent *<[ptr]>, const wchar_t *<[ws]>,
                                FILE *<[fp]>);
 
 DESCRIPTION
@@ -79,7 +79,8 @@ PORTABILITY
 <<fputws_unlocked>> is a GNU extension.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -93,13 +94,13 @@ PORTABILITY
 #endif
 
 int
-fputws (
+_fputws_r (struct _reent *ptr,
 	const wchar_t *ws,
 	FILE *fp)
 {
   size_t nbytes;
   char buf[BUFSIZ];
-#ifdef __FVWRITE_IN_STREAMIO
+#ifdef _FVWRITE_IN_STREAMIO
   struct __suio uio;
   struct __siov iov;
 
@@ -113,11 +114,11 @@ fputws (
   iov.iov_base = buf;
   do
     {
-      nbytes = wcsrtombs(buf, &ws, sizeof (buf), &fp->_mbstate);
+      nbytes = _wcsrtombs_r(ptr, buf, &ws, sizeof (buf), &fp->_mbstate);
       if (nbytes == (size_t) -1)
 	goto error;
       iov.iov_len = uio.uio_resid = nbytes;
-      if (_sfvwrite( fp, &uio) != 0)
+      if (__sfvwrite_r(ptr, fp, &uio) != 0)
 	goto error;
     }
   while (ws != NULL);
@@ -135,12 +136,12 @@ error:
   do
     {
       size_t i = 0;
-      nbytes = wcsrtombs (buf, &ws, sizeof (buf), &fp->_mbstate);
+      nbytes = _wcsrtombs_r (ptr, buf, &ws, sizeof (buf), &fp->_mbstate);
       if (nbytes == (size_t) -1)
 	goto error;
       while (i < nbytes)
         {
-	  if (__swputc(buf[i], fp) == EOF)
+	  if (__swputc_r (ptr, buf[i], fp) == EOF)
 	    goto error;
 	  i++;
         }
@@ -153,4 +154,14 @@ error:
   _newlib_flockfile_end (fp);
   return (-1);
 #endif
+}
+
+int
+fputws (const wchar_t *__restrict ws,
+	FILE *__restrict fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT (reent, fp);
+  return _fputws_r (reent, ws, fp);
 }

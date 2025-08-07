@@ -116,33 +116,27 @@ No supporting OS subroutines are required.
  */
 
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <limits.h>
 #include <wctype.h>
 #include <errno.h>
 #include <wchar.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a wide string to a long integer.
  */
-long
-wcstol_l (const wchar_t *nptr, wchar_t **endptr,
+static long
+_wcstol_l (struct _reent *rptr, const wchar_t *nptr, wchar_t **endptr,
 	   int base, locale_t loc)
 {
 	register const wchar_t *s = nptr;
 	register unsigned long acc;
-	register wchar_t c;
+	register int c;
 	register unsigned long cutoff;
 	register int neg = 0, any, cutlim;
 
-        /* Check for invalid base value */
-        if ((unsigned) base > 36 || base == 1) {
-                errno = EINVAL;
-                if (endptr)
-                        *endptr = (wchar_t *) nptr;
-                return 0;
-        }
 	/*
 	 * Skip white space and pick up leading +/- sign if any.
 	 * If base is 0, allow 0x for hex and 0 for octal, else
@@ -159,7 +153,6 @@ wcstol_l (const wchar_t *nptr, wchar_t **endptr,
 	if ((base == 0 || base == 16) &&
 	    c == L'0' && (*s == L'x' || *s == L'X')) {
 		c = s[1];
-                nptr = s;
 		s += 2;
 		base = 16;
 	}
@@ -195,19 +188,19 @@ wcstol_l (const wchar_t *nptr, wchar_t **endptr,
 			c -= L'a' - 10;
 		else
 			break;
-		if ((int) c >= base)
+		if (c >= base)
 			break;
-                if (any < 0 || acc > cutoff || (acc == cutoff && (int) c > cutlim))
+               if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
 			any = -1;
 		else {
 			any = 1;
 			acc *= base;
-			acc += (int) c;
+			acc += c;
 		}
 	}
 	if (any < 0) {
 		acc = neg ? LONG_MIN : LONG_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -215,11 +208,30 @@ wcstol_l (const wchar_t *nptr, wchar_t **endptr,
 	return (acc);
 }
 
+long
+_wcstol_r (struct _reent *rptr,
+	const wchar_t *nptr,
+	wchar_t **endptr,
+	int base)
+{
+	return _wcstol_l (rptr, nptr, endptr, base, __get_current_locale ());
+}
+
+#ifndef _REENT_ONLY
+
+long
+wcstol_l (const wchar_t *__restrict s, wchar_t **__restrict ptr, int base,
+	  locale_t loc)
+{
+	return _wcstol_l (_REENT, s, ptr, base, loc);
+}
 
 long
 wcstol (const wchar_t *__restrict s,
 	wchar_t **__restrict ptr,
 	int base)
 {
-	return wcstol_l (s, ptr, base, __get_current_locale ());
+	return _wcstol_l (_REENT, s, ptr, base, __get_current_locale ());
 }
+
+#endif

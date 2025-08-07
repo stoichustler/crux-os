@@ -1,4 +1,3 @@
-/* Copyright (c) 2003 Christopher Faylor <me@cgf.cx> */
 /*
 FUNCTION
 <<fdopen64>>---turn open large file into a stream
@@ -24,42 +23,44 @@ RETURNS
 File pointer or <<NULL>>, as for <<fopen>>.
 */
 
-#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/fcntl.h>
 
 #include <stdio.h>
 #include <errno.h>
+#include "local.h"
+#include <_syslist.h>
 #include <sys/lock.h>
-#include "../stdio/local.h"
+
+extern int __sflags ();
 
 FILE *
-fdopen64 (
+_fdopen64_r (struct _reent *ptr,
 	int fd,
 	const char *mode)
 {
   register FILE *fp;
   int flags, oflags;
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
   int fdflags, fdmode;
 #endif
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     return 0;
 
   /* make sure the mode the user wants is a subset of the actual mode */
-#ifdef __HAVE_FCNTL
-  if ((fdflags = fcntl (fd, F_GETFL, 0)) < 0)
+#ifdef HAVE_FCNTL
+  if ((fdflags = _fcntl_r (ptr, fd, F_GETFL, 0)) < 0)
     return 0;
   fdmode = fdflags & O_ACCMODE;
   if (fdmode != O_RDWR && (fdmode != (oflags & O_ACCMODE)))
     {
-      errno = EBADF;
+      _REENT_ERRNO(ptr) = EBADF;
       return 0;
     }
 #endif
 
-  if ((fp = __sfp ()) == 0)
+  if ((fp = __sfp (ptr)) == 0)
     return 0;
 
   _newlib_flockfile_start(fp);
@@ -69,9 +70,9 @@ fdopen64 (
      streams.  Someone may later clear O_APPEND on fileno(fp), but the
      stream must still remain in append mode.  Rely on __sflags
      setting __SAPP properly.  */
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
   if ((oflags & O_APPEND) && !(fdflags & O_APPEND))
-    fcntl (fd, F_SETFL, fdflags | O_APPEND);
+    _fcntl_r (ptr, fd, F_SETFL, fdflags | O_APPEND);
 #endif
   fp->_file = fd;
   fp->_cookie = (void *) fp;
@@ -102,3 +103,14 @@ fdopen64 (
   _newlib_flockfile_end(fp);
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+fdopen64 (int fd,
+	const char *mode)
+{
+  return _fdopen64_r (_REENT, fd, mode);
+}
+
+#endif

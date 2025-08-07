@@ -1,4 +1,3 @@
-/* Copyright (c) 2004 Paul Brook <paul@codesourcery.com> */
 /*
  *  Common routine to implement atexit-like functionality.
  *
@@ -13,7 +12,7 @@
  *  _start -> exit -> __call_exitprocs
  *
  *  Here an -> means arrow tail invokes arrow head. All invocations here
- *  are non-weak reference in current newlib.
+ *  are non-weak reference in current newlib/libgloss.
  *
  *  Lite exit makes some of above calls as weak reference, so that size expansive
  *  functions __register_exitproc and __call_exitprocs may not be linked. These
@@ -35,20 +34,26 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <reent.h>
 #include <sys/lock.h>
 #include "atexit.h"
 
 /* Make this a weak reference to avoid pulling in malloc.  */
 #ifndef MALLOC_PROVIDED
-void * malloc(size_t) __weak;
+void * malloc(size_t) _ATTRIBUTE((__weak__));
 #endif
 
+#ifdef _LITE_EXIT
 /* As __call_exitprocs is weak reference in lite exit, make a
    non-weak reference to it here.  */
 const void * __atexit_dummy = &__call_exitprocs;
+#endif
 
-__THREAD_LOCAL_ATEXIT struct _atexit _atexit0;
-__THREAD_LOCAL_ATEXIT struct _atexit *_atexit;
+#ifndef __SINGLE_THREAD__
+extern _LOCK_RECURSIVE_T __atexit_recursive_mutex;
+#endif
+
+struct _atexit __atexit0 = _ATEXIT_INIT;
 
 /*
  * Register a function to be performed at exit or on shared library unload.
@@ -63,34 +68,78 @@ __register_exitproc (int type,
   struct _on_exit_args * args;
   register struct _atexit *p;
 
-  __LIBC_LOCK();
+#ifndef __SINGLE_THREAD__
+  __lock_acquire_recursive(__atexit_recursive_mutex);
+#endif
 
-  p = _atexit;
+  p = __atexit;
   if (p == NULL)
     {
-      _atexit = p = &_atexit0;
+      __atexit = p = &__atexit0;
+#ifdef _REENT_SMALL
+      extern struct _on_exit_args * const __on_exit_args _ATTRIBUTE ((weak));
+      if (&__on_exit_args != NULL)
+	p->_on_exit_args_ptr = __on_exit_args;
+#endif	/* def _REENT_SMALL */
     }
   if (p->_ind >= _ATEXIT_SIZE)
     {
 #if !defined (_ATEXIT_DYNAMIC_ALLOC) || !defined (MALLOC_PROVIDED)
-      __LIBC_UNLOCK();
+#ifndef __SINGLE_THREAD__
+      __lock_release_recursive(__atexit_recursive_mutex);
+#endif
       return -1;
 #else
       p = (struct _atexit *) malloc (sizeof *p);
       if (p == NULL)
 	{
-	  __LIBC_UNLOCK();
+#ifndef __SINGLE_THREAD__
+	  __lock_release_recursive(__atexit_recursive_mutex);
+#endif
 	  return -1;
 	}
       p->_ind = 0;
-      p->_next = _atexit;
-      _atexit = p;
+      p->_next = __atexit;
+      __atexit = p;
+#ifndef _REENT_SMALL
+      p->_on_exit_args._fntypes = 0;
+      p->_on_exit_args._is_cxa = 0;
+#else
+      p->_on_exit_args_ptr = NULL;
+#endif
 #endif
     }
 
   if (type != __et_atexit)
     {
+#ifdef _REENT_SMALL
+      args = p->_on_exit_args_ptr;
+      if (args == NULL)
+	{
+#ifndef _ATEXIT_DYNAMIC_ALLOC
+#ifndef __SINGLE_THREAD__
+	  __lock_release_recursive(__atexit_recursive_mutex);
+#endif
+	  return -1;
+#else
+	  if (malloc)
+	    args = malloc (sizeof * p->_on_exit_args_ptr);
+
+	  if (args == NULL)
+	    {
+#ifndef __SINGLE_THREAD__
+	      __lock_release_recursive(__atexit_recursive_mutex);
+#endif
+	      return -1;
+	    }
+	  args->_fntypes = 0;
+	  args->_is_cxa = 0;
+	  p->_on_exit_args_ptr = args;
+#endif
+	}
+#else
       args = &p->_on_exit_args;
+#endif
       args->_fnargs[p->_ind] = arg;
       args->_fntypes |= (1 << p->_ind);
       args->_dso_handle[p->_ind] = d;
@@ -98,6 +147,8 @@ __register_exitproc (int type,
 	args->_is_cxa |= (1 << p->_ind);
     }
   p->_fns[p->_ind++] = fn;
-  __LIBC_UNLOCK();
+#ifndef __SINGLE_THREAD__
+  __lock_release_recursive(__atexit_recursive_mutex);
+#endif
   return 0;
 }

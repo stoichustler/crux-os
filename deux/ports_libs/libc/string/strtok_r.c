@@ -27,9 +27,7 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <string.h>
-#include "strtok_r.h"
 
 char *
 __strtok_r (register char *s,

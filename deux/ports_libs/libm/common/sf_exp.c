@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_FLOAT
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -101,7 +101,7 @@ expf (float x)
   /* exp(x) = 2^(k/N) * 2^(r/N) ~= s * (C0*r^3 + C1*r^2 + C2*r + 1) */
   t = T[ki % N];
   t += ki << (52 - EXP2F_TABLE_BITS);
-  s = asfloat64 (t);
+  s = asdouble (t);
   z = C[0] * r + C[1];
   r2 = r * r;
   y = C[2] * r + 1;
@@ -109,4 +109,4 @@ expf (float x)
   y = y * s;
   return (float) y;
 }
-#endif /* !__OBSOLETE_MATH_FLOAT */
+#endif /* !__OBSOLETE_MATH */

@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Geoffrey Keating <geoffk@geoffk.org> */
 /* A replacement malloc with:
    - Much reduced code size;
    - Smaller RAM footprint;
@@ -51,8 +50,6 @@
      always, as no parameter can be changed.
 */
 
-#include <picolibc.h>
-
 #ifdef __xstormy16__
 #define MALLOC_DIRECTION -1
 #endif
@@ -102,7 +99,7 @@ extern void __malloc_start;
 #define MALLOC_MINIMUM_GAP 32
 
 #ifdef __xstormy16__
-register void * stack_pointer __asm__("r15");
+register void * stack_pointer asm ("r15");
 #define MALLOC_LIMIT stack_pointer
 #else
 #define MALLOC_LIMIT __builtin_frame_address (0)

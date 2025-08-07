@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_DOUBLE
+#if !__OBSOLETE_MATH
 
 #include "math_config.h"
 
@@ -608,4 +608,4 @@ const struct exp_data __exp_data = {
 #endif
 },
 };
-#endif /* __OBSOLETE_MATH_DOUBLE */
+#endif /* __OBSOLETE_MATH */

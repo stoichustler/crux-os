@@ -51,7 +51,7 @@ DESCRIPTION
         to positive infinity on the real axis. If <[z]> has an infinite part,
         then <<cproj>>(<[z]>) is equivalent to
 
-                 INFINITY + (double complex) I * copysign(0.0, cimag(z))
+                 INFINITY + I * copysign(0.0, cimag(z))
 
         <<cprojf>> is identical to <<cproj>>, except that it performs
         its calculations on <<floats complex>>.
@@ -68,6 +68,8 @@ QUICKREF
 
 */
 
+#include <sys/cdefs.h>
+/*__RCSID("$NetBSD: cproj.c,v 1.3 2010/09/20 17:51:38 christos Exp $"); */
 
 #include <complex.h>
 #include <math.h>
@@ -84,7 +86,7 @@ QUICKREF
  * infinite part and one NaN part) project to positive infinity on the real axis.
  * If z has an infinite part, then cproj(z) shall be equivalent to:
  *
- * INFINITY + (double complex) I * copysign(0.0, cimag(z))
+ * INFINITY + I * copysign(0.0, cimag(z))
  */
 double complex
 cproj(double complex z)
@@ -95,7 +97,7 @@ cproj(double complex z)
 #ifdef __INFINITY
 		REAL_PART(w) = __INFINITY;
 #else
-		REAL_PART(w) = (double) INFINITY;
+		REAL_PART(w) = INFINITY;
 #endif
 		IMAG_PART(w) = copysign(0.0, cimag(z));
 	}

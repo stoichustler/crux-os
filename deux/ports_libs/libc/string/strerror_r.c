@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /* GNU variant of strerror_r. */
 /*
 FUNCTION
@@ -61,7 +60,6 @@ a non-empty alternate string without assigning into its third argument.
 #define _GNU_SOURCE
 #include <errno.h>
 #include <string.h>
-#include "local.h"
 #undef strerror_r
 
 /* For backwards-compatible linking, this must be the GNU signature;
@@ -71,7 +69,7 @@ strerror_r (int errnum,
 	char *buffer,
 	size_t n)
 {
-  char *error = _strerror_r (errnum, 1, NULL);
+  char *error = _strerror_r (_REENT, errnum, 1, NULL);
 
   if (strlen (error) >= n)
     return error;

@@ -26,8 +26,6 @@
    IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.  */
 
-#include <picolibc.h>
-
 typedef void (*vfnp) (void);
 
 /* The guts of the _Libctors and _Libdtors is "optimized" away into
@@ -44,8 +42,8 @@ __asm__
  ".text\n\t.global .$global.lib.dtors\n.$global.lib.dtors:\n\t.dword 0"
 );
 
-extern vfnp * const _Ctors __asm__(".$global.lib.ctors");
-extern vfnp * const _Dtors __asm__(".$global.lib.dtors");
+extern vfnp * const _Ctors asm(".$global.lib.ctors");
+extern vfnp * const _Dtors asm(".$global.lib.dtors");
 
 /* We better provide weak empty ctor and dtor lists, since they are
    not created if the main program does not have ctor/dtors.  Because
@@ -53,7 +51,7 @@ extern vfnp * const _Dtors __asm__(".$global.lib.dtors");
    thinks it can remove defaultors, so we need to artificially mark it
    as used.  FIXME: Perhaps a GCC bug.  */
 
-static vfnp const defaultors[] __used = {0, 0};
+static vfnp const defaultors[] __attribute__ ((__used__)) = {0, 0};
 
 extern vfnp * __CTOR_LIST__ __attribute__ ((weak, alias ("defaultors")));
 extern vfnp * __DTOR_LIST__ __attribute__ ((weak, alias ("defaultors")));

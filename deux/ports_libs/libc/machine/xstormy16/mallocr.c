@@ -1,6 +1,3 @@
-/* Copyright (c) 2002 Geoffrey Keating <geoffk@geoffk.org> */
-#include <picolibc.h>
-
 #include <malloc.h>
 
 void *

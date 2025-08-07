@@ -31,16 +31,15 @@
 #ifndef __SYS_ICONVNLS_H__
 #define __SYS_ICONVNLS_H__
 
-#include <sys/cdefs.h>
+#include <_ansi.h>
+#include <reent.h>
 #include <wchar.h>
 #include <iconv.h>
 
 /* Iconv data path environment variable name */
 #define NLS_ENVVAR_NAME  "NLSPATH"
 /* Default NLSPATH value */
-#ifndef ICONV_DEFAULT_NLSPATH
 #define ICONV_DEFAULT_NLSPATH "/usr/locale"
-#endif
 /* Direction markers */
 #define ICONV_NLS_FROM 0
 #define ICONV_NLS_TO   1
@@ -58,21 +57,21 @@ int
 _iconv_nls_get_mb_cur_max (iconv_t cd, int direction);
 
 size_t
-_iconv_nls_conv (iconv_t cd,
+_iconv_nls_conv (struct _reent *rptr, iconv_t cd,
                         const char **inbuf, size_t *inbytesleft,
                         char **outbuf, size_t *outbytesleft);
 
 const char *
-_iconv_nls_construct_filename (const char *file,
+_iconv_nls_construct_filename (struct _reent *rptr, const char *file,
                                       const char *dir, const char *ext);
 
 
 int
-_iconv_nls_open (const char *encoding,
+_iconv_nls_open (struct _reent *rptr, const char *encoding,
                         iconv_t *towc, iconv_t *fromwc, int flag);
 
 char *
-_iconv_resolve_encoding_name (const char *ca);
+_iconv_resolve_encoding_name (struct _reent *rptr, const char *ca);
 
 #endif /* __SYS_ICONVNLS_H__ */
 

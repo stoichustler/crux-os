@@ -4,7 +4,8 @@
  */
 /* doc in diprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,7 +13,7 @@
 #include "local.h"
 
 int
-vdiprintf (
+_vdiprintf_r (struct _reent *ptr,
        int fd,
        const char *format,
        va_list ap)
@@ -21,11 +22,24 @@ vdiprintf (
   char buf[512];
   size_t n = sizeof buf;
 
-  p = vasniprintf ( buf, &n, format, ap);
+  _REENT_SMALL_CHECK_INIT (ptr);
+  p = _vasniprintf_r (ptr, buf, &n, format, ap);
   if (!p)
     return -1;
-  n = write (fd, p, n);
+  n = _write_r (ptr, fd, p, n);
   if (p != buf)
-    free (p);
+    _free_r (ptr, p);
   return n;
 }
+
+#ifndef _REENT_ONLY
+
+int
+vdiprintf (int fd,
+       const char *format,
+       va_list ap)
+{
+  return _vdiprintf_r (_REENT, fd, format, ap);
+}
+
+#endif /* ! _REENT_ONLY */

@@ -15,7 +15,9 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
+#include <newlib.h>
 #include <ctype.h>
 #include <wctype.h>
 #include <stdio.h>
@@ -30,15 +32,16 @@
 #include "../stdlib/local.h"
 #include "nano-vfscanf_local.h"
 
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 int
-_scanf_float (struct _scan_data_t *pdata,
+_scanf_float (struct _reent *rptr,
+	      struct _scan_data_t *pdata,
 	      FILE *fp, va_list *ap)
 {
   int c;
   char *p;
   float *flp;
-  long double *ldp;
+  _LONG_DOUBLE *ldp;
 
   /* Scan a floating point number as if by strtod.  */
   /* This code used to assume that the number of digits is reasonable.
@@ -83,7 +86,7 @@ _scanf_float (struct _scan_data_t *pdata,
 		}
 	      goto fskip;
 	    }
-          __fallthrough;
+	/* Fall through.  */
 	case '1':
 	case '2':
 	case '3':
@@ -211,7 +214,7 @@ fskip:
       ++pdata->nread;
       if (--fp->_r > 0)
 	fp->_p++;
-      else if (pdata->pfn_refill (fp))
+      else if (pdata->pfn_refill (rptr, fp))
 	/* "EOF".  */
 	break;
     }
@@ -233,7 +236,7 @@ fskip:
 	 guarantee that in all implementations of ungetc.  */
       while (p > pdata->buf)
 	{
-	  pdata->pfn_ungetc (*--p, fp); /* "[-+nNaA]".  */
+	  pdata->pfn_ungetc (rptr, *--p, fp); /* "[-+nNaA]".  */
 	  --pdata->nread;
 	}
       return MATCH_FAILURE;
@@ -247,14 +250,14 @@ fskip:
       if (infcount >= 3) /* valid 'inf', but short of 'infinity'.  */
 	while (infcount-- > 3)
 	  {
-	    pdata->pfn_ungetc (*--p, fp); /* "[iInNtT]".  */
+	    pdata->pfn_ungetc (rptr, *--p, fp); /* "[iInNtT]".  */
 	    --pdata->nread;
 	  }
       else
         {
 	  while (p > pdata->buf)
 	    {
-	      pdata->pfn_ungetc (*--p, fp); /* "[-+iInN]".  */
+	      pdata->pfn_ungetc (rptr, *--p, fp); /* "[-+iInN]".  */
 	      --pdata->nread;
 	    }
 	  return MATCH_FAILURE;
@@ -270,7 +273,7 @@ fskip:
 	  /* No digits at all.  */
 	  while (p > pdata->buf)
 	    {
-	      pdata->pfn_ungetc (*--p, fp); /* "[-+.]".  */
+	      pdata->pfn_ungetc (rptr, *--p, fp); /* "[-+.]".  */
 	      --pdata->nread;
 	    }
 	  return MATCH_FAILURE;
@@ -280,11 +283,11 @@ fskip:
       --pdata->nread;
       if (c != 'e' && c != 'E')
 	{
-	  pdata->pfn_ungetc (c, fp); /* "[-+]".  */
+	  pdata->pfn_ungetc (rptr, c, fp); /* "[-+]".  */
 	  c = *--p;
 	  --pdata->nread;
 	}
-      pdata->pfn_ungetc (c, fp); /* "[eE]".  */
+      pdata->pfn_ungetc (rptr, c, fp); /* "[eE]".  */
     }
   if ((pdata->flags & SUPPRESS) == 0)
     {
@@ -299,7 +302,7 @@ fskip:
 	  exp_start = p;
 	}
       else if (exp_adjust)
-	new_exp = strtol ((exp_start + 1), NULL, 10) - exp_adjust;
+	new_exp = _strtol_r (rptr, (exp_start + 1), NULL, 10) - exp_adjust;
 
       if (exp_adjust)
 	{
@@ -310,17 +313,17 @@ fskip:
 	  sprintf (exp_start, "e%ld", new_exp);
 	}
 
-      /* Current strtold routine is markedly slower than
-	 strtod.  Only use it if we have a long double
+      /* Current _strtold routine is markedly slower than
+	 _strtod_r.  Only use it if we have a long double
 	 result.  */
-      fp = strtod (pdata->buf, NULL);
+      fp = _strtod_r (rptr, pdata->buf, NULL);
 
       /* Do not support long double.  */
       if (pdata->flags & LONG)
 	*GET_ARG (N, *ap, double *) = fp;
       else if (pdata->flags & LONGDBL)
 	{
-	  ldp = GET_ARG (N, *ap, long double *);
+	  ldp = GET_ARG (N, *ap, _LONG_DOUBLE *);
 	  *ldp = fp;
 	}
       else

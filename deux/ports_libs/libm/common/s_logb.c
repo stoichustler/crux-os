@@ -73,10 +73,15 @@ frexp, ilogb
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-logb64(__float64 x)
+double
+#ifdef __STDC__
+logb(double x)
+#else
+logb(x)
+double x;
+#endif
 {
 	__int32_t hx,lx,ix;
 
@@ -84,22 +89,22 @@ logb64(__float64 x)
 	hx &= 0x7fffffff;		/* high |x| */
 	if(hx<0x00100000) {		/* 0 or subnormal */
 	    if((hx|lx)==0)  {
+		double  xx;
 		/* arg==0:  return -inf and raise divide-by-zero exception */
-		return -1./fabs64(x);	/* logb(0) = -inf */
+		INSERT_WORDS(xx,hx,lx);	/* +0.0 */
+		return -1./xx;	/* logb(0) = -inf */
 		}
 	    else			/* subnormal x */
 		if(hx==0) {
-		    for (ix = -1043; lx>0; lx = lsl(lx, 1)) ix -=1;
+		    for (ix = -1043; lx>0; lx<<=1) ix -=1;
 		} else {
-		    for (ix = -1022, hx = lsl(hx, 11); hx>0; hx = lsl(hx, 1)) ix -=1;
+		    for (ix = -1022,hx<<=11; hx>0; hx<<=1) ix -=1;
 		}
-	    return (__float64) ix;
+	    return (double) ix;
 	}
 	else if (hx<0x7ff00000) return (hx>>20)-1023;	/* normal # */
-	else if (hx>0x7ff00000 || lx)  return x+x;	/* x==NaN */
+	else if (hx>0x7ff00000 || lx)  return x;	/* x==NaN */
 	else  return HUGE_VAL;	/* x==inf (+ or -) */
 }
 
-_MATH_ALIAS_d_d(logb)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

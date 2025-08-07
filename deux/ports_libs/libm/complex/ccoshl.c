@@ -32,16 +32,17 @@
 #include <complex.h>
 #include <math.h>
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 ccoshl(long double complex z)
 {
+	long double complex w;
 	long double x, y;
 
 	x = creall(z);
 	y = cimagl(z);
-	return (long double complex) (coshl(x) * cosl(y)) + (sinhl(x) * sinl(y)) * (long double complex) I;
+	w = coshl(x) * cosl(y) + (sinhl(x) * sinl(y)) * I;
+	return w;
 }
-
 #endif

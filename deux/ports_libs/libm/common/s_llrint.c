@@ -22,27 +22,36 @@
  */
 
 #include "fdlibm.h"
-#include <limits.h>
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
+#ifdef __STDC__
 static const double
+#else
+static double 
+#endif
+
 /* Adding a double, x, to 2^52 will cause the result to be rounded based on
    the fractional part of x, according to the implementation's current rounding
    mode.  2^52 is the smallest double that can be represented using all 52 significant
    digits. */
 TWO52[2]={
-  _F_64(4.50359962737049600000e+15), /* 0x43300000, 0x00000000 */
- _F_64(-4.50359962737049600000e+15), /* 0xC3300000, 0x00000000 */
+  4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
+ -4.50359962737049600000e+15, /* 0xC3300000, 0x00000000 */
 };
 
 long long int
-llrint64(__float64 x)
+#ifdef __STDC__
+	llrint(double x)
+#else
+	llrint(x)
+	double x;
+#endif
 {
   __int32_t i0,j0,sx;
   __uint32_t i1;
-  __float64 t;
-  volatile __float64 w;
+  double t;
+  volatile double w;
   long long int result;
   
   EXTRACT_WORDS(i0,i1,x);
@@ -62,7 +71,7 @@ llrint64(__float64 x)
       GET_HIGH_WORD(i0, t);
       /* Detect the all-zeros representation of plus and
          minus zero, which fails the calculation below. */
-      if ((i0 & ~lsl((__int32_t) 1, 31)) == 0)
+      if ((i0 & ~((__int32_t)1 << 31)) == 0)
           return 0;
       j0 = ((i0 & 0x7ff00000) >> 20) - 1023;
       i0 &= 0x000fffff;
@@ -75,9 +84,9 @@ llrint64(__float64 x)
       if (j0 >= 52)
 	/* 64bit return: j0 in [52,62] */
 	/* 64bit return: left shift amt in [32,42] */
-        result = lsl((long long int) ((i0 & 0x000fffff) | 0x00100000), (j0 - 20)) |
+        result = ((long long int) ((i0 & 0x000fffff) | 0x00100000) << (j0 - 20)) |
 		/* 64bit return: right shift amt in [0,10] */
-                   lsl((long long int) i1, (j0 - 52));
+                   ((long long int) i1 << (j0 - 52));
       else
         {
 	  /* 64bit return: j0 in [20,51] */
@@ -91,31 +100,16 @@ llrint64(__float64 x)
 	   * 64bit return: j0 in [20,52] */
 	  /* 64bit return: left shift amt in [0,32] */
           /* ***64bit return: right shift amt in [32,0] */
-          result = lsl((long long int) i0, (j0 - 20))
+          result = ((long long int) i0 << (j0 - 20))
 			| SAFE_RIGHT_SHIFT (i1, (52 - j0));
         }
     }
   else
     {
-      if (sizeof (long long) == 4 && (__float64) LLONG_MIN - _F_64(1.0) < x && x < (__float64) LLONG_MIN) {
-        if (nearbyint(x) == LLONG_MIN)
-          __math_set_inexact64();
-        else
-          __math_set_invalid();
-        return LLONG_MIN;
-      }
-      else if (x != LLONG_MIN)
-      {
-        __math_set_invalid();
-        return sx ? LLONG_MIN : LLONG_MAX;
-      }
-      return (long long) x;
+      return (long long int) x;
     }
-
   
   return sx ? -result : result;
 }
 
-_MATH_ALIAS_k_d(llrint)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

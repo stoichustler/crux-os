@@ -68,32 +68,32 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  * ftello64: return current offset.
  */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
-#include "../stdio/local.h"
+
+#include "local.h"
 
 #ifdef __LARGE64_FILES
 
 _off64_t
-ftello64 (
+_ftello64_r (struct _reent *ptr,
 	register FILE * fp)
 {
   _fpos64_t pos;
 
   /* Only do 64-bit tell on large file.  */
   if (!(fp->_flags & __SL64))
-    return (_off64_t) ftello (fp);
+    return (_off64_t) _ftello_r (ptr, fp);
 
   /* Ensure stdio is set up.  */
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start(fp);
 
   if (fp->_seek64 == NULL)
     {
-      errno = ESPIPE;
+      _REENT_ERRNO(ptr) = ESPIPE;
       _newlib_flockfile_exit(fp);
       return (_off64_t) -1;
     }
@@ -103,7 +103,7 @@ ftello64 (
       fp->_p != NULL && fp->_p - fp->_bf._base > 0 &&
       (fp->_flags & __SAPP))
     {
-      pos = fp->_seek64 (fp->_cookie, (_fpos64_t) 0, SEEK_END);
+      pos = fp->_seek64 (ptr, fp->_cookie, (_fpos64_t) 0, SEEK_END);
       if (pos == (_fpos64_t) -1)
 	{
           _newlib_flockfile_exit (fp);
@@ -114,7 +114,7 @@ ftello64 (
     pos = fp->_offset;
   else
     {
-      pos = fp->_seek64 (fp->_cookie, (_fpos64_t) 0, SEEK_CUR);
+      pos = fp->_seek64 (ptr, fp->_cookie, (_fpos64_t) 0, SEEK_CUR);
       if (pos == (_fpos64_t) -1)
         {
           _newlib_flockfile_exit(fp);
@@ -145,5 +145,15 @@ ftello64 (
   _newlib_flockfile_end(fp);
   return (_off64_t) pos;
 }
+
+#ifndef _REENT_ONLY
+
+_off64_t
+ftello64 (register FILE * fp)
+{
+  return _ftello64_r (_REENT, fp);
+}
+
+#endif /* !_REENT_ONLY */
 
 #endif /* __LARGE64_FILES */

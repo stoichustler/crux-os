@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 1994 Cygnus Support.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * and/or other materials related to such
- * distribution and use acknowledge that the software was developed
- * at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
- * endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
 #include "test.h"
  one_line_type yn_vec[] = {
 {64,0,123,__LINE__, 0x3ff00000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000},
@@ -216,5 +200,5 @@
 {64,0,123,__LINE__, 0x3fd5db36, 0x1b535d7a, 0x40000000, 0x00000000, 0x3fff3333, 0x33333338},
 {64,0,123,__LINE__, 0x3fbefed6, 0x4831e4df, 0x40080000, 0x00000000, 0x3fff3333, 0x33333338},
 {64,0,123,__LINE__, 0x3f9fc826, 0xafa66438, 0x40100000, 0x00000000, 0x3fff3333, 0x33333338},
-{0},};
-void test_yn(int m)   {run_vector_1(m,yn_vec,(char *)(yn),"yn","did");   }	
+0,};
+test_yn(m)   {run_vector_1(m,yn_vec,(char *)(yn),"yn","did");   }	

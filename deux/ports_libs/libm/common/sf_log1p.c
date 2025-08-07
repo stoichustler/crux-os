@@ -16,9 +16,14 @@
 #include "fdlibm.h"
 #include "math_config.h"
 
+#ifdef __STDC__
 static const float
+#else
+static float
+#endif
 ln2_hi =   6.9313812256e-01,	/* 0x3f317180 */
 ln2_lo =   9.0580006145e-06,	/* 0x3717f7d1 */
+two25 =    3.355443200e+07,	/* 0x4c000000 */
 Lp1 = 6.6666668653e-01,	/* 3F2AAAAB */
 Lp2 = 4.0000000596e-01,	/* 3ECCCCCD */
 Lp3 = 2.8571429849e-01, /* 3E924925 */
@@ -27,12 +32,20 @@ Lp5 = 1.8183572590e-01, /* 3E3A3325 */
 Lp6 = 1.5313838422e-01, /* 3E1CD04F */
 Lp7 = 1.4798198640e-01; /* 3E178897 */
 
+#ifdef __STDC__
 static const float zero = 0.0;
+#else
+static float zero = 0.0;
+#endif
 
-float
-log1pf(float x)
+#ifdef __STDC__
+	float log1pf(float x)
+#else
+	float log1pf(x)
+	float x;
+#endif
 {
-	float hfsq,f,c=0,s,z,R,u;
+	float hfsq,f,c,s,z,R,u;
 	__int32_t k,hx,hu,ax;
 
 	GET_FLOAT_WORD(hx,x);
@@ -47,11 +60,12 @@ log1pf(float x)
 		else
 		    return __math_invalidf (x);	/* log1p(x<-1)=NaN */
 	    }
-	    if(ax<0x39000000) {			/* |x| < 2**-13 */
-		if(ax<0x32800000) 		/* |x| < 2**-26 */
-		    return __math_inexactf(x);
+	    if(ax<0x31000000) {			/* |x| < 2**-29 */
+		if(two25+x>zero			/* raise inexact */
+	            &&ax<0x24800000) 		/* |x| < 2**-54 */
+		    return x;
 		else
-		    return __math_inexactf(x - x*x*(float)0.5);
+		    return x - x*x*(float)0.5;
 	    }
 	    if(hx>0||hx<=((__int32_t)0xbe95f61f)) {
 		k=0;f=x;hu=1;}	/* -0.2929<x<0.41422 */
@@ -95,4 +109,16 @@ log1pf(float x)
 		 return k*ln2_hi-((hfsq-(s*(hfsq+R)+(k*ln2_lo+c)))-f);
 }
 
-_MATH_ALIAS_f_f(log1p)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double log1p(double x)
+#else
+	double log1p(x)
+	double x;
+#endif
+{
+	return (double) log1pf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

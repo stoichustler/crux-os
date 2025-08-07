@@ -61,26 +61,26 @@
 #ifndef VFPRINTF_LOCAL
 #define VFPRINTF_LOCAL
 
-#ifndef __IO_NO_FLOATING_POINT
-# define __IO_FLOATING_POINT
+#ifndef NO_FLOATING_POINT
+# define FLOATING_POINT
 #endif
 
 #define _NO_POS_ARGS
-#undef __IO_C99_FORMATS
+#undef _WANT_IO_C99_FORMATS
 
 /* Currently a test is made to see if long double processing is warranted.
-   This could be changed in the future should the __ldtoa code be
-   preferred over __dtoa.  */
+   This could be changed in the future should the _ldtoa_r code be
+   preferred over _dtoa_r.  */
 #define _NO_LONGDBL
 
 #define _NO_LONGLONG
 
 #define _PRINTF_FLOAT_TYPE double
 
-#if defined (__IO_FLOATING_POINT)
+#if defined (FLOATING_POINT)
 # include <locale.h>
 #endif
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 # include <math.h>
 
 /* For %La, an exponent of 15 bits occupies the exponent character,
@@ -88,10 +88,13 @@
 # define MAXEXPLEN		7
 # define DEFPREC		6
 
-# define _DTOA __dtoa
+extern char *_dtoa_r (struct _reent *, double, int,
+			      int, int *, int *, char **);
+
+# define _DTOA_R _dtoa_r
 # define FREXP frexp
 
-#endif /* __IO_FLOATING_POINT.  */
+#endif /* FLOATING_POINT.  */
 
 /* BUF must be big enough for the maximum %#llo (assuming long long is
    at most 64 bits, this would be 23 characters), the maximum
@@ -140,11 +143,6 @@ typedef short *  short_ptr_t;
 /* Define as 0, to make SARG and UARG occupy fewer instructions.  */
 # define CHARINT	0
 
-#define u_char unsigned char
-#define u_long unsigned long
-#define u_short unsigned short
-#define u_int unsigned int
-
 /* Macros to support positional arguments.  */
 #define GET_ARG(n, ap, type) (va_arg ((ap), type))
 
@@ -169,14 +167,14 @@ typedef short *  short_ptr_t;
    so it is not worth to rewrite them into functions. This situation may
    change in the future.  */
 #define PRINT(ptr, len) {		\
-	if (pfunc (fp, (ptr), (len)) == EOF) \
+	if (pfunc (data, fp, (ptr), (len)) == EOF) \
 		goto error;		\
 }
 #define PAD(howmany, ch) {             \
        int temp_i = 0;                 \
        while (temp_i < (howmany))      \
        {                               \
-               if (pfunc (fp, &(ch), 1) == EOF) \
+               if (pfunc (data, fp, &(ch), 1) == EOF) \
                        goto error;     \
                temp_i++;               \
        }			       \
@@ -204,7 +202,7 @@ struct _prt_data_t
   char zero;		/* Zero character.  */
   char buf[BUF];	/* Output buffer for non-floating point number.  */
   char l_buf[3];	/* Sign&hex_prefix, "+/-" and "0x/X".  */
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
   _PRINTF_FLOAT_TYPE _double_;	/* Double value.  */
   char expstr[MAXEXPLEN];	/* Buffer for exponent string.  */
   int lead;		/* The sig figs before decimal or group sep.  */
@@ -212,25 +210,25 @@ struct _prt_data_t
 };
 
 extern int
-_printf_common (
+_printf_common (struct _reent *data,
 		struct _prt_data_t *pdata,
 		int *realsz,
 		FILE *fp,
-		int (*pfunc)(FILE *,
+		int (*pfunc)(struct _reent *, FILE *,
 			     const char *, size_t len));
 
 extern int
-_printf_i (struct _prt_data_t *pdata, FILE *fp,
-	   int (*pfunc)(FILE *, const char *, size_t len),
+_printf_i (struct _reent *data, struct _prt_data_t *pdata, FILE *fp,
+	   int (*pfunc)(struct _reent *, FILE *, const char *, size_t len),
 	   va_list *ap);
 
 /* Make _printf_float weak symbol, so it won't be linked in if target program
    does not need it.  */
-int
-_printf_float (
+extern int
+_printf_float (struct _reent *data,
 	       struct _prt_data_t *pdata,
 	       FILE *fp,
-	       int (*pfunc)(FILE *,
+	       int (*pfunc)(struct _reent *, FILE *,
 			    const char *, size_t len),
-	       va_list *ap) __weak;
+	       va_list *ap) _ATTRIBUTE((__weak__));
 #endif

@@ -1,7 +1,4 @@
 /*
-Copyright (c) 2016 Corinna Vinschen <corinna@vinschen.de>
- */
-/*
 FUNCTION
 	<<wcsxfrm_l>>---locale-specific wide-character string transformation
 	
@@ -39,13 +36,12 @@ PORTABILITY
 <<wcsxfrm_l>> is POSIX-1.2008.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <wchar.h>
 
 size_t
 wcsxfrm_l (wchar_t *__restrict a, const wchar_t *__restrict b, size_t n,
-	   locale_t locale)
+	   struct __locale_t *locale)
 {
-  (void) locale;
   return wcslcpy (a, b, n);
 }

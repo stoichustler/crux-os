@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Arthur David Olson */
 /*
  * month_lengths.c
  *
@@ -9,7 +8,7 @@
 
 #include "local.h"
 
-const uint8_t __month_lengths[2][MONSPERYEAR] = {
+const int __month_lengths[2][MONSPERYEAR] = {
   {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
   {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 } ;

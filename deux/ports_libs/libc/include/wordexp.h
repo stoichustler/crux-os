@@ -9,7 +9,9 @@
 
 #include <sys/types.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 struct _wordexp_t
 {
@@ -44,6 +46,8 @@ enum {
 int wordexp(const char *__restrict, wordexp_t *__restrict, int);
 void wordfree(wordexp_t *);
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _WORDEXP_H_  */

@@ -1,4 +1,3 @@
-/* Copyright (c) 2007 Ralf Corsepius <ralf.corsepius@rtems.org> */
 /*
  * tar.h
  */

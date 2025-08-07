@@ -36,6 +36,9 @@ else()
     add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/ports_smp/${THREADX_ARCH}/${THREADX_TOOLCHAIN})
 endif()
 
+# Newlib porting (Todo)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_smp)
+
 # Pick up the common stuff
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_smp)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common_deux)

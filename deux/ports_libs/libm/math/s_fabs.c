@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
@@ -25,9 +25,9 @@ SYNOPSIS
        float fabsf(float <[x]>);
 
 DESCRIPTION
-<<fabs>> and <<fabsf>> calculate
+<<fabs>> and <<fabsf>> calculate 
 @tex
-$|x|$,
+$|x|$, 
 @end tex
 the absolute value (magnitude) of the argument <[x]>, by direct
 manipulation of the bit representation of <[x]>.
@@ -47,17 +47,19 @@ PORTABILITY
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-fabs64(__float64 x)
+#ifdef __STDC__
+	double fabs(double x)
+#else
+	double fabs(x)
+	double x;
+#endif
 {
-    __uint32_t high;
-    GET_HIGH_WORD(high, x);
-    SET_HIGH_WORD(x, high & 0x7fffffff);
-    return x;
+	__uint32_t high;
+	GET_HIGH_WORD(high,x);
+	SET_HIGH_WORD(x,high&0x7fffffff);
+        return x;
 }
 
-_MATH_ALIAS_d_d(fabs)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

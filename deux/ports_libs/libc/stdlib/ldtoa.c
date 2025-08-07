@@ -2,26 +2,21 @@
   * This program has been placed in the public domain.
   */
 
-#define _DEFAULT_SOURCE
+#include <newlib.h>
+#include <sys/config.h>
 
+#ifndef _USE_GDTOA
+#include <_ansi.h>
+#include <reent.h>
 #include <string.h>
 #include <stdlib.h>
 #include "mprec.h"
 
-#if defined(__IO_LONG_DOUBLE) && defined(__HAVE_LONG_DOUBLE)
-
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
-#pragma GCC diagnostic ignored "-Wanalyzer-out-of-bounds"
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
-#endif
-
 /* These are the externally visible entries. */
 /* linux name:  long double _IO_strtold (char *, char **); */
+long double _strtold (char *, char **);
+char *_ldtoa_r (struct _reent *, long double, int, int, int *, int *,
+		char **);
 int _ldcheck (long double *);
 #if 0
 void _IO_ldtostr (long double *, char *, int, int, char);
@@ -589,7 +584,7 @@ einfin (register short unsigned int *x, register LDPARMS * ldp)
   for (i = 0; i < NE - 1; i++)
     *x++ = 0;
   *x |= 32767;
-  (void) ldp;
+  ldp = ldp;
 #else
   for (i = 0; i < NE - 1; i++)
     *x++ = 0xffff;
@@ -766,9 +761,6 @@ eiisnan (short unsigned int *x)
 
 #if LDBL_MANT_DIG == 64
 
-#ifdef USE_INFINITY
-#ifdef IBMPC
-
 /* Return nonzero if internal format number is infinite. */
 static int
 eiisinf (unsigned short x[])
@@ -782,9 +774,6 @@ eiisinf (unsigned short x[])
     return (1);
   return (0);
 }
-#endif
-#endif
-
 #endif /* LDBL_MANT_DIG == 64 */
 
 /*
@@ -1027,7 +1016,7 @@ m16m (short unsigned int a, short unsigned int *b, short unsigned int *c)
   register unsigned short *pp;
   register unsigned long carry;
   unsigned short *ps;
-  unsigned short p[NI]= {0};
+  unsigned short p[NI];
   unsigned long aa, m;
   int i;
 
@@ -1159,7 +1148,7 @@ static int
 emulm (short unsigned int *a, short unsigned int *b, LDPARMS * ldp)
 {
   unsigned short *p, *q;
-  unsigned short pprod[NI] = {0};
+  unsigned short pprod[NI];
   unsigned short j;
   int i;
   unsigned short *equot = ldp->equot;
@@ -1472,7 +1461,7 @@ static void
 eadd1 (const short unsigned int *a, const short unsigned int *b,
        short unsigned int *c, int subflg, LDPARMS * ldp)
 {
-  unsigned short ai[NI] = {0}, bi[NI] = {0}, ci[NI] = {0};
+  unsigned short ai[NI], bi[NI], ci[NI];
   int i, lost, j, k;
   long lt, lta, ltb;
 
@@ -1583,7 +1572,7 @@ static void
 ediv (const short unsigned int *a, const short unsigned int *b,
       short unsigned int *c, LDPARMS * ldp)
 {
-  unsigned short ai[NI] = {0}, bi[NI] = {0};
+  unsigned short ai[NI], bi[NI];
   int i;
   long lt, lta, ltb;
 
@@ -1689,7 +1678,7 @@ static void
 emul (const short unsigned int *a, const short unsigned int *b,
       short unsigned int *c, LDPARMS * ldp)
 {
-  unsigned short ai[NI] = {0}, bi[NI] = {0};
+  unsigned short ai[NI], bi[NI];
   int i, j;
   long lt, lta, ltb;
 
@@ -1781,10 +1770,11 @@ e113toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 {
   register unsigned short r;
   unsigned short *e, *p;
-  unsigned short yy[NI] = {0};
-  int i;
+  unsigned short yy[NI];
+  int denorm, i;
 
   e = pe;
+  denorm = 0;
   ecleaz (yy);
 #ifdef IBMPC
   e += 7;
@@ -1850,7 +1840,7 @@ e113toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 
 /* move out internal format to ieee long double */
 static void
-__unused
+__attribute__ ((__unused__))
 toe113 (short unsigned int *a, short unsigned int *b)
 {
   register unsigned short *p, *q;
@@ -1906,7 +1896,7 @@ toe113 (short unsigned int *a, short unsigned int *b)
 static void
 e64toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 {
-  unsigned short yy[NI] = {0};
+  unsigned short yy[NI];
   unsigned short *p, *q, *e;
   int i;
 
@@ -1987,7 +1977,7 @@ e64toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 
 /* move out internal format to ieee long double */
 static void
-__unused
+__attribute__ ((__unused__))
 toe64 (short unsigned int *a, short unsigned int *b)
 {
   register unsigned short *p, *q;
@@ -2073,7 +2063,7 @@ e53toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 
   register unsigned short r;
   register unsigned short *p, *e;
-  unsigned short yy[NI] = {0};
+  unsigned short yy[NI];
   int denorm, k;
 
   e = pe;
@@ -2168,7 +2158,7 @@ etoe53 (x, e)
 }
 
 static void
-__unused
+__attribute__ ((__unused__))
 toe53 (x, y)
      unsigned short *x, *y;
 {
@@ -2178,7 +2168,7 @@ toe53 (x, y)
 #else
 
 static void
-__unused
+__attribute__ ((__unused__))
 toe53 (short unsigned int *x, short unsigned int *y)
 {
   unsigned short i;
@@ -2271,7 +2261,7 @@ e24toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 {
   register unsigned short r;
   register unsigned short *p, *e;
-  unsigned short yy[NI] = {0};
+  unsigned short yy[NI];
   int denorm, k;
 
   e = pe;
@@ -2347,7 +2337,7 @@ e24toe (short unsigned int *pe, short unsigned int *y, LDPARMS * ldp)
 }
 
 static void
-__unused
+__attribute__ ((__unused__))
 toe24 (short unsigned int *x, short unsigned int *y)
 {
   unsigned short i;
@@ -2438,7 +2428,7 @@ toe24 (short unsigned int *x, short unsigned int *y)
 static int
 ecmp (const short unsigned int *a, const short unsigned int *b)
 {
-  unsigned short ai[NI] = {0}, bi[NI] = {0};
+  unsigned short ai[NI], bi[NI];
   register unsigned short *p, *q;
   register int i;
   int msign;
@@ -2753,7 +2743,7 @@ _IO_ldtostr (x, string, ndigs, flags, fmt)
      int flags;
      char fmt;
 {
-  unsigned short w[NI] = {0};
+  unsigned short w[NI];
   char *t, *u;
   LDPARMS rnd;
   LDPARMS *ldp = &rnd;
@@ -2798,12 +2788,12 @@ _IO_ldtostr (x, string, ndigs, flags, fmt)
 /* This routine will not return more than NDEC+1 digits. */
 
 char *
-__ldtoa (long double d, int mode, int ndigits,
-       int *decpt, int *sign, char **rve)
+_ldtoa_r (struct _reent *ptr, long double d, int mode, int ndigits,
+	  int *decpt, int *sign, char **rve)
 {
-  unsigned short e[NI] = {0};
+  unsigned short e[NI];
   char *s, *p;
-  int i, k;
+  int i, j, k;
   int orig_ndigits;
   LDPARMS rnd;
   LDPARMS *ldp = &rnd;
@@ -2816,6 +2806,17 @@ __ldtoa (long double d, int mode, int ndigits,
   orig_ndigits = ndigits;
   rnd.rlast = -1;
   rnd.rndprc = NBITS;
+
+  _REENT_CHECK_MP (ptr);
+
+/* reentrancy addition to use mprec storage pool */
+  if (_REENT_MP_RESULT (ptr))
+    {
+      _REENT_MP_RESULT (ptr)->_k = _REENT_MP_RESULT_K (ptr);
+      _REENT_MP_RESULT (ptr)->_maxwds = 1 << _REENT_MP_RESULT_K (ptr);
+      Bfree (ptr, _REENT_MP_RESULT (ptr));
+      _REENT_MP_RESULT (ptr) = 0;
+    }
 
 #if LDBL_MANT_DIG == 24
   e24toe (&du.pe, e, ldp);
@@ -2860,7 +2861,7 @@ __ldtoa (long double d, int mode, int ndigits,
   /* Allocate buffer if more than NDEC_SML digits are requested. */
   if (ndec > NDEC_SML)
     {
-      outbuf = (char *) malloc (ndec + MAX_EXP_DIGITS + 10);
+      outbuf = (char *) _malloc_r (ptr, ndec + MAX_EXP_DIGITS + 10);
       if (!outbuf)
 	{
 	  ndec = NDEC_SML;
@@ -2938,6 +2939,7 @@ stripspaces:
       *decpt = 0;
     }
 
+/* reentrancy addition to use mprec storage pool */
 /* we want to have enough space to hold the formatted result */
 
   if (mode == 3)		/* f format, account for sign + dec digits + decpt + frac */
@@ -2945,18 +2947,21 @@ stripspaces:
   else				/* account for sign + max precision digs + E + exp sign + exponent */
     i = orig_ndigits + MAX_EXP_DIGITS + 4;
 
-  outstr = __alloc_dtoa_result(i);
-  if (!outstr)
-    return NULL;
+  j = sizeof (__ULong);
+  for (_REENT_MP_RESULT_K (ptr) = 0;
+       sizeof (_Bigint) - sizeof (__ULong) + j <= i; j <<= 1)
+    _REENT_MP_RESULT_K (ptr)++;
+  _REENT_MP_RESULT (ptr) = eBalloc (ptr, _REENT_MP_RESULT_K (ptr));
 
 /* Copy from internal temporary buffer to permanent buffer.  */
+  outstr = (char *) _REENT_MP_RESULT (ptr);
   strcpy (outstr, outbuf);
 
   if (rve)
     *rve = outstr + (s - outbuf);
 
   if (outbuf != outbuf_sml)
-    free (outbuf);
+    _free_r (ptr, outbuf);
 
   return outstr;
 }
@@ -2969,7 +2974,7 @@ stripspaces:
 int
 _ldcheck (long double *d)
 {
-  unsigned short e[NI] = {0};
+  unsigned short e[NI];
   LDPARMS rnd;
   LDPARMS *ldp = &rnd;
 
@@ -3005,7 +3010,7 @@ etoasc (short unsigned int *x, char *string, int ndec, int ndigits,
 	int outformat, LDPARMS * ldp)
 {
   long digit;
-  unsigned short y[NI] = {0}, t[NI] = {0}, u[NI] = {0}, w[NI] = {0};
+  unsigned short y[NI], t[NI], u[NI], w[NI];
   const unsigned short *p, *r, *ten;
   unsigned short sign;
   int i, j, k, expon, rndsav, ndigs;
@@ -3335,7 +3340,7 @@ bxit:
 */
 
 long double
-strtold (char *s, char **se)
+_strtold (char *s, char **se)
 {
   union uconv x;
   LDPARMS rnd;
@@ -3356,7 +3361,7 @@ strtold (char *s, char **se)
 static int
 asctoeg (char *ss, short unsigned int *y, int oprec, LDPARMS * ldp)
 {
-  unsigned short yy[NI] = {0}, xt[NI] = {0}, tt[NI] = {0};
+  unsigned short yy[NI], xt[NI], tt[NI];
   int esign, decflg, sgnflg, nexp, exp, prec, lost;
   int k, trail, c, rndsav;
   long lexp;
@@ -3900,4 +3905,4 @@ enan (short unsigned int *nan, int size)
     *nan++ = *p++;
 }
 
-#endif /* __IO_LONG_DOUBLE */
+#endif /* !_USE_GDTOA */

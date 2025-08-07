@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-#include <picolibc.h>
+#include <_newlib_version.h>
 
 /* Macro to test version of GCC.  Returns 0 for non-GCC or too old GCC. */
 #ifndef __GNUC_PREREQ
@@ -38,6 +38,7 @@ extern "C" {
 #endif /* __GNUC_PREREQ */
 /* Version with trailing underscores for BSD compatibility. */
 #define	__GNUC_PREREQ__(ma, mi)	__GNUC_PREREQ(ma, mi)
+
 
 /*
  * Feature test macros control which symbols are exposed by the system
@@ -92,9 +93,6 @@ extern "C" {
  * _ISOC23_SOURCE or _ISOC2X_SOURCE or gcc -std=c23 or g++ -std=c++20
  *	ISO C23
  *
- * _ISOC23_SOURCE or gcc -std=c2x or -std=c2x or g++ -std=c++20
- *	ISO C23
- *
  * _ATFILE_SOURCE (implied by _POSIX_C_SOURCE >= 200809L)
  *	"at" functions
  *
@@ -107,13 +105,10 @@ extern "C" {
  * _BSD_SOURCE (deprecated by _DEFAULT_SOURCE)
  * _SVID_SOURCE (deprecated by _DEFAULT_SOURCE)
  * _DEFAULT_SOURCE (or none of the above)
- *	POSIX-1.2024 with BSD and SVr4 extensions
+ *	POSIX-1.2008 with BSD and SVr4 extensions
  *
  * _FORTIFY_SOURCE = 1, 2 or 3
- * 	Object Size Checking function wrappers
- *
- * _ZEPHYR_SOURCE
- *      Zephyr. ISO C + a small selection of other APIs.
+ *	Object Size Checking function wrappers
  */
 
 /* Remap the old name _ISOC2X_SOURCE to _ISOC23_SOURCE.  */
@@ -142,29 +137,12 @@ extern "C" {
 #define	_XOPEN_SOURCE		700
 #undef _XOPEN_SOURCE_EXTENDED
 #define	_XOPEN_SOURCE_EXTENDED	1
-#undef _LARGEFILE64_SOURCE
-#define _LARGEFILE64_SOURCE     1
 #endif /* _GNU_SOURCE */
-
-/* When building for Zephyr, set _ZEPHYR_SOURCE unless some other API
- * indicator is set by the application. Don't check __STRICT_ANSI__ as that
- * is set by the compiler for -std=cxx, or _POSIX_C_SOURCE as Zephyr defines
- * that for picolibc currently.
- */
-
-#if defined(__ZEPHYR__) && !defined(_ZEPHYR_SOURCE) &&                  \
-    !defined(_GNU_SOURCE)&&                                             \
-    !defined(_BSD_SOURCE) &&                                            \
-    !defined(_SVID_SOURCE) &&                                           \
-    !defined(_DEFAULT_SOURCE)
-#define _ZEPHYR_SOURCE      1
-#endif
 
 #if defined(_BSD_SOURCE) || defined(_SVID_SOURCE) || \
    (!defined(__STRICT_ANSI__) && !defined(_ANSI_SOURCE) && \
    !defined(_ISOC99_SOURCE) && !defined(_POSIX_SOURCE) && \
-   !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE) && \
-   !defined(_ZEPHYR_SOURCE))
+   !defined(_POSIX_C_SOURCE) && !defined(_XOPEN_SOURCE))
 #undef _DEFAULT_SOURCE
 #define	_DEFAULT_SOURCE		1
 #endif
@@ -194,15 +172,6 @@ extern "C" {
 #if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200809
 #undef _ATFILE_SOURCE
 #define	_ATFILE_SOURCE		1
-#endif
-
-#ifdef _ZEPHYR_SOURCE
-#undef _ISOC99_SOURCE
-#define	_ISOC99_SOURCE		1
-#undef _ISOC11_SOURCE
-#define	_ISOC11_SOURCE		1
-#undef _ANSI_SOURCE
-#define _ANSI_SOURCE            1
 #endif
 
 /*
@@ -277,9 +246,6 @@ extern "C" {
  * __LARGEFILE_VISIBLE
  *	fseeko, ftello; enabled with _LARGEFILE_SOURCE or _XOPEN_SOURCE >= 500.
  *
- * __LARGEFILE64_VISIBLE
- *      additional large file extensions; enabled with _LARGEFILE64_SOURCE.
- *
  * __BSD_VISIBLE
  *	BSD extensions; enabled by default, or with _BSD_SOURCE.
  *
@@ -296,9 +262,6 @@ extern "C" {
  *
  * __SSP_FORTIFY_LEVEL
  *	Object Size Checking; defined to 0 (off), 1, 2 or 3.
- *
- * __ZEPHYR_VISIBLE
- *      Zephyr extensions; enabled with _ZEPHYR_SOURCE.
  *
  * In all cases above, "enabled by default" means either by defining
  * _DEFAULT_SOURCE, or by not defining any of the public feature test macros.
@@ -322,21 +285,9 @@ extern "C" {
 #define	__GNU_VISIBLE		0
 #endif
 
-#ifdef _ZEPHYR_SOURCE
-#define __ZEPHYR_VISIBLE        1
-#else
-#define __ZEPHYR_VISIBLE        0
-#endif
-
-#ifdef _ISOC2X_SOURCE
-#undef _ISOC2X_SOURCE
-#undef _ISOC23_SOURCE
-#define _ISOC23_SOURCE      1
-#endif
-
 #if defined(_ISOC23_SOURCE) || \
   (__STDC_VERSION__ - 0) > 201710L || (__cplusplus - 0) >= 202002L
-#define __ISO_C_VISIBLE		2023
+#define __ISO_C_VISIBLE		2020
 #elif defined(_ISOC11_SOURCE) || \
   (__STDC_VERSION__ - 0) >= 201112L || (__cplusplus - 0) >= 201103L
 #define	__ISO_C_VISIBLE		2011
@@ -351,12 +302,6 @@ extern "C" {
 #define	__LARGEFILE_VISIBLE	1
 #else
 #define	__LARGEFILE_VISIBLE	0
-#endif
-
-#ifdef _LARGEFILE64_SOURCE
-#define __LARGEFILE64_VISIBLE   1
-#else
-#define __LARGEFILE64_VISIBLE   0
 #endif
 
 #ifdef _DEFAULT_SOURCE
@@ -490,6 +435,140 @@ extern "C" {
 # define _POSIX_SAVED_IDS       1
 # define _POSIX_VERSION 199009L
 #endif
+
+#ifdef __CYGWIN__
+
+#if __POSIX_VISIBLE >= 202405
+#define _POSIX_VERSION				202405L
+#define _POSIX2_VERSION				202405L
+#elif __POSIX_VISIBLE >= 200809
+#define _POSIX_VERSION				200809L
+#define _POSIX2_VERSION				200809L
+#elif __POSIX_VISIBLE >= 200112
+#define _POSIX_VERSION				200112L
+#define _POSIX2_VERSION				200112L
+#elif __POSIX_VISIBLE >= 199506
+#define _POSIX_VERSION				199506L
+#define _POSIX2_VERSION				199506L
+#elif __POSIX_VISIBLE >= 199309
+#define _POSIX_VERSION				199309L
+#define _POSIX2_VERSION				199209L
+#elif __POSIX_VISIBLE >= 199209
+#define _POSIX_VERSION				199009L
+#define _POSIX2_VERSION				199209L
+#elif __POSIX_VISIBLE
+#define _POSIX_VERSION				199009L
+#endif
+#if __XSI_VISIBLE >= 4
+#define _XOPEN_VERSION				__XSI_VISIBLE
+#endif
+
+#define _POSIX_ADVISORY_INFO			200809L
+#define _POSIX_ASYNCHRONOUS_IO			200809L
+#define _POSIX_BARRIERS				200809L
+#define _POSIX_CHOWN_RESTRICTED			     1
+#define _POSIX_CLOCK_SELECTION			200809L
+#define _POSIX_CPUTIME				200809L
+#define _POSIX_FSYNC				200809L
+#define _POSIX_IPV6				200809L
+#define _POSIX_JOB_CONTROL			     1
+#define _POSIX_MAPPED_FILES			200809L
+/* #define _POSIX_MEMLOCK			    -1 */
+#define _POSIX_MEMLOCK_RANGE			200809L
+#define _POSIX_MEMORY_PROTECTION		200809L
+#define _POSIX_MESSAGE_PASSING			200809L
+#define _POSIX_MONOTONIC_CLOCK			200809L
+#define _POSIX_NO_TRUNC				     1
+/* #define _POSIX_PRIORITIZED_IO		    -1 */
+#define _POSIX_PRIORITY_SCHEDULING		200809L
+#define _POSIX_RAW_SOCKETS			200809L
+#define _POSIX_READER_WRITER_LOCKS		200809L
+#define _POSIX_REALTIME_SIGNALS			200809L
+#define _POSIX_REGEXP				     1
+#define _POSIX_SAVED_IDS			     1
+#define _POSIX_SEMAPHORES			200809L
+#define _POSIX_SHARED_MEMORY_OBJECTS		200809L
+#define _POSIX_SHELL				     1
+#define _POSIX_SPAWN				200809L
+#define _POSIX_SPIN_LOCKS			200809L
+/* #define _POSIX_SPORADIC_SERVER		    -1 */
+#define _POSIX_SYNCHRONIZED_IO			200809L
+#define _POSIX_THREAD_ATTR_STACKADDR		200809L
+#define _POSIX_THREAD_ATTR_STACKSIZE		200809L
+#define _POSIX_THREAD_CPUTIME			200809L
+/* #define _POSIX_THREAD_PRIO_INHERIT		    -1 */
+/* #define _POSIX_THREAD_PRIO_PROTECT		    -1 */
+#define _POSIX_THREAD_PRIORITY_SCHEDULING	200809L
+#define _POSIX_THREAD_PROCESS_SHARED		200809L
+#define _POSIX_THREAD_SAFE_FUNCTIONS		200809L
+/* #define _POSIX_THREAD_SPORADIC_SERVER	    -1 */
+#define _POSIX_THREADS				200809L
+#define _POSIX_TIMEOUTS				200809L
+#define _POSIX_TIMERS				200809L
+/* #define _POSIX_TRACE				    -1 */
+/* #define _POSIX_TRACE_EVENT_FILTER		    -1 */
+/* #define _POSIX_TRACE_INHERIT			    -1 */
+/* #define _POSIX_TRACE_LOG			    -1 */
+/* #define _POSIX_TYPED_MEMORY_OBJECTS		    -1 */
+#define _POSIX_VDISABLE				   '\0'
+
+#if __POSIX_VISIBLE >= 2
+#define _POSIX2_C_VERSION			_POSIX2_VERSION
+#define _POSIX2_C_BIND				_POSIX2_VERSION
+#define _POSIX2_C_DEV				_POSIX2_VERSION
+#define _POSIX2_CHAR_TERM			_POSIX2_VERSION
+/* #define _POSIX2_FORT_DEV			    -1 */
+/* #define _POSIX2_FORT_RUN			    -1 */
+/* #define _POSIX2_LOCALEDEF			    -1 */
+/* #define _POSIX2_PBS				    -1 */
+/* #define _POSIX2_PBS_ACCOUNTING		    -1 */
+/* #define _POSIX2_PBS_CHECKPOINT		    -1 */
+/* #define _POSIX2_PBS_LOCATE			    -1 */
+/* #define _POSIX2_PBS_MESSAGE			    -1 */
+/* #define _POSIX2_PBS_TRACK			    -1 */
+#define _POSIX2_SW_DEV				_POSIX2_VERSION
+#define _POSIX2_UPE				_POSIX2_VERSION
+#endif /* __POSIX_VISIBLE >= 2 */
+
+#define _POSIX_V6_ILP32_OFF32			    -1
+#ifdef __LP64__
+#define _POSIX_V6_ILP32_OFFBIG			    -1
+#define _POSIX_V6_LP64_OFF64			     1
+#define _POSIX_V6_LPBIG_OFFBIG			     1
+#else
+#define _POSIX_V6_ILP32_OFFBIG			     1
+#define _POSIX_V6_LP64_OFF64			    -1
+#define _POSIX_V6_LPBIG_OFFBIG			    -1
+#endif
+#define _POSIX_V7_ILP32_OFF32			_POSIX_V6_ILP32_OFF32
+#define _POSIX_V7_ILP32_OFFBIG			_POSIX_V6_ILP32_OFFBIG
+#define _POSIX_V7_LP64_OFF64			_POSIX_V6_LP64_OFF64
+#define _POSIX_V7_LPBIG_OFFBIG			_POSIX_V6_LPBIG_OFFBIG
+#define _XBS5_ILP32_OFF32			_POSIX_V6_ILP32_OFF32
+#define _XBS5_ILP32_OFFBIG			_POSIX_V6_ILP32_OFFBIG
+#define _XBS5_LP64_OFF64			_POSIX_V6_LP64_OFF64
+#define _XBS5_LPBIG_OFFBIG			_POSIX_V6_LPBIG_OFFBIG
+
+#if __XSI_VISIBLE
+#define _XOPEN_CRYPT				     1
+#define _XOPEN_ENH_I18N				     1
+/* #define _XOPEN_LEGACY			    -1 */
+/* #define _XOPEN_REALTIME			    -1 */
+/* #define _XOPEN_REALTIME_THREADS		    -1 */
+#define _XOPEN_SHM				     1
+/* #define _XOPEN_STREAMS			    -1 */
+/* #define _XOPEN_UNIX				    -1 */
+#endif /* __XSI_VISIBLE */
+
+/*
+ * newlib's wide char conversion functions were updated on
+ *	2019-01-12
+ * to UNICODE version:
+ *	11.0.0 released 2018-06-05
+ */
+#define __STDC_ISO_10646__ 201806L
+
+#endif /* __CYGWIN__ */
 
 #ifdef __cplusplus
 }

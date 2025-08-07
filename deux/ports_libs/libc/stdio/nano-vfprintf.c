@@ -99,17 +99,17 @@ SYNOPSIS
 	char *vasnprintf(char *<[str]>, size_t *<[size]>, const char *<[fmt]>,
                          va_list <[list]>);
 
-	int vprintf( const char *<[fmt]>,
+	int _vprintf_r(struct _reent *<[reent]>, const char *<[fmt]>,
                         va_list <[list]>);
-	int vfprintf( FILE *<[fp]>,
+	int _vfprintf_r(struct _reent *<[reent]>, FILE *<[fp]>,
                         const char *<[fmt]>, va_list <[list]>);
-	int vsprintf( char *<[str]>,
+	int _vsprintf_r(struct _reent *<[reent]>, char *<[str]>,
                         const char *<[fmt]>, va_list <[list]>);
-	int vasprintf( char **<[str]>,
+	int _vasprintf_r(struct _reent *<[reent]>, char **<[str]>,
                          const char *<[fmt]>, va_list <[list]>);
-	int vsnprintf( char *<[str]>,
+	int _vsnprintf_r(struct _reent *<[reent]>, char *<[str]>,
                          size_t <[size]>, const char *<[fmt]>, va_list <[list]>);
-	char *vasnprintf( char *<[str]>,
+	char *_vasnprintf_r(struct _reent *<[reent]>, char *<[str]>,
                             size_t *<[size]>, const char *<[fmt]>, va_list <[list]>);
 
 DESCRIPTION
@@ -143,14 +143,17 @@ static char *rcsid = "$Id$";
 
 /* Actual printf innards.
    This code is large and complicated...  */
+#include <newlib.h>
 
+#define VFPRINTF vfprintf
 #ifdef STRING_ONLY
-# define VFPRINTF svfprintf
+# define _VFPRINTF_R _svfprintf_r
 #else
-# define VFPRINTF vfprintf
+# define _VFPRINTF_R _vfprintf_r
 #endif
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -165,23 +168,16 @@ static char *rcsid = "$Id$";
 #include "vfieeefp.h"
 #include "nano-vfprintf_local.h"
 
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-use-of-uninitialized-value"
-#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#endif
-
-/* The _ssputs function is shared between all versions of vfprintf
+/* The __ssputs_r function is shared between all versions of vfprintf
    and vfwprintf.  */
 #ifdef STRING_ONLY
-static int
-_ssputs (
+int
+__ssputs_r (struct _reent *ptr,
        FILE *fp,
        const char *buf,
        size_t len)
 {
-  register size_t w;
+  register int w;
 
   w = fp->_w;
   if (len >= w && fp->_flags & (__SMBF | __SOPT))
@@ -196,16 +192,16 @@ _ssputs (
        * that it can add a trailing \0 without
        * reallocating.  The new allocation should thus be
        * max(prev_size*1.5, curpos+len+1).  */
-      size_t newsize = fp->_bf._size * 3 / 2;
+      int newsize = fp->_bf._size * 3 / 2;
       if (newsize < curpos + len + 1)
 	newsize = curpos + len + 1;
       if (fp->_flags & __SOPT)
 	{
 	  /* asnprintf leaves original buffer alone.  */
-	  str = (unsigned char *)malloc (newsize);
+	  str = (unsigned char *)_malloc_r (ptr, newsize);
 	  if (!str)
 	    {
-	      errno = ENOMEM;
+	      _REENT_ERRNO(ptr) = ENOMEM;
 	      goto err;
 	    }
 	  memcpy (str, fp->_bf._base, curpos);
@@ -213,13 +209,13 @@ _ssputs (
 	}
       else
 	{
-	  str = (unsigned char *)realloc (fp->_bf._base, newsize);
+	  str = (unsigned char *)_realloc_r (ptr, fp->_bf._base, newsize);
 	  if (!str)
 	    {
 	      /* Free unneeded buffer.  */
-	      free (fp->_bf._base);
+	      _free_r (ptr, fp->_bf._base);
 	      /* Ensure correct errno, even if free changed it.  */
-	      errno = ENOMEM;
+	      _REENT_ERRNO(ptr) = ENOMEM;
 	      goto err;
 	    }
 	}
@@ -241,17 +237,17 @@ err:
   fp->_flags |= __SERR;
   return EOF;
 }
-/* _ssprint is the original implementation of _SPRINT.  In nano
-   version formatted IO it is reimplemented as _ssputs for non-wide
-   char output, but _ssprint cannot be discarded because it is used
+/* __ssprint_r is the original implementation of __SPRINT.  In nano
+   version formatted IO it is reimplemented as __ssputs_r for non-wide
+   char output, but __ssprint_r cannot be discarded because it is used
    by a serial of functions like svfwprintf for wide char output.  */
 int
-__ssprint (
+__ssprint_r (struct _reent *ptr,
        FILE *fp,
        register struct __suio *uio)
 {
   register size_t len;
-  register size_t w;
+  register int w;
   register struct __siov *iov;
   register const char *p = NULL;
 
@@ -285,17 +281,17 @@ __ssprint (
 	   * that it can add a trailing \0 without
 	   * reallocating.  The new allocation should thus be
 	   * max(prev_size*1.5, curpos+len+1).  */
-	  size_t newsize = fp->_bf._size * 3 / 2;
+	  int newsize = fp->_bf._size * 3 / 2;
 	  if (newsize < curpos + len + 1)
 	    newsize = curpos + len + 1;
 
 	  if (fp->_flags & __SOPT)
 	    {
 	      /* asnprintf leaves original buffer alone.  */
-	      str = (unsigned char *)malloc (newsize);
+	      str = (unsigned char *)_malloc_r (ptr, newsize);
 	      if (!str)
 		{
-		  errno = ENOMEM;
+		  _REENT_ERRNO(ptr) = ENOMEM;
 		  goto err;
 		}
 	      memcpy (str, fp->_bf._base, curpos);
@@ -303,14 +299,14 @@ __ssprint (
 	    }
 	  else
 	    {
-	      str = (unsigned char *)realloc (fp->_bf._base,
+	      str = (unsigned char *)_realloc_r (ptr, fp->_bf._base,
 						 newsize);
 	      if (!str)
 		{
 		  /* Free unneeded buffer.  */
-		  free (fp->_bf._base);
+		  _free_r (ptr, fp->_bf._base);
 		  /* Ensure correct errno, even if free changed it.  */
-		  errno = ENOMEM;
+		  _REENT_ERRNO(ptr) = ENOMEM;
 		  goto err;
 		}
 	    }
@@ -349,7 +345,7 @@ err:
 /* Flush out all the vectors defined by the given uio,
    then reset it so that it can be reused.  */
 int
-__sprint (
+__sprint_r (struct _reent *ptr,
        FILE *fp,
        register struct __suio *uio)
 {
@@ -360,7 +356,7 @@ __sprint (
       uio->uio_iovcnt = 0;
       return 0;
     }
-#if defined __WIDE_ORIENT && (!defined __ELIX_LEVEL || __ELIX_LEVEL >= 4)
+#if defined _WIDE_ORIENT && (!defined _ELIX_LEVEL || _ELIX_LEVEL >= 4)
     if (fp->_flags2 & __SWID)
       {
 	struct __siov *iov;
@@ -375,7 +371,7 @@ __sprint (
 	    len = iov->iov_len / sizeof (wchar_t);
 	    for (i = 0; i < len; i++)
 	      {
-		if (fputwc ( p[i], fp) == WEOF)
+		if (_fputwc_r (ptr, p[i], fp) == WEOF)
 		  {
 		    err = -1;
 		    goto out;
@@ -385,34 +381,33 @@ __sprint (
 	}
       else
 #endif
-	err = _sfvwrite( fp, uio);
-  goto out;
+	err = __sfvwrite_r(ptr, fp, uio);
 out:
   uio->uio_resid = 0;
   uio->uio_iovcnt = 0;
   return err;
 }
 
-__noinline static int
-_sfputc (
+_NOINLINE_STATIC int
+__sfputc_r (struct _reent *ptr,
        int c,
        FILE *fp)
 {
   if (--fp->_w >= 0 || (fp->_w >= fp->_lbfsize && (char)c != '\n'))
     return (*fp->_p++ = c);
   else
-    return (_swbuf( c, fp));
+    return (__swbuf_r(ptr, c, fp));
 }
 
-static int
-_sfputs (
+int
+__sfputs_r (struct _reent *ptr,
        FILE *fp,
        const char *buf,
        size_t len)
 {
-  register size_t i;
+  register int i;
 
-#if defined __WIDE_ORIENT && (!defined __ELIX_LEVEL || __ELIX_LEVEL >= 4)
+#if defined _WIDE_ORIENT && (!defined _ELIX_LEVEL || _ELIX_LEVEL >= 4)
   if (fp->_flags2 & __SWID)
     {
       wchar_t *p;
@@ -420,7 +415,7 @@ _sfputs (
       p = (wchar_t *) buf;
       for (i = 0; i < (len / sizeof (wchar_t)); i++)
 	{
-	  if (fputwc ( p[i], fp) == WEOF)
+	  if (_fputwc_r (ptr, p[i], fp) == WEOF)
 	    return -1;
 	}
     }
@@ -430,7 +425,7 @@ _sfputs (
       for (i = 0; i < len; i++)
 	{
 	  /* Call __sfputc_r to skip _fputc_r.  */
-	  if (_sfputc ( (int)buf[i], fp) == EOF)
+	  if (__sfputc_r (ptr, (int)buf[i], fp) == EOF)
 	    return -1;
 	}
     }
@@ -438,10 +433,28 @@ _sfputs (
 }
 #endif /* STRING_ONLY.  */
 
+int _VFPRINTF_R (struct _reent *, FILE *, const char *, va_list);
+
+#ifndef STRING_ONLY
+int
+VFPRINTF (FILE * fp,
+       const char *fmt0,
+       va_list ap)
+{
+  int result;
+  result = _VFPRINTF_R (_REENT, fp, fmt0, ap);
+  return result;
+}
+
+int
+vfiprintf (FILE *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vfprintf")));
+#endif
+
 #ifdef STRING_ONLY
-# define __SPRINT _ssputs
+# define __SPRINT __ssputs_r
 #else
-# define __SPRINT _sfputs
+# define __SPRINT __sfputs_r
 #endif
 
 /* Do not need FLUSH for all sprintf functions.  */
@@ -452,7 +465,7 @@ _sfputs (
 #endif
 
 int
-VFPRINTF (
+_VFPRINTF_R (struct _reent *data,
        FILE * fp,
        const char *fmt0,
        va_list ap)
@@ -465,13 +478,13 @@ VFPRINTF (
   va_list ap_copy;
 
   /* Output function pointer.  */
-  int (*pfunc)(FILE *, const char *, size_t len);
+  int (*pfunc)(struct _reent *, FILE *, const char *, size_t len);
 
   pfunc = __SPRINT;
 
 #ifndef STRING_ONLY
   /* Initialize std streams if not dealing with sprintf family.  */
-  CHECK_INIT();
+  CHECK_INIT (data, fp);
   _newlib_flockfile_start (fp);
 
   /* Sorry, fprintf(read_only_file, "") returns EOF, not 0.  */
@@ -485,10 +498,10 @@ VFPRINTF (
   /* Create initial buffer if we are called by asprintf family.  */
   if (fp->_flags & __SMBF && !fp->_bf._base)
     {
-      fp->_bf._base = fp->_p = malloc (64);
+      fp->_bf._base = fp->_p = _malloc_r (data, 64);
       if (!fp->_p)
 	{
-	  errno = ENOMEM;
+	  _REENT_ERRNO(data) = ENOMEM;
 	  return EOF;
 	}
       fp->_bf._size = 64;
@@ -525,7 +538,7 @@ VFPRINTF (
       prt_data.prec = -1;
       prt_data.dprec = 0;
       prt_data.l_buf[0] = '\0';
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
       prt_data.lead = 0;
 #endif
       /* The flags.  */
@@ -535,7 +548,7 @@ VFPRINTF (
        *	-- ANSI X3J11
        */
       flag_chars = "#-0+ ";
-      for (; (cp = memchr (flag_chars, *fmt, 5)); fmt++)
+      for (; cp = memchr (flag_chars, *fmt, 5); fmt++)
 	prt_data.flags |= (1 << (cp - flag_chars));
 
       if (prt_data.flags & SPACESGN)
@@ -602,7 +615,7 @@ VFPRINTF (
       /* The conversion specifiers.  */
       prt_data.code = *fmt++;
       cp = memchr ("efgEFG", prt_data.code, 6);
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
       /* If cp is not NULL, we are facing FLOATING POINT NUMBER.  */
       if (cp)
 	{
@@ -611,17 +624,16 @@ VFPRINTF (
 	  if (_printf_float == NULL)
 	    {
 	      if (prt_data.flags & LONGDBL)
-		GET_ARG (N, ap_copy, long double);
+		GET_ARG (N, ap_copy, _LONG_DOUBLE);
 	      else
 		GET_ARG (N, ap_copy, double);
-	      n = 0;
 	    }
 	  else
-            n = _printf_float (&prt_data, fp, pfunc, &ap_copy);
+            n = _printf_float (data, &prt_data, fp, pfunc, &ap_copy);
 	}
       else
 #endif
-	n = _printf_i (&prt_data, fp, pfunc, &ap_copy);
+	n = _printf_i (data, &prt_data, fp, pfunc, &ap_copy);
 
       if (n == -1)
 	goto error;
@@ -639,7 +651,11 @@ error:
 }
 
 #ifdef STRING_ONLY
-__nano_reference(svfprintf, svfiprintf);
+int
+_svfiprintf_r (struct _reent *, FILE *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_svfprintf_r")));
 #else
-__nano_reference(vfprintf, vfiprintf);
+int
+_vfiprintf_r (struct _reent *, FILE *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vfprintf_r")));
 #endif

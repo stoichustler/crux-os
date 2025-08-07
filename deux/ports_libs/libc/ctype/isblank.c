@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Thomas Fitzsimmons <fitzsim@redhat.com> */
 /*
 FUNCTION
 	<<isblank>>, <<isblank_l>>---blank character predicate
@@ -36,15 +35,14 @@ PORTABILITY
 No supporting OS subroutines are required.
 */
 
+#include <_ansi.h>
 #include <ctype.h>
+
+
 
 #undef isblank
 int
 isblank (int c)
 {
-#if _PICOLIBC_CTYPE_SMALL
-    return c == ' ' || c == '\t';
-#else
-    return(__CTYPE_PTR[c+1] & __CTYPE_BLANK) || c == '\t';
-#endif
+	return ((__CTYPE_PTR[c+1] & _B) || (c == '\t'));
 }

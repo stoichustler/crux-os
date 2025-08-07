@@ -29,8 +29,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include <picolibc.h>
-
 #include <string.h>
 #include <stddef.h>
 #include "ea_internal.h"
@@ -41,7 +39,7 @@ POSSIBILITY OF SUCH DAMAGE.
 COMPAT_EA_ALIAS (memcpy_ea);
 
 __ea void *
-__no_builtin
+__inhibit_loop_to_libcall
 memcpy_ea (__ea void *dest, __ea const void *src, size_ea_t n)
 {
   __ea void *curr_dest = dest;

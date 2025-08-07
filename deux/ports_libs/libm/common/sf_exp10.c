@@ -17,15 +17,31 @@
  * wrapper exp10f(x)
  */
 
-#define _GNU_SOURCE
 #undef exp10f
 #include "fdlibm.h"
 #include <errno.h>
 #include <math.h>
 
-float exp10f(float x)		/* wrapper exp10f */
+#ifdef __STDC__
+	float exp10f(float x)		/* wrapper exp10f */
+#else
+	float exp10f(x)			/* wrapper exp10f */
+	float x;
+#endif
 {
-  return _powf(10.0, x);
+  return powf(10.0, x);
 }
 
-_MATH_ALIAS_f_f(exp10)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double exp10(double x)
+#else
+	double exp10(x)
+	double x;
+#endif
+{
+	return (double) exp10f((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

@@ -4,7 +4,8 @@
  */
 /* doc in dprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,7 +13,7 @@
 #include "local.h"
 
 int
-vdprintf (
+_vdprintf_r (struct _reent *ptr,
        int fd,
        const char *__restrict format,
        va_list ap)
@@ -21,13 +22,35 @@ vdprintf (
   char buf[512];
   size_t n = sizeof buf;
 
-  p = vasnprintf ( buf, &n, format, ap);
+  _REENT_SMALL_CHECK_INIT (ptr);
+  p = _vasnprintf_r (ptr, buf, &n, format, ap);
   if (!p)
     return -1;
-  n = write (fd, p, n);
+  n = _write_r (ptr, fd, p, n);
   if (p != buf)
-    free (p);
+    _free_r (ptr, p);
   return n;
 }
 
-__nano_reference(vdprintf, vdiprintf);
+#ifdef _NANO_FORMATTED_IO
+int
+_vdiprintf_r (struct _reent *, int, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vdprintf_r")));
+#endif
+
+#ifndef _REENT_ONLY
+
+int
+vdprintf (int fd,
+       const char *__restrict format,
+       va_list ap)
+{
+  return _vdprintf_r (_REENT, fd, format, ap);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+vdiprintf (int, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vdprintf")));
+#endif
+#endif /* ! _REENT_ONLY */

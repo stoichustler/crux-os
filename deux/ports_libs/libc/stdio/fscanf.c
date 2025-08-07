@@ -15,10 +15,13 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY
 
 int
 fscanf(FILE *__restrict fp, const char *__restrict fmt, ...)
@@ -27,9 +30,33 @@ fscanf(FILE *__restrict fp, const char *__restrict fmt, ...)
   va_list ap;
 
   va_start (ap, fmt);
-  ret = vfscanf ( fp, fmt, ap);
+  ret = _vfscanf_r (_REENT, fp, fmt, ap);
   va_end (ap);
   return ret;
 }
 
-__nano_reference(fscanf, fiscanf);
+#ifdef _NANO_FORMATTED_IO
+int
+fiscanf (FILE *, const char *, ...)
+       _ATTRIBUTE ((__alias__("fscanf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int
+_fscanf_r(struct _reent *ptr, FILE *__restrict fp, const char *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  va_start (ap, fmt);
+  ret = _vfscanf_r (ptr, fp, fmt, ap);
+  va_end (ap);
+  return (ret);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+_fiscanf_r (struct _reent *, FILE *, const char *, ...)
+       _ATTRIBUTE ((__alias__("_fscanf_r")));
+#endif

@@ -25,11 +25,19 @@
  */
 
 #define _GNU_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef getwchar_unlocked
+
+wint_t
+_getwchar_unlocked_r (struct _reent *ptr)
+{
+  return _fgetwc_unlocked_r (ptr, stdin);
+}
 
 /*
  * Synonym for fgetwc_unlocked(stdin).
@@ -37,5 +45,6 @@
 wint_t
 getwchar_unlocked (void)
 {
+  _REENT_SMALL_CHECK_INIT (_REENT);
   return fgetwc_unlocked (stdin);
 }

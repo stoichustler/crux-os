@@ -24,15 +24,31 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
 int
-fputc_unlocked (
+_fputc_unlocked_r (struct _reent *ptr,
        int ch,
        FILE * file)
 {
-  CHECK_INIT();
-  return putc_unlocked ( ch, file);
+  CHECK_INIT(ptr, file);
+  return _putc_unlocked_r (ptr, ch, file);
 }
+
+#ifndef _REENT_ONLY
+int
+fputc_unlocked (int ch,
+       FILE * file)
+{
+#if !defined(__OPTIMIZE_SIZE__) && !defined(PREFER_SIZE_OVER_SPEED)
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, file);
+  return _putc_unlocked_r (reent, ch, file);
+#else
+  return _fputc_unlocked_r (_REENT, ch, file);
+#endif
+}
+#endif /* !_REENT_ONLY */

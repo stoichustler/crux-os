@@ -6,48 +6,41 @@
 
 #include "fdlibm.h"
 
-#if !__HAVE_FAST_FMAF
+#if !HAVE_FAST_FMAF
 
-#if __FLT_EVAL_METHOD__ == 2 && defined(__HAVE_LONG_DOUBLE)
-
-float
-fmaf(float x, float y, float z)
-{
-    return (float) fmal((long double) x, (long double) y, (long double) z);
-}
-
+#ifdef __STDC__
+	float fmaf(float x, float y, float z)
 #else
-
-typedef float FLOAT_T;
-
-#define FMA fmaf
-#define NEXTAFTER nextafterf
-#define LDEXP ldexpf
-#define FREXP frexpf
-#define SCALBN scalbnf
-#define SPLIT (0x1p12f + 1.0f)
-#define COPYSIGN copysignf
-#define FLOAT_MANT_DIG        __FLT_MANT_DIG__
-#define FLOAT_MAX_EXP         __FLT_MAX_EXP__
-#define FLOAT_MIN             __FLT_MIN__
-#define ILOGB    ilogbf
-
-static inline int
-odd_mant(FLOAT_T x)
+	float fmaf(x,y,z)
+	float x;
+	float y;
+        float z;
+#endif
 {
-    return asuint(x) & 1;
+  /* NOTE:  The floating-point exception behavior of this is not as
+   * required.  But since the basic function is not really done properly,
+   * it is not worth bothering to get the exceptions right, either.  */
+  /* Let the implementation handle this. */ /* <= NONSENSE! */
+  /* In floating-point implementations in which double is larger than float,
+   * computing as double should provide the desired function.  Otherwise,
+   * the behavior will not be as specified in the standards.  */
+  return (float) (((double) x * (double) y) + (double) z);
 }
-
-static unsigned int
-EXPONENT(FLOAT_T x)
-{
-    return _exponent32(asuint(x));
-}
-
-#include "fma_inc.h"
 
 #endif
 
-_MATH_ALIAS_f_fff(fma)
+#ifdef _DOUBLE_IS_32BITS
 
+#ifdef __STDC__
+	double fma(double x, double y, double z)
+#else
+	double fma(x,y,z)
+	double x;
+	double y;
+        double z;
 #endif
+{
+  return (double) fmaf((float) x, (float) y, (float) z);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

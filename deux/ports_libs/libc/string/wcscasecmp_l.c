@@ -1,7 +1,4 @@
 /*
-Copyright (c) 2016 Corinna Vinschen <corinna@vinschen.de>
- */
-/*
 FUNCTION
 	<<wcscasecmp_l>>---case-insensitive wide character string compare
 	
@@ -39,12 +36,11 @@ QUICKREF
 	wcscasecmp_l 
 */
 
-#define _DEFAULT_SOURCE
 #include <wchar.h>
 #include <wctype.h>
 
 int
-wcscasecmp_l (const wchar_t *s1, const wchar_t *s2, locale_t locale)
+wcscasecmp_l (const wchar_t *s1, const wchar_t *s2, struct __locale_t *locale)
 {
   int d = 0;
   for ( ; ; )

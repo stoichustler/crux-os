@@ -28,7 +28,7 @@ SYNOPSIS
 	#include <stdio.h>
 	void perror(char *<[prefix]>);
 
-	void perror( char *<[prefix]>);
+	void _perror_r(struct _reent *<[reent]>, char *<[prefix]>);
 
 DESCRIPTION
 Use <<perror>> to print (on standard error) an error message
@@ -52,13 +52,11 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include "local.h"
-#include "../string/local.h"
-#include <errno.h>
 
 #define WRITE_STR(str) \
 { \
@@ -66,7 +64,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
   size_t len = strlen (p); \
   while (len) \
     { \
-      ssize_t len1 = write (fileno (fp), p, len); \
+      ssize_t len1 = _write_r (ptr, fileno (fp), p, len); \
       if (len1 < 0) \
 	break; \
       len -= len1; \
@@ -75,24 +73,24 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 }
 
 void
-perror (
+_perror_r (struct _reent *ptr,
        const char *s)
 {
   char *error;
   int dummy;
-  FILE *fp = stderr;
+  FILE *fp = _stderr_r (ptr);
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start(fp);
-  fflush ( fp);
+  _fflush_r (ptr, fp);
   if (s != NULL && *s != '\0')
     {
       WRITE_STR (s);
       WRITE_STR (": ");
     }
 
-  if ((error = _strerror_r (errno, 1, &dummy)) != NULL)
+  if ((error = _strerror_r (ptr, _REENT_ERRNO(ptr), 1, &dummy)) != NULL)
     WRITE_STR (error);
 
 #ifdef __SCLE
@@ -103,3 +101,13 @@ perror (
   fp->_flags &= ~__SOFF;
   _newlib_flockfile_end(fp);
 }
+
+#ifndef _REENT_ONLY
+
+void
+perror (const char *s)
+{
+  _perror_r (_REENT, s);
+}
+
+#endif

@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_FLOAT
+#if !__OBSOLETE_MATH
 
 #include <stdint.h>
 #include <math.h>

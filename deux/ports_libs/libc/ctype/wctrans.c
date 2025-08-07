@@ -67,13 +67,16 @@ PORTABILITY
 No supporting OS subroutines are required.
 */
 
+#include <_ansi.h>
 #include <string.h>
+#include <reent.h>
 #include <wctype.h>
 #include <errno.h>
 #include "local.h"
 
 wctrans_t
-wctrans (const char *c)
+_wctrans_r (struct _reent *r,
+	const char *c)
 {
   if (!strcmp (c, "tolower"))
     return WCT_TOLOWER;
@@ -81,7 +84,15 @@ wctrans (const char *c)
     return WCT_TOUPPER;
   else
     {
-      errno = EINVAL;
+      _REENT_ERRNO(r) = EINVAL;
       return 0;
     }
 }
+
+#ifndef _REENT_ONLY
+wctrans_t
+wctrans (const char *c)
+{
+  return _wctrans_r (_REENT, c);
+}
+#endif /* !_REENT_ONLY */

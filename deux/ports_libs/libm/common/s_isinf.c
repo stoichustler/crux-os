@@ -1,12 +1,4 @@
 /*
-Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
-
-Developed at SunPro, a Sun Microsystems, Inc. business.
-Permission to use, copy, modify, and distribute this
-software is freely granted, provided that this notice
-is preserved.
- */
-/*
  * isinf(x) returns 1 if x is infinity, else 0;
  * no branching!
  *
@@ -16,38 +8,22 @@ is preserved.
  * chooses to use it instead of the C99 macro.
  */
 
-#define _ADD_D_TO_DOUBLE_FUNCS
-#define isinfd isinf
-
 #include "fdlibm.h"
+#include <ieeefp.h>
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
 #undef isinf
-#undef isinfl
 
 int
-isinf64(__float64 x)
+isinf (double x)
 {
-	__uint32_t hx,lx;
+	__int32_t hx,lx;
 	EXTRACT_WORDS(hx,lx,x);
 	hx &= 0x7fffffff;
-	hx |= (__uint32_t)(lx|(-lx))>>31;
+	hx |= (__uint32_t)(lx|(-lx))>>31;	
 	hx = 0x7ff00000 - hx;
 	return 1 - (int)((__uint32_t)(hx|(-hx))>>31);
 }
 
-#ifdef __strong_reference
-__strong_reference(isinf64, __isinf64);
-#else
-int
-__isinf64(float x)
-{
-    return isinf64(x);
-}
-#endif
-
-_MATH_ALIAS_i_d(isinf)
-_MATH_ALIAS_i_d(__isinf)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

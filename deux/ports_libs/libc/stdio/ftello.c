@@ -32,8 +32,8 @@ SYNOPSIS
 	#include <stdio.h>
 	long ftell(FILE *<[fp]>);
 	off_t ftello(FILE *<[fp]>);
-	long ftell( FILE *<[fp]>);
-	off_t ftello( FILE *<[fp]>);
+	long _ftell_r(struct _reent *<[ptr]>, FILE *<[fp]>);
+	off_t _ftello_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 DESCRIPTION
 Objects of type <<FILE>> can have a ``position'' that records how much
@@ -76,26 +76,27 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  * ftello: return current offset.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
 
 _off_t
-ftello (
+_ftello_r (struct _reent * ptr,
        register FILE * fp)
 {
   _fpos_t pos;
 
   /* Ensure stdio is set up.  */
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start (fp);
 
   if (fp->_seek == NULL)
     {
-      errno = ESPIPE;
+      _REENT_ERRNO(ptr) = ESPIPE;
       _newlib_flockfile_exit (fp);
       return (_off_t) -1;
     }
@@ -105,7 +106,7 @@ ftello (
       fp->_p != NULL && fp->_p - fp->_bf._base > 0 &&
       (fp->_flags & __SAPP))
     {
-      pos = fp->_seek (fp->_cookie, (_fpos_t) 0, SEEK_END);
+      pos = fp->_seek (ptr, fp->_cookie, (_fpos_t) 0, SEEK_END);
       if (pos == (_fpos_t) -1)
 	{
           _newlib_flockfile_exit (fp);
@@ -116,7 +117,7 @@ ftello (
     pos = fp->_offset;
   else
     {
-      pos = fp->_seek (fp->_cookie, (_fpos_t) 0, SEEK_CUR);
+      pos = fp->_seek (ptr, fp->_cookie, (_fpos_t) 0, SEEK_CUR);
       if (pos == (_fpos_t) -1)
         {
           _newlib_flockfile_exit (fp);
@@ -147,3 +148,13 @@ ftello (
   _newlib_flockfile_end (fp);
   return (_off_t) pos;
 }
+
+#ifndef _REENT_ONLY
+
+_off_t
+ftello (register FILE * fp)
+{
+  return _ftello_r (_REENT, fp);
+}
+
+#endif /* !_REENT_ONLY */

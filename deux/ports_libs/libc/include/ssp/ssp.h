@@ -41,6 +41,8 @@
 #endif
 #define __ssp_real(fun)		__ssp_real_(fun)
 
+#define __ssp_inline extern __inline__ __attribute__((__always_inline__, __gnu_inline__))
+
 #if __SSP_FORTIFY_LEVEL > 2
 #define __ssp_bos(ptr) __builtin_dynamic_object_size(ptr, 1)
 #define __ssp_bos0(ptr) __builtin_dynamic_object_size(ptr, 0)
@@ -58,7 +60,7 @@
 		__chk_fail()
 #define __ssp_decl(rtype, fun, args) \
 rtype __ssp_real_(fun) args __asm__(__ASMNAME(#fun)); \
-__declare_extern_inline(rtype) fun args
+__ssp_inline rtype fun args
 #define __ssp_redirect_raw(rtype, fun, args, call, cond, bos) \
 __ssp_decl(rtype, fun, args) \
 { \
@@ -75,10 +77,9 @@ __ssp_decl(rtype, fun, args) \
 #define __ssp_overlap(a, b, l) \
     (((a) <= (b) && (b) < (a) + (l)) || ((b) <= (a) && (a) < (b) + (l)))
 
-_BEGIN_STD_C
-void __stack_chk_fail(void) __noreturn;
-void __chk_fail(void) __noreturn;
-void set_fortify_handler (void (*handler) (int sig));
-_END_STD_C
+__BEGIN_DECLS
+void __stack_chk_fail(void) __dead2;
+void __chk_fail(void) __dead2;
+__END_DECLS
 
 #endif /* _SSP_SSP_H_ */

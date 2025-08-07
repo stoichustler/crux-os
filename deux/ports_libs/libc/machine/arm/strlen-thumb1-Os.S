@@ -24,8 +24,6 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-#include <picolibc.h>
-
 	.macro def_fn f p2align=0
 	.text
 	.p2align \p2align
@@ -50,8 +48,3 @@ def_fn	strlen p2align=1
 	subs	r0, r3, #1
 	bx	lr
 	.size	strlen, . - strlen
-
-
-#if defined(__linux__) && defined(__ELF__)
-.section .note.GNU-stack,"",%progbits
-#endif

@@ -1,12 +1,4 @@
 /*
-Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
-
-Developed at SunPro, a Sun Microsystems, Inc. business.
-Permission to use, copy, modify, and distribute this
-software is freely granted, provided that this notice 
-is preserved.
- */
-/*
  * nan () returns a nan.
  * Added by Cygnus Support.
  */
@@ -38,14 +30,12 @@ QUICKREF
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-nan64(const char *unused)
+	double nan(const char *unused)
 {
-	__float64 x;
+	double x;
 
-        (void) unused;
 #if __GNUC_PREREQ (3, 3)
 	x = __builtin_nan("");
 #else
@@ -54,6 +44,4 @@ nan64(const char *unused)
 	return x;
 }
 
-_MATH_ALIAS_d_s(nan)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

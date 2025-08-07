@@ -31,17 +31,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include "local.h"
 
-#ifdef _NEED_FLOAT_HUGE
-
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double
 fabsl (long double x)
 {
-    if (x == 0.0l)
-        return 0.0l;
-    if (x < 0.0l)
-        return -x;
-    return x;
+  return fabs(x);
 }
-
 #endif
 

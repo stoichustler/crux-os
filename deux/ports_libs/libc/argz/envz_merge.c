@@ -4,7 +4,6 @@
  * is freely granted, provided that this notice is preserved.
  */
 
-#define _DEFAULT_SOURCE
 #include <errno.h>
 #include <sys/types.h>
 #include <string.h>
@@ -30,8 +29,6 @@ envz_merge (char **envz,
       if (!override)
         {
           name_str = strdup (entry);
-          if (!name_str)
-              return ENOMEM;
           name_iter = strchr(name_str, '=');
           if(name_iter)
             *name_iter = '\0';
@@ -45,8 +42,6 @@ envz_merge (char **envz,
       else
         {
           name_str = strdup (entry);
-          if (!name_str)
-              return ENOMEM;
           name_iter = strchr(name_str, '=');
           if(name_iter)
             {

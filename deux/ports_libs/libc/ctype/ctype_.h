@@ -1,82 +1,22 @@
-/* Copyright (c) 2016 Corinna Vinschen <corinna@vinschen.de> */
 #include <ctype.h>
-#include <wchar.h>
-#include "locale_private.h"
 
-#ifdef __MB_EXTENDED_CHARSETS_NON_UNICODE
-
-extern const char __ctype[locale_END - locale_EXTENDED_BASE][_CTYPE_OFFSET + 1 + 256];
-
-static inline const char *
-__get_ctype(enum locale_id id)
-{
-    if (id < locale_EXTENDED_BASE)
-        return _ctype_;
-    return __ctype[id - locale_EXTENDED_BASE] + _CTYPE_OFFSET;
-}
-
+#if (defined(__GNUC__) && !defined(__CHAR_UNSIGNED__) && !defined(COMPACT_CTYPE)) || defined (__CYGWIN__)
+#define ALLOW_NEGATIVE_CTYPE_INDEX
 #endif
 
-#define _U __CTYPE_UPPER
-#define _L __CTYPE_LOWER
-#define _N __CTYPE_DIGIT
-#define _S __CTYPE_SPACE
-#define _P __CTYPE_PUNCT
-#define _C __CTYPE_CNTRL
-#define _X __CTYPE_HEX
-#define _B __CTYPE_BLANK
-#define _T __CTYPE_TAB
+#ifdef ALLOW_NEGATIVE_CTYPE_INDEX
 
-#define _CTYPE_DATA_0_127 \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_C,	_C|_S, _C|_S, _C|_S,	_C|_S,	_C|_S,	_C,	_C, \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_S|_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N, \
-	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U, \
-	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U, \
-	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U, \
-	_U,	_U,	_U,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L, \
-	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L, \
-	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L, \
-	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C
+#ifndef __CYGWIN__
+  extern const char _ctype_b[];
+#else
+  extern char _ctype_b[];
+#endif
+# define DEFAULT_CTYPE_PTR	((char *) _ctype_b + 127)
 
-#define _CTYPE_DATA_0_127_WIDE \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_C,	_C|_S|_T, _C|_S, _C|_S,	_C|_S,	_C|_S,	_C,	_C, \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_C,	_C,	_C,	_C,	_C,	_C,	_C,	_C, \
-	_S|_B,	_P,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_P,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_N,	_N,	_N,	_N,	_N,	_N,	_N,	_N, \
-	_N,	_N,	_P,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U|_X,	_U, \
-	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U, \
-	_U,	_U,	_U,	_U,	_U,	_U,	_U,	_U, \
-	_U,	_U,	_U,	_P,	_P,	_P,	_P,	_P, \
-	_P,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L|_X,	_L, \
-	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L, \
-	_L,	_L,	_L,	_L,	_L,	_L,	_L,	_L, \
-	_L,	_L,	_L,	_P,	_P,	_P,	_P,	_C
+#else	/* !ALLOW_NEGATIVE_CTYPE_INDEX */
 
-#define _CTYPE_DATA_128_255 \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0, \
-	0,	0,	0,	0,	0,	0,	0,	0
+  /* _ctype_ is declared in <ctype.h>. */
+# define DEFAULT_CTYPE_PTR	((char *) _ctype_)
+
+#endif	/* !ALLOW_NEGATIVE_CTYPE_INDEX */
+

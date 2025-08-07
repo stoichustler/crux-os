@@ -34,9 +34,9 @@
 #include <sys/cdefs.h>
 #include <ssp/ssp.h>
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 void *__memcpy_chk(void *, const void *, size_t, size_t);
-void *__memmove_chk(void *, const void *, size_t, size_t);
+void *__memmove_chk(void *, void *, size_t, size_t);
 void *__mempcpy_chk(void *, const void *, size_t, size_t);
 void *__memset_chk(void *, int, size_t, size_t);
 char *__stpcpy_chk(char *, const char *, size_t);
@@ -44,7 +44,7 @@ char *__strcat_chk(char *, const char *, size_t);
 char *__strcpy_chk(char *, const char *, size_t);
 char *__strncat_chk(char *, const char *, size_t, size_t);
 char *__strncpy_chk(char *, const char *, size_t, size_t);
-_END_STD_C
+__END_DECLS
 
 #if __SSP_FORTIFY_LEVEL > 0
 
@@ -59,27 +59,27 @@ _END_STD_C
     __ ## fun ## _ichk(dst, src))
 
 #define __ssp_bos_icheck3_restrict(fun, type1, type2) \
-__declare_extern_inline(type1) __ ## fun ## _ichk(type1 __restrict, type2 __restrict, size_t); \
-__declare_extern_inline(type1) \
+__ssp_inline type1 __ ## fun ## _ichk(type1 __restrict, type2 __restrict, size_t); \
+__ssp_inline type1 \
 __ ## fun ## _ichk(type1 __restrict dst, type2 __restrict src, size_t len) { \
 	return __builtin___ ## fun ## _chk(dst, src, len, __ssp_bos0(dst)); \
 }
 
 #define __ssp_bos_icheck3(fun, type1, type2) \
-__declare_extern_inline(type1) __ ## fun ## _ichk(type1, type2, size_t); \
-__declare_extern_inline(type1) \
+__ssp_inline type1 __ ## fun ## _ichk(type1, type2, size_t); \
+__ssp_inline type1 \
 __ ## fun ## _ichk(type1 dst, type2 src, size_t len) { \
 	return __builtin___ ## fun ## _chk(dst, src, len, __ssp_bos0(dst)); \
 }
 
 #define __ssp_bos_icheck2_restrict(fun, type1, type2) \
-__declare_extern_inline(type1) __ ## fun ## _ichk(type1, type2); \
-__declare_extern_inline(type1) \
+__ssp_inline type1 __ ## fun ## _ichk(type1, type2); \
+__ssp_inline type1 \
 __ ## fun ## _ichk(type1 __restrict dst, type2 __restrict src) { \
 	return __builtin___ ## fun ## _chk(dst, src, __ssp_bos0(dst)); \
 }
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 __ssp_bos_icheck3_restrict(memcpy, void *, const void *)
 __ssp_bos_icheck3(memmove, void *, const void *)
 __ssp_bos_icheck3_restrict(mempcpy, void *, const void *)
@@ -92,7 +92,7 @@ __ssp_bos_icheck2_restrict(strcpy, char *, const char *)
 __ssp_bos_icheck2_restrict(strcat, char *, const char *)
 __ssp_bos_icheck3_restrict(strncpy, char *, const char *)
 __ssp_bos_icheck3_restrict(strncat, char *, const char *)
-_END_STD_C
+__END_DECLS
 
 #define memcpy(dst, src, len) __ssp_bos_check3(memcpy, dst, src, len)
 #define memmove(dst, src, len) __ssp_bos_check3(memmove, dst, src, len)

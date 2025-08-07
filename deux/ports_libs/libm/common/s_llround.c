@@ -11,12 +11,11 @@
  */
 
 #include "fdlibm.h"
-#include <limits.h>
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
 long long int
-llround64(__float64 x)
+llround(double x)
 {
   __int32_t sign, exponent_less_1023;
   /* Most significant word, least significant word. */
@@ -52,7 +51,7 @@ llround64(__float64 x)
           result = msw >> (20 - exponent_less_1023);
         }
     }
-  else if (exponent_less_1023 < (__int32_t) ((8 * sizeof (long long int)) - 1))
+  else if (exponent_less_1023 < (8 * sizeof (long long int)) - 1)
     {
       /* 64bit longlong: exponent_less_1023 in [20,62] */
       if (exponent_less_1023 >= 52)
@@ -60,7 +59,7 @@ llround64(__float64 x)
 	/* 64bit longlong: shift amt in [32,42] */
         result = ((long long int) msw << (exponent_less_1023 - 20))
 		    /* 64bit longlong: shift amt in [0,10] */
-                    | ((long long int) lsw << (exponent_less_1023 - 52));
+                    | (lsw << (exponent_less_1023 - 52));
       else
         {
 	  /* 64bit longlong: exponent_less_1023 in [20,51] */
@@ -76,21 +75,10 @@ llround64(__float64 x)
         }
     }
   else
-    {
-      /* Result is too large to be represented by a long long int. */
-      if (sign == 1 ||
-          !((sizeof(long long) == 4 && x > LLONG_MIN - 0.5) ||
-            (sizeof(long long) > 4 && x >= LLONG_MIN)))
-        {
-          __math_set_invalid();
-          return sign == 1 ? LLONG_MAX : LLONG_MIN;
-        }
-      return (long long)x;
-    }
+    /* Result is too large to be represented by a long long int. */
+    return (long long int)x;
 
   return sign * result;
 }
 
-_MATH_ALIAS_k_d(llround)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

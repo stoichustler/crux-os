@@ -11,7 +11,9 @@
 
 #include <machine/_default_types.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef ___int8_t_defined
 #ifndef _INT8_T_DECLARED
@@ -81,6 +83,8 @@ typedef __uintptr_t uintptr_t;
 #define _UINTPTR_T_DECLARED
 #endif
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _SYS__STDINT_H */

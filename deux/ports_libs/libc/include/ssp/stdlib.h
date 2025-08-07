@@ -1,11 +1,10 @@
-/* Copyright (c) 2017 Yaakov Selkowitz <yselkowi@redhat.com> */
 #ifndef _SSP_STDLIB_H_
 #define _SSP_STDLIB_H_
 
 #include <ssp/ssp.h>
 
 #if __SSP_FORTIFY_LEVEL > 0
-_BEGIN_STD_C
+__BEGIN_DECLS
 
 __ssp_decl(size_t, mbstowcs, (wchar_t *__buf, const char *__src, size_t __n))
 {
@@ -25,7 +24,7 @@ __ssp_decl(int, wctomb, (char *__buf, wchar_t __wc))
   return __ssp_real_wctomb (__buf, __wc);
 }
 
-_END_STD_C
+__END_DECLS
 
 #endif /* __SSP_FORTIFY_LEVEL > 0 */
 #endif /* _SSP_STDLIB_H_ */

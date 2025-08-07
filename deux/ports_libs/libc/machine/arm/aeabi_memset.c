@@ -26,30 +26,40 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <picolibc.h>
-
 #include <stddef.h>
-#include <string.h>
+#include <_ansi.h>
+
+/* According to the run-time ABI for the ARM Architecture, this
+   function is allowed to corrupt only the integer core register
+   permitted to be corrupted by the [AAPCS] (r0-r3, ip, lr, and
+   CPSR).
+
+   Therefore, we can't just simply use alias to support the function
+   aeabi_memset for the targets with FP register.  Instead, versions
+   for these specific targets are written in assembler (in
+   aeabi_memset-soft.S).  */
+
+/* NOTE: This ifdef MUST match the one in aeabi_memset-soft.S.  */
+#if !defined (__SOFTFP__)
+
+/* Defined in aeabi_memset-soft.S.  */
+
+#else
+/* Support the alias for the __aeabi_memset which may
+   assume memory alignment.  */
+void __aeabi_memset4 (void *dest, size_t n, int c)
+	_ATTRIBUTE ((alias ("__aeabi_memset")));
+
+void __aeabi_memset8 (void *dest, size_t n, int c)
+	_ATTRIBUTE ((alias ("__aeabi_memset")));
 
 /* Support the routine __aeabi_memset.  Can't alias to memset
-   because the arguments are in a different order */
-/*
- *__used added so that building with clang -flto
- * doesn't discard this function
- */
-
-#undef memset
-
-void __used __weak __aeabi_memset (void *dest, size_t n, int c);
-
+   because it's not defined in the same translation unit.  */
 void __aeabi_memset (void *dest, size_t n, int c)
 {
   /*Note that relative to ANSI memset, __aeabi_memset hase the order
     of its second and third arguments reversed.  */
+  extern void memset (void *dest, int c, size_t n);
   memset (dest, c, n);
 }
-
-/* Support the alias for the __aeabi_memset which may
-   assume memory alignment.  */
-__weak_reference(__aeabi_memset, __aeabi_memset4);
-__weak_reference(__aeabi_memset, __aeabi_memset8);
+#endif

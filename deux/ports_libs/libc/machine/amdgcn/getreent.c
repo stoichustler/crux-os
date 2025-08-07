@@ -1,19 +1,4 @@
-/*
-Copyright (c) 2014-2017 Mentor Graphics.
-
-The authors hereby grant permission to use, copy, modify, distribute,
-and license this software and its documentation for any purpose, provided
-that existing copyright notices are retained in all copies and that this
-notice is included verbatim in any distributions. No written agreement,
-license, or royalty fee is required for any of the authorized uses.
-Modifications to this software may be copyrighted by their authors
-and need not follow the licensing terms described here, provided that
-the new terms are clearly indicated on the first page of each file where
-they apply.
- */
 /* get thread-specific reentrant pointer */
-
-#include <picolibc.h>
 
 #include <reent.h>
 #include <stdint.h>
@@ -75,28 +60,28 @@ __getreent (void)
      s[4:5] contains the dispatch pointer.
 
      WARNING: this code will break if s[0:1] is ever used for anything!  */
-  const register unsigned long buffer_descriptor __asm__("s0");
+  const register unsigned long buffer_descriptor asm("s0");
   unsigned long private_segment = buffer_descriptor & 0x0000ffffffffffff;
-  const register unsigned int stack_offset __asm__("s11");
-  const register hsa_kernel_dispatch_packet_t *dispatch_ptr __asm__("s4");
+  const register unsigned int stack_offset asm("s11");
+  const register hsa_kernel_dispatch_packet_t *dispatch_ptr asm("s4");
 
   unsigned long stack_base = private_segment + stack_offset;
   unsigned long stack_end = stack_base + dispatch_ptr->private_segment_size * 64;
   unsigned long addr = (stack_end - sizeof(struct data)) & ~7;
   data = (struct data *)addr;
 
-  register long sp __asm__("s16");
+  register long sp asm("s16");
   if (sp >= addr)
     goto stackoverflow;
 
   /* Stash a marker in the unused upper 16 bits of s[0:1] to indicate that
      the reent data is initialized.  */
-  const register unsigned int s1 __asm__("s1");
+  const register unsigned int s1 asm("s1");
   unsigned int marker = s1 >> 16;
   if (marker != 12345)
     {
-      __asm__("s_and_b32\ts1, s1, 0xffff");
-      __asm__("s_or_b32\ts1, s1, (12345 << 16)");
+      asm("s_and_b32\ts1, s1, 0xffff");
+      asm("s_or_b32\ts1, s1, (12345 << 16)");
       data->marker = 12345;
 
       __builtin_memset (&data->reent, 0, sizeof(struct _reent));

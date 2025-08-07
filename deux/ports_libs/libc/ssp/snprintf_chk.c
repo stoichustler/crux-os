@@ -28,6 +28,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <sys/cdefs.h>
+__RCSID("$NetBSD: snprintf_chk.c,v 1.5 2008/04/28 20:23:00 martin Exp $");
 
 /*LINTLIBRARY*/
 
@@ -46,7 +48,6 @@ __snprintf_chk(char * __restrict buf, size_t len, int flags, size_t slen,
 	va_list ap;
 	int rv;
 
-        (void) flags;
 	if (len > slen)
 		__chk_fail();
 
@@ -56,12 +57,3 @@ __snprintf_chk(char * __restrict buf, size_t len, int flags, size_t slen,
 
 	return rv;
 }
-
-#ifdef _LONG_DOUBLE_IEEE128__
-#ifdef __strong_reference
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(__snprintf_chk, __snprintf_chkieee128);
-#endif
-#endif

@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<mbtowc>>---minimal multibyte to wide char converter
 
@@ -14,7 +10,7 @@ SYNOPSIS
 	int mbtowc(wchar_t *restrict <[pwc]>, const char *restrict <[s]>, size_t <[n]>);
 
 DESCRIPTION
-When __MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
+When _MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
 implementation of <<mbtowc>>.  In this case,
 only ``multi-byte character sequences'' recognized are single bytes,
 and they are ``converted'' to themselves.
@@ -22,14 +18,15 @@ Each call to <<mbtowc>> copies one character from <<*<[s]>>> to
 <<*<[pwc]>>>, unless <[s]> is a null pointer.  The argument n
 is ignored.
 
-When __MB_CAPABLE is defined, this routine uses a state variable to
-allow state dependent decoding.  The result is based on the locale
-setting which may be restricted to a defined set of locales.
+When _MB_CAPABLE is defined, this routine calls <<_mbtowc_r>> to perform
+the conversion, passing a state variable to allow state dependent
+decoding.  The result is based on the locale setting which may
+be restricted to a defined set of locales.
 
 RETURNS
 This implementation of <<mbtowc>> returns <<0>> if
 <[s]> is <<NULL>> or is the empty string; 
-it returns <<1>> if not __MB_CAPABLE or
+it returns <<1>> if not _MB_CAPABLE or
 the character is a single-byte character; it returns <<-1>>
 if n is <<0>> or the multi-byte character is invalid; 
 otherwise it returns the number of bytes in the multibyte character.
@@ -45,15 +42,15 @@ effects vary with the locale.
 <<mbtowc>> requires no supporting OS subroutines.
 */
 
+#ifndef _REENT_ONLY
+
+#include <newlib.h>
 #include <stdlib.h>
 #include <wchar.h>
 #include "local.h"
 
-#ifdef __MB_CAPABLE
-static mbstate_t _mbtowc_state;
-#define ps &_mbtowc_state
-#else
-#define ps NULL
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local _mbstate_t _tls_mbtowc_state;
 #endif
 
 int
@@ -61,15 +58,35 @@ mbtowc (wchar_t *__restrict pwc,
         const char *__restrict s,
         size_t n)
 {
-        int retval;
+#ifdef _MB_CAPABLE
+  int retval = 0;
+  struct _reent *reent = _REENT;
+  mbstate_t *ps;
 
-        retval = __MBTOWC (pwc, s, n, ps);
-        if (retval < 0) {
-#ifdef __MB_CAPABLE
-                _mbtowc_state.__count = 0;
-#endif
-                errno = EILSEQ;
-                retval = -1;
-        }
-        return retval;
+  _REENT_CHECK_MISC(reent);
+  ps = &(_REENT_MBTOWC_STATE(reent));
+  
+  retval = __MBTOWC (reent, pwc, s, n, ps);
+  
+  if (retval < 0)
+    {
+      ps->__count = 0;
+      return -1;
+    }
+  return retval;
+#else /* not _MB_CAPABLE */
+  if (s == NULL)
+    return 0;
+  if (n == 0)
+    return -1;
+  if (pwc)
+    *pwc = (wchar_t) *s;
+  return (*s != '\0');
+#endif /* not _MB_CAPABLE */
 }
+
+#endif /* !_REENT_ONLY */
+
+
+
+

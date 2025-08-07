@@ -36,12 +36,12 @@
 #include <math.h>
 #include "math_config.h"
 
-#if __HAVE_FAST_FMAF
+#if HAVE_FAST_FMAF
 
 float
 fmaf (float x, float y, float z)
 {
-  __asm__("vfma.f32 %0, %1, %2" : "+t" (z) : "t" (x), "t" (y));
+  asm ("vfma.f32 %0, %1, %2" : "+t" (z) : "t" (x), "t" (y));
   return z;
 }
 

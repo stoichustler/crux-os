@@ -38,9 +38,11 @@
 float complex
 ccoshf(float complex z)
 {
+	float complex w;
 	float x, y;
 
 	x = crealf(z);
 	y = cimagf(z);
-	return (float complex) (coshf(x) * cosf(y)) + (sinhf(x) * sinf(y)) * I;
+	w = coshf(x) * cosf(y) + (sinhf(x) * sinf(y)) * I;
+	return w;
 }

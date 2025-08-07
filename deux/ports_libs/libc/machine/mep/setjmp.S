@@ -1,9 +1,7 @@
-/*  Copyright (c) 2003 DJ Delorie, Red Hat Inc. */
-#include <picolibc.h>
-
 #
 #  Setjmp/longjmp for MeP
 #
+#  DJ Delorie, Red Hat Inc.
 #
 #  19 32-bit words in the jmpbuf:
 #    $0

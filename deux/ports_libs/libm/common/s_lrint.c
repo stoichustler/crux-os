@@ -60,29 +60,35 @@ ANSI C, POSIX
  */
 
 #include "fdlibm.h"
-#include <limits.h>
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-static const __float64
+#ifdef __STDC__
+static const double
+#else
+static double 
+#endif
 
 /* Adding a double, x, to 2^52 will cause the result to be rounded based on
    the fractional part of x, according to the implementation's current rounding
    mode.  2^52 is the smallest double that can be represented using all 52 significant
    digits. */
 TWO52[2]={
-  _F_64(4.50359962737049600000e+15), /* 0x43300000, 0x00000000 */
- _F_64(-4.50359962737049600000e+15), /* 0xC3300000, 0x00000000 */
+  4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
+ -4.50359962737049600000e+15, /* 0xC3300000, 0x00000000 */
 };
 
-#include <stdio.h>
-long int
-lrint64(__float64 x)
+#ifdef __STDC__
+	long int lrint(double x)
+#else
+	long int lrint(x)
+	double x;
+#endif
 {
   __int32_t i0,j0,sx;
   __uint32_t i1;
-  __float64 t;
-  volatile __float64 w;
+  double t;
+  volatile double w;
   long int result;
   
   EXTRACT_WORDS(i0,i1,x);
@@ -97,19 +103,17 @@ lrint64(__float64 x)
   if(j0 < 20)
     {
       /* j0 in [-1023,19] */
-      /* shift amt in [0,19] */
       w = TWO52[sx] + x;
       t = w - TWO52[sx];
       GET_HIGH_WORD(i0, t);
-      /* After round:  j0 in [0,20] */
+      /* Detect the all-zeros representation of plus and
+         minus zero, which fails the calculation below. */
+      if ((i0 & ~(1L << 31)) == 0)
+          return 0;
       j0 = ((i0 & 0x7ff00000) >> 20) - 1023;
       i0 &= 0x000fffff;
       i0 |= 0x00100000;
-      /* shift amt in [20,0] */
-      if (j0 < 0)
-        result = 0;
-      else
-        result = i0 >> (20 - j0);
+      result = (j0 < 0 ? 0 : i0 >> (20 - j0));
     }
   else if (j0 < (int)(8 * sizeof (long int)) - 1)
     {
@@ -118,23 +122,15 @@ lrint64(__float64 x)
       if (j0 >= 52)
 	/* 64bit return: j0 in [52,62] */
 	/* 64bit return: left shift amt in [32,42] */
-        result = lsl((long int) ((i0 & 0x000fffff) | 0x00100000), (j0 - 20)) |
+        result = ((long int) ((i0 & 0x000fffff) | 0x00100000) << (j0 - 20)) |
 		/* 64bit return: right shift amt in [0,10] */
-                   lsl((long int) i1, (j0 - 52));
+                   ((long int) i1 << (j0 - 52));
       else
         {
-          if (sizeof (long) == 4 && x > LONG_MAX) {
-            t = nearbyint(x);
-            if (t == LONG_MAX)
-              __math_set_inexact64();
-            else
-              __math_set_invalid();
-          } else {
-            /* 32bit return: j0 in [20,30] */
-            /* 64bit return: j0 in [20,51] */
-            w = TWO52[sx] + x;
-            t = w - TWO52[sx];
-          }
+	  /* 32bit return: j0 in [20,30] */
+	  /* 64bit return: j0 in [20,51] */
+          w = TWO52[sx] + x;
+          t = w - TWO52[sx];
           EXTRACT_WORDS (i0, i1, t);
           j0 = ((i0 & 0x7ff00000) >> 20) - 1023;
           i0 &= 0x000fffff;
@@ -146,30 +142,16 @@ lrint64(__float64 x)
 	  /* 64bit return: left shift amt in [0,32] */
           /* ***32bit return: right shift amt in [32,21] */
           /* ***64bit return: right shift amt in [32,0] */
-          result = (lsl((long int) i0, (j0 - 20)))
+          result = ((long int) i0 << (j0 - 20))
 			| SAFE_RIGHT_SHIFT (i1, (52 - j0));
         }
     }
   else
     {
-      if (sizeof (long) == 4 && (__float64) LONG_MIN - _F_64(1.0) < x && x < (__float64) LONG_MIN) {
-        if (nearbyint(x) == LONG_MIN)
-          __math_set_inexact64();
-        else
-          __math_set_invalid();
-        return LONG_MIN;
-      }
-      else if (x != LONG_MIN)
-      {
-        __math_set_invalid();
-        return sx ? LONG_MIN : LONG_MAX;
-      }
       return (long int) x;
     }
-
+  
   return sx ? -result : result;
 }
 
-_MATH_ALIAS_j_d(lrint)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

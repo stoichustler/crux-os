@@ -30,14 +30,13 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
 #include <stdio.h>
 
 #include "c99ppe.h"
 
 #undef getchar
 
+#ifndef _REENT_ONLY
 
 int
 getchar ()
@@ -46,3 +45,4 @@ getchar ()
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_GETCHAR, &ret);
 }
+#endif /* ! _REENT_ONLY */

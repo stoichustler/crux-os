@@ -8,17 +8,33 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
 
 #include "fdlibm.h"
 
-float
-significandf(float x)
+#ifdef __STDC__
+	float significandf(float x)
+#else
+	float significandf(x)
+	float x;
+#endif
 {
-    return scalbnf(x, -ilogbf(x));
+	return __ieee754_scalbf(x,(float) -ilogbf(x));
 }
 
-_MATH_ALIAS_f_f(significand)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double significand(double x)
+#else
+	double significand(x)
+	double x;
+#endif
+{
+	return (double) significandf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

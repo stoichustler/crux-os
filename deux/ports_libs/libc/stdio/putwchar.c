@@ -45,10 +45,10 @@ SYNOPSIS
 	wint_t putwchar_unlocked(wchar_t <[wc]>);
 
 	#include <wchar.h>
-	wint_t putwchar( wchar_t <[wc]>);
+	wint_t _putwchar_r(struct _reent *<[reent]>, wchar_t <[wc]>);
 
 	#include <wchar.h>
-	wint_t putwchar_unlocked( wchar_t <[wc]>);
+	wint_t _putwchar_unlocked_r(struct _reent *<[reent]>, wchar_t <[wc]>);
 
 DESCRIPTION
 The <<putwchar>> function or macro is the wide-character equivalent of
@@ -78,12 +78,20 @@ PORTABILITY
 <<putwchar_unlocked>> is a GNU extension.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef putwchar
+
+wint_t
+_putwchar_r (struct _reent *ptr,
+	wchar_t wc)
+{
+  return _fputwc_r (ptr, wc, stdout);
+}
 
 /*
  * Synonym for fputwc(wc, stdout).
@@ -91,5 +99,6 @@ PORTABILITY
 wint_t
 putwchar (wchar_t wc)
 {
+  _REENT_SMALL_CHECK_INIT (_REENT);
   return fputwc (wc, stdout);
 }

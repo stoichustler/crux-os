@@ -33,6 +33,7 @@ THIS SOFTWARE.
 #define GDTOA_H_INCLUDED
 
 #include <stddef.h> /* for size_t */
+#include <reent.h>
 
 #define PROTO_NORMAL(x)
 #define __BEGIN_HIDDEN_DECLS
@@ -101,19 +102,24 @@ enum {	/* FPI.rounding values: same as FLT_ROUNDS */
 typedef unsigned short __UShort;
 typedef struct _Bigint Bigint;
 
-extern char* __dtoa  (
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern char* __dtoa  ANSI((struct _reent *ptr,
 			double d, int mode, int ndigits, int *decpt,
-			int *sign, char **rve);
-extern char* __gdtoa (
+			int *sign, char **rve));
+extern char* __gdtoa ANSI((struct _reent *ptr,
 			FPI *fpi, int be, ULong *bits, int *kindp,
-			int mode, int ndigits, int *decpt, char **rve);
-extern void __freedtoa (char*);
+			int mode, int ndigits, int *decpt, char **rve));
+extern void __freedtoa ANSI((struct _reent *, char*));
 extern float  strtof ANSI((CONST char *, char **));
 extern double strtod ANSI((CONST char *, char **));
 extern int __strtodg ANSI((CONST char*, char**, FPI*, Long*, ULong*));
 char	*__hdtoa(double, const char *, int, int *, int *, char **);
 char	*__hldtoa(long double, const char *, int, int *, int *, char **);
-char	*__ldtoa(long double, int, int, int *, int *, char **);
+char	*__ldtoa(struct _reent *ptr,
+		 long double *, int, int, int *, int *, char **);
 
 PROTO_NORMAL(__dtoa);
 PROTO_NORMAL(__gdtoa);
@@ -160,4 +166,7 @@ extern int	__strtopxL ANSI((CONST char*, char**, void*));
 #endif
 __END_HIDDEN_DECLS
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* GDTOA_H_INCLUDED */

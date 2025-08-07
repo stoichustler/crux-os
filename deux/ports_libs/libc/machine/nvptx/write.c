@@ -13,14 +13,12 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 
-ssize_t write (int fd, const void *buf, size_t count)
+_READ_WRITE_RETURN_TYPE write (int fd, const void *buf, size_t count)
 {
   size_t i;
   char *b = (char *)buf;
@@ -31,5 +29,5 @@ ssize_t write (int fd, const void *buf, size_t count)
     }
   for (i = 0; i < count; i++)
     printf ("%c", b[i]);
-  return (ssize_t) count;
+  return count;
 }

@@ -33,20 +33,20 @@
 
 #include <ssp/ssp.h>
 
-_BEGIN_STD_C
-
+__BEGIN_DECLS
 int __sprintf_chk(char *__restrict, int, size_t, const char *__restrict, ...)
-    __picolibc_format(__printf__, 4, 5);
+    __printflike(4, 5);
 int __vsprintf_chk(char *__restrict, int, size_t, const char *__restrict,
-    __gnuc_va_list)
-    __picolibc_format(__printf__, 4, 0);
+    __va_list)
+    __printflike(4, 0);
 int __snprintf_chk(char *__restrict, size_t, int, size_t,
     const char *__restrict, ...)
-    __picolibc_format(__printf__, 5, 6);
+    __printflike(5, 6);
 int __vsnprintf_chk(char *__restrict, size_t, int, size_t,
-     const char *__restrict, __gnuc_va_list)
-    __picolibc_format(__printf__, 5, 0);
+     const char *__restrict, __va_list)
+    __printflike(5, 0);
 char *__gets_chk(char *, size_t);
+__END_DECLS
 
 #if __SSP_FORTIFY_LEVEL > 0
 
@@ -97,7 +97,5 @@ __ssp_decl(size_t, fread_unlocked, (void *__restrict __ptr, size_t __size, size_
 #endif /* __MISC_VISIBLE */
 
 #endif /* __SSP_FORTIFY_LEVEL > 0 */
-
-_END_STD_C
 
 #endif /* _SSP_STDIO_H_ */

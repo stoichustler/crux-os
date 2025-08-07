@@ -24,12 +24,20 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef getwc
+
+wint_t
+_getwc_r (struct _reent *ptr,
+	FILE *fp)
+{
+  return _fgetwc_r (ptr, fp);
+}
 
 /*
  * Synonym for fgetwc(). The only difference is that getwc(), if it is a

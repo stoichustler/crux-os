@@ -1,6 +1,3 @@
-/* Copyright (c) 2005 Aldy Hernandez <aldyh@redhat.com> */
-#include <picolibc.h>
-
 # setjmp/longjmp for mt.
 # 
 # The jmpbuf looks like this:

@@ -20,24 +20,27 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
+#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
 #include "fvwrite.h"
 
 /*
- * Note that this is the same function as __swbuf, just to be called
+ * Note that this is the same function as __swbuf_r, just to be called
  * from wide-char functions!
  *
  * The only difference is that we set and test the orientation differently.
  */
 
 int
-__swbufw (
+__swbufw_r (struct _reent *ptr,
        register int c,
        register FILE *fp)
 {
   register int n;
+
+  CHECK_INIT (ptr, fp);
 
   fp->_w = fp->_lbfsize;
   if (cantwrite (ptr, fp))
@@ -50,14 +53,14 @@ __swbufw (
   n = fp->_p - fp->_bf._base;
   if (n >= fp->_bf._size)
     {
-      if (fflush (fp))
+      if (_fflush_r (ptr, fp))
 	return EOF;
       n = 0;
     }
   fp->_w--;
   *fp->_p++ = c;
   if (++n == fp->_bf._size || (fp->_flags & __SLBF && c == '\n'))
-    if (fflush (fp))
+    if (_fflush_r (ptr, fp))
       return EOF;
   return c;
 }

@@ -22,9 +22,12 @@
  */
 
 #include "fdlibm.h"
-#include <limits.h>
 
+#ifdef __STDC__
 static const float
+#else
+static float 
+#endif
 /* Adding a float, x, to 2^23 will cause the result to be rounded based on
    the fractional part of x, according to the implementation's current rounding
    mode.  2^23 is the smallest float that can be represented using all 23 significant
@@ -34,7 +37,12 @@ TWO23[2]={
  -8.3886080000e+06, /* 0xcb000000 */
 };
 
-long long int llrintf(float x)
+#ifdef __STDC__
+	long long int llrintf(float x)
+#else
+	long long int llrintf(x)
+	float x;
+#endif
 {
   __int32_t j0,sx;
   __uint32_t i0;
@@ -71,14 +79,21 @@ long long int llrintf(float x)
     }
   else
     {
-      if (x != LLONG_MIN)
-      {
-        __math_set_invalidf();
-        return sx ? LLONG_MIN : LLONG_MAX;
-      }
-      return (long long) x;
+      return (long long int) x;
     }
   return sx ? -result : result;
 }
 
-_MATH_ALIAS_k_f(llrint)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	long long int llrint(double x)
+#else
+	long long int llrint(x)
+	double x;
+#endif
+{
+  return llrintf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

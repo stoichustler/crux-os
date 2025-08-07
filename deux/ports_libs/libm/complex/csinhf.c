@@ -38,9 +38,11 @@
 float complex
 csinhf(float complex z)
 {
+	float complex w;
 	float x, y;
 
 	x = crealf(z);
 	y = cimagf(z);
-	return (float complex) (sinhf(x) * cosf(y)) + (coshf(x) * sinf(y)) * I;
+	w = sinhf(x) * cosf(y) + (coshf(x) * sinf(y)) * I;
+	return w;
 }

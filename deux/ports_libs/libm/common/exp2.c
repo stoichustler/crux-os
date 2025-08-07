@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_DOUBLE
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -59,13 +59,13 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
     {
       /* k > 0, the exponent of scale might have overflowed by 1.  */
       sbits -= 1ull << 52;
-      scale = asfloat64 (sbits);
+      scale = asdouble (sbits);
       y = 2 * (scale + scale * tmp);
       return check_oflow (y);
     }
   /* k < 0, need special care in the subnormal range.  */
   sbits += 1022ull << 52;
-  scale = asfloat64 (sbits);
+  scale = asdouble (sbits);
   y = scale + scale * tmp;
   if (y < 1.0)
     {
@@ -79,10 +79,8 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
       lo = 1.0 - hi + y + lo;
       y = eval_as_double (hi + lo) - 1.0;
       /* Avoid -0.0 with downward rounding.  */
-#if WANT_ROUNDING
-      if (y == 0.0)
+      if (WANT_ROUNDING && y == 0.0)
 	y = 0.0;
-#endif
       /* The underflow exception needs to be signaled explicitly.  */
       force_eval_double (opt_barrier_double (0x1p-1022) * 0x1p-1022);
     }
@@ -111,16 +109,12 @@ exp2 (double x)
       if (abstop - top12 (0x1p-54) >= 0x80000000)
 	/* Avoid spurious underflow for tiny x.  */
 	/* Note: 0 is common input.  */
-#if WANT_ROUNDING
-	return 1.0 + x;
-#else
-	return 1.0;
-#endif
+	return WANT_ROUNDING ? 1.0 + x : 1.0;
       if (abstop >= top12 (1024.0))
 	{
-	  if (asuint64 (x) == asuint64 ((double) -INFINITY))
+	  if (asuint64 (x) == asuint64 (-INFINITY))
 	    return 0.0;
-	  if (abstop >= top12 ((double) INFINITY))
+	  if (abstop >= top12 (INFINITY))
 	    return 1.0 + x;
 	  if (!(asuint64 (x) >> 63))
 	    return __math_oflow (0);
@@ -141,7 +135,7 @@ exp2 (double x)
   /* 2^(k/N) ~= scale * (1 + tail).  */
   idx = 2 * (ki % N);
   top = ki << (52 - EXP_TABLE_BITS);
-  tail = asfloat64 (T[idx]);
+  tail = asdouble (T[idx]);
   /* This is only a valid scale when -1023*N < k < 1024*N.  */
   sbits = T[idx + 1] + top;
   /* exp2(x) = 2^(k/N) * 2^r ~= scale + scale * (tail + 2^r - 1).  */
@@ -158,12 +152,9 @@ exp2 (double x)
 #endif
   if (unlikely (abstop == 0))
     return specialcase (tmp, sbits, ki);
-  scale = asfloat64 (sbits);
+  scale = asdouble (sbits);
   /* Note: tmp == 0 or |tmp| > 2^-65 and scale > 2^-928, so there
      is no spurious underflow here even without fma.  */
   return scale + scale * tmp;
 }
-
-_MATH_ALIAS_d_d(exp2)
-
 #endif

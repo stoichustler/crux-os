@@ -25,13 +25,13 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <sys/cdefs.h>
+__RCSID("$NetBSD: cprojl.c,v 1.7 2014/10/10 00:48:18 christos Exp $");
 
 #include <complex.h>
 #include <math.h>
 
 #include "../common/fdlibm.h"
-
-#ifdef __HAVE_LONG_DOUBLE
 
 /*
  * cprojl(long double complex z)
@@ -43,8 +43,11 @@
  * infinite part and one NaN part) project to positive infinity on the real axis.
  * If z has an infinite part, then cproj(z) shall be equivalent to:
  *
- * INFINITY + (double complex) I * copysign(0.0, cimag(z))
+ * INFINITY + I * copysign(0.0, cimag(z))
  */
+
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 cprojl(long double complex z)
 {
@@ -55,12 +58,11 @@ cprojl(long double complex z)
 #ifdef __INFINITY
 		REAL_PART(w) = HUGE_VAL;
 #else
-		REAL_PART(w) = (long double) INFINITY;
+		REAL_PART(w) = INFINITY;
 #endif
 		IMAG_PART(w) = copysignl(0.0L, cimagl(z));
 	}
 
 	return (w.z);
 }
-
-#endif /* __HAVE_LONG_DOUBLE */
+#endif

@@ -31,7 +31,7 @@ PORTABILITY
 No supporting OS subroutines are directly required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 
 extern ssize_t __getdelim (char **, size_t *, int, FILE *);

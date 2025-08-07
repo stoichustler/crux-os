@@ -24,7 +24,7 @@
  * macros do not allocate any extra stack space, so they only work for
  * leaf functions that do not need to spill anything to the stack.  */
 
-#include <machine/core-isa.h>
+#include <xtensa/config/core-isa.h>
 
 	.macro leaf_entry reg, size
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__

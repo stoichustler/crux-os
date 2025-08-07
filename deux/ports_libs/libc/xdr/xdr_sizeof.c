@@ -34,7 +34,6 @@
  * when serialized using XDR.
  */
 
-#define _DEFAULT_SOURCE
 #include <rpc/types.h>
 #include <rpc/xdr.h>
 #include <sys/types.h>
@@ -47,7 +46,6 @@ static bool_t
 x_putlong (XDR * xdrs,
 	const long *longp)
 {
-  (void) longp;
   xdrs->x_handy += BYTES_PER_XDR_UNIT;
   return TRUE;
 }
@@ -58,7 +56,6 @@ x_putbytes (XDR * xdrs,
 	const char *bp,
 	u_int len)
 {
-  (void) bp;
   xdrs->x_handy += len;
   return TRUE;
 }
@@ -74,18 +71,9 @@ static bool_t
 x_setpostn (XDR * xdrs,
 	u_int pos)
 {
-  (void) xdrs;
-  (void) pos;
   /* This is not allowed */
   return FALSE;
 }
-
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-/* 'len' is used directly with calloc which confuses -fanalyzer */
-#pragma GCC diagnostic ignored "-Wanalyzer-allocation-size"
-#endif
 
 static int32_t *
 x_inline (XDR * xdrs,
@@ -95,7 +83,7 @@ x_inline (XDR * xdrs,
     return NULL;
   if (xdrs->x_op != XDR_ENCODE)
     return NULL;
-  if (len < (u_int) (uintptr_t) xdrs->x_base)
+  if (len < (u_int) (long int) xdrs->x_base)
     {
       /* x_private was already allocated */
       xdrs->x_handy += len;
@@ -141,7 +129,6 @@ static bool_t
 x_putint32 (XDR *xdrs,
 	const int32_t *int32p)
 {
-  (void) int32p;
   xdrs->x_handy += BYTES_PER_XDR_UNIT;
   return TRUE;
 }
@@ -168,9 +155,9 @@ xdr_sizeof (xdrproc_t func,
   ops.x_putint32 = x_putint32;
 
   /* the other harmless ones */
-  ops.x_getlong = (dummyfunc1) (void *) harmless;
-  ops.x_getbytes = (dummyfunc2) (void *) harmless;
-  ops.x_getint32 = (dummyfunc3) (void *) harmless;
+  ops.x_getlong = (dummyfunc1) harmless;
+  ops.x_getbytes = (dummyfunc2) harmless;
+  ops.x_getint32 = (dummyfunc3) harmless;
 
   x.x_op = XDR_ENCODE;
   x.x_ops = &ops;

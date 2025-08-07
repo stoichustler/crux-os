@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<wctomb>>---minimal wide char to multibyte converter
 
@@ -14,24 +10,24 @@ SYNOPSIS
 	int wctomb(char *<[s]>, wchar_t <[wchar]>);
 
 DESCRIPTION
-When __MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
+When _MB_CAPABLE is not defined, this is a minimal ANSI-conforming 
 implementation of <<wctomb>>.  The
 only ``wide characters'' recognized are single bytes,
 and they are ``converted'' to themselves.  
 
-When __MB_CAPABLE is defined, this routine calls <<_wctomb_r>> to perform
+When _MB_CAPABLE is defined, this routine calls <<_wctomb_r>> to perform
 the conversion, passing a state variable to allow state dependent
 decoding.  The result is based on the locale setting which may
 be restricted to a defined set of locales.
 
 Each call to <<wctomb>> modifies <<*<[s]>>> unless <[s]> is a null
-pointer or __MB_CAPABLE is defined and <[wchar]> is invalid.
+pointer or _MB_CAPABLE is defined and <[wchar]> is invalid.
 
 RETURNS
 This implementation of <<wctomb>> returns <<0>> if
-<[s]> is <<NULL>>; it returns <<-1>> if __MB_CAPABLE is enabled
+<[s]> is <<NULL>>; it returns <<-1>> if _MB_CAPABLE is enabled
 and the wchar is not a valid multi-byte character, it returns <<1>>
-if __MB_CAPABLE is not defined or the wchar is in reality a single
+if _MB_CAPABLE is not defined or the wchar is in reality a single
 byte character, otherwise it returns the number of bytes in the
 multi-byte character.
 
@@ -42,29 +38,40 @@ effects vary with the locale.
 <<wctomb>> requires no supporting OS subroutines.
 */
 
+#ifndef _REENT_ONLY
+
+#include <newlib.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "local.h"
 
-#ifdef __MB_CAPABLE
-static mbstate_t _mbtowc_state;
-#define ps &_mbtowc_state
-#else
-#define ps NULL
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local _mbstate_t _tls_wctomb_state;
 #endif
 
 int
 wctomb (char *s,
         wchar_t wchar)
 {
-        int retval;
+#ifdef _MB_CAPABLE
+	struct _reent *reent = _REENT;
 
-        retval = __WCTOMB (s, wchar, ps);
-        if (retval == -1) {
-#ifdef __MB_CAPABLE
-                _mbtowc_state.__count = 0;
-#endif
-                errno = EILSEQ;
-        }
-        return retval;
+        _REENT_CHECK_MISC(reent);
+
+        return __WCTOMB (reent, s, wchar, &(_REENT_WCTOMB_STATE(reent)));
+#else /* not _MB_CAPABLE */
+        if (s == NULL)
+                return 0;
+
+	/* Verify that wchar is a valid single-byte character.  */
+	if ((size_t)wchar >= 0x100) {
+		errno = EILSEQ;
+		return -1;
+	}
+
+        *s = (char) wchar;
+        return 1;
+#endif /* not _MB_CAPABLE */
 }
+
+#endif /* !_REENT_ONLY */

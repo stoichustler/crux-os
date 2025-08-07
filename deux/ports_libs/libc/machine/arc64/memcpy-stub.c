@@ -28,8 +28,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #if !defined (__ARC64_ARCH32__) && !defined (__ARC64_ARCH64__)
 # include "../../string/memcpy.c"
 #else

@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
    <<atof>>, <<atoff>>---string to double or float
 
@@ -58,6 +54,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 
 
 #include <stdlib.h>
+#include <_ansi.h>
 
 double
 atof (const char *s)

@@ -54,8 +54,6 @@
    Much like other ABIs, this version just saves the necessary registers
    to the stack and restores them later.  Much less needs to be done.  */
 
-#include <picolibc.h>
-
 #include "xtensa-asm.h"
 
 #define SYS_nop	0
@@ -73,7 +71,11 @@
 setjmp:
 	entry	sp, 16
 
-	call4	__xtensa_libgcc_window_spill
+	/* Flush registers.  */
+	mov	a4, a2			// save a2 (jmp_buf)
+	movi	a2, SYS_nop
+	syscall
+	mov	a2, a4			// restore a2
 
 	/* Copy the register save area at (sp - 16).  */
 	addi	a5, a1, -16
@@ -136,19 +138,11 @@ longjmp:
 	entry	sp, 16
 	/*  a2 == &env, a3 == val  */
 
-#if XCHAL_MAYHAVE_ERRATUM_XEA1KWIN
-  /* Using this register triggers early any overflow that a kernel-mode
-     level-one interrupt might otherwise cause.  */
-# define AR_WB	a15
-#else
-  /* Using this register is more efficient; it triggers less overflows.  */
-# define AR_WB	a5
-#endif
 	/* Invalidate all but the current window;
 	   set WindowStart to (1 << WindowBase).  */
-	rsr	AR_WB, WINDOWBASE
+	rsr	a5, WINDOWBASE
 	movi	a4, 1
-	ssl	AR_WB
+	ssl	a5
 	sll	a4, a4
 	wsr	a4, WINDOWSTART
 	rsync

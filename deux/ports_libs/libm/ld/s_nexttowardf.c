@@ -1,46 +1,59 @@
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Copyright © 2022 Keith Packard
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
  */
 
-#include "math_ld.h"
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
 
-#if LDBL_MANT_DIG == 64
+#include <float.h>
 
-#include "ld80/s_nexttowardf.c"
+#include "fpmath.h"
+#include "math.h"
+#include "math_private.h"
 
-#elif LDBL_MANT_DIG == 113
+#define	LDBL_INFNAN_EXP	(LDBL_MAX_EXP * 2 - 1)
 
-#include "ld128/s_nexttowardf.c"
+float
+nexttowardf(float x, long double y)
+{
+	union IEEEl2bits uy;
+	volatile float t;
+	int32_t hx,ix;
 
-#endif
+	GET_FLOAT_WORD(hx,x);
+	ix = hx&0x7fffffff;		/* |x| */
+	uy.e = y;
+
+	if((ix>0x7f800000) ||
+	   (uy.bits.exp == LDBL_INFNAN_EXP &&
+	    ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl) != 0))
+	   return x+y;	/* x or y is nan */
+	if(x==y) return (float)y;		/* x=y, return y */
+	if(ix==0) {				/* x == 0 */
+	    SET_FLOAT_WORD(x,(uy.bits.sign<<31)|1);/* return +-minsubnormal */
+	    t = x*x;
+	    if(t==x) return t; else return x;	/* raise underflow flag */
+	}
+	if(hx>=0 ^ x < y)			/* x -= ulp */
+	    hx -= 1;
+	else					/* x += ulp */
+	    hx += 1;
+	ix = hx&0x7f800000;
+	if(ix>=0x7f800000) return x+x;	/* overflow  */
+	if(ix<0x00800000) {		/* underflow */
+	    t = x*x;
+	    if(t!=x) {		/* raise underflow flag */
+	        SET_FLOAT_WORD(x,hx);
+		return x;
+	    }
+	}
+	SET_FLOAT_WORD(x,hx);
+	return x;
+}

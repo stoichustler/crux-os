@@ -1,5 +1,6 @@
 /* 
- * Copyright (c) 2008 Jon Beniston <jon@beniston.com>
+ * setjmp/longjmp for LatticeMico32.
+ * Contributed by Jon Beniston <jon@beniston.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,14 +23,14 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-/* setjmp/longjmp for LatticeMico32. */
-#include <picolibc.h>
-
+ 
 	.section	.text
 	.align	4
 
 	.globl	setjmp
 	.type	setjmp,@function
+	.globl	longjmp
+	.type	longjmp,@function
 
 /* setjmp: save all callee saves into jmp_buf
    r1 - Address of jmp_buf
@@ -57,7 +58,6 @@ setjmp:
         sw      (r1+72), ra
         mvi     r1, 0
         ret
-	.size setjmp, . - setjmp
 
 /* longjmp: restore all callee saves from jmp_buf
    r1 - Address of jmb_buf
@@ -89,8 +89,6 @@ longjmp:
         lw      sp, (r1+68)
         lw      ra, (r1+72)
         mv      r1, r2
-	# Return 1 if the argument is zero
-	cmpe	r1, r0, r2
-	add	r1, r1, r2
         ret
-	.size longjmp, . - longjmp
+
+

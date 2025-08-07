@@ -29,8 +29,6 @@ POSSIBILITY OF SUCH DAMAGE.
 
 */
 
-#include <picolibc.h>
-
 #include <stddef.h>
 #include <errno.h>
 #include <sys/mman.h>

@@ -1,12 +1,10 @@
 /* memcmp - compare memory
  *
  * Copyright (c) 2013-2022, Arm Limited.
- * SPDX-License-Identifier: MIT 
+ * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
-#include <picolibc.h>
-
-#if (defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED)) || !defined(__LP64__) || !defined(__ARM_NEON)
+#if (defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED))
 /* See memcmp-stub.c  */
 #else
 

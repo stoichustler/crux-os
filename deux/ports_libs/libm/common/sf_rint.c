@@ -15,14 +15,22 @@
 
 #include "fdlibm.h"
 
+#ifdef __STDC__
 static const float
+#else
+static float 
+#endif
 TWO23[2]={
   8.3886080000e+06, /* 0x4b000000 */
  -8.3886080000e+06, /* 0xcb000000 */
 };
 
-float
-rintf(float x)
+#ifdef __STDC__
+	float rintf(float x)
+#else
+	float rintf(x)
+	float x;
+#endif
 {
 	__int32_t i0,j0,sx;
 	__uint32_t i,i1,ix;
@@ -43,7 +51,7 @@ rintf(float x)
 	        w = TWO23[sx]+x;
 	        t =  w-TWO23[sx];
 		GET_FLOAT_WORD(i0,t);
-		SET_FLOAT_WORD(t,(i0&0x7fffffff)|lsl(sx, 31));
+		SET_FLOAT_WORD(t,(i0&0x7fffffff)|(sx<<31));
 	        return t;
 	    } else {
 		i = (0x007fffff)>>j0;
@@ -52,8 +60,7 @@ rintf(float x)
 		if((i0&i)!=0) i0 = (i0&(~i))|((0x200000)>>j0);
 	    }
 	} else {
-	    if(!FLT_UWORD_IS_FINITE(ix))
-                return opt_barrier_float(x+x); /* inf or NaN */
+	    if(!FLT_UWORD_IS_FINITE(ix)) return x+x; /* inf or NaN */
 	    else
 	      return x;		/* x is integral */
 	}
@@ -62,4 +69,16 @@ rintf(float x)
 	return w-TWO23[sx];
 }
 
-_MATH_ALIAS_f_f(rint)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double rint(double x)
+#else
+	double rint(x)
+	double x;
+#endif
+{
+	return (double) rintf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

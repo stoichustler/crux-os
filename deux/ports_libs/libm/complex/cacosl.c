@@ -33,15 +33,13 @@
 #include <math.h>
 #include "cephes_subrl.h"
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
 long double complex
 cacosl(long double complex z)
 {
 	long double complex w;
 
 	w = casinl(z);
-	return (long double complex) (M_PI_2L - creall(w)) - cimagl(w) * (long double complex) I;
+	w = (M_PI_2L - creall(w)) - cimagl(w) * I;
+	return w;
 }
 
-#endif

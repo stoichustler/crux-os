@@ -17,14 +17,15 @@
 /* This code was copied from asprintf.c */
 /* doc in siprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
 #include "local.h"
 
 int
-asiprintf (
+_asiprintf_r (struct _reent *ptr,
        char **strp,
        const char *fmt, ...)
 {
@@ -39,7 +40,7 @@ asiprintf (
   f._bf._size = f._w = 0;
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfiprintf ( &f, fmt, ap);
+  ret = _svfiprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
   if (ret >= 0)
     {
@@ -48,3 +49,32 @@ asiprintf (
     }
   return (ret);
 }
+
+#ifndef _REENT_ONLY
+
+int
+asiprintf (char **strp,
+       const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  /* mark a zero-length reallocatable buffer */
+  f._flags = __SWR | __SSTR | __SMBF;
+  f._flags2 = 0;
+  f._bf._base = f._p = NULL;
+  f._bf._size = f._w = 0;
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfiprintf_r (_REENT, &f, fmt, ap);
+  va_end (ap);
+  if (ret >= 0)
+    {
+      *f._p = 0;
+      *strp = (char *) f._bf._base;
+    }
+  return (ret);
+}
+
+#endif /* ! _REENT_ONLY */

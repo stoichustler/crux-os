@@ -35,9 +35,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <wctype.h>
 #include <locale.h>
 #include "local.h"
-#include "local.h"
-
-#if defined(__HAVE_LONG_DOUBLE) && __LDBL_MANT_DIG == 64
+#include "../locale/setlocale.h"
 
 long double
 wcstold_l (const wchar_t *__restrict nptr, wchar_t **__restrict endptr,
@@ -62,7 +60,7 @@ wcstold_l (const wchar_t *__restrict nptr, wchar_t **__restrict endptr,
   /* Convert the supplied numeric wide char string to multibyte.  */
   wcp = nptr;
   mbs = initial;
-  if ((len = _wcsnrtombs_l (NULL, &wcp, (size_t) -1, 0, &mbs, loc))
+  if ((len = _wcsnrtombs_l (_REENT, NULL, &wcp, (size_t) -1, 0, &mbs, loc))
       == (size_t) -1)
     {
       if (endptr != NULL)
@@ -74,7 +72,7 @@ wcstold_l (const wchar_t *__restrict nptr, wchar_t **__restrict endptr,
     return 0.0L;
 
   mbs = initial;
-  _wcsnrtombs_l (buf, &wcp, (size_t) -1, len + 1, &mbs, loc);
+  _wcsnrtombs_l (_REENT, buf, &wcp, (size_t) -1, len + 1, &mbs, loc);
 
   val = strtold_l (buf, &end, loc);
 
@@ -85,7 +83,7 @@ wcstold_l (const wchar_t *__restrict nptr, wchar_t **__restrict endptr,
 
   if (endptr != NULL)
     {
-      const char *decimal_point = DECIMAL_POINT_L(loc);
+      const char *decimal_point = __get_numeric_locale(loc)->decimal_point;
       /* The only valid multibyte char in a float converted by
 	 strtold/wcstold is the radix char.  What we do here is,
 	 figure out if the radix char was in the valid leading
@@ -124,5 +122,3 @@ wcstold (const wchar_t *__restrict nptr, wchar_t **__restrict endptr)
   return wcstold_l(nptr, endptr, __get_current_locale ());
 #endif
 }
-
-#endif /* __HAVE_LONG_DOUBLE && __LDBL_MANT_DIG == 64 */

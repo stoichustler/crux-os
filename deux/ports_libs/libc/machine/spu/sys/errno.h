@@ -1,4 +1,3 @@
-/* Copyright (c) 2007 Patrick Mansfield <patmans@us.ibm.com> */
 /*
  * The SPU must have these values match those on the PPU linux side, so
  * the assisted calls (system or library ones) that set errno will use the
@@ -21,25 +20,21 @@
    be those of the Linux ppc.  */
 
 #ifndef _SYS_ERRNO_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define _SYS_ERRNO_H_
 
-#include <sys/cdefs.h>
+#include <sys/reent.h>
 
-_BEGIN_STD_C
+#define errno (_impure_data._errno)
 
-#ifdef __GLOBAL_ERRNO
-#define __THREAD_LOCAL_ERRNO
-#else
-#define __THREAD_LOCAL_ERRNO __THREAD_LOCAL
-#endif
+/* Please don't use these variables directly.
+   Use strerror instead. */
+extern const char * const _sys_errlist[];
+extern int _sys_nerr;
 
-#ifdef __PICOLIBC_ERRNO_FUNCTION
-int *__PICOLIBC_ERRNO_FUNCTION(void);
-#define errno (*__PICOLIBC_ERRNO_FUNCTION())
-#else
-extern __THREAD_LOCAL_ERRNO int errno;
-#define errno errno
-#endif
+#define __errno_r(ptr) _REENT_ERRNO(ptr)
 
 /* Adjusted to the linux asm/errno.h */
 #define	EPERM		 1	/* Operation not permitted */
@@ -177,6 +172,7 @@ extern __THREAD_LOCAL_ERRNO int errno;
 
 #define __ELASTERROR 2000	/* Users can add values starting here */
 
-_END_STD_C
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* _SYS_ERRNO_H */

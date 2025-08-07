@@ -11,10 +11,7 @@
  *   with a trailing slash.
  */
 
-#define _GNU_SOURCE
 #include <string.h>
-
-__typeof(basename) __gnu_basename;
 
 char *
 __gnu_basename (const char *path)

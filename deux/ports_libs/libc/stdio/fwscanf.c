@@ -16,11 +16,14 @@
  */
 /* Doc in swscanf.c */
  
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY
 
 int
 fwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, ...)
@@ -29,7 +32,22 @@ fwscanf (FILE *__restrict fp, const wchar_t *__restrict fmt, ...)
   va_list ap;
 
   va_start (ap, fmt);
-  ret = vfwscanf ( fp, fmt, ap);
+  ret = _vfwscanf_r (_REENT, fp, fmt, ap);
   va_end (ap);
   return ret;
 }
+
+#endif /* !_REENT_ONLY */
+
+int
+_fwscanf_r (struct _reent *ptr, FILE *fp, const wchar_t *fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  va_start (ap, fmt);
+  ret = _vfwscanf_r (ptr, fp, fmt, ap);
+  va_end (ap);
+  return (ret);
+}
+

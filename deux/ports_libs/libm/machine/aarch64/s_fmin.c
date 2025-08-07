@@ -24,17 +24,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_FP & 0x8
 #include <math.h>
 
 double
 fmin (double x, double y)
 {
   double result;
-  __asm__("fminnm\t%d0, %d1, %d2" : "=w" (result) : "w" (x), "w" (y));
+  asm ("fminnm\t%d0, %d1, %d2" : "=w" (result) : "w" (x), "w" (y));
   return result;
 }
-
-#else
-#include "../../common/s_fmin.c"
-#endif

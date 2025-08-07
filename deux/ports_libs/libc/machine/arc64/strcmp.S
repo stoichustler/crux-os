@@ -28,8 +28,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <sys/asm.h>
 
 #if defined (__ARC64_ARCH32__)

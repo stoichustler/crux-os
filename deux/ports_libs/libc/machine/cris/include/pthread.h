@@ -35,9 +35,16 @@
 #ifndef _PTHREAD_FAKE
 #define _PTHREAD_FAKE
 
-#include <sys/cdefs.h>
-
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+# ifndef __THROW
+#  define __THROW throw ()
+# endif
+#else
+# ifndef __THROW
+#  define __THROW
+# endif
+#endif
 
 typedef int pthread_once_t;
 typedef unsigned int pthread_key_t;
@@ -77,6 +84,10 @@ extern int pthread_mutex_trylock (pthread_mutex_t *) __THROW;
 
 extern int pthread_mutex_unlock (pthread_mutex_t *) __THROW;
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
+
+#undef __THROW
 
 #endif /* not _PTHREAD_FAKE */

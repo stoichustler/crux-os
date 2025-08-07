@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /*
 FUNCTION
 <<a64l>>, <<l64a>>---convert between radix-64 ASCII string and long
@@ -52,7 +51,7 @@ PORTABILITY
 Supporting OS subroutines required: None.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
 #include <limits.h>
 
@@ -81,7 +80,7 @@ a64l (const char *input)
     {
       ch = *(--ptr);
 
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
       if (ch >= 'a')
 	digit = (ch - 'a') + 38;
       else if (ch >= 'A')
@@ -92,7 +91,7 @@ a64l (const char *input)
 	digit = 1;
       else
 	digit = 0;
-#else /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) */
+#else /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) */
       switch (ch)
 	{
 	case '/':
@@ -170,12 +169,18 @@ a64l (const char *input)
 	  digit = 0;
 	  break;
 	}
-#endif /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) */ 
+#endif /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) */ 
       
       result = (result << 6) + digit;
     }
 
-  return (long int) result;
+#if LONG_MAX > 2147483647
+  /* for implementations where long is > 32 bits, the result must be sign-extended */
+  if (result & 0x80000000)
+      return (((long)-1 >> 32) << 32) + result;
+#endif
+
+  return result;
 }
 
 

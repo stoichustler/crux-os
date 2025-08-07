@@ -58,8 +58,7 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-#include <picolibc.h>
-
+#include "arm-acle-compat.h"
 #include "arm_asm.h"
 
 	.macro def_fn f p2align=0
@@ -106,7 +105,7 @@
 #define tmp2		r5
 
 def_fn	strlen p2align=6
-	fnstart
+	.fnstart
 	.cfi_sections .debug_frame
 	.cfi_startproc
 	prologue 4 5 push_ip=HAVE_PAC_LEAF
@@ -188,10 +187,6 @@ def_fn	strlen p2align=6
 	mov	const_0, #0
 	b	.Lstart_realigned
 	.cfi_endproc
-	cantunwind
-	fnend
+	.cantunwind
+	.fnend
 	.size	strlen, . - strlen
-
-#if defined(__linux__) && defined(__ELF__)
-.section .note.GNU-stack,"",%progbits
-#endif

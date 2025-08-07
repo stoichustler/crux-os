@@ -31,15 +31,11 @@
 
 #include <complex.h>
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
 long double complex
 casinhl(long double complex z)
 {
 	long double complex w;
 
-	w = -1.0L * (long double complex) I * casinl(z * (long double complex) I);
+	w = -1.0L * I * casinl(z * I);
 	return w;
 }
-
-#endif

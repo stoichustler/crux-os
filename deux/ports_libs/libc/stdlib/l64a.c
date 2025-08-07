@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /* l64a - convert long to radix-64 ascii string
  *          
  * Conversion is performed on at most 32-bits of input value starting 
@@ -21,21 +20,33 @@
  * 0 results in an empty string.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
+#include <reent.h>
+
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local char _tls_l64a_buf[8];
+#endif
 
 static const char R64_ARRAY[] = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 char *
 l64a (long value)
 {
+  return _l64a_r (_REENT, value);
+}
+
+char *
+_l64a_r (struct _reent *rptr,
+     long value)
+{
   char *ptr;
   char *result;
   int i, index;
   unsigned long tmp = (unsigned long)value & 0xffffffff;
-  static __THREAD_LOCAL char _l64a_buf[8];
 
-  result = _l64a_buf;
+  _REENT_CHECK_MISC(rptr);
+  result = _REENT_L64A_BUF(rptr);
   ptr = result;
 
   for (i = 0; i < 6; ++i)

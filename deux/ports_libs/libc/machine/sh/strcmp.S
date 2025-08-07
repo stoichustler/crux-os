@@ -1,6 +1,4 @@
-/* SH5 code Copyright 2002 SuperH Ltd. */
-
-#include <picolibc.h>
+! SH5 code Copyright 2002 SuperH Ltd.
 
 #include "asm.h"
 

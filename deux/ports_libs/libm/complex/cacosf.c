@@ -32,7 +32,6 @@
  * Marco Atzeri <marco_atzeri@yahoo.it>
  */
 
-#define _DEFAULT_SOURCE
 #include <complex.h>
 #include <math.h>
 
@@ -42,5 +41,6 @@ cacosf(float complex z)
 	float complex w;
 
 	w = casinf(z);
-	return (float complex) ((float)M_PI_2 - crealf(w)) - cimagf(w) * I;
+	w = ((float)M_PI_2 - crealf(w)) - cimagf(w) * I;
+	return w;
 }

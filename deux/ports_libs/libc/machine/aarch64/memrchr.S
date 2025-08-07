@@ -2,7 +2,7 @@
  * memrchr - find last character in a memory zone.
  *
  * Copyright (c) 2020-2022, Arm Limited.
- * SPDX-License-Identifier: MIT 
+ * SPDX-License-Identifier: MIT OR Apache-2.0 WITH LLVM-exception
  */
 
 /* Assumptions:
@@ -11,9 +11,7 @@
  * MTE compatible.
  */
 
-#include <picolibc.h>
-
-#if (defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED)) || !defined(__LP64__) || !defined(__ARM_NEON)
+#if defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED)
 /* See memrchr-stub.c */
 #else
 #include "asmdefs.h"

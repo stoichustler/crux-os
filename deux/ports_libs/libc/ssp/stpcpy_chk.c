@@ -28,6 +28,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include <sys/cdefs.h>
+__RCSID("$NetBSD: stpcpy_chk.c,v 1.6 2015/05/09 15:42:21 christos Exp $");
 
 /*LINTLIBRARY*/
 
@@ -36,7 +38,9 @@
 
 #undef memcpy
 
+#if !__GNUC_PREREQ__(4, 8)
 char *__stpcpy_chk(char * __restrict, const char * __restrict, size_t);
+#endif
 
 char *
 __stpcpy_chk(char * __restrict dst, const char * __restrict src, size_t slen)

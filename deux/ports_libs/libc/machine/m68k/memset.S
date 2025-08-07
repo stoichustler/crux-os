@@ -13,8 +13,6 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include "m68kasm.h"
 
 	.text
@@ -94,16 +92,9 @@ SYM(memset):
 .Lbset:
 #if !defined (__mcoldfire__)
 	dbra	d1,1b		| loop until done
-	sub.l	#0x10000,d1
 #else
 	subq.l	#1,d1
-#endif
 	bpl	1b
-	move.l	4(sp),a0	| return value
-	move.l	a0,d0		| in both a0 and d0
-	rts
-	.size	SYM(memset), . - SYM(memset)
-	
-#if defined(__linux__) && defined(__ELF__)
-	.section .note.GNU-stack,"",%progbits
 #endif
+	move.l	4(sp),d0	| return value
+	rts

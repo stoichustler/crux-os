@@ -30,6 +30,12 @@
  * SUCH DAMAGE.
  */
 
+#include <sys/param.h>
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "@(#)hash_page.c	8.7 (Berkeley) 8/16/94";
+#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
+
 /*
  * PACKAGE:  hashing
  *
@@ -46,8 +52,8 @@
  *	open_temp
  */
 
-#define _DEFAULT_SOURCE
 #include <sys/types.h>
+
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -55,10 +61,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if !defined(DEBUG) && !defined(NDEBUG)
-#define NDEBUG
-#endif
+#ifdef DEBUG
 #include <assert.h>
+#endif
 
 #include "db_local.h"
 #include "hash.h"
@@ -184,8 +189,8 @@ __split_page(
 	__uint16_t *ino;
 	char *np;
 	DBT key, val;
-	int ndx, retval;
-	__uint16_t n, copyto, diff, off, moved;
+	int n, ndx, retval;
+	__uint16_t copyto, diff, off, moved;
 	char *op;
 
 	copyto = (__uint16_t)hashp->BSIZE;
@@ -642,11 +647,11 @@ __ibitmap(
 	__uint32_t *ip;
 	int clearbytes, clearints;
 
-	clearints = ((nbits - 1) >> INT_BYTE_SHIFT) + 1;
-	clearbytes = clearints << INT_TO_BYTE;
-	if (clearbytes > hashp->BSIZE || (ip = (__uint32_t *)malloc(hashp->BSIZE)) == NULL)
+	if ((ip = (__uint32_t *)malloc(hashp->BSIZE)) == NULL)
 		return (1);
 	hashp->nmaps++;
+	clearints = ((nbits - 1) >> INT_BYTE_SHIFT) + 1;
+	clearbytes = clearints << INT_TO_BYTE;
 	(void)memset((char *)ip, 0, clearbytes);
 	(void)memset(((char *)ip) + clearbytes, 0xFF,
 	    hashp->BSIZE - clearbytes);
@@ -847,12 +852,15 @@ __free_ovflpage(
 
 	if (!(freep = hashp->mapp[free_page]))
 		freep = fetch_bitmap(hashp, free_page);
+#ifdef DEBUG
 	/*
 	 * This had better never happen.  It means we tried to read a bitmap
 	 * that has already had overflow pages allocated off it, and we
 	 * failed to read it from the file.
 	 */
-        assert(freep);
+	if (!freep)
+		assert(0);
+#endif
 	CLRBIT(freep, free_bit);
 #ifdef DEBUG2
 	(void)fprintf(stderr, "FREE_OVFLPAGE: ADDR: %d BIT: %d PAGE %d\n",
@@ -872,15 +880,14 @@ open_temp(
 )
 {
 	sigset_t set, oset;
-	char namestr[sizeof("_hashXXXXXX")];
+	static char namestr[] = "_hashXXXXXX";
 
 	/* Block signals; make sure file goes away at process exit. */
 	(void)sigfillset(&set);
 	(void)sigprocmask(SIG_BLOCK, &set, &oset);
-        strcpy(namestr, "_hashXXXXXX");
 	if ((hashp->fp = mkstemp(namestr)) != -1) {
 		(void)unlink(namestr);
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
 		(void)fcntl(hashp->fp, F_SETFD, 1);
 #endif
 	}

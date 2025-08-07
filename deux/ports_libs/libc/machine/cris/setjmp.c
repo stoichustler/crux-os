@@ -54,8 +54,6 @@
    jmp_buf[17] - CCR
    */
 
-#include <picolibc.h>
-
 #include <setjmp.h>
 
 int

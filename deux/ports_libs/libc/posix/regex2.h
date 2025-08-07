@@ -38,7 +38,7 @@
  * First, the stuff that ends up in the outside-world include file
  = typedef off_t regoff_t;
  = typedef struct {
- = 	unsigned int re_magic;
+ = 	int re_magic;
  = 	size_t re_nsub;		// number of parenthesized subexpressions
  = 	const char *re_endp;	// end pointer for REG_PEND
  = 	struct re_guts *re_g;	// none of your business :-)
@@ -51,7 +51,7 @@
 /*
  * internals of regex_t
  */
-#define	MAGIC1	((((unsigned int) 'r'^0200)<<8) | 'e')
+#define	MAGIC1	((('r'^0200)<<8) | 'e')
 
 /*
  * The internal representation is a *strip*, a sequence of
@@ -77,31 +77,31 @@ typedef long sopno;
 #define	OPRMASK	0xf8000000L
 #define	OPDMASK	0x07ffffffL
 #define	OPSHIFT	((unsigned)27)
-#define	OP(n)	((sop)(n)&OPRMASK)
-#define	OPND(n)	((sop)(n)&OPDMASK)
-#define	SOP(op, opnd)	((sop)(op)|(sop)(opnd))
+#define	OP(n)	((n)&OPRMASK)
+#define	OPND(n)	((n)&OPDMASK)
+#define	SOP(op, opnd)	((op)|(opnd))
 /* operators			   meaning	operand			*/
 /*						(back, fwd are offsets)	*/
-#define	OEND	(1UL<<OPSHIFT)	/* endmarker	-			*/
-#define	OCHAR	(2UL<<OPSHIFT)	/* character	unsigned char		*/
-#define	OBOL	(3UL<<OPSHIFT)	/* left anchor	-			*/
-#define	OEOL	(4UL<<OPSHIFT)	/* right anchor	-			*/
-#define	OANY	(5UL<<OPSHIFT)	/* .		-			*/
-#define	OANYOF	(6UL<<OPSHIFT)	/* [...]	set number		*/
-#define	OBACK_	(7UL<<OPSHIFT)	/* begin \d	paren number		*/
-#define	O_BACK	(8UL<<OPSHIFT)	/* end \d	paren number		*/
-#define	OPLUS_	(9UL<<OPSHIFT)	/* + prefix	fwd to suffix		*/
-#define	O_PLUS	(10UL<<OPSHIFT)	/* + suffix	back to prefix		*/
-#define	OQUEST_	(11UL<<OPSHIFT)	/* ? prefix	fwd to suffix		*/
-#define	O_QUEST	(12UL<<OPSHIFT)	/* ? suffix	back to prefix		*/
-#define	OLPAREN	(13UL<<OPSHIFT)	/* (		fwd to )		*/
-#define	ORPAREN	(14UL<<OPSHIFT)	/* )		back to (		*/
-#define	OCH_	(15UL<<OPSHIFT)	/* begin choice	fwd to OOR2		*/
-#define	OOR1	(16UL<<OPSHIFT)	/* | pt. 1	back to OOR1 or OCH_	*/
-#define	OOR2	(17UL<<OPSHIFT)	/* | pt. 2	fwd to OOR2 or O_CH	*/
-#define	O_CH	(18UL<<OPSHIFT)	/* end choice	back to OOR1		*/
-#define	OBOW	(19UL<<OPSHIFT)	/* begin word	-			*/
-#define	OEOW	(20UL<<OPSHIFT)	/* end word	-			*/
+#define	OEND	(1L<<OPSHIFT)	/* endmarker	-			*/
+#define	OCHAR	(2L<<OPSHIFT)	/* character	unsigned char		*/
+#define	OBOL	(3L<<OPSHIFT)	/* left anchor	-			*/
+#define	OEOL	(4L<<OPSHIFT)	/* right anchor	-			*/
+#define	OANY	(5L<<OPSHIFT)	/* .		-			*/
+#define	OANYOF	(6L<<OPSHIFT)	/* [...]	set number		*/
+#define	OBACK_	(7L<<OPSHIFT)	/* begin \d	paren number		*/
+#define	O_BACK	(8L<<OPSHIFT)	/* end \d	paren number		*/
+#define	OPLUS_	(9L<<OPSHIFT)	/* + prefix	fwd to suffix		*/
+#define	O_PLUS	(10L<<OPSHIFT)	/* + suffix	back to prefix		*/
+#define	OQUEST_	(11L<<OPSHIFT)	/* ? prefix	fwd to suffix		*/
+#define	O_QUEST	(12L<<OPSHIFT)	/* ? suffix	back to prefix		*/
+#define	OLPAREN	(13L<<OPSHIFT)	/* (		fwd to )		*/
+#define	ORPAREN	(14L<<OPSHIFT)	/* )		back to (		*/
+#define	OCH_	(15L<<OPSHIFT)	/* begin choice	fwd to OOR2		*/
+#define	OOR1	(16L<<OPSHIFT)	/* | pt. 1	back to OOR1 or OCH_	*/
+#define	OOR2	(17L<<OPSHIFT)	/* | pt. 2	fwd to OOR2 or O_CH	*/
+#define	O_CH	(18L<<OPSHIFT)	/* end choice	back to OOR1		*/
+#define	OBOW	(19L<<OPSHIFT)	/* begin word	-			*/
+#define	OEOW	(20L<<OPSHIFT)	/* end word	-			*/
 
 /*
  * Structure for [] character-set representation.  Character sets are
@@ -137,8 +137,8 @@ typedef unsigned char cat_t;
  * main compiled-expression structure
  */
 struct re_guts {
-	unsigned int magic;
-#		define	MAGIC2	((((unsigned int) 'R'^0200)<<8)|'E')
+	int magic;
+#		define	MAGIC2	((('R'^0200)<<8)|'E')
 	sop *strip;		/* malloced area for strip */
 	int csetsize;		/* number of bits in a cset vector */
 	int ncsets;		/* number of csets in use */
@@ -165,7 +165,7 @@ struct re_guts {
 	int backrefs;		/* does it use back references? */
 	sopno nplus;		/* how deep does it nest +s? */
 	/* catspace must be last */
-	cat_t catspace[NC];	/* categories */
+	cat_t catspace[1];	/* actually [NC] */
 };
 
 /* misc utilities */

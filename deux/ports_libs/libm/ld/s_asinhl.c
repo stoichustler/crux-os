@@ -1,46 +1,91 @@
+/* from: FreeBSD: head/lib/msun/src/e_acosh.c 176451 2008-02-22 02:30:36Z das */
+
+/* @(#)s_asinh.c 5.1 93/09/24 */
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Copyright © 2022 Keith Packard
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
  */
 
-#include "math_ld.h"
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
+
+/*
+ * See s_asinh.c for complete comments.
+ *
+ * Converted to long double by David Schultz <das@FreeBSD.ORG> and
+ * Bruce D. Evans.
+ */
+
+#include <float.h>
+#ifdef __i386__
+#include <ieeefp.h>
+#endif
+
+#include "fpmath.h"
+#include "math.h"
+#include "math_private.h"
+
+/* EXP_LARGE is the threshold above which we use asinh(x) ~= log(2x). */
+/* EXP_TINY is the threshold below which we use asinh(x) ~= x. */
+#if LDBL_MANT_DIG == 64
+#define	EXP_LARGE	34
+#define	EXP_TINY	-34
+#elif LDBL_MANT_DIG == 113
+#define	EXP_LARGE	58
+#define	EXP_TINY	-58
+#else
+#error "Unsupported long double format"
+#endif
+
+#if LDBL_MAX_EXP != 0x4000
+/* We also require the usual expsign encoding. */
+#error "Unsupported long double format"
+#endif
+
+#define	BIAS	(LDBL_MAX_EXP - 1)
+
+static const double
+one =  1.00000000000000000000e+00, /* 0x3FF00000, 0x00000000 */
+huge=  1.00000000000000000000e+300;
 
 #if LDBL_MANT_DIG == 64
-
-#include "ld80/s_asinhl.c"
-
+static const union IEEEl2bits
+u_ln2 =  LD80C(0xb17217f7d1cf79ac, -1, 6.93147180559945309417e-1L);
+#define	ln2	u_ln2.e
 #elif LDBL_MANT_DIG == 113
-
-#include "ld128/s_asinhl.c"
-
+static const long double
+ln2 =  6.93147180559945309417232121458176568e-1L;	/* 0x162e42fefa39ef35793c7673007e6.0p-113 */
+#else
+#error "Unsupported long double format"
 #endif
+
+long double
+asinhl(long double x)
+{
+	long double t, w;
+	uint16_t hx, ix;
+
+	ENTERI();
+	GET_LDBL_EXPSIGN(hx, x);
+	ix = hx & 0x7fff;
+	if (ix >= 0x7fff) RETURNI(x+x);	/* x is inf, NaN or misnormal */
+	if (ix < BIAS + EXP_TINY) {	/* |x| < TINY, or misnormal */
+	    if (huge + x > one) RETURNI(x);	/* return x inexact except 0 */
+	}
+	if (ix >= BIAS + EXP_LARGE) {	/* |x| >= LARGE, or misnormal */
+	    w = logl(fabsl(x))+ln2;
+	} else if (ix >= 0x4000) {	/* LARGE > |x| >= 2.0, or misnormal */
+	    t = fabsl(x);
+	    w = logl(2.0*t+one/(sqrtl(x*x+one)+t));
+	} else {		/* 2.0 > |x| >= TINY, or misnormal */
+	    t = x*x;
+	    w =log1pl(fabsl(x)+t/(one+sqrtl(one+t)));
+	}
+	RETURNI((hx & 0x8000) == 0 ? w : -w);
+}

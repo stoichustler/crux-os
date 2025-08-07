@@ -42,8 +42,6 @@
 	   redundant.  */
 
 	/* This version uses Thumb-2 code.  */
-#include <picolibc.h>
-
 	.thumb
 	.syntax unified
 
@@ -124,10 +122,11 @@
 #endif
 	.endm
 
+
 	.text
 	.p2align	5
 def_fn	strcmp
-	fnstart
+	.fnstart
 	.cfi_sections .debug_frame
 	.cfi_startproc
 	prologue push_ip=HAVE_PAC_LEAF
@@ -271,7 +270,6 @@ def_fn	strcmp
 	ldr	data1, [src1], #4
 	beq	.Laligned_m2
 	bcs	.Laligned_m1
-
 #ifdef STRCMP_NO_PRECHECK
 	ldrb	data2, [src2, #1]
 	uxtb	tmp1, data1, ror #BYTE1_OFFSET
@@ -479,6 +477,6 @@ def_fn	strcmp
 	sub	result, result, data2, lsr #24
 	epilogue push_ip=HAVE_PAC_LEAF
 	.cfi_endproc
-	cantunwind
-	fnend
+	.cantunwind
+	.fnend
 	.size strcmp, . - strcmp

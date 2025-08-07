@@ -87,7 +87,7 @@ gpietsch@comcast.net
 #ifndef GETOPT_H
 #define GETOPT_H
 
-#include <sys/cdefs.h>
+#include <_ansi.h>
 
 /* include files needed by this include file */
 
@@ -95,7 +95,11 @@ gpietsch@comcast.net
 #define required_argument	1
 #define optional_argument	2
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C"
+{
+
+#endif				/* __cplusplus */
 
 /* types defined by this include file */
   struct option
@@ -171,6 +175,11 @@ _BEGIN_STD_C
 	       struct getopt_data * __data);
 #endif /* __need_getopt_newlib */
 
-_END_STD_C
+#ifdef __cplusplus
+};
+
+#endif /* __cplusplus  */
 
 #endif /* GETOPT_H */
+
+/* END OF FILE getopt.h */

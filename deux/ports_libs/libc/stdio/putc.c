@@ -29,7 +29,7 @@ SYNOPSIS
 	int putc(int <[ch]>, FILE *<[fp]>);
 
 	#include <stdio.h>
-	int putc( int <[ch]>, FILE *<[fp]>);
+	int _putc_r(struct _reent *<[ptr]>, int <[ch]>, FILE *<[fp]>);
 
 DESCRIPTION
 <<putc>> is a macro, defined in <<stdio.h>>.  <<putc>>
@@ -67,7 +67,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -78,14 +78,35 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #undef putc
 
 int
-putc (
+_putc_r (struct _reent *ptr,
        int c,
        register FILE *fp)
 {
   int result;
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
   _newlib_flockfile_start (fp);
-  result = _sputc ( c, fp);
+  result = __sputc_r (ptr, c, fp);
   _newlib_flockfile_end (fp);
   return result;
 }
+
+#ifndef _REENT_ONLY
+int
+putc (int c,
+       register FILE *fp)
+{
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+  int result;
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT (reent, fp);
+  _newlib_flockfile_start (fp);
+  result = __sputc_r (reent, c, fp);
+  _newlib_flockfile_end (fp);
+  return result;
+#else
+  return _putc_r (_REENT, c, fp);
+#endif
+}
+#endif /* !_REENT_ONLY */
+

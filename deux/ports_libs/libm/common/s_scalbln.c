@@ -19,17 +19,26 @@
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-static const __float64
-two54   =  _F_64(1.80143985094819840000e+16), /* 0x43500000, 0x00000000 */
-twom54  =  _F_64(5.55111512312578270212e-17); /* 0x3C900000, 0x00000000 */
+#ifdef __STDC__
+static const double
+#else
+static double
+#endif
+two54   =  1.80143985094819840000e+16, /* 0x43500000, 0x00000000 */
+twom54  =  5.55111512312578270212e-17, /* 0x3C900000, 0x00000000 */
+huge   = 1.0e+300,
+tiny   = 1.0e-300;
 
-__float64
-scalbln64 (__float64 x, long int n)
+#ifdef __STDC__
+	double scalbln (double x, long int n)
+#else
+	double scalbln (x,n)
+	double x; long int n;
+#endif
 {
-	__int32_t hx,lx;
-        long int k;
+	__int32_t k,hx,lx;
 	EXTRACT_WORDS(hx,lx,x);
         k = (hx&0x7ff00000)>>20;		/* extract exponent */
         if (k==0) {				/* 0 or subnormal x */
@@ -37,23 +46,19 @@ scalbln64 (__float64 x, long int n)
 	    x *= two54;
 	    GET_HIGH_WORD(hx,x);
 	    k = ((hx&0x7ff00000)>>20) - 54;
-            if (n< -50000) return __math_uflow(hx < 0); /*underflow*/
 	    }
         if (k==0x7ff) return x+x;		/* NaN or Inf */
-        if (n > 50000)
-            return __math_oflow(hx<0);          /* overflow  */
         k = k+n;
-        if (k > 0x7fe)
-            return __math_oflow(hx<0);          /* overflow  */
+        if (n> 50000 || k >  0x7fe)
+	  return huge*copysign(huge,x); /* overflow  */
+	if (n< -50000) return tiny*copysign(tiny,x); /*underflow*/
         if (k > 0) 				/* normal result */
 	    {SET_HIGH_WORD(x,(hx&0x800fffff)|(k<<20)); return x;}
         if (k <= -54)
-            return __math_uflow(hx < 0); 	/*underflow*/
+	  return tiny*copysign(tiny,x); 	/*underflow*/
         k += 54;				/* subnormal result */
 	SET_HIGH_WORD(x,(hx&0x800fffff)|(k<<20));
-        return check_uflow(x*twom54);
+        return x*twom54;
 }
 
-_MATH_ALIAS_d_dj(scalbln)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

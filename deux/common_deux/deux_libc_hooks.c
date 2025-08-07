@@ -16,8 +16,6 @@ void _exit(int status)
     while (1) {
         ;
     }
-
-    /* not implemented */
 }
 
 void *_sbrk(intptr_t count)

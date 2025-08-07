@@ -24,21 +24,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_FP & 0x8
 #include <math.h>
 
 long int
 lround (double x)
 {
   long int result;
-  if (sizeof (result) == 8) {
-      __asm__("fcvtas\t%x0, %d1" : "=r" (result) : "w" (x));
-  } else {
-      __asm__("fcvtas\t%w0, %d1" : "=r" (result) : "w" (x));
-  }
+  asm ("fcvtas\t%x0, %d1" : "=r" (result) : "w" (x));
   return result;
 }
-
-#else
-#include "../../common/s_lround.c"
-#endif

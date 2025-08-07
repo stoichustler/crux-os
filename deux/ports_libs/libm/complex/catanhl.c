@@ -31,15 +31,11 @@
 
 #include <complex.h>
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
 long double complex
 catanhl(long double complex z)
 {
 	long double complex w;
 
-	w = -1.0L * (long double complex) I * catanl(z * (long double complex) I);
+	w = -1.0L * I * catanl(z * I);
 	return w;
 }
-
-#endif

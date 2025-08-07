@@ -1,4 +1,3 @@
-/* Copyright (c) 2016 Yaakov Selkowitz <yselkowi@redhat.com> */
 /* POSIX.1 symbolic constants for c_mode field of cpio archive format */
 
 #ifndef _CPIO_H

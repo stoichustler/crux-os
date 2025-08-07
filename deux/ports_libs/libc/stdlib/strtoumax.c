@@ -35,14 +35,16 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "from @(#)strtoul.c	8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD: head/lib/libc/stdlib/strtoumax.c 251672 2013-06-13 00:19:30Z emaste $");
 
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdint.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a string to a uintmax_t integer.
@@ -51,10 +53,12 @@ static char sccsid[] = "from @(#)strtoul.c	8.1 (Berkeley) 6/4/93";
  * alphabets and digits are each contiguous.
  */
 
-
-uintmax_t
-strtoumax_l(const char * __restrict nptr,
-	    char ** __restrict endptr, int base, locale_t loc)
+/*
+ *Reentrant version of strtoumax.
+ */
+static uintmax_t
+_strtoumax_l(struct _reent *rptr, const char * __restrict nptr,
+	     char ** __restrict endptr, int base, locale_t loc)
 {
 	const char *s = nptr;
 	uintmax_t acc;
@@ -111,10 +115,10 @@ strtoumax_l(const char * __restrict nptr,
 	}
 	if (any < 0) {
 		acc = UINTMAX_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (!any) {
 noconv:
-		errno = EINVAL;
+		_REENT_ERRNO(rptr) = EINVAL;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != NULL)
@@ -122,10 +126,26 @@ noconv:
 	return (acc);
 }
 
+uintmax_t
+_strtoumax_r(struct _reent *rptr, const char *__restrict nptr,
+	     char **__restrict endptr, int base)
+{
+	return _strtoumax_l(rptr, nptr, endptr, base, __get_current_locale());
+}
+
+#ifndef _REENT_ONLY
+
+uintmax_t
+strtoumax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
+	    locale_t loc)
+{
+	return _strtoumax_l(_REENT, nptr, endptr, base, loc);
+}
 
 uintmax_t
 strtoumax(const char* __restrict nptr, char** __restrict endptr, int base)
 {
-	return strtoumax_l(nptr, endptr, base, __get_current_locale());
+	return _strtoumax_l(_REENT, nptr, endptr, base, __get_current_locale());
 }
 
+#endif

@@ -4,6 +4,7 @@
  * is freely granted, provided that this notice is preserved.
  */
 
+#include <_ansi.h>
 #include <argz.h>
 #include <stddef.h>
 #include <sys/types.h>
@@ -20,6 +21,6 @@ argz_stringify (char *argz,
     for (i = 0; i < argz_len - 1; i++)
       {
 	if (argz[i] == '\0')
-          argz[i] = (char) sep;
+	  argz[i] = sep;
       }
 }

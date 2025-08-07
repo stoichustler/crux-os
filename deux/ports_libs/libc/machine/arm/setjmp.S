@@ -1,11 +1,8 @@
 /* This is a simple version of setjmp and longjmp.
 
-   Copyright (c) 1997 Nick Clifton, Cygnus Solutions
- */
+   Nick Clifton, Cygnus Solutions, 13 June 1997.  */
 
-#include <picolibc.h>
-
-#include "machine/acle-compat.h"
+#include "arm-acle-compat.h"
 
 /* ANSI concatenation macros.  */
 #define CONCAT(a, b)  CONCAT2(a, b)
@@ -67,13 +64,13 @@
 
 	.syntax unified
 
-/*  GCC 12.1 and later and clang will tell the assembler exactly which
-    floating point (or MVE) unit is required and we don't want to
-    override that.  Conversely, older versions of the compiler don't
-    pass this information so we need to enable the VFP version that is
-    most appropriate.  The choice here should support all suitable VFP
+/*  GCC 12.1 and later will tell the assembler exactly which floating
+    point (or MVE) unit is required and we don't want to override
+    that.  Conversely, older versions of the compiler don't pass this
+    information so we need to enable the VFP version that is most
+    appropriate.  The choice here should support all suitable VFP
     versions that the older toolchains can handle.  */
-#if __GNUC__ && __GNUC__ < 12 && !defined(__clang__)
+#if __GNUC__ && __GNUC__ < 12
 /*  Ensure that FPU instructions are correctly compiled and, likewise,
     the appropriate build attributes are added to the resulting object
     file.  Check whether the MVE extension is present and whether
@@ -81,10 +78,10 @@
     covers all the cases we need in this file for hardware
     floating-point and should be compatible with all required FPUs
     that we need to support.  */
-# if __ARM_FP && !__clang__
+# if __ARM_FP
 	.fpu vfpxd
 # endif
-# if __ARM_FEATURE_MVE && !__clang__
+# if __ARM_FEATURE_MVE
 	.arch_extension mve
 # endif
 #endif
@@ -185,6 +182,7 @@ SYM (.arm_start_of.\name):
 	.align 2
 	MODE
 	.globl SYM (\name)
+	.fnstart
 	.cfi_sections .debug_frame
 	.cfi_startproc
 	TYPE (\name)
@@ -195,6 +193,7 @@ SYM (\name):
 .macro FUNC_END name
 	RET
 	.cfi_endproc
+	.fnend
 	SIZE (\name)
 .endm
 

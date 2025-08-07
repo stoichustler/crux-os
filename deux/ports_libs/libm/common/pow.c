@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_DOUBLE
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -71,7 +71,7 @@ log_inline (uint64_t ix, double_t *tail)
   i = (tmp >> (52 - POW_LOG_TABLE_BITS)) % N;
   k = (int64_t) tmp >> 52; /* arithmetic shift */
   iz = ix - (tmp & 0xfffULL << 52);
-  z = asfloat64 (iz);
+  z = asdouble (iz);
   kd = (double_t) k;
 
   /* log(x) = k*Ln2 + log(c) + log1p(z/c-1).  */
@@ -81,11 +81,11 @@ log_inline (uint64_t ix, double_t *tail)
 
   /* Note: 1/c is j/N or j/N/2 where j is an integer in [N,2N) and
      |z/c - 1| < 1/N, so r = z/c - 1 is exactly representible.  */
-#if __HAVE_FAST_FMA
+#if HAVE_FAST_FMA
   r = fma (z, invc, -1.0);
 #else
   /* Split z such that rhi, rlo and rhi*rhi are exact and |rlo| <= |r|.  */
-  double_t zhi = asfloat64 ((iz + (1ULL << 31)) & (-1ULL << 32));
+  double_t zhi = asdouble ((iz + (1ULL << 31)) & (-1ULL << 32));
   double_t zlo = z - zhi;
   double_t rhi = zhi * invc - 1.0;
   double_t rlo = zlo * invc;
@@ -104,7 +104,7 @@ log_inline (uint64_t ix, double_t *tail)
   ar2 = r * ar;
   ar3 = r * ar2;
   /* k*Ln2 + log(c) + r + A[0]*r*r.  */
-#if __HAVE_FAST_FMA
+#if HAVE_FAST_FMA
   hi = t2 + ar2;
   lo3 = fma (ar, r, -ar2);
   lo4 = t2 - hi + ar2;
@@ -156,20 +156,16 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
     {
       /* k > 0, the exponent of scale might have overflowed by <= 460.  */
       sbits -= 1009ull << 52;
-      scale = asfloat64 (sbits);
+      scale = asdouble (sbits);
       y = 0x1p1009 * (scale + scale * tmp);
       return check_oflow (y);
     }
   /* k < 0, need special care in the subnormal range.  */
   sbits += 1022ull << 52;
   /* Note: sbits is signed scale.  */
-  scale = asfloat64 (sbits);
+  scale = asdouble (sbits);
   y = scale + scale * tmp;
-#if FLT_EVAL_METHOD == 2
-#define fabs(x) fabsl(x)
-#endif
   if (fabs (y) < 1.0)
-#undef fabs
     {
       /* Round y to the right precision before scaling it into the subnormal
 	 range to avoid double rounding that can cause 0.5+E/2 ulp error where
@@ -184,7 +180,7 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
       y = eval_as_double (hi + lo) - one;
       /* Fix the sign of 0.  */
       if (y == 0.0)
-	y = asfloat64 (sbits & 0x8000000000000000);
+	y = asdouble (sbits & 0x8000000000000000);
       /* The underflow exception needs to be signaled explicitly.  */
       force_eval_double (opt_barrier_double (0x1p-1022) * 0x1p-1022);
     }
@@ -192,7 +188,7 @@ specialcase (double_t tmp, uint64_t sbits, uint64_t ki)
   return check_uflow (y);
 }
 
-#define SIGN_BIAS ((int32_t) 0x800 << EXP_TABLE_BITS)
+#define SIGN_BIAS (0x800 << EXP_TABLE_BITS)
 
 /* Computes sign*exp(x+xtail) where |xtail| < 2^-8/N and |xtail| <= |x|.
    The sign_bias argument is SIGN_BIAS or 0 and sets the sign to -1 or 1.  */
@@ -211,11 +207,7 @@ exp_inline (double x, double xtail, uint32_t sign_bias)
 	{
 	  /* Avoid spurious underflow for tiny x.  */
 	  /* Note: 0 is common input.  */
-#if WANT_ROUNDING
-	  double_t one = 1.0 + x;
-#else
-	  double_t one = 1.0;
-#endif
+	  double_t one = WANT_ROUNDING ? 1.0 + x : 1.0;
 	  return sign_bias ? -one : one;
 	}
       if (abstop >= top12 (1024.0))
@@ -253,7 +245,7 @@ exp_inline (double x, double xtail, uint32_t sign_bias)
   /* 2^(k/N) ~= scale * (1 + tail).  */
   idx = 2 * (ki % N);
   top = (ki + sign_bias) << (52 - EXP_TABLE_BITS);
-  tail = asfloat64 (T[idx]);
+  tail = asdouble (T[idx]);
   /* This is only a valid scale when -1023*N < k < 1024*N.  */
   sbits = T[idx + 1] + top;
   /* exp(x) = 2^(k/N) * exp(r) ~= scale + scale * (tail + exp(r) - 1).  */
@@ -270,7 +262,7 @@ exp_inline (double x, double xtail, uint32_t sign_bias)
 #endif
   if (unlikely (abstop == 0))
     return specialcase (tmp, sbits, ki);
-  scale = asfloat64 (sbits);
+  scale = asdouble (sbits);
   /* Note: tmp == 0 or |tmp| > 2^-200 and scale > 2^-739, so there
      is no spurious underflow here even without fma.  */
   return scale + scale * tmp;
@@ -297,7 +289,7 @@ checkint (uint64_t iy)
 static inline int
 zeroinfnan (uint64_t i)
 {
-  return 2 * i - 1 >= 2 * asuint64 ((double) INFINITY) - 1;
+  return 2 * i - 1 >= 2 * asuint64 (INFINITY) - 1;
 }
 
 double
@@ -321,11 +313,11 @@ pow (double x, double y)
       if (unlikely (zeroinfnan (iy)))
 	{
 	  if (2 * iy == 0)
-	    return issignaling64_inline (x) ? x + y : 1.0;
+	    return issignaling_inline (x) ? x + y : 1.0;
 	  if (ix == asuint64 (1.0))
-	    return issignaling64_inline (y) ? x + y : 1.0;
-	  if (2 * ix > 2 * asuint64 ((double) INFINITY)
-	      || 2 * iy > 2 * asuint64 ((double) INFINITY))
+	    return issignaling_inline (y) ? x + y : 1.0;
+	  if (2 * ix > 2 * asuint64 (INFINITY)
+	      || 2 * iy > 2 * asuint64 (INFINITY))
 	    return x + y;
 	  if (2 * ix == 2 * asuint64 (1.0))
 	    return 1.0;
@@ -367,11 +359,10 @@ pow (double x, double y)
 	  if ((topy & 0x7ff) < 0x3be)
 	    {
 	      /* |y| < 2^-65, x^y ~= 1 + y*log(x).  */
-#if WANT_ROUNDING
+	      if (WANT_ROUNDING)
 		return ix > asuint64 (1.0) ? 1.0 + y : 1.0 - y;
-#else
+	      else
 		return 1.0;
-#endif
 	    }
 	  return (ix > asuint64 (1.0)) == (topy < 0x800) ? __math_oflow (0)
 							 : __math_uflow (0);
@@ -388,27 +379,17 @@ pow (double x, double y)
   double_t lo;
   double_t hi = log_inline (ix, &lo);
   double_t ehi, elo;
-#if __HAVE_FAST_FMA
+#if HAVE_FAST_FMA
   ehi = y * hi;
   elo = y * lo + fma (y, hi, -ehi);
 #else
-  double_t yhi = asfloat64 (iy & -1ULL << 27);
+  double_t yhi = asdouble (iy & -1ULL << 27);
   double_t ylo = y - yhi;
-  double_t lhi = asfloat64 (asuint64 (hi) & -1ULL << 27);
+  double_t lhi = asdouble (asuint64 (hi) & -1ULL << 27);
   double_t llo = hi - lhi + lo;
   ehi = yhi * lhi;
   elo = ylo * lhi + y * llo; /* |elo| < |ehi| * 2^-25.  */
 #endif
   return exp_inline (ehi, elo, sign_bias);
 }
-
-#ifdef __strong_reference
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(pow, _pow);
-#endif
-
-_MATH_ALIAS_d_dd(pow)
-
 #endif

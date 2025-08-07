@@ -28,9 +28,7 @@
 
 /* Wrapper for the various implementations of strcmp.  */
 
-#include <picolibc.h>
-
-#include "machine/acle-compat.h"
+#include "arm-acle-compat.h"
 
 #ifdef __ARM_BIG_ENDIAN
 #define S2LO lsl
@@ -62,7 +60,7 @@
 \f:
 	.endm
 
-#if defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED) \
+#if defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED) \
 	|| (__ARM_ARCH_ISA_THUMB == 1 && !__ARM_ARCH_ISA_ARM)
 
 # if defined (__thumb__) && !defined (__thumb2__)
@@ -70,7 +68,7 @@
    If speed is preferred, the strcmp function in strcmp-armv6m.S
    will be used.  */
 
-#  if defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED)
+#  if defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED)
 #   include "strcmp-armv4t.S"
 #  else
 #   include "strcmp-armv6m.S"

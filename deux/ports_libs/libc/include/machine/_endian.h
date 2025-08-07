@@ -1,7 +1,8 @@
-/* Copyright (c) 2016 Sebastian Huber <sebastian.huber@embedded-brains.de> */
 #ifndef __MACHINE_ENDIAN_H__
 #error "must be included via <machine/endian.h>"
 #endif /* !__MACHINE_ENDIAN_H__ */
+
+#include <sys/config.h>
 
 #ifdef __PPC__
 /* Get rid of GCC builtin defines on PowerPC */

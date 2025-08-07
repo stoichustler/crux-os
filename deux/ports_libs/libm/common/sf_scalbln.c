@@ -15,41 +15,57 @@
 
 #include "fdlibm.h"
 
+#ifdef __STDC__
 static const float
+#else
+static float
+#endif
 two25   =  3.355443200e+07,	/* 0x4c000000 */
-twom25  =  2.9802322388e-08;	/* 0x33000000 */
+twom25  =  2.9802322388e-08,	/* 0x33000000 */
+huge   = 1.0e+30,
+tiny   = 1.0e-30;
 
-float
-scalblnf (float x, long int n)
+#ifdef __STDC__
+	float scalblnf (float x, long int n)
+#else
+	float scalblnf (x,n)
+	float x; long int n;
+#endif
 {
-	__int32_t ix;
-        uint32_t hx;
-        long int k;
-
+	__int32_t k,ix;
 	GET_FLOAT_WORD(ix,x);
-	hx = ix&0x7fffffff;
-        k = hx>>23;		                /* extract exponent */
+        k = (ix&0x7f800000)>>23;		/* extract exponent */
         if (k==0) {				/* 0 or subnormal x */
-            if (hx == 0) return x;              /* +-0 */
+            if ((ix&0x7fffffff)==0) return x; /* +-0 */
 	    x *= two25;
 	    GET_FLOAT_WORD(ix,x);
 	    k = ((ix&0x7f800000)>>23) - 25;
-            if (n< -50000)
-                return __math_uflowf(ix<0); 	/*underflow*/
 	    }
         if (k==0xff) return x+x;		/* NaN or Inf */
-        if (n > 50000)
-            return __math_oflowf(ix < 0);        /* overflow  */
         k = k+n;
-        if (k > 0xfe)
-            return __math_oflowf(ix < 0);       /* overflow  */
+        if (n> 50000 || k >  0xfe)
+	  return huge*copysignf(huge,x); /* overflow  */
+	if (n< -50000)
+	  return tiny*copysignf(tiny,x);	/*underflow*/
         if (k > 0) 				/* normal result */
 	    {SET_FLOAT_WORD(x,(ix&0x807fffff)|(k<<23)); return x;}
         if (k <= -25)
-	    return __math_uflowf(ix < 0);	/*underflow*/
+	    return tiny*copysignf(tiny,x);	/*underflow*/
         k += 25;				/* subnormal result */
 	SET_FLOAT_WORD(x,(ix&0x807fffff)|(k<<23));
-        return check_uflowf(x*twom25);
+        return x*twom25;
 }
 
-_MATH_ALIAS_f_fj(scalbln)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double scalbln (double x, long int n)
+#else
+	double scalbln (x,n)
+	double x; long int n;
+#endif
+{
+	return (double) scalblnf((float) x, n);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

@@ -28,8 +28,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <sys/asm.h>
 
 ; Code Brief (more info at the bottom):

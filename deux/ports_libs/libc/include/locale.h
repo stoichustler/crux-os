@@ -1,37 +1,4 @@
 /*
-Copyright (c) 1991, 1993
-The Regents of the University of California.  All rights reserved.
-c) UNIX System Laboratories, Inc.
-All or some portions of this file are derived from material licensed
-to the University of California by American Telephone and Telegraph
-Co. or Unix System Laboratories, Inc. and are reproduced herein with
-the permission of UNIX System Laboratories, Inc.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
- */
-/*
 	locale.h
 	Values appropriate for the formatting of monetary and other
 	numberic quantities.
@@ -40,6 +7,7 @@ SUCH DAMAGE.
 #ifndef _LOCALE_H_
 #define _LOCALE_H_
 
+#include "_ansi.h"
 #include <sys/cdefs.h>
 
 #define __need_NULL
@@ -51,8 +19,23 @@ SUCH DAMAGE.
 #define LC_MONETARY 3
 #define LC_NUMERIC  4
 #define LC_TIME     5
-#define _LC_MESSAGES    6
-#define _LC_LAST        7
+#define LC_MESSAGES 6
+
+#if __POSIX_VISIBLE >= 200809 || defined (_LIBC)
+
+#include <sys/_locale.h>
+
+#define LC_ALL_MASK		(1 << LC_ALL)
+#define LC_COLLATE_MASK		(1 << LC_COLLATE)
+#define LC_CTYPE_MASK		(1 << LC_CTYPE)
+#define LC_MONETARY_MASK	(1 << LC_MONETARY)
+#define LC_NUMERIC_MASK		(1 << LC_NUMERIC)
+#define LC_TIME_MASK		(1 << LC_TIME)
+#define LC_MESSAGES_MASK	(1 << LC_MESSAGES)
+
+#define LC_GLOBAL_LOCALE	((struct __locale_t *) -1)
+
+#endif /* __POSIX_VISIBLE >= 200809 */
 
 _BEGIN_STD_C
 
@@ -84,37 +67,34 @@ struct lconv
   char int_p_sign_posn;
 };
 
+struct _reent;
+char *_setlocale_r (struct _reent *, int, const char *);
+struct lconv *_localeconv_r (struct _reent *);
+
+struct __locale_t *_newlocale_r (struct _reent *, int, const char *,
+				 struct __locale_t *);
+void _freelocale_r (struct _reent *, struct __locale_t *);
+struct __locale_t *_duplocale_r (struct _reent *, struct __locale_t *);
+struct __locale_t *_uselocale_r (struct _reent *, struct __locale_t *);
+const char *_getlocalename_l_r (struct _reent *, int, struct __locale_t *);
+
+#ifndef _REENT_ONLY
+
 char *setlocale (int, const char *);
 struct lconv *localeconv (void);
 
-#if __POSIX_VISIBLE >= 200809 || defined(_LIBC)
-
-#include <sys/_locale.h>
-
-#define LC_MESSAGES             _LC_MESSAGES
-
-#define LC_COLLATE_MASK		(1 << LC_COLLATE)
-#define LC_CTYPE_MASK		(1 << LC_CTYPE)
-#define LC_MONETARY_MASK	(1 << LC_MONETARY)
-#define LC_NUMERIC_MASK		(1 << LC_NUMERIC)
-#define LC_TIME_MASK		(1 << LC_TIME)
-#define LC_MESSAGES_MASK	(1 << LC_MESSAGES)
-
-#define LC_ALL_MASK	(LC_COLLATE_MASK | LC_CTYPE_MASK | LC_MONETARY_MASK \
-			 | LC_NUMERIC_MASK | LC_TIME_MASK | LC_MESSAGES_MASK)
-
-#define LC_GLOBAL_LOCALE	((locale_t) -1)
-
+#if __POSIX_VISIBLE >= 200809
 locale_t newlocale (int, const char *, locale_t);
 void freelocale (locale_t);
 locale_t duplocale (locale_t);
 locale_t uselocale (locale_t);
+#endif /* __POSIX_VISIBLE >= 200809 */
 
+#if __POSIX_VISIBLE >= 202405
+const char *getlocalename_l (int, struct __locale_t *);
 #endif
 
-#if __POSIX_VISIBLE >= 202405 || __MISC_VISIBLE
-const char *getlocalename_l (int, locale_t);
-#endif
+#endif /* _REENT_ONLY */
 
 _END_STD_C
 

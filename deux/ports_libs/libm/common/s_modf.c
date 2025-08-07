@@ -61,10 +61,14 @@ QUICKREF
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-modf64(__float64 x, __float64 *iptr)
+#ifdef __STDC__
+	double modf(double x, double *iptr)
+#else
+	double modf(x, iptr)
+	double x,*iptr;
+#endif
 {
 	__int32_t i0,i1,j0;
 	__uint32_t i;
@@ -103,6 +107,4 @@ modf64(__float64 x, __float64 *iptr)
 	}
 }
 
-_MATH_ALIAS_d_dD(modf)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

@@ -22,9 +22,9 @@ SYNOPSIS
 	int dprintf(int <[fd]>, const char *restrict <[format]>, ...);
 	int vdprintf(int <[fd]>, const char *restrict <[format]>,
 			va_list <[ap]>);
-	int dprintf( int <[fd]>,
+	int _dprintf_r(struct _reent *<[ptr]>, int <[fd]>,
 			const char *restrict <[format]>, ...);
-	int vdprintf( int <[fd]>,
+	int _vdprintf_r(struct _reent *<[ptr]>, int <[fd]>,
 			const char *restrict <[format]>, va_list <[ap]>);
 
 DESCRIPTION
@@ -45,11 +45,34 @@ This function is originally a GNU extension in glibc and is not portable.
 Supporting OS subroutines required: <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
 #include "local.h"
+
+int
+_dprintf_r (struct _reent *ptr,
+       int fd,
+       const char *__restrict format, ...)
+{
+	va_list ap;
+	int n;
+	_REENT_SMALL_CHECK_INIT (ptr);
+	va_start (ap, format);
+	n = _vdprintf_r (ptr, fd, format, ap);
+	va_end (ap);
+	return n;
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+_diprintf_r (struct _reent *, int, const char *, ...)
+       _ATTRIBUTE ((__alias__("_dprintf_r")));
+#endif
+
+#ifndef _REENT_ONLY
 
 int
 dprintf (int fd,
@@ -57,11 +80,18 @@ dprintf (int fd,
 {
   va_list ap;
   int n;
+  struct _reent *ptr = _REENT;
 
+  _REENT_SMALL_CHECK_INIT (ptr);
   va_start (ap, format);
-  n = vdprintf ( fd, format, ap);
+  n = _vdprintf_r (ptr, fd, format, ap);
   va_end (ap);
   return n;
 }
 
-__nano_reference(dprintf, diprintf);
+#ifdef _NANO_FORMATTED_IO
+int
+diprintf (int, const char *, ...)
+       _ATTRIBUTE ((__alias__("dprintf")));
+#endif
+#endif /* ! _REENT_ONLY */

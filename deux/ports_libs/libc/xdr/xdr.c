@@ -36,11 +36,9 @@
  * xdr.
  */
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <limits.h>
 
 #include <rpc/types.h>
 #include <rpc/xdr.h>
@@ -569,7 +567,6 @@ xdr_enum (XDR * xdrs,
           if (!XDR_GETLONG (xdrs, &l))
             return FALSE;
           *ep = l;
-          __fallthrough;
         case XDR_FREE:
           return TRUE;
         }
@@ -595,7 +592,7 @@ xdr_opaque (XDR * xdrs,
 	u_int cnt)
 {
   u_int rndup;
-  char crud[BYTES_PER_XDR_UNIT];
+  static char crud[BYTES_PER_XDR_UNIT];
 
   /*
    * if no data we are done
@@ -672,7 +669,7 @@ xdr_bytes (XDR * xdrs,
           errno = ENOMEM;
           return FALSE;
         }
-      __fallthrough;
+      /* FALLTHROUGH */
 
     case XDR_ENCODE:
       return xdr_opaque (xdrs, sp, nodesize);
@@ -767,7 +764,7 @@ xdr_string (XDR * xdrs,
         u_int maxsize)
 {
   char *sp = *cpp;              /* sp is the actual string pointer */
-  u_int size = 0;
+  u_int size;
   u_int nodesize;
 
   /*
@@ -779,7 +776,7 @@ xdr_string (XDR * xdrs,
       if (sp == NULL)
         return TRUE;        /* already free */
 
-      __fallthrough;
+      /* FALLTHROUGH */
     case XDR_ENCODE:
       if (sp == NULL)
         return FALSE;
@@ -821,7 +818,7 @@ xdr_string (XDR * xdrs,
           return FALSE;
         }
       sp[size] = 0;
-      __fallthrough;
+      /* FALLTHROUGH */
 
     case XDR_ENCODE:
       return xdr_opaque (xdrs, sp, size);

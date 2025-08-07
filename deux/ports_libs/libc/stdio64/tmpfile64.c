@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1990 The Regents of the University of California.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-by the University of California, Berkeley.  The name of the
-University may not be used to endorse or promote products derived
-from this software without specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
 FUNCTION
 <<tmpfile64>>---create a large temporary file
 
@@ -56,11 +40,10 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<getpid>>,
 <<tmpfile64>> also requires the global pointer <<environ>>.
 */
 
-#define _GNU_SOURCE
 #include <stdio.h>
+#include <reent.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/stat.h>
 
 #ifndef O_BINARY
@@ -70,7 +53,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<getpid>>,
 #ifdef __LARGE64_FILES
 
 FILE *
-tmpfile64 (void)
+_tmpfile64_r (struct _reent *ptr)
 {
   FILE *fp;
   int e;
@@ -80,21 +63,31 @@ tmpfile64 (void)
 
   do
   {
-     if ((f = tmpnam (buf)) == NULL)
+     if ((f = _tmpnam_r (ptr, buf)) == NULL)
 	return NULL;
-      fd = open64 (f, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
+      fd = _open64_r (ptr, f, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
 		      S_IRUSR | S_IWUSR);
   }
-  while (fd < 0 && errno == EEXIST);
+  while (fd < 0 && _REENT_ERRNO(ptr) == EEXIST);
   if (fd < 0)
     return NULL;
-  fp = fdopen64 (fd, "wb+");
-  e = errno;
+  fp = _fdopen64_r (ptr, fd, "wb+");
+  e = _REENT_ERRNO(ptr);
   if (!fp)
-    close (fd);
-  (void) remove (f);
-  errno = e;
+    _close_r (ptr, fd);
+  (void) _remove_r (ptr, f);
+  _REENT_ERRNO(ptr) = e;
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+tmpfile64 (void)
+{
+  return _tmpfile64_r (_REENT);
+}
+
+#endif
 
 #endif /* __LARGE64_FILES */

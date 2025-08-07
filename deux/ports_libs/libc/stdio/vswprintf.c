@@ -20,7 +20,8 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <limits.h>
@@ -30,7 +31,7 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #include "local.h"
 
 int
-vswprintf (
+_vswprintf_r (struct _reent *ptr,
        wchar_t *str,
        size_t size,
        const wchar_t *fmt,
@@ -41,7 +42,7 @@ vswprintf (
 
   if (size > INT_MAX / sizeof (wchar_t))
     {
-      errno = EOVERFLOW;	/* POSIX extension */
+      _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -49,19 +50,32 @@ vswprintf (
   f._bf._base = f._p = (unsigned char *) str;
   f._bf._size = f._w = (size > 0 ? (size - 1) * sizeof (wchar_t) : 0);
   f._file = -1;  /* No file. */
-  ret = svfwprintf ( &f, fmt, ap);
-  /* svfwprintf( so add one if
+  ret = _svfwprintf_r (ptr, &f, fmt, ap);
+  /* _svfwprintf_r() does not put in a terminating NUL, so add one if
    * appropriate, which is whenever size is > 0.  _svfwprintf_r() stops
    * after n-1, so always just put at the end.  */
   if (size > 0)  {
     *(wchar_t *)f._p = L'\0';	/* terminate the string */
   }
-  if(ret >= 0 && (size_t) ret >= size)  {
+  if(ret >= size)  {
     /* _svfwprintf_r() returns how many wide characters it would have printed
      * if there were enough space.  Return an error if too big to fit in str,
      * unlike snprintf, which returns the size needed.  */
-    errno = EOVERFLOW;	/* POSIX extension */
+    _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
     ret = -1;
   }
   return ret;
 }
+
+#ifndef _REENT_ONLY
+
+int
+vswprintf (wchar_t *__restrict str,
+       size_t size,
+       const wchar_t *__restrict fmt,
+       va_list ap)
+{
+  return _vswprintf_r (_REENT, str, size, fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */

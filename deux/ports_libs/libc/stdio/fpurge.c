@@ -18,7 +18,7 @@ SYNOPSIS
 	#include <stdio.h>
 	int fpurge(FILE *<[fp]>);
 
-	int fpurge( FILE *<[fp]>);
+	int _fpurge_r(struct _reent *<[reent]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <stdio_ext.h>
@@ -49,7 +49,7 @@ These functions are not portable to any standard.
 No supporting OS subroutines are required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #ifndef __rtems__
 #include <stdio_ext.h>
@@ -60,19 +60,19 @@ No supporting OS subroutines are required.
 /* Discard I/O from a single file.  */
 
 int
-fpurge (
+_fpurge_r (struct _reent *ptr,
        register FILE * fp)
 {
   int t;
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start (fp);
 
   t = fp->_flags;
   if (!t)
     {
-      errno = EBADF;
+      _REENT_ERRNO(ptr) = EBADF;
       _newlib_flockfile_exit (fp);
       return EOF;
     }
@@ -88,3 +88,23 @@ fpurge (
   _newlib_flockfile_end (fp);
   return 0;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fpurge (register FILE * fp)
+{
+  return _fpurge_r (_REENT, fp);
+}
+
+#ifndef __rtems__
+
+void
+__fpurge (register FILE * fp)
+{
+  _fpurge_r (_REENT, fp);
+}
+
+#endif
+
+#endif /* _REENT_ONLY */

@@ -20,7 +20,8 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -28,8 +29,27 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 
 #include "local.h"
 
+#ifndef _REENT_ONLY
+
 int
-vsnprintf (
+vsnprintf (char *__restrict str,
+       size_t size,
+       const char *__restrict fmt,
+       va_list ap)
+{
+  return _vsnprintf_r (_REENT, str, size, fmt, ap);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+vsniprintf (char *, size_t, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vsnprintf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int
+_vsnprintf_r (struct _reent *ptr,
        char *__restrict str,
        size_t size,
        const char *__restrict fmt,
@@ -40,7 +60,7 @@ vsnprintf (
 
   if (size > INT_MAX)
     {
-      errno = EOVERFLOW;
+      _REENT_ERRNO(ptr) = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -48,13 +68,16 @@ vsnprintf (
   f._bf._base = f._p = (unsigned char *) str;
   f._bf._size = f._w = (size > 0 ? size - 1 : 0);
   f._file = -1;  /* No file. */
-  ret = svfprintf ( &f, fmt, ap);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
   if (ret < EOF)
-    errno = EOVERFLOW;
+    _REENT_ERRNO(ptr) = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return ret;
 }
 
-__nano_reference(vsnprintf, vsniprintf);
-__ieee128_reference(vsnprintf, __vsnprintfieee128);
+#ifdef _NANO_FORMATTED_IO
+int
+_vsniprintf_r (struct _reent *, char *, size_t, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vsnprintf_r")));
+#endif

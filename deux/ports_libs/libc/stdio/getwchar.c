@@ -84,12 +84,19 @@ PORTABILITY
 <<getwchar_unlocked>> is a GNU extension.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef getwchar
+
+wint_t
+_getwchar_r (struct _reent *ptr)
+{
+  return _fgetwc_r (ptr, stdin);
+}
 
 /*
  * Synonym for fgetwc(stdin).
@@ -97,5 +104,6 @@ PORTABILITY
 wint_t
 getwchar (void)
 {
+  _REENT_SMALL_CHECK_INIT (_REENT);
   return fgetwc (stdin);
 }

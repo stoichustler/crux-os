@@ -29,8 +29,6 @@
 
 /* This file must be kept in sync with libgcc/config/visium/memset.c  */
 
-#include <picolibc.h>
-
 #include <stddef.h>
 #include "memset.h"
 #include "../../string/local.h"
@@ -232,7 +230,7 @@ do {				\
 } while(0)
 
 static inline void
-__no_builtin
+__inhibit_loop_to_libcall
 __int_memset (void *__restrict s1, int val, size_t n)
 {
   int value = n;
@@ -372,7 +370,7 @@ __int_memset (void *__restrict s1, int val, size_t n)
 }
 
 static inline void
-__no_builtin
+__inhibit_loop_to_libcall
 __short_int_memset (void *__restrict s1, int val, size_t n)
 {
   int value = n;
@@ -512,7 +510,7 @@ __short_int_memset (void *__restrict s1, int val, size_t n)
 }
 
 static inline void
-__no_builtin
+__inhibit_loop_to_libcall
 __byte_memset (void *__restrict s1, int val, size_t n)
 {
   int value = n;
@@ -655,7 +653,7 @@ __byte_memset (void *__restrict s1, int val, size_t n)
 /* Exposed interface.  */
 
 void *
-__no_builtin
+__inhibit_loop_to_libcall
 memset (void *s, int c, size_t n)
 {
   void *result = s;

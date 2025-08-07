@@ -1,31 +1,3 @@
-/*
-Copyright (C) 2001, 2004, 2005 Axis Communications AB.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-2. Neither the name of Axis Communications nor the names of its
-contributors may be used to endorse or promote products derived
-from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY AXIS COMMUNICATIONS AND ITS CONTRIBUTORS
-AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL AXIS
-COMMUNICATIONS OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
- */
 /* This file is to be kept in sync with newlib/libc/include/sys/errno.h
    on which it is based, except values used or returned by syscalls must
    be those of the Linux/CRIS kernel.  */
@@ -35,21 +7,24 @@ POSSIBILITY OF SUCH DAMAGE.
    __errno.  */
 
 #ifndef _SYS_ERRNO_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define _SYS_ERRNO_H_
 
-#include <sys/cdefs.h>
+#include <sys/reent.h>
 
-_BEGIN_STD_C
-
+#ifndef _REENT_ONLY
 #define errno (*__errno())
-int *__errno (void);
+extern int *__errno (void);
+#endif
 
 /* Please don't use these variables directly.
    Use strerror instead. */
 extern const char * const _sys_errlist[];
 extern int _sys_nerr;
 
-#define __errno_r(ptr) errno
+#define __errno_r(ptr) _REENT_ERRNO(ptr)
 
 /* Adjusted to the linux asm/errno.h */
 #define	EPERM		 1	/* Operation not permitted */
@@ -196,6 +171,7 @@ extern int _sys_nerr;
 
 #define __ELASTERROR 2000	/* Users can add values starting here */
 
-_END_STD_C
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* _SYS_ERRNO_H */

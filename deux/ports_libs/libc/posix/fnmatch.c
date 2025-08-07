@@ -30,16 +30,23 @@
  * SUCH DAMAGE.
  */
 
+#ifndef _NO_FNMATCH
+
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "@(#)fnmatch.c	8.2 (Berkeley) 4/16/94";
+#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
+
 /*
  * Function fnmatch() as specified in POSIX 1003.2-1992, section B.6.
  * Compares a filename or pathname to a pattern.
  */
 
-#define _GNU_SOURCE
 #include <ctype.h>
 #include <fnmatch.h>
 #include <string.h>
 #include <stdio.h>
+
 #include "collate.h"
 
 #define	EOS	'\0'
@@ -51,7 +58,9 @@
 static int rangematch(const char *, char, int, char **);
 
 int
-fnmatch(const char *pattern, const char *string, int flags)
+fnmatch(pattern, string, flags)
+	const char *pattern, *string;
+	int flags;
 {
 	const char *stringstart;
 	char *newp;
@@ -136,7 +145,7 @@ fnmatch(const char *pattern, const char *string, int flags)
 					--pattern;
 				}
 			}
-			__fallthrough;
+			/* FALLTHROUGH */
 		default:
 		norm:
 			if (c == *string)
@@ -207,14 +216,11 @@ rangematch(
 			if (flags & FNM_CASEFOLD)
 				c2 = tolower((unsigned char)c2);
 
-			if (
-#ifdef __HAVE_REAL_STRCOLL
-                            __collate_range_cmp(c, test) <= 0
+			if (__collate_load_error ?
+			    c <= test && test <= c2 :
+			       __collate_range_cmp(c, test) <= 0
 			    && __collate_range_cmp(test, c2) <= 0
-#else
-                            c <= test && test <= c2
-#endif
-                            )
+			   )
 				ok = 1;
 		} else if (c == test)
 			ok = 1;
@@ -223,3 +229,5 @@ rangematch(
 	*newp = (char *)pattern;
 	return (ok == negate ? RANGE_NOMATCH : RANGE_MATCH);
 }
+
+#endif /* !_NO_FNMATCH  */

@@ -13,11 +13,9 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include "m68kasm.h"
 
-#if defined (__mcoldfire__) || defined (__mc68020__) || defined (__mc68030__) || defined (__mc68040__) || defined (__mc68060__)
+#if defined (__mcoldfire__) || defined (__mc68030__) || defined (__mc68040__) || defined (__mc68060__)
 # define MISALIGNED_OK 1
 #else
 # define MISALIGNED_OK 0
@@ -106,16 +104,9 @@ SYM(memcpy):
 .Lresidue:
 #if !defined (__mcoldfire__)
 	dbra	d1,1b		| loop until done
-	sub.l	#0x10000,d1
 #else
 	subq.l	#1,d1
-#endif
 	bpl	1b
-	move.l	4(sp),a0	| return value
-	move.l	a0,d0		| in both a0 and d0
-	rts
-	.size	SYM(memcpy), . - SYM(memcpy)
-	
-#if defined(__linux__) && defined(__ELF__)
-	.section .note.GNU-stack,"",%progbits
 #endif
+	move.l	4(sp),d0	| return value
+	rts

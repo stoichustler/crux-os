@@ -24,8 +24,7 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-#include <picolibc.h>
-
+#include "arm-acle-compat.h"
 #include "arm_asm.h"
 
 	.macro def_fn f p2align=0
@@ -47,22 +46,18 @@
 	.syntax unified
 
 def_fn	strlen p2align=1
-	fnstart
+	.fnstart
 	.cfi_sections .debug_frame
 	.cfi_startproc
 	prologue
 	mov     r3, r0
-1:	ldrb    r2, [r3], #1
+1:	ldrb.w  r2, [r3], #1
 	cmp     r2, #0
 	bne	1b
 	subs    r0, r3, r0
 	subs    r0, #1
 	epilogue
 	.cfi_endproc
-	cantunwind
-	fnend
+	.cantunwind
+	.fnend
 	.size	strlen, . - strlen
-
-#if defined(__linux__) && defined(__ELF__)
-.section .note.GNU-stack,"",%progbits
-#endif

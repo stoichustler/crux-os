@@ -59,7 +59,6 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek64>>, <<open64>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _GNU_SOURCE
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
@@ -67,7 +66,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/lock.h>
-#include "../stdio/local.h"
+#include "local.h"
 
 /*
  * Re-direct an existing, open (probably) file to some other file.
@@ -76,7 +75,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 #ifdef __LARGE64_FILES
 
 FILE *
-freopen64 (
+_freopen64_r (struct _reent *ptr,
 	const char *file,
 	const char *mode,
 	register FILE *fp)
@@ -86,7 +85,7 @@ freopen64 (
   int e = 0;
 
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   /* We can't use the _newlib_flockfile_XXX macros here due to the
      interlocked locking with the sfp_lock. */
@@ -98,14 +97,14 @@ freopen64 (
   if (!(oflags2 & __SNLK))
     _flockfile (fp);
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     {
       if (!(oflags2 & __SNLK))
 	_funlockfile (fp);
 #ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
       pthread_setcancelstate (__oldcancel, &__oldcancel);
 #endif
-      fclose (fp);
+      _fclose_r (ptr, fp);
       return NULL;
     }
 
@@ -122,13 +121,13 @@ freopen64 (
   else
     {
       if (fp->_flags & __SWR)
-	fflush (fp);
+	_fflush_r (ptr, fp);
       /*
        * If close is NULL, closing is a no-op, hence pointless.
        * If file is NULL, the file should not be closed.
        */
       if (fp->_close != NULL && file != NULL)
-	fp->_close (fp->_cookie);
+	fp->_close (ptr, fp->_cookie);
     }
 
   /*
@@ -138,12 +137,12 @@ freopen64 (
 
   if (file != NULL)
     {
-      f = open64 ((char *) file, oflags, 0666);
-      e = errno;
+      f = _open64_r (ptr, (char *) file, oflags, 0666);
+      e = _REENT_ERRNO(ptr);
     }
   else
     {
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
       int oldflags;
       /*
        * Reuse the file descriptor, but only if the new access mode is
@@ -151,10 +150,10 @@ freopen64 (
        * ignores creation flags.
        */
       f = fp->_file;
-      if ((oldflags = fcntl (f, F_GETFL, 0)) == -1
+      if ((oldflags = _fcntl_r (ptr, f, F_GETFL, 0)) == -1
 	  || ! ((oldflags & O_ACCMODE) == O_RDWR
 		|| ((oldflags ^ oflags) & O_ACCMODE) == 0)
-	  || fcntl (f, F_SETFL, oflags) == -1)
+	  || _fcntl_r (ptr, f, F_SETFL, oflags) == -1)
 	f = -1;
 #else
       /* We cannot modify without fcntl support.  */
@@ -174,7 +173,7 @@ freopen64 (
 	{
 	  e = EBADF;
 	  if (fp->_close != NULL)
-	    fp->_close (fp->_cookie);
+	    fp->_close (ptr, fp->_cookie);
 	}
     }
 
@@ -186,7 +185,7 @@ freopen64 (
    */
 
   if (fp->_flags & __SMBF)
-    free ((char *) fp->_bf._base);
+    _free_r (ptr, (char *) fp->_bf._base);
   fp->_w = 0;
   fp->_r = 0;
   fp->_p = NULL;
@@ -207,12 +206,14 @@ freopen64 (
     {				/* did not get it after all */
       __sfp_lock_acquire ();
       fp->_flags = 0;		/* set it free */
-      errno = e;	/* restore in case _close clobbered */
+      _REENT_ERRNO(ptr) = e;	/* restore in case _close clobbered */
       if (!(oflags2 & __SNLK))
 	_funlockfile (fp);
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       __sfp_lock_release ();
-#ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
+#if !defined (__SINGLE_THREAD__) && defined (_POSIX_THREADS)
       pthread_setcancelstate (__oldcancel, &__oldcancel);
 #endif
       return NULL;
@@ -236,10 +237,22 @@ freopen64 (
 
   if (!(oflags2 & __SNLK))
     _funlockfile (fp);
-#ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
+#if !defined (__SINGLE_THREAD__) && defined (_POSIX_THREADS)
   pthread_setcancelstate (__oldcancel, &__oldcancel);
 #endif
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+freopen64 (const char *file,
+	const char *mode,
+	register FILE *fp)
+{
+  return _freopen64_r (_REENT, file, mode, fp);
+}
+
+#endif /* !_REENT_ONLY */
 
 #endif /* __LARGE64_FILES */

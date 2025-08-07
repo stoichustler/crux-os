@@ -60,13 +60,13 @@ SYNOPSIS
 	int mkostemp(char *<[path]>, int <[flags]>);
 	int mkostemps(char *<[path]>, int <[suffixlen]>, int <[flags]>);
 
-	char *mktemp( char *<[path]>);
-	char *mkdtemp( char *<[path]>);
-	int *mkstemp( char *<[path]>);
-	int *mkstemps( char *<[path]>, int <[len]>);
-	int *mkostemp( char *<[path]>,
+	char *_mktemp_r(struct _reent *<[reent]>, char *<[path]>);
+	char *_mkdtemp_r(struct _reent *<[reent]>, char *<[path]>);
+	int *_mkstemp_r(struct _reent *<[reent]>, char *<[path]>);
+	int *_mkstemps_r(struct _reent *<[reent]>, char *<[path]>, int <[len]>);
+	int *_mkostemp_r(struct _reent *<[reent]>, char *<[path]>,
 			 int <[flags]>);
-	int *mkostemps( char *<[path]>, int <[len]>,
+	int *_mkostemps_r(struct _reent *<[reent]>, char *<[path]>, int <[len]>,
 			  int <[flags]>);
 
 DESCRIPTION
@@ -127,18 +127,18 @@ are not standardized.
 Supporting OS subroutines required: <<getpid>>, <<mkdir>>, <<open>>, <<stat>>.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
+#include <reent.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <unistd.h>
 
 static int
-_gettemp (
+_gettemp (struct _reent *ptr,
        char *path,
        register int *doopen,
        int domkdir,
@@ -154,12 +154,12 @@ _gettemp (
 #endif
   unsigned int pid;
 
-  pid = getpid ();
+  pid = _getpid_r (ptr);
   for (trv = path; *trv; ++trv)		/* extra X's get set to 0's */
     continue;
-  if (trv - path < (ptrdiff_t) suffixlen)
+  if (trv - path < suffixlen)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return 0;
     }
   trv -= suffixlen;
@@ -171,7 +171,7 @@ _gettemp (
     }
   if (end - trv < 6)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return 0;
     }
 
@@ -188,14 +188,14 @@ _gettemp (
 	{
 	  *trv = '\0';
 #ifdef __USE_INTERNAL_STAT64
-	  if (stat64 (path, &sbuf))
+	  if (_stat64_r (ptr, path, &sbuf))
 #else
-	  if (stat (path, &sbuf))
+	  if (_stat_r (ptr, path, &sbuf))
 #endif
 	    return (0);
 	  if (!(sbuf.st_mode & S_IFDIR))
 	    {
-	      errno = ENOTDIR;
+	      _REENT_ERRNO(ptr) = ENOTDIR;
 	      return (0);
 	    }
 	  *trv = '/';
@@ -205,35 +205,35 @@ _gettemp (
 
   for (;;)
     {
-#if !defined __ELIX_LEVEL || __ELIX_LEVEL >= 4
+#if !defined _ELIX_LEVEL || _ELIX_LEVEL >= 4
       if (domkdir)
 	{
 #ifdef HAVE_MKDIR
-	  if (mkdir ( path, 0700) == 0)
+	  if (_mkdir_r (ptr, path, 0700) == 0)
 	    return 1;
-	  if (errno != EEXIST)
+	  if (_REENT_ERRNO(ptr) != EEXIST)
 	    return 0;
 #else /* !HAVE_MKDIR */
-	  errno = ENOSYS;
+	  _REENT_ERRNO(ptr) = ENOSYS;
 	  return 0;
 #endif /* !HAVE_MKDIR */
 	}
       else
-#endif /* __ELIX_LEVEL */
+#endif /* _ELIX_LEVEL */
       if (doopen)
 	{
-	  if ((*doopen = open (path, O_CREAT | O_EXCL | O_RDWR | flags,
+	  if ((*doopen = _open_r (ptr, path, O_CREAT | O_EXCL | O_RDWR | flags,
 				  0600)) >= 0)
 	    return 1;
-	  if (errno != EEXIST)
+	  if (_REENT_ERRNO(ptr) != EEXIST)
 	    return 0;
 	}
 #ifdef __USE_INTERNAL_STAT64
-      else if (stat64 (path, &sbuf))
+      else if (_stat64_r (ptr, path, &sbuf))
 #else
-      else if (stat (path, &sbuf))
+      else if (_stat_r (ptr, path, &sbuf))
 #endif
-	return (errno == ENOENT ? 1 : 0);
+	return (_REENT_ERRNO(ptr) == ENOENT ? 1 : 0);
 
       /* tricky little algorithm for backward compatibility */
       for (trv = start;;)
@@ -261,57 +261,111 @@ _gettemp (
 #endif
 
 int
-mkstemp (
+_mkstemp_r (struct _reent *ptr,
        char *path)
 {
   int fd;
 
-  return (_gettemp (path, &fd, 0, 0, O_BINARY) ? fd : -1);
+  return (_gettemp (ptr, path, &fd, 0, 0, O_BINARY) ? fd : -1);
 }
 
-#if !defined __ELIX_LEVEL || __ELIX_LEVEL >= 4
+#if !defined _ELIX_LEVEL || _ELIX_LEVEL >= 4
 char *
-mkdtemp (
+_mkdtemp_r (struct _reent *ptr,
        char *path)
 {
-  return (_gettemp (path, (int *) NULL, 1, 0, 0) ? path : NULL);
+  return (_gettemp (ptr, path, (int *) NULL, 1, 0, 0) ? path : NULL);
 }
 
 int
-mkstemps (
+_mkstemps_r (struct _reent *ptr,
        char *path,
        int len)
 {
   int fd;
 
-  return (_gettemp (path, &fd, 0, len, O_BINARY) ? fd : -1);
+  return (_gettemp (ptr, path, &fd, 0, len, O_BINARY) ? fd : -1);
 }
 
 int
-mkostemp (
+_mkostemp_r (struct _reent *ptr,
        char *path,
        int flags)
 {
   int fd;
 
-  return (_gettemp (path, &fd, 0, 0, flags & ~O_ACCMODE) ? fd : -1);
+  return (_gettemp (ptr, path, &fd, 0, 0, flags & ~O_ACCMODE) ? fd : -1);
 }
 
 int
-mkostemps (
+_mkostemps_r (struct _reent *ptr,
        char *path,
        int len,
        int flags)
 {
   int fd;
 
-  return (_gettemp (path, &fd, 0, len, flags & ~O_ACCMODE) ? fd : -1);
+  return (_gettemp (ptr, path, &fd, 0, len, flags & ~O_ACCMODE) ? fd : -1);
 }
-#endif /* __ELIX_LEVEL */
+#endif /* _ELIX_LEVEL */
 
 char *
-mktemp (
+_mktemp_r (struct _reent *ptr,
        char *path)
 {
-  return (_gettemp (path, (int *) NULL, 0, 0, 0) ? path : (char *) NULL);
+  return (_gettemp (ptr, path, (int *) NULL, 0, 0, 0) ? path : (char *) NULL);
 }
+
+#ifndef _REENT_ONLY
+
+int
+mkstemp (char *path)
+{
+  int fd;
+
+  return (_gettemp (_REENT, path, &fd, 0, 0, O_BINARY) ? fd : -1);
+}
+
+# if !defined _ELIX_LEVEL || _ELIX_LEVEL >= 4
+char *
+mkdtemp (char *path)
+{
+  return (_gettemp (_REENT, path, (int *) NULL, 1, 0, 0) ? path : NULL);
+}
+
+int
+mkstemps (char *path,
+       int len)
+{
+  int fd;
+
+  return (_gettemp (_REENT, path, &fd, 0, len, O_BINARY) ? fd : -1);
+}
+
+int
+mkostemp (char *path,
+       int flags)
+{
+  int fd;
+
+  return (_gettemp (_REENT, path, &fd, 0, 0, flags & ~O_ACCMODE) ? fd : -1);
+}
+
+int
+mkostemps (char *path,
+       int len,
+       int flags)
+{
+  int fd;
+
+  return (_gettemp (_REENT, path, &fd, 0, len, flags & ~O_ACCMODE) ? fd : -1);
+}
+# endif /* _ELIX_LEVEL */
+
+char *
+mktemp (char *path)
+{
+  return (_gettemp (_REENT, path, (int *) NULL, 0, 0, 0) ? path : (char *) NULL);
+}
+
+#endif /* ! defined (_REENT_ONLY) */

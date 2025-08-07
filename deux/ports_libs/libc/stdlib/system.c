@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<system>>---execute command string
 
@@ -48,22 +44,25 @@ Supporting OS subroutines required: <<_exit>>, <<_execve>>, <<_fork_r>>,
 <<_wait_r>>.
 */
 
+#include <_ansi.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <sys/wait.h>
+#include <_syslist.h>
+#include <reent.h>
 
 #if defined (unix) || defined (__CYGWIN__)
-static int do_system (const char *s);
+static int do_system (struct _reent *ptr, const char *s);
 #endif
 
-
 int
-system (const char *s)
+_system_r (struct _reent *ptr,
+     const char *s)
 {
 #if defined(HAVE_SYSTEM)
   return _system (s);
+  ptr = ptr;
 #elif defined(NO_EXEC)
   if (s == NULL)
     return 0;
@@ -79,7 +78,7 @@ system (const char *s)
 #if defined (unix) || defined (__CYGWIN__)
   if (s == NULL)
     return 1;
-  return do_system (s);
+  return do_system (ptr, s);
 #else
   if (s == NULL)
     return 0;
@@ -90,6 +89,15 @@ system (const char *s)
 #endif
 }
 
+#ifndef _REENT_ONLY
+
+int
+system (const char *s)
+{
+  return _system_r (_REENT, s);
+}
+
+#endif
 
 #if defined (unix) && !defined (__CYGWIN__) && !defined(__rtems__)
 extern char **environ;
@@ -100,7 +108,8 @@ extern char **environ;
 static char ***p_environ = &environ;
 
 static int
-do_system (const char *s)
+do_system (struct _reent *ptr,
+     const char *s)
 {
   char *argv[4];
   int pid, status;
@@ -110,16 +119,16 @@ do_system (const char *s)
   argv[2] = (char *) s;
   argv[3] = NULL;
 
-  if ((pid = fork ()) == 0)
+  if ((pid = _fork_r (ptr)) == 0)
     {
-      execve ("/bin/sh", argv, *p_environ);
+      _execve ("/bin/sh", argv, *p_environ);
       exit (100);
     }
   else if (pid == -1)
     return -1;
   else
     {
-      int rc = wait (&status);
+      int rc = _wait_r (ptr, &status);
       if (rc == -1)
 	return -1;
       status = (status >> 8) & 0xff;
@@ -128,3 +137,42 @@ do_system (const char *s)
 }
 #endif
 
+#if defined (__CYGWIN__)
+static int
+do_system (struct _reent *ptr,
+     const char *s)
+{
+  char *argv[4];
+  int pid, status;
+
+  argv[0] = "sh";
+  argv[1] = "-c";
+  argv[2] = (char *) s;
+  argv[3] = NULL;
+
+  if ((pid = vfork ()) == 0)
+    {
+      /* ??? It's not clear what's the right path to take (pun intended :-).
+	 There won't be an "sh" in any fixed location so we need each user
+	 to be able to say where to find "sh".  That suggests using an
+	 environment variable, but after a few more such situations we may
+	 have too many of them.  */
+      char *sh = getenv ("SH_PATH");
+      if (sh == NULL)
+	sh = "/bin/sh";
+      _execve (sh, argv, environ);
+      exit (100);
+    }
+  else if (pid == -1)
+    return -1;
+  else
+    {
+      extern int _wait (int *);
+      int rc = _wait (&status);
+      if (rc == -1)
+	return -1;
+      status = (status >> 8) & 0xff;
+      return status;
+    }
+}
+#endif

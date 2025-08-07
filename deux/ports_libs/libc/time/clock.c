@@ -1,19 +1,3 @@
-/*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
 /* NetWare can not use this implementation of clock, since it does not
    have times or any similar function.  It provides its own version of
    clock in clib.nlm.  If we can not use clib.nlm, then we must write
@@ -63,14 +47,15 @@ Supporting OS subroutine required: <<times>>.
 
 #include <time.h>
 #include <sys/times.h>
+#include <reent.h>
 
 clock_t 
-clock (void)
+clock ()
 {
   struct tms tim_s;
   clock_t res;
 
-  if ((res = (clock_t) times (&tim_s)) != (clock_t) -1)
+  if ((res = (clock_t) _times_r (_REENT, &tim_s)) != (clock_t) -1)
     res = (clock_t) (tim_s.tms_utime + tim_s.tms_stime +
 		     tim_s.tms_cutime + tim_s.tms_cstime);
 

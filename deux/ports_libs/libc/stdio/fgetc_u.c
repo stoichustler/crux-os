@@ -24,14 +24,31 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
 int
-fgetc_unlocked (
+_fgetc_unlocked_r (struct _reent * ptr,
        FILE * fp)
 {
-  CHECK_INIT();
-  return _sgetc ( fp);
+  CHECK_INIT(ptr, fp);
+  return __sgetc_r (ptr, fp);
 }
+
+#ifndef _REENT_ONLY
+
+int
+fgetc_unlocked (FILE * fp)
+{
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  return __sgetc_r (reent, fp);
+#else
+  return _fgetc_unlocked_r (_REENT, fp);
+#endif
+}
+
+#endif /* !_REENT_ONLY */

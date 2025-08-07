@@ -1,10 +1,4 @@
 /*
-Copyright (C) 2002 by  Red Hat, Incorporated. All rights reserved.
-
-Permission to use, copy, modify, and distribute this software
-is freely granted, provided that this notice is preserved.
- */
-/*
 FUNCTION
 <<fma>>, <<fmaf>>---floating multiply add
 INDEX
@@ -44,57 +38,23 @@ ANSI C, POSIX.
 
 #include "fdlibm.h"
 
-#if !__HAVE_FAST_FMA
+#if !HAVE_FAST_FMA
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-#if __FLT_EVAL_METHOD__ == 2 && defined(__HAVE_LONG_DOUBLE)
-
-__float64
-fma64(__float64 x, __float64 y, __float64 z)
-{
-    return (__float64) fmal((long double) x, (long double) y, (long double) z);
-}
-
+#ifdef __STDC__
+	double fma(double x, double y, double z)
 #else
-
-typedef __float64 FLOAT_T;
-
-#define FMA fma64
-#define NEXTAFTER nextafter64
-#define LDEXP ldexp64
-#define FREXP frexp64
-#define SCALBN scalbn64
-#define ILOGB    ilogb64
-#define COPYSIGN copysign64
-
-#define SPLIT ((FLOAT_T) 0x1p26 + (FLOAT_T) 1.0)
-#define FLOAT_MANT_DIG        _FLOAT64_MANT_DIG
-#define FLOAT_MAX_EXP         _FLOAT64_MAX_EXP
-#define FLOAT_MIN             _FLOAT64_MIN
-
-static inline int
-odd_mant(FLOAT_T x)
+	double fma(x,y)
+	double x;
+	double y;
+        double z;
+#endif
 {
-    return asuint64(x) & 1;
+  /* Implementation defined. */
+  return (x * y) + z;
 }
 
-static unsigned int
-EXPONENT(FLOAT_T x)
-{
-    return _exponent64(asuint64(x));
-}
+#endif /* _DOUBLE_IS_32BITS */
 
-#ifdef __FLOAT64_NOEXCEPT
-#define feraiseexcept(x) ((void) (x))
-#endif
-
-#include "fma_inc.h"
-
-#endif
-
-_MATH_ALIAS_d_ddd(fma)
-
-#endif /* _NEED_FLOAT64 */
-
-#endif /* !__HAVE_FAST_FMA */
+#endif /* !HAVE_FAST_FMA */

@@ -28,8 +28,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <sys/asm.h>
 
 ; This file contains variants of the same function with different

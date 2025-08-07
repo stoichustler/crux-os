@@ -39,8 +39,8 @@ typedef enum {CALNUM, CALPHA, CBLANK, CCNTRL, CDIGIT, CGRAPH,
 	      CLOWER, CPRINT, CPUNCT, CSPACE, CUPPER, CXDIGIT} citype;
 
 /* character-class table */
-static const struct cclass {
-	const char *name;
+static struct cclass {
+	char *name;
 	citype fidx;
 } cclasses[] = {
 	{"alnum",       CALNUM},
@@ -55,5 +55,5 @@ static const struct cclass {
 	{"space",       CSPACE},
 	{"upper",       CUPPER},
 	{"xdigit",      CXDIGIT},
-	{0}
+	{NULL,          }
 };

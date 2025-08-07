@@ -37,11 +37,11 @@ SYNOPSIS
 	int fflush_unlocked(FILE *<[fp]>);
 
 	#include <stdio.h>
-	int fflush( FILE *<[fp]>);
+	int _fflush_r(struct _reent *<[reent]>, FILE *<[fp]>);
 
 	#define _BSD_SOURCE
 	#include <stdio.h>
-	int fflush_unlocked( FILE *<[fp]>);
+	int _fflush_unlocked_r(struct _reent *<[reent]>, FILE *<[fp]>);
 
 DESCRIPTION
 The <<stdio>> output functions can buffer output before delivering it
@@ -84,7 +84,7 @@ specified by POSIX, and not all implementations follow POSIX rules.
 No supporting OS subroutines are required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -100,18 +100,18 @@ No supporting OS subroutines are required.
 /* Core function which does not lock file pointer.  This gets called
    directly from __srefill. */
 int
-_sflush (
+__sflush_r (struct _reent *ptr,
        register FILE * fp)
 {
   register unsigned char *p;
-  register size_t n;
-  register ssize_t t;
+  register _READ_WRITE_BUFSIZE_TYPE n;
+  register _READ_WRITE_RETURN_TYPE t;
   short flags;
 
   flags = fp->_flags;
   if ((flags & __SWR) == 0)
     {
-#ifdef __FSEEK_OPTIMIZATION
+#ifdef _FSEEK_OPTIMIZATION
       /* For a read stream, an fflush causes the next seek to be
          unoptimized (i.e. forces a system-level seek).  This conforms
          to the POSIX and SUSv3 standards.  */
@@ -137,8 +137,8 @@ _sflush (
 	  /* Save last errno and set errno to 0, so we can check if a device
 	     returns with a valid position -1.  We restore the last errno if
 	     no other error condition has been encountered. */
-	  tmp_errno = errno;
-	  errno = 0;
+	  tmp_errno = _REENT_ERRNO(ptr);
+	  _REENT_ERRNO(ptr) = 0;
 	  /* Get the physical position we are at in the file.  */
 	  if (fp->_flags & __SOFF)
 	    curoff = fp->_offset;
@@ -148,17 +148,17 @@ _sflush (
 		 Only ESPIPE and EINVAL are ignorable.  */
 #ifdef __LARGE64_FILES
 	      if (fp->_flags & __SL64)
-		curoff = fp->_seek64 (fp->_cookie, 0, SEEK_CUR);
+		curoff = fp->_seek64 (ptr, fp->_cookie, 0, SEEK_CUR);
 	      else
 #endif
-		curoff = fp->_seek (fp->_cookie, 0, SEEK_CUR);
-	      if (curoff == -1L && errno != 0)
+		curoff = fp->_seek (ptr, fp->_cookie, 0, SEEK_CUR);
+	      if (curoff == -1L && _REENT_ERRNO(ptr) != 0)
 		{
 		  int result = EOF;
-		  if (errno == ESPIPE || errno == EINVAL)
+		  if (_REENT_ERRNO(ptr) == ESPIPE || _REENT_ERRNO(ptr) == EINVAL)
 		    {
 		      result = 0;
-		      errno = tmp_errno;
+		      _REENT_ERRNO(ptr) = tmp_errno;
 		    }
 		  else
 		    fp->_flags |= __SERR;
@@ -176,23 +176,23 @@ _sflush (
 	  /* Now physically seek to after byte last read.  */
 #ifdef __LARGE64_FILES
 	  if (fp->_flags & __SL64)
-	    curoff = fp->_seek64 (fp->_cookie, curoff, SEEK_SET);
+	    curoff = fp->_seek64 (ptr, fp->_cookie, curoff, SEEK_SET);
 	  else
 #endif
-	    curoff = fp->_seek (fp->_cookie, curoff, SEEK_SET);
-	  if (curoff != -1 || errno == 0
-	      || errno == ESPIPE || errno == EINVAL)
+	    curoff = fp->_seek (ptr, fp->_cookie, curoff, SEEK_SET);
+	  if (curoff != -1 || _REENT_ERRNO(ptr) == 0
+	      || _REENT_ERRNO(ptr) == ESPIPE || _REENT_ERRNO(ptr) == EINVAL)
 	    {
 	      /* Seek successful or ignorable error condition.
 		 We can clear read buffer now.  */
-#ifdef __FSEEK_OPTIMIZATION
+#ifdef _FSEEK_OPTIMIZATION
 	      fp->_flags &= ~__SNPT;
 #endif
 	      fp->_r = 0;
 	      fp->_p = fp->_bf._base;
-	      if ((fp->_flags & __SOFF) && (curoff != -1 || errno == 0))
+	      if ((fp->_flags & __SOFF) && (curoff != -1 || _REENT_ERRNO(ptr) == 0))
 		fp->_offset = curoff;
-	      errno = tmp_errno;
+	      _REENT_ERRNO(ptr) = tmp_errno;
 	      if (HASUB (fp))
 		FREEUB (ptr, fp);
 	    }
@@ -221,7 +221,7 @@ _sflush (
 
   while (n > 0)
     {
-      t = fp->_write (fp->_cookie, (char *) p, n);
+      t = fp->_write (ptr, fp->_cookie, (char *) p, n);
       if (t <= 0)
 	{
           fp->_flags |= __SERR;
@@ -238,30 +238,57 @@ _sflush (
    and we don't want to move the underlying file pointer unless we're
    writing. */
 int
-_sflushw (
+__sflushw_r (struct _reent *ptr,
        register FILE *fp)
 {
-  return (fp->_flags & __SWR) ?  _sflush ( fp) : 0;
+  return (fp->_flags & __SWR) ?  __sflush_r (ptr, fp) : 0;
 }
 #endif
 
 #endif /* __IMPL_UNLOCKED__ */
 
 int
-fflush (register FILE * fp)
+_fflush_r (struct _reent *ptr,
+       register FILE * fp)
 {
-  if (fp == NULL)
-    return _fwalk_sglue (fflush, &__sglue);
-
   int ret;
 
-  CHECK_INIT();
+#ifdef _REENT_SMALL
+  /* For REENT_SMALL platforms, it is possible we are being
+     called for the first time on a std stream.  This std
+     stream can belong to a reentrant struct that is not
+     _REENT.  If CHECK_INIT gets called below based on _REENT,
+     we will end up changing said file pointers to the equivalent
+     std stream off of _REENT.  This causes unexpected behavior if
+     there is any data to flush on the _REENT std stream.  There
+     are two alternatives to fix this:  1) make a reentrant fflush
+     or 2) simply recognize that this file has nothing to flush
+     and return immediately before performing a CHECK_INIT.  Choice
+     2 is implemented here due to its simplicity.  */
+  if (fp->_bf._base == NULL)
+    return 0;
+#endif /* _REENT_SMALL  */
+
+  CHECK_INIT (ptr, fp);
 
   if (!fp->_flags)
     return 0;
 
   _newlib_flockfile_start (fp);
-  ret = _sflush ( fp);
+  ret = __sflush_r (ptr, fp);
   _newlib_flockfile_end (fp);
   return ret;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fflush (register FILE * fp)
+{
+  if (fp == NULL)
+    return _fwalk_sglue (_GLOBAL_REENT, _fflush_r, &__sglue);
+
+  return _fflush_r (_REENT, fp);
+}
+
+#endif /* _REENT_ONLY */

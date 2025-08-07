@@ -34,11 +34,12 @@
 #include <math.h>
 #include "cephes_subrl.h"
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 ctanl(long double complex z)
 {
+	long double complex w;
 	long double d;
 
 	d = cosl(2.0L * creall(z)) + coshl(2.0L * cimagl(z));
@@ -48,10 +49,11 @@ ctanl(long double complex z)
 
 	if (d == 0.0L) {
 		/* mtherr ("ctan", OVERFLOW); */
-		return HUGE_VALL + HUGE_VALL * (long double complex) I;
+		w = HUGE_VALL + HUGE_VALL * I;
+		return w;
 	}
 
-	return (long double complex) (sinl(2.0L * creall(z)) / d) + (sinhl(2.0L * cimagl(z)) / d) * (long double complex) I;
+	w = sinl(2.0L * creall(z)) / d + (sinhl(2.0L * cimagl(z)) / d) * I;
+	return w;
 }
-
 #endif

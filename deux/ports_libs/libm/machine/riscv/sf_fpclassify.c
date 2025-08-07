@@ -32,11 +32,12 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 32
 
+#include "riscv_math.h"
 
 int
 __fpclassifyf (float x)
@@ -54,8 +55,6 @@ __fpclassifyf (float x)
   else
     return FP_NAN;
 }
-
-_MATH_ALIAS_i_f(__fpclassify)
 
 #else
 #include "../../common/sf_fpclassify.c"

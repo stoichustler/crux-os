@@ -78,7 +78,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "local.h"
@@ -94,10 +94,11 @@ setvbuf (register FILE * fp,
        register size_t size)
 {
   int ret = 0;
+  struct _reent *reent = _REENT;
   size_t iosize;
   int ttyflag;
 
-  CHECK_INIT();
+  CHECK_INIT (reent, fp);
 
   /*
    * Verify arguments.  The `int' limit on `size' is due to this
@@ -116,12 +117,12 @@ setvbuf (register FILE * fp,
    * non buffer flags, and clear malloc flag.
    */
   _newlib_flockfile_start (fp);
-  fflush ( fp);
+  _fflush_r (reent, fp);
   if (HASUB(fp))
     FREEUB(reent, fp);
   fp->_r = fp->_lbfsize = 0;
   if (fp->_flags & __SMBF)
-    free ((void *) fp->_bf._base);
+    _free_r (reent, (void *) fp->_bf._base);
   fp->_flags &= ~(__SLBF | __SNBF | __SMBF | __SOPT | __SNPT | __SEOF);
 
   if (mode == _IONBF)
@@ -132,7 +133,7 @@ setvbuf (register FILE * fp,
    * a `tty flag' to suggest that we check isatty(fd), but we do not
    * care since our caller told us how to buffer.
    */
-  fp->_flags |= _swhatbuf ( fp, &iosize, &ttyflag);
+  fp->_flags |= __swhatbuf_r (reent, fp, &iosize, &ttyflag);
   if (size == 0)
     {
       buf = NULL;
@@ -169,7 +170,14 @@ nbf:
       fp->_flags |= __SMBF;
     }
 
-#ifdef __FSEEK_OPTIMIZATION
+  /*
+   * We're committed to buffering from here, so make sure we've
+   * registered to flush buffers on exit.
+   */
+  if (!_REENT_CLEANUP(reent))
+    __sinit(reent);
+
+#ifdef _FSEEK_OPTIMIZATION
   /*
    * Kill any seek optimization if the buffer is not the
    * right size.

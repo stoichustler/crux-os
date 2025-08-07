@@ -39,11 +39,11 @@ SYNOPSIS
 		     FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	size_t fread( void *restrict <[buf]>,
+	size_t _fread_r(struct _reent *<[ptr]>, void *restrict <[buf]>,
 	                size_t <[size]>, size_t <[count]>, FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	size_t fread_unlocked( void *restrict <[buf]>,
+	size_t _fread_unlocked_r(struct _reent *<[ptr]>, void *restrict <[buf]>,
 	                size_t <[size]>, size_t <[count]>, FILE *restrict <[fp]>);
 
 DESCRIPTION
@@ -80,7 +80,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
@@ -116,7 +116,7 @@ crlf_r (struct _reent * ptr,
     {
       if (*s == '\r')
         {
-          int c = _sgetc_raw ( fp);
+          int c = __sgetc_raw_r (ptr, fp);
           if (c == '\n')
             *s = '\n';
           else
@@ -128,7 +128,7 @@ crlf_r (struct _reent * ptr,
 
   while (d < e)
     {
-      r = getc ( fp);
+      r = _getc_r (ptr, fp);
       if (r == EOF)
         return count - (e-d);
       *d++ = r;
@@ -141,7 +141,7 @@ crlf_r (struct _reent * ptr,
 #endif
 
 size_t
-fread (
+_fread_r (struct _reent * ptr,
        void *__restrict buf,
        size_t size,
        size_t count,
@@ -155,7 +155,7 @@ fread (
   if ((resid = count * size) == 0)
     return 0;
 
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
@@ -168,13 +168,13 @@ fread (
   total = resid;
   p = buf;
 
-#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
 
   /* Optimize unbuffered I/O.  */
   if (fp->_flags & __SNBF)
     {
       /* First copy any available characters from ungetc buffer.  */
-      int copy_size = resid > (size_t) fp->_r ? fp->_r : (int) resid;
+      int copy_size = resid > fp->_r ? fp->_r : resid;
       (void) memcpy ((void *) p, (void *) fp->_p, (size_t) copy_size);
       fp->_p += copy_size;
       fp->_r -= copy_size;
@@ -197,7 +197,7 @@ fread (
 	  fp->_bf._base = (unsigned char *) p;
 	  fp->_bf._size = resid;
 	  fp->_p = (unsigned char *) p;
-	  rc = _srefill ( fp);
+	  rc = __srefill_r (ptr, fp);
 	  /* restore fp buffering back to original state */
 	  fp->_bf._base = old_base;
 	  fp->_bf._size = old_size;
@@ -220,16 +220,16 @@ fread (
 	}
     }
   else
-#endif /* !__PREFER_SIZE_OVER_SPEED && !__OPTIMIZE_SIZE__ */
+#endif /* !PREFER_SIZE_OVER_SPEED && !__OPTIMIZE_SIZE__ */
     {
-        while (resid > (size_t) (r = fp->_r))
+      while (resid > (r = fp->_r))
 	{
 	  (void) memcpy ((void *) p, (void *) fp->_p, (size_t) r);
 	  fp->_p += r;
 	  /* fp->_r = 0 ... done in __srefill */
 	  p += r;
 	  resid -= r;
-	  if (_srefill ( fp))
+	  if (__srefill_r (ptr, fp))
 	    {
 	      /* no more input: return partial result */
 #ifdef __SCLE
@@ -260,3 +260,14 @@ ret:
   _newlib_flockfile_end (fp);
   return count;
 }
+
+#ifndef _REENT_ONLY
+size_t
+fread (void *__restrict  buf,
+       size_t size,
+       size_t count,
+       FILE *__restrict fp)
+{
+   return _fread_r (_REENT, buf, size, count, fp);
+}
+#endif

@@ -39,10 +39,10 @@ SYNOPSIS
         int fiscanf(FILE *<[fd]>, const char *<[format]>, ...);
         int siscanf(const char *<[str]>, const char *<[format]>, ...);
 
-        int iscanf( const char *<[format]>, ...);
-        int fiscanf( FILE *<[fd]>, 
+        int _iscanf_r(struct _reent *<[ptr]>, const char *<[format]>, ...);
+        int _fiscanf_r(struct _reent *<[ptr]>, FILE *<[fd]>, 
                        const char *<[format]>, ...);
-        int siscanf( const char *<[str]>,
+        int _siscanf_r(struct _reent *<[ptr]>, const char *<[str]>,
                    const char *<[format]>, ...);
 
 DESCRIPTION
@@ -72,11 +72,14 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY 
 
 int 
 siscanf (const char *str,
@@ -95,7 +98,32 @@ siscanf (const char *str,
   f._lb._base = NULL;
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = _ssvfiscanf ( &f, fmt, ap);
+  ret = __ssvfiscanf_r (_REENT, &f, fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#endif /* !_REENT_ONLY */
+
+int 
+_siscanf_r (struct _reent *ptr,
+       const char *str,
+       const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  f._flags = __SRD | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._r = strlen (str);
+  f._read = __seofread;
+  f._ub._base = NULL;
+  f._lb._base = NULL;
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = __ssvfiscanf_r (ptr, &f, fmt, ap);
   va_end (ap);
   return ret;
 }

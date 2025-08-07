@@ -129,31 +129,23 @@ No supporting OS subroutines are required.
 
 #include "rand48.h"
 
-__THREAD_LOCAL struct _rand48 _rand48 =
-{
-  ._seed = { _RAND48_SEED_0, _RAND48_SEED_1, _RAND48_SEED_2 },
-  ._mult = { _RAND48_MULT_0, _RAND48_MULT_1, _RAND48_MULT_2 },
-  ._add = _RAND48_ADD,
-};
-
 void
-__dorand48 (struct _rand48 *r,
-            unsigned short xseed[3])
+__dorand48 (struct _reent *r,
+       unsigned short xseed[3])
 {
-  uint32_t accu;
+  unsigned long accu;
   unsigned short temp[2];
 
-  accu = (uint32_t) r->_mult[0] * (uint32_t) xseed[0] +
-    (uint32_t) r->_add;
+  _REENT_CHECK_RAND48(r);
+  accu = (unsigned long) __rand48_mult[0] * (unsigned long) xseed[0] +
+    (unsigned long) __rand48_add;
   temp[0] = (unsigned short) accu;     /* lower 16 bits */
   accu >>= sizeof(unsigned short) * 8;
-  accu += (uint32_t) r->_mult[0] * (uint32_t) xseed[1] +
-    (uint32_t) r->_mult[1] * (uint32_t) xseed[0];
+  accu += (unsigned long) __rand48_mult[0] * (unsigned long) xseed[1] +
+    (unsigned long) __rand48_mult[1] * (unsigned long) xseed[0];
   temp[1] = (unsigned short) accu;     /* middle 16 bits */
   accu >>= sizeof(unsigned short) * 8;
-  accu += (uint32_t) r->_mult[0] * (uint32_t) xseed[2] +
-      (uint32_t) r->_mult[1] * (uint32_t) xseed[1] +
-      (uint32_t) r->_mult[2] * (uint32_t) xseed[0];
+  accu += __rand48_mult[0] * xseed[2] + __rand48_mult[1] * xseed[1] + __rand48_mult[2] * xseed[0];
   xseed[0] = temp[0];
   xseed[1] = temp[1];
   xseed[2] = (unsigned short) accu;

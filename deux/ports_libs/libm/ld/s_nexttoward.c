@@ -1,46 +1,72 @@
+/* @(#)s_nextafter.c 5.1 93/09/24 */
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Copyright © 2022 Keith Packard
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
  */
 
-#include "math_ld.h"
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
 
-#if LDBL_MANT_DIG == 64
+/*
+ * We assume that a long double has a 15-bit exponent.  On systems
+ * where long double is the same as double, nexttoward() is an alias
+ * for nextafter(), so we don't use this routine.
+ */
 
-#include "ld80/s_nexttoward.c"
+#include <float.h>
 
-#elif LDBL_MANT_DIG == 113
+#include "fpmath.h"
+#include "math.h"
+#include "math_private.h"
 
-#include "ld128/s_nexttoward.c"
-
+#if LDBL_MAX_EXP != 0x4000
+#error "Unsupported long double format"
 #endif
+
+double
+nexttoward(double x, long double y)
+{
+	union IEEEl2bits uy;
+	volatile double t;
+	int32_t hx,ix;
+	u_int32_t lx;
+
+	EXTRACT_WORDS(hx,lx,x);
+	ix = hx&0x7fffffff;		/* |x| */
+	uy.e = y;
+
+	if(((ix>=0x7ff00000)&&((ix-0x7ff00000)|lx)!=0) ||
+	    (uy.bits.exp == 0x7fff &&
+	     ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl) != 0))
+	   return x+y;	/* x or y is nan */
+	if(x==y) return (double)y;		/* x=y, return y */
+	if(x==0.0) {
+	    INSERT_WORDS(x,uy.bits.sign<<31,1);	/* return +-minsubnormal */
+	    t = x*x;
+	    if(t==x) return t; else return x;	/* raise underflow flag */
+	}
+	if(hx>0.0 ^ x < y) {			/* x -= ulp */
+	    if(lx==0) hx -= 1;
+	    lx -= 1;
+	} else {				/* x += ulp */
+	    lx += 1;
+	    if(lx==0) hx += 1;
+	}
+	ix = hx&0x7ff00000;
+	if(ix>=0x7ff00000) return x+x;	/* overflow  */
+	if(ix<0x00100000) {		/* underflow */
+	    t = x*x;
+	    if(t!=x) {		/* raise underflow flag */
+	        INSERT_WORDS(x,hx,lx);
+		return x;
+	    }
+	}
+	INSERT_WORDS(x,hx,lx);
+	return x;
+}

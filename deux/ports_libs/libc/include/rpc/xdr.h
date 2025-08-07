@@ -40,10 +40,12 @@
 
 #ifndef _RPC_XDR_H
 #define _RPC_XDR_H
-#include <sys/cdefs.h>
+#include <_ansi.h>
 #include <rpc/types.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * XDR provides a conventional way for converting between C data
@@ -380,6 +382,8 @@ extern u_int xdrrec_readbytes (XDR *, caddr_t, u_int);
 /* free memory buffers for xdr */
 extern void xdr_free (xdrproc_t, void *);
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* !_RPC_XDR_H */

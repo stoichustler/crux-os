@@ -11,8 +11,12 @@
 
 #include "fdlibm.h"
 
-float
-roundf(float x)
+#ifdef __STDC__
+	float roundf(float x)
+#else
+	float roundf(x)
+	float x;
+#endif
 {
   __uint32_t w;
   /* Most significant word, least significant word. */
@@ -34,7 +38,7 @@ roundf(float x)
         }
       else
         {
-          __uint32_t exponent_mask = 0x007fffff >> exponent_less_127;
+          unsigned int exponent_mask = 0x007fffff >> exponent_less_127;
           if ((w & exponent_mask) == 0)
             /* x has an integral value. */
             return x;
@@ -55,4 +59,16 @@ roundf(float x)
   return x;
 }
 
-_MATH_ALIAS_f_f(round)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double round(double x)
+#else
+	double round(x)
+	double x;
+#endif
+{
+	return (double) roundf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

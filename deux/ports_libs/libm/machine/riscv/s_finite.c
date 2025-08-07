@@ -37,25 +37,16 @@
  * finite(x) returns 1 is x is finite, else 0;
  */
 
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 64
-
-int finite64(__float64 x)
+#include "riscv_math.h"
+int finite(double x)
 {
 	long fclass = _fclass_d (x);
 	return (fclass & (FCLASS_INF | FCLASS_NAN)) == 0;
 }
-
-#ifdef __strong_reference
-__strong_reference(finite64, __finite64);
-#else
-int __finite64(__float64 x) { return finite64(x); }
-#endif
-
-_MATH_ALIAS_i_d(finite)
-_MATH_ALIAS_i_d(__finite)
-
 #else
 #include "../../common/s_finite.c"
 #endif

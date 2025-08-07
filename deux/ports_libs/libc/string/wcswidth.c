@@ -1,7 +1,4 @@
 /*
-Copyright (c) 2003 Corinna Vinschen <corinna@vinschen.de>
- */
-/*
 FUNCTION
 	<<wcswidth>>---number of column positions of a wide-character string
 	
@@ -32,9 +29,8 @@ PORTABILITY
 <<wcswidth>> has been marked as an extension in the Single UNIX Specification Volume 3.
 */
 
-#define _XOPEN_SOURCE
+#include <_ansi.h>
 #include <wchar.h>
-#include <stdint.h>
 #include "local.h"
 
 int
@@ -46,21 +42,22 @@ wcswidth (const wchar_t *pwcs,
   if (!pwcs || n == 0)
     return 0;
   do {
-    uint32_t wi = (uint32_t) *pwcs;
+    wint_t wi = *pwcs;
 
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
+  wi = _jp2uc (wi);
   /* First half of a surrogate pair? */
-  if (sizeof (wchar_t) == 2 && wi >= (uint32_t) 0xd800 && wi <= (uint32_t) 0xdbff)
+  if (sizeof (wchar_t) == 2 && wi >= 0xd800 && wi <= 0xdbff)
     {
-      uint32_t wi2;
+      wint_t wi2;
 
       /* Extract second half and check for validity. */
-      if (--n == 0 || (wi2 = *++pwcs) < (uint32_t) 0xdc00 || wi2 > (uint32_t) 0xdfff)
+      if (--n == 0 || (wi2 = _jp2uc (*++pwcs)) < 0xdc00 || wi2 > 0xdfff)
 	return -1;
       /* Compute actual unicode value to use in call to __wcwidth. */
       wi = (((wi & 0x3ff) << 10) | (wi2 & 0x3ff)) + 0x10000;
     }
-#endif /* __MB_CAPABLE */
+#endif /* _MB_CAPABLE */
     if ((w = __wcwidth (wi)) < 0)
       return -1;
     len += w;

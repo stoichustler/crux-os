@@ -24,25 +24,16 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_ARCH >= 8 && (__ARM_FP & 0x8) 
-#include "math_config.h"
+#if __ARM_ARCH >= 8 && (__ARM_FP & 0x8) && !defined (__SOFTFP__)
+#include <math.h>
 
 double
 nearbyint (double x)
 {
-    if (isnan(x)) return x + x;
-#if defined(FE_INEXACT)
-    fenv_t env;
-    fegetenv(&env);
-#endif
-    __asm__ volatile ("vrintr.f64\t%P0, %P1" : "=w" (x) : "w" (x));
-#if defined(FE_INEXACT)
-    fesetenv(&env);
-#endif
-    return x;
+  double result;
+  asm volatile ("vrintr.f64\t%P0, %P1" : "=w" (result) : "w" (x));
+  return result;
 }
-
-_MATH_ALIAS_d_d(nearbyint)
 
 #else
 #include "../../common/s_nearbyint.c"

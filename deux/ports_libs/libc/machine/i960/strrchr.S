@@ -28,8 +28,6 @@
  * 
  ******************************************************************************/
 
-#include <picolibc.h>
-
 	.file "strrchr.s"
 #ifdef	__i960_BIG_ENDIAN__
 #error	"This does not work in big-endian"

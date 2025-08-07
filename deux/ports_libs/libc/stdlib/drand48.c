@@ -11,17 +11,19 @@
  * to anyone/anything when using this software.
  */
 
-#define _DEFAULT_SOURCE
 #include "rand48.h"
 
 double
-_drand48_r (struct _rand48 *r)
+_drand48_r (struct _reent *r)
 {
-  return _erand48_r(r, r->_seed);
+  _REENT_CHECK_RAND48(r);
+  return _erand48_r(r, __rand48_seed);
 }
 
+#ifndef _REENT_ONLY
 double
 drand48 (void)
 {
-  return _drand48_r (&_rand48);
+  return _drand48_r (_REENT);
 }
+#endif /* !_REENT_ONLY */

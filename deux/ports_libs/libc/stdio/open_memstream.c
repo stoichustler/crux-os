@@ -61,7 +61,6 @@ POSIX.1-2008
 Supporting OS subroutines required: <<sbrk>>.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <wchar.h>
 #include <errno.h>
@@ -69,12 +68,6 @@ Supporting OS subroutines required: <<sbrk>>.
 #include <sys/lock.h>
 #include <stdint.h>
 #include "local.h"
-
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#endif
 
 #ifndef __LARGE64_FILES
 # define OFF_T off_t
@@ -99,11 +92,11 @@ typedef struct memstream {
 
 /* Write up to non-zero N bytes of BUF into the stream described by COOKIE,
    returning the number of bytes written or EOF on failure.  */
-static ssize_t
-memwriter (
+static _READ_WRITE_RETURN_TYPE
+memwriter (struct _reent *ptr,
        void *cookie,
        const char *buf,
-       size_t n)
+       _READ_WRITE_BUFSIZE_TYPE n)
 {
   memstream *c = (memstream *) cookie;
   char *cbuf = *c->pbuf;
@@ -112,7 +105,7 @@ memwriter (
      big that user cannot do ftello.  */
   if (sizeof (OFF_T) == sizeof (size_t) && (ssize_t) (c->pos + n) < 0)
     {
-      errno = EFBIG;
+      _REENT_ERRNO(ptr) = EFBIG;
       return EOF;
     }
   /* Grow the buffer, if necessary.  Choose a geometric growth factor
@@ -125,7 +118,7 @@ memwriter (
       size_t newsize = c->max * 3 / 2;
       if (newsize < c->pos + n + 1)
 	newsize = c->pos + n + 1;
-      cbuf = realloc (cbuf, newsize);
+      cbuf = _realloc_r (ptr, cbuf, newsize);
       if (! cbuf)
 	return EOF; /* errno already set to ENOMEM */
       *c->pbuf = cbuf;
@@ -153,7 +146,7 @@ memwriter (
 /* Seek to position POS relative to WHENCE within stream described by
    COOKIE; return resulting position or fail with EOF.  */
 static _fpos_t
-memseeker (
+memseeker (struct _reent *ptr,
        void *cookie,
        _fpos_t pos,
        int whence)
@@ -167,18 +160,18 @@ memseeker (
     offset += c->eof;
   if (offset < 0)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       offset = -1;
     }
-  else if ((OFF_T) (size_t) offset != offset)
+  else if ((size_t) offset != offset)
     {
-      errno = ENOSPC;
+      _REENT_ERRNO(ptr) = ENOSPC;
       offset = -1;
     }
 #ifdef __LARGE64_FILES
   else if ((_fpos_t) offset != offset)
     {
-      errno = EOVERFLOW;
+      _REENT_ERRNO(ptr) = EOVERFLOW;
       offset = -1;
     }
 #endif /* __LARGE64_FILES */
@@ -220,7 +213,7 @@ memseeker (
    COOKIE; return resulting position or fail with EOF.  */
 #ifdef __LARGE64_FILES
 static _fpos64_t
-memseeker64 (
+memseeker64 (struct _reent *ptr,
        void *cookie,
        _fpos64_t pos,
        int whence)
@@ -234,12 +227,12 @@ memseeker64 (
     offset += c->eof;
   if (offset < 0)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       offset = -1;
     }
-  else if ((_off64_t) (size_t) offset != offset)
+  else if ((size_t) offset != offset)
     {
-      errno = ENOSPC;
+      _REENT_ERRNO(ptr) = ENOSPC;
       offset = -1;
     }
   else
@@ -279,26 +272,26 @@ memseeker64 (
 
 /* Reclaim resources used by stream described by COOKIE.  */
 static int
-memcloser (
+memcloser (struct _reent *ptr,
        void *cookie)
 {
   memstream *c = (memstream *) cookie;
   char *buf;
 
   /* Be nice and try to reduce any unused memory.  */
-  buf = realloc (*c->pbuf,
+  buf = _realloc_r (ptr, *c->pbuf,
 		    c->wide > 0 ? (*c->psize + 1) * sizeof (wchar_t)
 				: *c->psize + 1);
   if (buf)
     *c->pbuf = buf;
-  free (c->storage);
+  _free_r (ptr, c->storage);
   return 0;
 }
 
 /* Open a memstream that tracks a dynamic buffer in BUF and SIZE.
    Return the new stream, or fail with NULL.  */
 static FILE *
-internalopen_memstream (
+internal_open_memstream_r (struct _reent *ptr,
        char **buf,
        size_t *size,
        int wide)
@@ -308,16 +301,18 @@ internalopen_memstream (
 
   if (!buf || !size)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return NULL;
     }
-  if ((fp = __sfp ()) == NULL)
+  if ((fp = __sfp (ptr)) == NULL)
     return NULL;
-  if ((c = (memstream *) malloc (sizeof *c)) == NULL)
+  if ((c = (memstream *) _malloc_r (ptr, sizeof *c)) == NULL)
     {
       _newlib_sfp_lock_start ();
       fp->_flags = 0;		/* release */
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       _newlib_sfp_lock_end ();
       return NULL;
     }
@@ -335,14 +330,16 @@ internalopen_memstream (
     c->max = (size_t)64 * 1024;
 #endif
   *size = 0;
-  *buf = malloc (c->max);
+  *buf = _malloc_r (ptr, c->max);
   if (!*buf)
     {
       _newlib_sfp_lock_start ();
       fp->_flags = 0;		/* release */
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       _newlib_sfp_lock_end ();
-      free (c);
+      _free_r (ptr, c);
       return NULL;
     }
   if (wide == 1)
@@ -376,17 +373,33 @@ internalopen_memstream (
 }
 
 FILE *
-open_memstream (
+_open_memstream_r (struct _reent *ptr,
        char **buf,
        size_t *size)
 {
-  return internalopen_memstream ( buf, size, -1);
+  return internal_open_memstream_r (ptr, buf, size, -1);
 }
 
 FILE *
-open_wmemstream (
+_open_wmemstream_r (struct _reent *ptr,
        wchar_t **buf,
        size_t *size)
 {
-  return internalopen_memstream ( (char **)buf, size, 1);
+  return internal_open_memstream_r (ptr, (char **)buf, size, 1);
 }
+
+#ifndef _REENT_ONLY
+FILE *
+open_memstream (char **buf,
+       size_t *size)
+{
+  return _open_memstream_r (_REENT, buf, size);
+}
+
+FILE *
+open_wmemstream (wchar_t **buf,
+       size_t *size)
+{
+  return _open_wmemstream_r (_REENT, buf, size);
+}
+#endif /* !_REENT_ONLY */

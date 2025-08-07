@@ -30,8 +30,6 @@
 	   implementation or for size, otherwise we use the base ARMv4
 	   version.  This is also suitable for ARMv6-M.  */
 
-#include <picolibc.h>
-
 	.thumb
 	.syntax unified
 	.arch	armv4t

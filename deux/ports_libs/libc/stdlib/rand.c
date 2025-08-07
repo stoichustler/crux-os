@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<rand>>, <<srand>>---pseudo-random numbers
 
@@ -57,13 +53,36 @@ on two different systems.
 <<rand>> requires no supporting OS subroutines.
 */
 
+#ifndef _REENT_ONLY
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
+#include <reent.h>
+
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local unsigned long long _tls_rand_next = 1;
+#endif
+
+void
+srand (unsigned int seed)
+{
+  struct _reent *reent = _REENT;
+
+  _REENT_CHECK_RAND48(reent);
+  _REENT_RAND_NEXT(reent) = seed;
+}
 
 int
 rand (void)
 {
-  return (int) (random() & RAND_MAX);
+  struct _reent *reent = _REENT;
+
+  /* This multiplier was obtained from Knuth, D.E., "The Art of
+     Computer Programming," Vol 2, Seminumerical Algorithms, Third
+     Edition, Addison-Wesley, 1998, p. 106 (line 26) & p. 108 */
+  _REENT_CHECK_RAND48(reent);
+  _REENT_RAND_NEXT(reent) =
+     _REENT_RAND_NEXT(reent) * __extension__ 6364136223846793005LL + 1;
+  return (int)((_REENT_RAND_NEXT(reent) >> 32) & RAND_MAX);
 }
 
+#endif /* _REENT_ONLY */

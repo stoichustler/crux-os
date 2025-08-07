@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /* 
 FUNCTION
 	<<strnlen>>---character string length
@@ -27,6 +26,7 @@ PORTABILITY
 */
 
 #undef __STRICT_ANSI__
+#include <_ansi.h>
 #include <string.h>
 
 size_t

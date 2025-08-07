@@ -17,7 +17,8 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -27,8 +28,26 @@
  * vsscanf
  */
 
+#ifndef _REENT_ONLY
+
 int
-vsscanf (
+vsscanf (const char *__restrict str,
+       const char *__restrict fmt,
+       va_list ap)
+{
+  return _vsscanf_r (_REENT, str, fmt, ap);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+vsiscanf (const char *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vsscanf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int
+_vsscanf_r (struct _reent *ptr,
        const char *__restrict str,
        const char *__restrict fmt,
        va_list ap)
@@ -43,7 +62,11 @@ vsscanf (
   f._ub._base = NULL;
   f._lb._base = NULL;
   f._file = -1;  /* No file. */
-  return _ssvfscanf ( &f, fmt, ap);
+  return __ssvfscanf_r (ptr, &f, fmt, ap);
 }
 
-__nano_reference(vsscanf, vsiscanf);
+#ifdef _NANO_FORMATTED_IO
+int
+_vsiscanf_r (struct _reent *, const char *, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vsscanf_r")));
+#endif

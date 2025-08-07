@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
  * localtime.c
  */
 
@@ -52,14 +36,19 @@ ANSI C requires <<localtime>>.
 <<localtime>> requires no supporting OS subroutines.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <time.h>
+#include <reent.h>
 
-extern __THREAD_LOCAL struct tm _localtime_buf;
+#ifndef _REENT_ONLY
 
 struct tm *
 localtime (const time_t * tim_p)
 {
-  return localtime_r (tim_p, &_localtime_buf);
+  struct _reent *reent = _REENT;
+
+  _REENT_CHECK_TM(reent);
+  return localtime_r (tim_p, (struct tm *)_REENT_TM(reent));
 }
+
+#endif

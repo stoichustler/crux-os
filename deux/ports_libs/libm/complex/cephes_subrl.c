@@ -33,9 +33,10 @@
 #include <math.h>
 #include "cephes_subrl.h"
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
 /* calculate cosh and sinh */
 
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 void
 _cchshl(long double x, long double *c, long double *s)
 {
@@ -52,6 +53,7 @@ _cchshl(long double x, long double *c, long double *s)
 		*c = e + ei;
 	}
 }
+#endif
 
 /* Program to subtract nearest integer multiple of PI */
 
@@ -86,6 +88,8 @@ _redupil(long double x)
 
 /* Taylor series expansion for cosh(2y) - cos(2x) */
 
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double
 _ctansl(long double complex z)
 {
@@ -99,11 +103,11 @@ _ctansl(long double complex z)
 
 	x = x * x;
 	y = y * y;
-	x2 = 1.0L;
-	y2 = 1.0L;
-	f = 1.0L;
-	rn = 0.0L;
-	d = 0.0L;
+	x2 = 1.0;
+	y2 = 1.0;
+	f = 1.0;
+	rn = 0.0;
+	d = 0.0;
 	do {
 		rn += 1.0L;
 		f *= rn;
@@ -127,5 +131,4 @@ _ctansl(long double complex z)
 	} while (fabsl(t/d) > MACHEPL);
 	return d;
 }
-
 #endif

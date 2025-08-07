@@ -49,17 +49,22 @@ Supporting OS subroutines required: <<close>>, <<fstat64>>, <<isatty>>,
 
 /* Copied from fopen.c */
 
-#define _GNU_SOURCE
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "%W% (Berkeley) %G%";
+#endif /* LIBC_SCCS and not lint */
+
 #include <stdio.h>
 #include <errno.h>
+#include "local.h"
+#ifdef __CYGWIN__
 #include <fcntl.h>
+#endif
 #include <sys/lock.h>
-#include "../stdio/local.h"
 
 #ifdef __LARGE64_FILES
 
 FILE *
-fopen64 (
+_fopen64_r (struct _reent *ptr,
 	const char *file,
 	const char *mode)
 {
@@ -67,16 +72,18 @@ fopen64 (
   register int f;
   int flags, oflags;
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     return NULL;
-  if ((fp = __sfp ()) == NULL)
+  if ((fp = __sfp (ptr)) == NULL)
     return NULL;
 
-  if ((f = open64 (file, oflags, 0666)) < 0)
+  if ((f = _open64_r (ptr, file, oflags, 0666)) < 0)
     {
       _newlib_sfp_lock_start ();
       fp->_flags = 0;		/* release */
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       _newlib_sfp_lock_end ();
       return NULL;
     }
@@ -93,7 +100,7 @@ fopen64 (
   fp->_close = __sclose;
 
   if (fp->_flags & __SAPP)
-    fseeko64 (fp, 0, SEEK_END);
+    _fseeko64_r (ptr, fp, 0, SEEK_END);
 
 #ifdef __SCLE
   if (__stextmode (fp->_file))
@@ -105,5 +112,16 @@ fopen64 (
   _newlib_flockfile_end (fp);
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+fopen64 (const char *file,
+	const char *mode)
+{
+  return _fopen64_r (_REENT, file, mode);
+}
+
+#endif
 
 #endif /* __LARGE64_FILES */

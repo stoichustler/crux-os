@@ -24,14 +24,17 @@
  * SUCH DAMAGE.
  */
 
-#define _GNU_SOURCE
+#include <sys/cdefs.h>
+#if 0
+__FBSDID("$FreeBSD: head/lib/msun/src/s_csqrtl.c 181402 2008-08-08 00:15:16Z das $");
+#else
+__RCSID("$NetBSD: csqrtl.c,v 1.2 2014/10/11 00:43:51 christos Exp $");
+#endif
+
 #include <complex.h>
 #include <float.h>
 #include <math.h>
 #include <stdbool.h>
-
-#ifdef __HAVE_LONG_DOUBLE
-
 /*
  * gcc doesn't implement complex multiplication or division correctly,
  * so we need to handle infinities specially. We turn on this pragma to
@@ -44,8 +47,10 @@
 /* We risk spurious overflow for components >= LDBL_MAX / (1 + sqrt(2)). */
 #define	THRESH	(LDBL_MAX / 2.414213562373095048801688724209698L)
 
-#define cpackl(r, i) ((r) + (i) * (long double complex) I)
+#define cpackl(r, i) ((r) + (i) * I)
 
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 csqrtl(long double complex z)
 {
@@ -59,9 +64,9 @@ csqrtl(long double complex z)
 
 	/* Handle special cases. */
 	if (z == 0.0L)
-		return (cpackl((long double) 0.0L, b));
+		return (cpackl(0.0L, b));
 	if (isinf(b))
-		return (cpackl((long double) INFINITY, b));
+		return (cpackl(INFINITY, b));
 	if (isnan(a)) {
 		t = (b - b) / (b - b);	/* raise invalid if b is not a NaN */
 		return (cpackl(a, t));	/* return NaN + NaN i */
@@ -107,5 +112,4 @@ csqrtl(long double complex z)
 	else
 		return (result);
 }
-
-#endif /* __HAVE_LONG_DOUBLE */
+#endif

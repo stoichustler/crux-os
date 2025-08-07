@@ -1,12 +1,4 @@
 /*
-Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
-
-Developed at SunPro, a Sun Microsystems, Inc. business.
-Permission to use, copy, modify, and distribute this
-software is freely granted, provided that this notice 
-is preserved.
- */
-/*
  * infinity () returns the representation of infinity.
  * Added by Cygnus Support.
  */
@@ -44,17 +36,14 @@ QUICKREF
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-infinity64(void)
+	double infinity()
 {
-	__float64 x;
+	double x;
 
 	INSERT_WORDS(x,0x7ff00000,0);
 	return x;
 }
 
-_MATH_ALIAS_d(infinity)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

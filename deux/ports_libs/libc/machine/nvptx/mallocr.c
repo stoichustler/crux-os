@@ -13,8 +13,6 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <stdlib.h>
 
 void *_malloc_r (struct _reent *r, size_t n)

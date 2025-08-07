@@ -20,7 +20,7 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -32,22 +32,31 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  */
 
 int
-_srget (
+__srget_r (struct _reent *ptr,
        register FILE *fp)
 {
   /* Ensure that any fake std stream is resolved before
      we call __srefill_r so we may access the true read buffer. */
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   /* Have to set and check orientation here, otherwise the macros in
      stdio.h never set it. */
   if (ORIENT (fp, -1) != -1)
     return EOF;
 
-  if (_srefill (fp) == 0)
+  if (__srefill_r (ptr, fp) == 0)
     {
       fp->_r--;
       return *fp->_p++;
     }
   return EOF;
+}
+
+/* This function isn't any longer declared in stdio.h, but it's
+   required for backward compatibility with applications built against
+   earlier dynamically built newlib libraries. */
+int
+__srget (register FILE *fp)
+{
+  return __srget_r (_REENT, fp);
 }

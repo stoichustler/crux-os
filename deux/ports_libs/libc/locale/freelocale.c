@@ -1,47 +1,64 @@
 /*
- * SPDX-License-Identifier: BSD-3-Clause
- *
- * Copyright © 2025 Keith Packard
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+FUNCTION
+	<<freelocale>>---free resources allocated for a locale object
 
-#define _DEFAULT_SOURCE
-#include "locale_private.h"
+INDEX
+	freelocale
 
-#ifdef __HAVE_POSIX_LOCALE_API
+INDEX
+	_freelocale_r
+
+SYNOPSIS
+	#include <locale.h>
+	locale_t freelocale(locale_t <[locobj]>);
+
+	locale_t _freelocale_r(void *<[reent]>, locale_t <[locobj]>);
+
+DESCRIPTION
+The <<freelocale>> function shall cause the resources allocated for a
+locale object returned by a call to the <<newlocale>> or <<duplocale>>
+functions to be released.
+
+The behavior is undefined if the <[locobj]> argument is the special locale
+object LC_GLOBAL_LOCALE or is not a valid locale object handle.
+
+Any use of a locale object that has been freed results in undefined
+behavior.
+
+RETURNS
+None.
+
+PORTABILITY
+<<freelocale>> is POSIX-1.2008.
+*/
+
+#include <newlib.h>
+#include <reent.h>
+#include <stdlib.h>
+#include "setlocale.h"
 
 void
-freelocale (locale_t locale)
+_freelocale_r (struct _reent *p, struct __locale_t *locobj)
 {
-    (void) locale;
+  /* Nothing to do on !_MB_CAPABLE targets. */
+#ifdef _MB_CAPABLE
+  /* Sanity check.  The "C" locale is static, don't try to free it. */
+  if (!locobj || locobj == __get_C_locale () || locobj == LC_GLOBAL_LOCALE)
+    return;
+#ifdef __HAVE_LOCALE_INFO__
+  for (int i = 1; i < _LC_LAST; ++i)
+    if (locobj->lc_cat[i].buf)
+      {
+	_free_r (p, (void *) locobj->lc_cat[i].ptr);
+	_free_r (p, locobj->lc_cat[i].buf);
+      }
+#endif /* __HAVE_LOCALE_INFO__ */
+  _free_r (p, locobj);
+#endif /* _MB_CAPABLE */
 }
 
-#endif
+void
+freelocale (struct __locale_t *locobj)
+{
+  _freelocale_r (_REENT, locobj);
+}

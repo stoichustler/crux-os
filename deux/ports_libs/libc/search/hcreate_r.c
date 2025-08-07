@@ -41,9 +41,10 @@
  * nobody had a copy in the office, so...
  */
 
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
 #if 0
 #if defined(LIBC_SCCS) && !defined(lint)
+__RCSID("$NetBSD: hcreate.c,v 1.2 2001/02/19 21:26:04 ross Exp $");
 #endif /* LIBC_SCCS and not lint */
 #endif
 
@@ -53,10 +54,6 @@
 #include <search.h>
 #include <stdlib.h>
 #include <string.h>
-#include "db_local.h"
-#include "hash.h"
-#include "page.h"
-#include "extern.h"
 
 /*
  * DO NOT MAKE THIS STRUCTURE LARGER THAN 32 BYTES (4 ptrs on 64-bit
@@ -82,6 +79,9 @@ SLIST_HEAD(internal_head, internal_entry);
 #define	MAX_BUCKETS_LG2	(sizeof (size_t) * 8 - 1 - 5)
 #endif
 #define	MAX_BUCKETS	((size_t)1 << MAX_BUCKETS_LG2)
+
+/* Default hash function, from db/hash/hash_func.c */
+extern __uint32_t (*__default_hash)(const void *, size_t);
 
 int
 hcreate_r(size_t nel, struct hsearch_data *htab)
@@ -158,7 +158,7 @@ hsearch_r(ENTRY item, ACTION action, ENTRY **retval, struct hsearch_data *htab)
 	size_t len;
 
 	len = strlen(item.key);
-	hashval = __default_hash(item.key, len);
+	hashval = (*__default_hash)(item.key, len);
 
         head = &(htab->htable[hashval & (htab->htablesize - 1)]);
 	ie = SLIST_FIRST(head);

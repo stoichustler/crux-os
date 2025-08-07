@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<ecvtbuf>>, <<fcvtbuf>>---double or float to string
 
@@ -54,12 +50,78 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
 #include <string.h>
+#include <reent.h>
 #include "mprec.h"
 #include "local.h"
-#include "atexit.h"
+
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local char *_tls_cvtbuf;
+_Thread_local int _tls_cvtlen;
+#endif
+
+static void
+print_f (struct _reent *ptr,
+	char *buf,
+	double invalue,
+	int ndigit,
+	char type,
+	int dot,
+	int mode)
+{
+  int decpt;
+  int sign;
+  char *p, *start, *end;
+
+  start = p = _dtoa_r (ptr, invalue, mode, ndigit, &decpt, &sign, &end);
+
+  if (decpt == 9999)
+    {
+      strcpy (buf, p);
+      return;
+    }
+  while (*p && decpt > 0)
+    {
+      *buf++ = *p++;
+      decpt--;
+    }
+  /* Even if not in buffer */
+  while (decpt > 0)
+    {
+      *buf++ = '0';
+      decpt--;
+    }
+
+  if (dot || *p)
+    {
+      if (p == start)
+	*buf++ = '0';
+      if (decpt < 0 && ndigit > 0)
+	*buf++ = '.';
+      while (decpt < 0 && ndigit > 0)
+	{
+	  *buf++ = '0';
+	  decpt++;
+	  ndigit--;
+	}
+
+      /* Print rest of stuff */
+      while (*p && ndigit > 0)
+	{
+	  *buf++ = *p++;
+	  ndigit--;
+	}
+      /* And trailing zeros */
+      while (ndigit > 0)
+	{
+	  *buf++ = '0';
+	  ndigit--;
+	}
+    }
+  *buf++ = 0;
+}
 
 /* Print number in e format with width chars after.
 
@@ -69,7 +131,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
    WIDTH is the number of digits of precision after the decimal point.  */
 
 static void
-print_e (
+print_e (struct _reent *ptr,
 	char *buf,
 	double invalue,
 	int width,
@@ -83,11 +145,7 @@ print_e (
   int top;
   int ndigit = width;
 
-  p = __dtoa (invalue, 2, width + 1, &decpt, &sign, &end);
-  if (!p) {
-    buf[0] = '\0';
-    return;
-  }
+  p = _dtoa_r (ptr, invalue, 2, width + 1, &decpt, &sign, &end);
 
   if (decpt == 9999)
     {
@@ -156,18 +214,7 @@ print_e (
   *buf++ = 0;
 }
 
-
-static __THREAD_LOCAL int _cvtlen;
-static __THREAD_LOCAL char *_cvtbuf;
-
-static void
-_cvtcleanup(void)
-{
-  if (_cvtbuf) {
-    free(_cvtbuf);
-    _cvtbuf = NULL;
-  }
-}
+#ifndef _REENT_ONLY
 
 /* Undocumented behaviour: when given NULL as a buffer, return a
    pointer to static space in the rent structure.  This is only to
@@ -180,6 +227,7 @@ fcvtbuf (double invalue,
 	int *sign,
 	char *fcvt_buf)
 {
+  struct _reent *reent = _REENT;
   char *save;
   char *p;
   char *end;
@@ -187,37 +235,25 @@ fcvtbuf (double invalue,
 
   if (fcvt_buf == NULL)
     {
-      if (_cvtlen <= ndigit + 35)
+      if (_REENT_CVTLEN(reent) <= ndigit + 35)
 	{
-	  if  (!_cvtbuf)
-	    if (atexit(_cvtcleanup) != 0)
-	      return NULL;
-	  if ((fcvt_buf = (char *) realloc (_cvtbuf,
-					    ndigit + 36)) == NULL)
+	  if ((fcvt_buf = (char *) _realloc_r (reent, _REENT_CVTBUF(reent),
+					       ndigit + 36)) == NULL)
 	    return NULL;
-	  _cvtlen = ndigit + 36;
-	  _cvtbuf = fcvt_buf;
+	  _REENT_CVTLEN(reent) = ndigit + 36;
+	  _REENT_CVTBUF(reent) = fcvt_buf;
 	}
 
-      fcvt_buf = _cvtbuf ;
+      fcvt_buf = _REENT_CVTBUF(reent) ;
     }
 
   save = fcvt_buf;
 
-  p = __dtoa (invalue, 3, ndigit, decpt, sign, &end);
-  if (!p)
-    return NULL;
-
-  if (*decpt == 9999)
-    {
-      strcpy(fcvt_buf, p);
-      return fcvt_buf;
-    }
+  p = _dtoa_r (reent, invalue, 3, ndigit, decpt, sign, &end);
 
   /* Now copy */
 
   done = -*decpt;
-
   while (p < end)
     {
       *fcvt_buf++ = *p++;
@@ -240,6 +276,7 @@ ecvtbuf (double invalue,
 	int *sign,
 	char *fcvt_buf)
 {
+  struct _reent *reent = _REENT;
   char *save;
   char *p;
   char *end;
@@ -247,29 +284,21 @@ ecvtbuf (double invalue,
 
   if (fcvt_buf == NULL)
     {
-      if (_cvtlen <= ndigit)
+      if (_REENT_CVTLEN(reent) <= ndigit)
 	{
-	  if ((fcvt_buf = (char *) realloc (_cvtbuf,
-					    ndigit + 1)) == NULL)
+	  if ((fcvt_buf = (char *) _realloc_r (reent, _REENT_CVTBUF(reent),
+					       ndigit + 1)) == NULL)
 	    return NULL;
-	  _cvtlen = ndigit + 1;
-	  _cvtbuf = fcvt_buf;
+	  _REENT_CVTLEN(reent) = ndigit + 1;
+	  _REENT_CVTBUF(reent) = fcvt_buf;
 	}
 
-      fcvt_buf = _cvtbuf ;
+      fcvt_buf = _REENT_CVTBUF(reent) ;
     }
 
   save = fcvt_buf;
 
-  p = __dtoa (invalue, 2, ndigit, decpt, sign, &end);
-  if (!p)
-    return NULL;
-
-  if (*decpt == 9999)
-    {
-      strcpy(fcvt_buf, p);
-      return fcvt_buf;
-    }
+  p = _dtoa_r (reent, invalue, 2, ndigit, decpt, sign, &end);
 
   /* Now copy */
 
@@ -288,9 +317,10 @@ ecvtbuf (double invalue,
   return save;
 }
 
+#endif
 
 char *
-_gcvt (
+_gcvt (struct _reent *ptr,
 	double invalue,
 	int ndigit,
 	char *buf,
@@ -324,7 +354,7 @@ _gcvt (
 	 We defer changing type to e/E so that print_e() can know it's us
 	 calling and thus should remove trailing zeroes.  */
 
-      print_e (buf, invalue, ndigit - 1, type, dot);
+      print_e (ptr, buf, invalue, ndigit - 1, type, dot);
     }
   else
     {
@@ -336,9 +366,7 @@ _gcvt (
       /* We always want ndigits of precision, even if that means printing
        * a bunch of leading zeros for numbers < 1.0
        */
-      p = __dtoa (invalue, 2, ndigit, &decpt, &sign, &end);
-      if (!p)
-	return NULL;
+      p = _dtoa_r (ptr, invalue, 2, ndigit, &decpt, &sign, &end);
 
       if (decpt == 9999)
 	{
@@ -392,4 +420,32 @@ _gcvt (
     }
 
   return save;
+}
+
+char *
+_dcvt (struct _reent *ptr,
+	char *buffer,
+	double invalue,
+	int precision,
+	int width,
+	char type,
+	int dot)
+{
+  switch (type)
+    {
+    case 'f':
+    case 'F':
+      print_f (ptr, buffer, invalue, precision, type, precision == 0 ? dot : 1, 3);
+      break;
+    case 'g':
+    case 'G':
+      if (precision == 0)
+	precision = 1;
+      _gcvt (ptr, invalue, precision, buffer, type, dot);
+      break;
+    case 'e':
+    case 'E':
+      print_e (ptr, buffer, invalue, precision, type, dot);
+    }
+  return buffer;
 }

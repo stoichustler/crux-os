@@ -29,7 +29,7 @@ SYNOPSIS
 
 	char *gets(char *<[buf]>);
 
-	char *gets( char *<[buf]>);
+	char *_gets_r(struct _reent *<[reent]>, char *<[buf]>);
 
 DESCRIPTION
 	Reads characters from standard input until a newline is found.
@@ -57,24 +57,24 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include "local.h"
 
-#undef gets
-
 char *
-gets (
+_gets_r (struct _reent *ptr,
        char *buf)
 {
   register int c;
   register char *s = buf;
   FILE *fp;
 
-  fp = stdin;
-  CHECK_INIT();
+  _REENT_SMALL_CHECK_INIT (ptr);
+  fp = _stdin_r (ptr);
+  CHECK_INIT (ptr, fp);
   _newlib_flockfile_start (fp);
-  while ((c = _sgetc ( fp)) != '\n')
+  while ((c = __sgetc_r (ptr, fp)) != '\n')
     if (c == EOF)
       if (s == buf)
 	{
@@ -89,3 +89,13 @@ gets (
   _newlib_flockfile_end (fp);
   return buf;
 }
+
+#ifndef _REENT_ONLY
+
+char *
+gets (char *buf)
+{
+  return _gets_r (_REENT, buf);
+}
+
+#endif

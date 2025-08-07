@@ -21,8 +21,6 @@
  * return s1
  */
 
-#include <picolibc.h>
-
 #include "DEFS.h"
 
 #define	d_addr  r26

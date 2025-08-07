@@ -30,8 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
+#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -44,6 +43,7 @@ typedef struct
   unsigned int pad1[ 3 ];
 } c99_setbuf_t;
 
+#ifndef _REENT_ONLY
 
 void
 setbuf (FILE *__restrict fp,
@@ -61,3 +61,4 @@ setbuf (FILE *__restrict fp,
   return;
 }
 
+#endif /* ! _REENT_ONLY */

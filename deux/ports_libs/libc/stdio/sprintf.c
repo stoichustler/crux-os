@@ -56,16 +56,16 @@ SYNOPSIS
         char *asnprintf(char *restrict <[str]>, size_t *restrict <[size]>, const char *restrict <[format]>,
                         ...);
 
-        int printf( const char *restrict <[format]>, ...);
-        int fprintf( FILE *restrict <[fd]>,
+        int _printf_r(struct _reent *<[ptr]>, const char *restrict <[format]>, ...);
+        int _fprintf_r(struct _reent *<[ptr]>, FILE *restrict <[fd]>,
                        const char *restrict <[format]>, ...);
-        int sprintf( char *restrict <[str]>,
+        int _sprintf_r(struct _reent *<[ptr]>, char *restrict <[str]>,
                        const char *restrict <[format]>, ...);
-        int snprintf( char *restrict <[str]>, size_t <[size]>,
+        int _snprintf_r(struct _reent *<[ptr]>, char *restrict <[str]>, size_t <[size]>,
                         const char *restrict <[format]>, ...);
-        int asprintf( char **restrict <[strp]>,
+        int _asprintf_r(struct _reent *<[ptr]>, char **restrict <[strp]>,
                         const char *restrict <[format]>, ...);
-        char *asnprintf( char *restrict <[str]>,
+        char *_asnprintf_r(struct _reent *<[ptr]>, char *restrict <[str]>,
                            size_t *restrict <[size]>, const char *restrict <[format]>, ...);
 
 DESCRIPTION
@@ -567,16 +567,15 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
 #include "local.h"
 
-#undef sprintf
-
 int
-sprintf (
+_sprintf_r (struct _reent *ptr,
        char *__restrict str,
        const char *__restrict fmt, ...)
 {
@@ -590,11 +589,43 @@ sprintf (
   f._bf._size = f._w = INT_MAX;
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfprintf ( &f, fmt, ap);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
   *f._p = '\0';	/* terminate the string */
   return (ret);
 }
 
-__nano_reference(sprintf, siprintf);
-__ieee128_reference(sprintf, __sprintfieee128);
+#ifdef _NANO_FORMATTED_IO
+int
+_siprintf_r (struct _reent *, char *, const char *, ...)
+       _ATTRIBUTE ((__alias__("_sprintf_r")));
+#endif
+
+#ifndef _REENT_ONLY
+
+int
+sprintf (char *__restrict str,
+       const char *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  f._flags = __SWR | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._w = INT_MAX;
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfprintf_r (_REENT, &f, fmt, ap);
+  va_end (ap);
+  *f._p = '\0';	/* terminate the string */
+  return (ret);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+siprintf (char *, const char *, ...)
+       _ATTRIBUTE ((__alias__("sprintf")));
+#endif
+#endif

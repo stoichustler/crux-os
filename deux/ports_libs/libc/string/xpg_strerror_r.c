@@ -1,14 +1,7 @@
-/* Copyright (c) 2011 Eric Blake <eblake@redhat.com> */
 /* POSIX variant of strerror_r. */
-#define _POSIX_C_SOURCE 200809
+#undef __STRICT_ANSI__
 #include <errno.h>
 #include <string.h>
-#include "local.h"
-
-int
-__xpg_strerror_r (int errnum,
-	char *buffer,
-        size_t n);
 
 int
 __xpg_strerror_r (int errnum,
@@ -20,7 +13,7 @@ __xpg_strerror_r (int errnum,
 
   if (!n)
     return ERANGE;
-  error = _strerror_r (errnum, 1, &result);
+  error = _strerror_r (_REENT, errnum, 1, &result);
   if (strlen (error) >= n)
     {
       memcpy (buffer, error, n - 1);

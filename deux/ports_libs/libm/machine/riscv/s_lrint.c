@@ -33,15 +33,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 64
-
 long int
-lrint64 (__float64 x)
+lrint (double x)
 {
   long result;
-  __asm__(
+  asm (
 #if __riscv_xlen == 32
        "fcvt.w.d"
 #elif __riscv_xlen == 64
@@ -52,9 +52,6 @@ lrint64 (__float64 x)
        "\t%0, %1" : "=r"(result) : "f"(x));
   return result;
 }
-
-_MATH_ALIAS_j_d(lrint)
-
 #else
 #include "../../common/s_lrint.c"
 #endif

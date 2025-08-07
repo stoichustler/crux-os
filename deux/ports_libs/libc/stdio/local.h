@@ -22,15 +22,25 @@
  * in particular, macros and private variables.
  */
 
+#include <_ansi.h>
+#include <reent.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <wchar.h>
 #ifdef __SCLE
 # include <io.h>
 #endif
-#include "fvwrite.h"
+
+/* The following define determines if the per-reent stdin, stdout and stderr
+   streams are closed during _reclaim_reent().  The stdin, stdout and stderr
+   streams are initialized to use file descriptors 0, 1 and 2 respectively.  In
+   case _STDIO_CLOSE_PER_REENT_STD_STREAMS is defined these file descriptors
+   will be closed via close() provided the owner of the reent structure
+   triggerd the on demand reent initilization, see CHECK_INIT(). */
+#if !defined(__tirtos__)
+#define _STDIO_CLOSE_PER_REENT_STD_STREAMS
+#endif
 
 /* The following macros are supposed to replace calls to _flockfile/_funlockfile
    and __sfp_lock_acquire/__sfp_lock_release.  In case of multi-threaded
@@ -45,11 +55,12 @@
    section before reaching the end of the critical section's code end, use
    the appropriate _newlib_XXX_exit macro. */
 
-#if !defined (__SINGLE_THREAD) && defined (_POSIX_THREADS)
+#if !defined (__SINGLE_THREAD__) && defined (_POSIX_THREADS) \
+    && !defined (__rtems__)
 #define _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
 #endif
 
-#if defined(__SINGLE_THREAD) || defined(__IMPL_UNLOCKED__)
+#if defined(__SINGLE_THREAD__) || defined(__IMPL_UNLOCKED__)
 
 # define _newlib_flockfile_start(_fp)
 # define _newlib_flockfile_exit(_fp)
@@ -100,7 +111,7 @@
 	  pthread_setcancelstate (__oldsfpcancel, &__oldsfpcancel); \
 	}
 
-#else
+#else /* !__SINGLE_THREAD__ && !__IMPL_UNLOCKED__ && !_STDIO_WITH_THREAD_CANCELLATION_SUPPORT */
 
 # define _newlib_flockfile_start(_fp) \
 	{ \
@@ -127,78 +138,68 @@
 		__sfp_lock_release (); \
 	}
 
-#endif
+#endif /* __SINGLE_THREAD__ || __IMPL_UNLOCKED__ */
 
-extern wint_t __fgetwc (FILE *);
-extern wint_t __fputwc (wchar_t, FILE *);
-extern unsigned char *__sccl (char *, unsigned char *fmt);
-extern int    _svfscanf (FILE *, const char *,va_list);
-extern int    _ssvfscanf (FILE *, const char *,va_list);
-extern int    _svfiscanf (FILE *, const char *,va_list);
-extern int    _ssvfiscanf (FILE *, const char *,va_list);
-extern int    _svfwscanf (FILE *, const wchar_t *,va_list);
-extern int    _ssvfwscanf (FILE *, const wchar_t *,va_list);
-extern int    _svfiwscanf (FILE *, const wchar_t *,va_list);
-extern int    _ssvfiwscanf (FILE *, const wchar_t *,va_list);
-int	      svfprintf ( FILE *, const char *,
+extern wint_t __fgetwc (struct _reent *, FILE *);
+extern wint_t __fputwc (struct _reent *, wchar_t, FILE *);
+extern u_char *__sccl (char *, u_char *fmt);
+extern int    __svfscanf_r (struct _reent *,FILE *, const char *,va_list);
+extern int    __ssvfscanf_r (struct _reent *,FILE *, const char *,va_list);
+extern int    __svfiscanf_r (struct _reent *,FILE *, const char *,va_list);
+extern int    __ssvfiscanf_r (struct _reent *,FILE *, const char *,va_list);
+extern int    __svfwscanf_r (struct _reent *,FILE *, const wchar_t *,va_list);
+extern int    __ssvfwscanf_r (struct _reent *,FILE *, const wchar_t *,va_list);
+extern int    __svfiwscanf_r (struct _reent *,FILE *, const wchar_t *,va_list);
+extern int    __ssvfiwscanf_r (struct _reent *,FILE *, const wchar_t *,va_list);
+int	      _svfprintf_r (struct _reent *, FILE *, const char *, 
 				  va_list)
-                    __picolibc_format(__printf__, 2, 0);
-int	      svfiprintf ( FILE *, const char *,
+               			_ATTRIBUTE ((__format__ (__printf__, 3, 0)));
+int	      _svfiprintf_r (struct _reent *, FILE *, const char *, 
 				  va_list)
-                    __picolibc_format(__printf__, 2, 0);
-int	      svfwprintf ( FILE *, const wchar_t *,
+               			_ATTRIBUTE ((__format__ (__printf__, 3, 0)));
+int	      _svfwprintf_r (struct _reent *, FILE *, const wchar_t *, 
 				  va_list);
-int	      svfiwprintf ( FILE *, const wchar_t *,
+int	      _svfiwprintf_r (struct _reent *, FILE *, const wchar_t *, 
 				  va_list);
-extern FILE  *__sfp (void);
-extern int    __sflags (const char*, int*);
-extern int    _sflush (FILE *);
+extern FILE  *__sfp (struct _reent *);
+extern int    __sflags (struct _reent *,const char*, int*);
+extern int    __sflush_r (struct _reent *,FILE *);
 #ifdef _STDIO_BSD_SEMANTICS
-extern int    _sflushw (FILE *);
+extern int    __sflushw_r (struct _reent *,FILE *);
 #endif
-extern int    _srefill (FILE *);
-extern ssize_t __sread (void *, char *,
-					       size_t);
-extern ssize_t __seofread (void *,
+extern int    __srefill_r (struct _reent *,FILE *);
+extern _READ_WRITE_RETURN_TYPE __sread (struct _reent *, void *, char *,
+					       _READ_WRITE_BUFSIZE_TYPE);
+extern _READ_WRITE_RETURN_TYPE __seofread (struct _reent *, void *,
 						  char *,
-						  size_t);
-extern ssize_t __swrite (void *,
+						  _READ_WRITE_BUFSIZE_TYPE);
+extern _READ_WRITE_RETURN_TYPE __swrite (struct _reent *, void *,
 						const char *,
-						size_t);
-extern _fpos_t __sseek (void *, _fpos_t, int);
-extern int    __sclose (void *);
+						_READ_WRITE_BUFSIZE_TYPE);
+extern _fpos_t __sseek (struct _reent *, void *, _fpos_t, int);
+extern int    __sclose (struct _reent *, void *);
 extern int    __stextmode (int);
-extern void   __sinit (void);
-extern void   _smakebuf ( FILE *);
-extern int    _swhatbuf ( FILE *, size_t *, int *);
-extern int __submore (FILE *);
-
-extern int __sprint (FILE *, register struct __suio *);
-extern int __ssprint (FILE *, register struct __suio *);
-extern int __ssputs (FILE *fp, const char *buf, size_t len);
-extern int __ssputws (FILE *fp,	const wchar_t *buf, size_t len);
-extern int __sfputs (FILE *, const char *buf, size_t len);
-extern int __sfputws (FILE *, const wchar_t *buf, size_t len);
-extern int sungetc (int c, register FILE *fp);
-extern int _ssrefill (register FILE * fp);
-extern size_t _sfread (void *buf, size_t size, size_t count, FILE * fp);
+extern void   __sinit (struct _reent *);
+extern void   __smakebuf_r (struct _reent *, FILE *);
+extern int    __swhatbuf_r (struct _reent *, FILE *, size_t *, int *);
+extern int __submore (struct _reent *, FILE *);
 
 #ifdef __LARGE64_FILES
-extern _fpos64_t __sseek64 (void *, _fpos64_t, int);
-extern ssize_t __swrite64 (void *,
+extern _fpos64_t __sseek64 (struct _reent *, void *, _fpos64_t, int);
+extern _READ_WRITE_RETURN_TYPE __swrite64 (struct _reent *, void *,
 						  const char *,
-						  size_t);
+						  _READ_WRITE_BUFSIZE_TYPE);
 #endif
-
-extern void (*_stdio_cleanup)(void);
 
 /* Called by the main entry point fns to ensure stdio has been initialized.  */
 
-#define CHECK_INIT() \
+#define CHECK_INIT(ptr, fp) \
   do								\
     {								\
-      if (!_stdio_cleanup)			                \
-	__sinit ();				                \
+      struct _reent *_check_init_ptr = (ptr);			\
+      if (!_REENT_IS_NULL(_check_init_ptr) &&			\
+	  !_REENT_CLEANUP(_check_init_ptr))			\
+	__sinit (_check_init_ptr);				\
     }								\
   while (0)
 
@@ -207,7 +208,7 @@ extern void (*_stdio_cleanup)(void);
 
 #define	cantwrite(ptr, fp)                                     \
   ((((fp)->_flags & __SWR) == 0 || (fp)->_bf._base == NULL) && \
-   _swsetup( fp))
+   __swsetup_r(ptr, fp))
 
 /* Test whether the given stdio file has an active ungetc buffer;
    release such a buffer, without restoring ordinary unread data.  */
@@ -215,24 +216,21 @@ extern void (*_stdio_cleanup)(void);
 #define	HASUB(fp) ((fp)->_ub._base != NULL)
 #define	FREEUB(ptr, fp) {                    \
 	if ((fp)->_ub._base != (fp)->_ubuf) \
-		free((char *)(fp)->_ub._base); \
+		_free_r(ptr, (char *)(fp)->_ub._base); \
 	(fp)->_ub._base = NULL; \
 }
 
 /* Test for an fgetline() buffer.  */
 
 #define	HASLB(fp) ((fp)->_lb._base != NULL)
-#define	FREELB(ptr, fp) { free((char *)(fp)->_lb._base);	\
+#define	FREELB(ptr, fp) { _free_r(ptr,(char *)(fp)->_lb._base); \
       (fp)->_lb._base = NULL; }
 
-#ifdef __WIDE_ORIENT
+#ifdef _WIDE_ORIENT
 /*
  * Set the orientation for a stream. If o > 0, the stream has wide-
  * orientation. If o < 0, the stream has byte-orientation.
  */
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunused-value"
-#endif
 #define ORIENT(fp,ori)			\
   (					\
     (					\
@@ -255,40 +253,40 @@ extern void (*_stdio_cleanup)(void);
 
 /* Same thing as the functions in stdio.h, but these are to be called
    from inside the wide-char functions. */
-int	__swbufw (int, FILE *);
+int	__swbufw_r (struct _reent *, int, FILE *);
 #ifdef __GNUC__
-__elidable_inline int __swputc(int _c, FILE *_p) {
+_ELIDABLE_INLINE int __swputc_r(struct _reent *_ptr, int _c, FILE *_p) {
 #ifdef __SCLE
 	if ((_p->_flags & __SCLE) && _c == '\n')
-	  __swputc ('\r', _p);
+	  __swputc_r (_ptr, '\r', _p);
 #endif
 	if (--_p->_w >= 0 || (_p->_w >= _p->_lbfsize && (char)_c != '\n'))
 		return (*_p->_p++ = _c);
 	else
-		return (__swbufw(_c, _p));
+		return (__swbufw_r(_ptr, _c, _p));
 }
 #else
-#define       __swputc_raw(__c, __p) \
+#define       __swputc_raw_r(__ptr, __c, __p) \
 	(--(__p)->_w < 0 ? \
 		(__p)->_w >= (__p)->_lbfsize ? \
 			(*(__p)->_p = (__c)), *(__p)->_p != '\n' ? \
 				(int)*(__p)->_p++ : \
-				__swbufw('\n', __p) : \
-			__swbufw((int)(__c), __p) : \
+				__swbufw_r(__ptr, '\n', __p) : \
+			__swbufw_r(__ptr, (int)(__c), __p) : \
 		(*(__p)->_p = (__c), (int)*(__p)->_p++))
 #ifdef __SCLE
-#define __swputc(__c, __p) \
+#define __swputc_r(__ptr, __c, __p) \
         ((((__p)->_flags & __SCLE) && ((__c) == '\n')) \
-          ? __swputc_raw('\r', (__p)) : 0 , \
-        __swputc_raw((__c), (__p)))
+          ? __swputc_raw_r(__ptr, '\r', (__p)) : 0 , \
+        __swputc_raw_r((__ptr), (__c), (__p)))
 #else
-#define __swputc(__c, __p) __swputc_raw(__c, __p)
+#define __swputc_r(__ptr, __c, __p) __swputc_raw_r(__ptr, __c, __p)
 #endif
 #endif
 
 /* WARNING: _dcvt is defined in the stdlib directory, not here!  */
 
-char *_dcvt (char *, double, int, int, char, int);
+char *_dcvt (struct _reent *, char *, double, int, int, char, int);
 char *_sicvt (char *, short, char);
 char *_icvt (char *, int, char);
 char *_licvt (char *, long, char);
@@ -300,10 +298,15 @@ char *_llicvt (char *, long long, char);
 
 #define	NDYNAMIC 4	/* add four more whenever necessary */
 
-#define __sfp_lock_acquire() __LIBC_LOCK()
-#define __sfp_lock_release() __LIBC_UNLOCK()
-#define __sinit_lock_acquire() __LIBC_LOCK()
-#define __sinit_lock_release() __LIBC_UNLOCK()
+#ifdef __SINGLE_THREAD__
+#define __sfp_lock_acquire()
+#define __sfp_lock_release()
+#define __sinit_lock_acquire()
+#define __sinit_lock_release()
+#else
+void __sfp_lock_acquire (void);
+void __sfp_lock_release (void);
+#endif
 
 /* Types used in positional argument support in vfprinf/vfwprintf.
    The implementation is char/wchar_t dependent but the class and state
@@ -352,18 +355,3 @@ typedef enum __packed {
 extern const __CH_CLASS __chclass[256];
 extern const __STATE __state_table[MAX_STATE][MAX_CH_CLASS];
 extern const __ACTION __action_table[MAX_STATE][MAX_CH_CLASS];
-
-#if defined(__NANO_FORMATTED_IO) && defined(__strong_reference)
-#define __nano_reference(a,b) __strong_reference(a,b)
-#else
-#define __nano_reference(a,b)
-#endif
-
-#if defined(__LONG_DOUBLE_128__) && defined(__strong_reference)
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-#define __ieee128_reference(a,b) __strong_reference(a,b)
-#else
-#define __ieee128_reference(a,b)
-#endif

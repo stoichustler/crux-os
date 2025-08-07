@@ -16,7 +16,8 @@
  */
 /* No user fns here.  Pesch 15apr92. */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -25,14 +26,18 @@
 #include <sys/lock.h>
 #include "local.h"
 
+void (*__stdio_exit_handler) (void);
+
 __FILE __sf[3];
 
 struct _glue __sglue = {NULL, 3, &__sf[0]};
 
-__FILE *stdin = &__sf[0];
-__FILE *stdout = &__sf[1];
-__FILE *stderr = &__sf[2];
-void (*_stdio_cleanup)(void);
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local __FILE *_tls_stdin = &__sf[0];
+_Thread_local __FILE *_tls_stdout = &__sf[1];
+_Thread_local __FILE *_tls_stderr = &__sf[2];
+_Thread_local void (*_tls_cleanup)(struct _reent *);
+#endif
 
 #ifdef _STDIO_BSD_SEMANTICS
   /* BSD and Glibc systems only flush streams which have been written to
@@ -43,14 +48,14 @@ void (*_stdio_cleanup)(void);
   /* Otherwise close files and flush read streams, too.
      Note we call flush directly if "--enable-lite-exit" is in effect.  */
 #ifdef _LITE_EXIT
-#define CLEANUP_FILE fflush
+#define CLEANUP_FILE _fflush_r
 #else
-#define CLEANUP_FILE fclose
+#define CLEANUP_FILE _fclose_r
 #endif
 #endif
 
-#if (defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED))
-__noinline static void
+#if (defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED))
+_NOINLINE_STATIC void
 #else
 static void
 #endif
@@ -78,9 +83,15 @@ std (FILE *ptr,
   ptr->_flags |= __SL64;
 #endif /* __LARGE64_FILES */
   ptr->_seek = __sseek;
+#ifdef _STDIO_CLOSE_PER_REENT_STD_STREAMS
   ptr->_close = __sclose;
+#else /* _STDIO_CLOSE_STD_STREAMS */
+  ptr->_close = NULL;
+#endif /* _STDIO_CLOSE_STD_STREAMS */
+#ifndef __SINGLE_THREAD__
   if (ptr == &__sf[0] || ptr == &__sf[1] || ptr == &__sf[2])
     __lock_init_recursive (ptr->_lock);
+#endif
 #ifdef __SCLE
   if (__stextmode (ptr->_file))
     ptr->_flags |= __SCLE;
@@ -102,7 +113,7 @@ stdout_init(FILE *ptr)
      we will default to line buffered mode here.  Technically, POSIX
      requires both stdin and stdout to be line-buffered, but tradition
      leaves stdin alone on systems without fcntl.  */
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
   std (ptr, __SWR, 1);
 #else
   std (ptr, __SWR | __SLBF, 1);
@@ -117,31 +128,42 @@ stderr_init(FILE *ptr)
   std (ptr, __SRW | __SNBF, 2);
 }
 
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#endif
-
-struct glue_with_files {
+struct glue_with_file {
   struct _glue glue;
-  FILE file[];
+  FILE file;
 };
 
 static struct _glue *
-sfmoreglue (int n)
+sfmoreglue (struct _reent *d, int n)
 {
-  struct glue_with_files *g;
+  struct glue_with_file *g;
 
-  g = (struct glue_with_files *)
-    malloc (sizeof (*g) + n * sizeof (FILE));
+  g = (struct glue_with_file *)
+    _malloc_r (d, sizeof (*g) + (n - 1) * sizeof (FILE));
   if (g == NULL)
     return NULL;
   g->glue._next = NULL;
   g->glue._niobs = n;
-  g->glue._iobs = g->file;
-  memset (g->file, 0, n * sizeof (FILE));
+  g->glue._iobs = &g->file;
+  memset (&g->file, 0, n * sizeof (FILE));
   return &g->glue;
+}
+
+static void
+stdio_exit_handler (void)
+{
+  (void) _fwalk_sglue (_GLOBAL_REENT, CLEANUP_FILE, &__sglue);
+}
+
+static void
+global_stdio_init (void)
+{
+  if (__stdio_exit_handler == NULL) {
+    __stdio_exit_handler = stdio_exit_handler;
+    stdin_init (&__sf[0]);
+    stdout_init (&__sf[1]);
+    stderr_init (&__sf[2]);
+  }
 }
 
 /*
@@ -149,14 +171,14 @@ sfmoreglue (int n)
  */
 
 FILE *
-__sfp (void)
+__sfp (struct _reent *d)
 {
   FILE *fp;
   int n;
   struct _glue *g;
 
-  CHECK_INIT();
   _newlib_sfp_lock_start ();
+  global_stdio_init ();
 
   for (g = &__sglue;; g = g->_next)
     {
@@ -164,18 +186,20 @@ __sfp (void)
 	if (fp->_flags == 0)
 	  goto found;
       if (g->_next == NULL &&
-	  (g->_next = sfmoreglue (NDYNAMIC)) == NULL)
+	  (g->_next = sfmoreglue (d, NDYNAMIC)) == NULL)
 	break;
     }
   _newlib_sfp_lock_exit ();
-  errno = ENOMEM;
+  _REENT_ERRNO(d) = ENOMEM;
   return NULL;
 
 found:
   fp->_file = -1;		/* no file */
   fp->_flags = 1;		/* reserve this slot; caller sets real flags */
   fp->_flags2 = 0;
+#ifndef __SINGLE_THREAD__
   __lock_init_recursive (fp->_lock);
+#endif
   _newlib_sfp_lock_end ();
 
   fp->_p = NULL;		/* no current pointer */
@@ -203,15 +227,14 @@ found:
  */
 
 static void
-cleanup_stdio (void)
+cleanup_stdio (struct _reent *ptr)
 {
-  if (stdin != &__sf[0])
-    CLEANUP_FILE (stdin);
-  if (stdout != &__sf[1])
-    CLEANUP_FILE (stdout);
-  if (stderr != &__sf[2])
-    CLEANUP_FILE (stderr);
-  (void) _fwalk_sglue (CLEANUP_FILE, &__sglue);
+  if (_REENT_STDIN(ptr) != &__sf[0])
+    CLEANUP_FILE (ptr, _REENT_STDIN(ptr));
+  if (_REENT_STDOUT(ptr) != &__sf[1])
+    CLEANUP_FILE (ptr, _REENT_STDOUT(ptr));
+  if (_REENT_STDERR(ptr) != &__sf[2])
+    CLEANUP_FILE (ptr, _REENT_STDERR(ptr));
 }
 
 /*
@@ -219,21 +242,70 @@ cleanup_stdio (void)
  */
 
 void
-__sinit (void)
+__sinit (struct _reent *s)
 {
   __sfp_lock_acquire ();
 
-  if (_stdio_cleanup)
+  if (_REENT_CLEANUP(s))
     {
       __sfp_lock_release ();
       return;
     }
 
   /* make sure we clean up on exit */
-  _stdio_cleanup = cleanup_stdio;	/* conservative */
+  _REENT_CLEANUP(s) = cleanup_stdio;	/* conservative */
 
-  stdin_init (&__sf[0]);
-  stdout_init (&__sf[1]);
-  stderr_init (&__sf[2]);
+  global_stdio_init ();
   __sfp_lock_release ();
 }
+
+#ifndef __SINGLE_THREAD__
+
+__LOCK_INIT_RECURSIVE(static, __sfp_recursive_mutex);
+
+void
+__sfp_lock_acquire (void)
+{
+  __lock_acquire_recursive (__sfp_recursive_mutex);
+}
+
+void
+__sfp_lock_release (void)
+{
+  __lock_release_recursive (__sfp_recursive_mutex);
+}
+
+/* Walkable file locking routine.  */
+static int
+__fp_lock (struct _reent * ptr __unused, FILE * fp)
+{
+  if (!(fp->_flags2 & __SNLK))
+    _flockfile (fp);
+
+  return 0;
+}
+
+/* Walkable file unlocking routine.  */
+static int
+__fp_unlock (struct _reent * ptr __unused, FILE * fp)
+{
+  if (!(fp->_flags2 & __SNLK))
+    _funlockfile (fp);
+
+  return 0;
+}
+
+void
+__fp_lock_all (void)
+{
+  __sfp_lock_acquire ();
+  (void) _fwalk_sglue (NULL, __fp_lock, &__sglue);
+}
+
+void
+__fp_unlock_all (void)
+{
+  (void) _fwalk_sglue (NULL, __fp_unlock, &__sglue);
+  __sfp_lock_release ();
+}
+#endif

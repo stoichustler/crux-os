@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /*
 FUNCTION
 <<_Exit>>---end program execution with no cleanup processing
@@ -32,6 +31,7 @@ Supporting OS subroutines required: <<_exit>>.
 
 #include <stdlib.h>
 #include <unistd.h>	/* for _exit() declaration */
+#include <reent.h>
 
 void 
 _Exit (int code)

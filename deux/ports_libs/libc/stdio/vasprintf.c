@@ -17,15 +17,37 @@
 /* This code was based on vsprintf.c */
 /* doc in vfprintf.c */
 
-#define _GNU_SOURCE
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "%W% (Berkeley) %G%";
+#endif /* LIBC_SCCS and not lint */
+
+#include <_ansi.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
 
 #include "local.h"
 
+#ifndef _REENT_ONLY
+
 int
-vasprintf (
+vasprintf (char **strp,
+       const char *fmt,
+       va_list ap)
+{
+  return _vasprintf_r (_REENT, strp, fmt, ap);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+vasiprintf (char **, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("vasprintf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int
+_vasprintf_r (struct _reent *ptr,
        char **strp,
        const char *fmt,
        va_list ap)
@@ -38,7 +60,7 @@ vasprintf (
   f._bf._base = f._p = NULL;
   f._bf._size = f._w = 0;
   f._file = -1;  /* No file. */
-  ret = svfprintf ( &f, fmt, ap);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
   if (ret >= 0)
     {
       *f._p = 0;
@@ -47,4 +69,8 @@ vasprintf (
   return ret;
 }
 
-__nano_reference(vasprintf, vasiprintf);
+#ifdef _NANO_FORMATTED_IO
+int
+_vasiprintf_r (struct _reent *, char **, const char *, __VALIST)
+       _ATTRIBUTE ((__alias__("_vasprintf_r")));
+#endif

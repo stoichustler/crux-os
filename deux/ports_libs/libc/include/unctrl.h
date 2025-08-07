@@ -31,12 +31,12 @@
 #ifndef _UNCTRL_H_
 #define _UNCTRL_H_
 
-#include <sys/cdefs.h>
+#include <_ansi.h>
 
 #define unctrl(c)		__unctrl[(c) & 0xff]
 #define unctrllen(ch)		__unctrllen[(ch) & 0xff]
 
-extern const char * const __unctrl[256];	/* Control strings. */
-extern const char __unctrllen[256];	        /* Control strings length. */
+extern __IMPORT const char * const __unctrl[256];	/* Control strings. */
+extern __IMPORT const char __unctrllen[256];	/* Control strings length. */
 
 #endif /* _UNCTRL_H_ */

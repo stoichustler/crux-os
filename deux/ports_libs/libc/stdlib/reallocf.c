@@ -26,18 +26,28 @@
 
 /* Documented in malloc.c.  */
 
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
+
 #include <stdlib.h>
 
 void *
-reallocf (void *ptr,
+_reallocf_r (struct _reent *reentptr,
+	void *ptr,
 	size_t size)
 {
 	void *nptr;
 
-	nptr = realloc(ptr, size);
+	nptr = _realloc_r(reentptr, ptr, size);
 	if (!nptr && ptr)
-		free(ptr);
+		_free_r(reentptr, ptr);
 	return (nptr);
 }
 
+#ifndef _REENT_ONLY
+void *
+reallocf (void *ptr,
+	size_t size)
+{
+  return _reallocf_r(_REENT, ptr, size);
+}
+#endif

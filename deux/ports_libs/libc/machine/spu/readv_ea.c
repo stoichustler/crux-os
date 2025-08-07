@@ -30,14 +30,12 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Ken Werner <ken.werner@de.ibm.com>
 */
 
-#include <picolibc.h>
-
 #include "ea_internal.h"
 #include <ea.h>
 #include <spu_cache.h>
 #include "sys/linux_syscalls.h"
 
-extern void __cache_flush (void) __weak;
+extern void __cache_flush (void) __attribute__ ((weak));
 
 COMPAT_EA_ALIAS (readv_ea);
 

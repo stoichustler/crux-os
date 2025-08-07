@@ -25,12 +25,20 @@
  */
 
 #define _GNU_SOURCE
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef getwc_unlocked
+
+wint_t
+_getwc_unlocked_r (struct _reent *ptr,
+	FILE *fp)
+{
+  return _fgetwc_unlocked_r (ptr, fp);
+}
 
 /*
  * Synonym for fgetwc_unlocked(). The only difference is that getwc(), if it is

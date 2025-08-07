@@ -4,8 +4,6 @@
  * is freely granted, provided that this notice is preserved.
  */
 
-#define _ADD_D_TO_DOUBLE_FUNCS
-
 #include "fdlibm.h"
 
 int
@@ -29,4 +27,3 @@ __fpclassifyf (float x)
     return FP_NAN;
 }
 
-_MATH_ALIAS_i_f(__fpclassify)

@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
 FUNCTION
 	<<memmove>>---move possibly overlapping memory
 
@@ -45,21 +29,32 @@ QUICKREF
 */
 
 #include <string.h>
+#include <_ansi.h>
 #include <stddef.h>
 #include <limits.h>
-#include <stdint.h>
 #include "local.h"
 
-#undef memmove
+/* Nonzero if either X or Y is not aligned on a "long" boundary.  */
+#define UNALIGNED(X, Y) \
+  (((long)X & (sizeof (long) - 1)) | ((long)Y & (sizeof (long) - 1)))
+
+/* How many bytes are copied each iteration of the 4X unrolled loop.  */
+#define BIGBLOCKSIZE    (sizeof (long) << 2)
+
+/* How many bytes are copied each iteration of the word copy loop.  */
+#define LITTLEBLOCKSIZE (sizeof (long))
+
+/* Threshhold for punting to the byte copier.  */
+#define TOO_SMALL(LEN)  ((LEN) < BIGBLOCKSIZE)
 
 /*SUPPRESS 20*/
 void *
-__no_builtin
+__inhibit_loop_to_libcall
 memmove (void *dst_void,
 	const void *src_void,
 	size_t length)
 {
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
   char *dst = dst_void;
   const char *src = src_void;
 
@@ -93,54 +88,36 @@ memmove (void *dst_void,
       /* Destructive overlap...have to copy backwards */
       src += length;
       dst += length;
-
-      if (!TOO_SMALL_LITTLE_BLOCK(length) && !UNALIGNED_X_Y(src, dst))
-        {
-          aligned_dst = (long*)dst;
-          aligned_src = (long*)src;
-
-          /* Copy one long word at a time if possible.  */
-          while (!TOO_SMALL_LITTLE_BLOCK(length))
-            {
-              *--aligned_dst = *--aligned_src;
-              length -= LITTLE_BLOCK_SIZE;
-            }
-
-          /* Pick up any residual with a byte copier.  */
-          dst = (char*)aligned_dst;
-          src = (char*)aligned_src;
-        }
-
       while (length--)
-        {
-          *--dst = *--src;
-        }
+	{
+	  *--dst = *--src;
+	}
     }
   else
     {
-      /* Use optimizing algorithm for a non-destructive copy to closely
+      /* Use optimizing algorithm for a non-destructive copy to closely 
          match memcpy. If the size is small or either SRC or DST is unaligned,
          then punt into the byte copy loop.  This should be rare.  */
-      if (!TOO_SMALL_LITTLE_BLOCK(length) && !UNALIGNED_X_Y(src, dst))
+      if (!TOO_SMALL(length) && !UNALIGNED (src, dst))
         {
           aligned_dst = (long*)dst;
           aligned_src = (long*)src;
 
           /* Copy 4X long words at a time if possible.  */
-          while (!TOO_SMALL_BIG_BLOCK(length))
+          while (length >= BIGBLOCKSIZE)
             {
               *aligned_dst++ = *aligned_src++;
               *aligned_dst++ = *aligned_src++;
               *aligned_dst++ = *aligned_src++;
               *aligned_dst++ = *aligned_src++;
-              length -= BIG_BLOCK_SIZE;
+              length -= BIGBLOCKSIZE;
             }
 
           /* Copy one long word at a time if possible.  */
-          while (!TOO_SMALL_LITTLE_BLOCK(length))
+          while (length >= LITTLEBLOCKSIZE)
             {
               *aligned_dst++ = *aligned_src++;
-              length -= LITTLE_BLOCK_SIZE;
+              length -= LITTLEBLOCKSIZE;
             }
 
           /* Pick up any residual with a byte copier.  */
@@ -155,5 +132,5 @@ memmove (void *dst_void,
     }
 
   return dst_void;
-#endif /* not __PREFER_SIZE_OVER_SPEED */
+#endif /* not PREFER_SIZE_OVER_SPEED */
 }

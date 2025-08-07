@@ -72,8 +72,10 @@ QUICKREF
 double complex
 csin(double complex z)
 {
+	double complex w;
 	double ch, sh;
 
 	_cchsh(cimag(z), &ch, &sh);
-	return (double complex) (sin(creal(z)) * ch) + (cos(creal(z)) * sh) * (double complex) I;
+	w = sin(creal(z)) * ch + (cos(creal(z)) * sh) * I;
+	return w;
 }

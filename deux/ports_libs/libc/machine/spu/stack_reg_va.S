@@ -69,8 +69,6 @@
  * be produced by using va_start.
  */
 
-#include <picolibc.h>
-
 #include "c99ppe.h"
 
 #define parms		$2	/* Number of fixed arguments */

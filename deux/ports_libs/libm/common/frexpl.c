@@ -28,11 +28,20 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "math_config.h"
+#include <math.h>
+#include <float.h>
+#include "local.h"
 
-#if defined(_NEED_FLOAT_HUGE) && !defined(__HAVE_LONG_DOUBLE_MATH)
+/* On platforms where long double is as wide as double.  */
+#if defined(_LDBL_EQ_DBL)
+long double
+frexpl (long double x, int *eptr)
+{
+  return frexp(x, eptr);
+}
+#else  /* !_DBL_EQ_DBL */
 # if (LDBL_MANT_DIG == 53) /* 64-bit long double */
-static const long double scale = 0x1p54;
+static const double scale = 0x1p54;
 
 union ldbl {
   long double x;
@@ -85,38 +94,8 @@ union ldbl {
 #  endif
   } u32;
 };
-# elif (LDBL_MANT_DIG == 106) /* 128-bit double double */
-static const long double scale = 0x1p107l;
-
-#define EXP_EXTRA_BIAS 100
-
-union ldbl {
-  long double x;
-  struct {
-#  ifdef __IEEE_LITTLE_ENDIAN
-    __uint32_t frachm;
-    __uint32_t frach:20;
-    __uint32_t exp:11;
-    __uint32_t sign:1;
-    __uint32_t fracl;
-    __uint32_t fraclm:20;
-    __uint32_t exp_extra:11;
-    __uint32_t sign_extra:1;
-#  endif
-#  ifdef __IEEE_BIG_ENDIAN
-    __uint32_t sign:1;
-    __uint32_t exp:11;
-    __uint32_t frach:20;
-    __uint32_t frachm;
-    __uint32_t sign_extra:1;
-    __uint32_t exp_extra:11;
-    __uint32_t fraclm:20;
-    __uint32_t fracl;
-#  endif
-  } u32;
-};
 # elif (LDBL_MANT_DIG == 113) /* 128-bit long double */
-static const long double scale = 0x1p114l;
+static const double scale = 0x1p114;
 
 union ldbl {
   long double x;
@@ -162,16 +141,12 @@ frexpl (long double x, int *eptr)
     return x; /* inf,nan,0 */
   if (e == 0) /* subnormal */
     {
-      u.x *= (long double) scale;
+      u.x *= scale;
       e = u.u32.exp;
       *eptr -= scale_exp;
     }
   *eptr += e - (LDBL_MAX_EXP - 2);
   u.u32.exp = LDBL_MAX_EXP - 2; /* -1 */
-#ifdef EXP_EXTRA_BIAS
-  if (u.u32.exp_extra != 0)
-    u.u32.exp_extra = u.u32.exp - EXP_EXTRA_BIAS;
-#endif
   return u.x;
 }
-#endif /* _NEED_FLOAT_HUGE */
+#endif /* !_LDBL_EQ_DBL */

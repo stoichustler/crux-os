@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_DOUBLE
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -72,10 +72,8 @@ log (double x)
     {
       /* Handle close to 1.0 inputs separately.  */
       /* Fix sign of zero with downward rounding when x==1.  */
-#if WANT_ROUNDING
-      if (unlikely (ix == asuint64 (1.0)))
+      if (WANT_ROUNDING && unlikely (ix == asuint64 (1.0)))
 	return 0;
-#endif
       r = x - 1.0;
       r2 = r * r;
       r3 = r * r2;
@@ -126,7 +124,7 @@ log (double x)
       /* x < 0x1p-1022 or inf or nan.  */
       if (ix * 2 == 0)
 	return __math_divzero (1);
-      if (ix == asuint64 ((double) INFINITY)) /* log(inf) == inf.  */
+      if (ix == asuint64 (INFINITY)) /* log(inf) == inf.  */
 	return x;
       if ((top & 0x8000) || (top & 0x7ff0) == 0x7ff0)
 	return __math_invalid (x);
@@ -144,11 +142,11 @@ log (double x)
   iz = ix - (tmp & 0xfffULL << 52);
   invc = T[i].invc;
   logc = T[i].logc;
-  z = asfloat64 (iz);
+  z = asdouble (iz);
 
   /* log(x) = log1p(z/c-1) + log(c) + k*Ln2.  */
   /* r ~= z/c - 1, |r| < 1/(2*N).  */
-#if __HAVE_FAST_FMA
+#if HAVE_FAST_FMA
   /* rounding error: 0x1p-55/N.  */
   r = fma (z, invc, -1.0);
 #else
@@ -178,7 +176,4 @@ log (double x)
 #endif
   return y;
 }
-
-_MATH_ALIAS_d_d(log)
-
 #endif

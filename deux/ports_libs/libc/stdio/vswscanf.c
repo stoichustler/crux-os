@@ -18,7 +18,8 @@
  */
 /* Doc in vfwscanf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <string.h>
@@ -29,8 +30,19 @@
  * vsscanf
  */
 
+#ifndef _REENT_ONLY
+
 int
-vswscanf ( const wchar_t *str, const wchar_t *fmt,
+vswscanf (const wchar_t *__restrict str, const wchar_t * __restrict fmt,
+  va_list ap)
+{
+  return _vswscanf_r (_REENT, str, fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_vswscanf_r (struct _reent *ptr, const wchar_t *str, const wchar_t *fmt,
 	     va_list ap)
 {
   FILE f;
@@ -44,5 +56,5 @@ vswscanf ( const wchar_t *str, const wchar_t *fmt,
   f._flags2 = 0;
   f._ur = 0;
   f._file = -1;  /* No file. */
-  return _ssvfwscanf ( &f, fmt, ap);
+  return __ssvfwscanf_r (ptr, &f, fmt, ap);
 }

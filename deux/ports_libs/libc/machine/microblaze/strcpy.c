@@ -55,8 +55,6 @@ QUICKREF
 	strcpy ansi pure
 */
 
-#include <picolibc.h>
-
 #include <string.h>
 #include <limits.h>
 
@@ -89,10 +87,10 @@ strcpy (char *__restrict dst0,
 
 #ifndef HAVE_HW_PCMP
 
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
   char *s = dst0;
 
-  while ((*dst0++ = *src0++))
+  while (*dst0++ = *src0++)
     ;
 
   return s;
@@ -119,16 +117,16 @@ strcpy (char *__restrict dst0,
       src = (char*)aligned_src;
     }
 
-  while ((*dst++ = *src++))
+  while (*dst++ = *src++)
     ;
   return dst0;
-#endif /* not __PREFER_SIZE_OVER_SPEED */
+#endif /* not PREFER_SIZE_OVER_SPEED */
 
 #else    
 
 #include "mb_endian.h"
 
-  __asm__ volatile ("                                                   \n\
+  asm volatile ("                                                   \n\
         or      r9, r0, r0              /* Index register */        \n\
 check_alignment:                                                    \n\
         andi    r3, r5, 3                                           \n\

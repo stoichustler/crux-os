@@ -37,6 +37,7 @@
 #define	_RUNETYPE_H_
 
 #include <stddef.h>
+#include <sys/cdefs.h>
 #include <machine/ansi.h>
 
 #ifdef	_BSD_RUNE_T_

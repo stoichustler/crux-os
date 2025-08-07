@@ -13,8 +13,6 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <reent.h>
@@ -48,7 +46,7 @@ sbrk (ptrdiff_t nbytes)
 #else
       /* The kernargs pointer is in s[8:9].
 	 This will break if the enable_sgpr_* flags are ever changed.  */
-      __asm__ ("s_mov_b64 %0, s[8:9]" : "=Sg"(kernargs));
+      asm ("s_mov_b64 %0, s[8:9]" : "=Sg"(kernargs));
 #endif
 
       /* The heap data is at kernargs[3].  */
@@ -86,7 +84,7 @@ __malloc_lock (struct _reent *reent)
   while (__sync_lock_test_and_set (&__heap_lock, 1))
     /* A sleep seems like it should allow the wavefront to yeild (maybe?)
        Use the shortest possible sleep time of 1*64 cycles.  */
-    __asm__ volatile ("s_sleep\t1" ::: "memory");
+    asm volatile ("s_sleep\t1" ::: "memory");
 
   if (__heap_lock_id != NULL)
     abort ();

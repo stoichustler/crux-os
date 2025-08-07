@@ -57,7 +57,7 @@ POSIX requires <<fileno>>.
 Supporting OS subroutines required: none.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
@@ -66,14 +66,14 @@ int
 fileno (FILE * f)
 {
   int result;
-  CHECK_INIT();
+  CHECK_INIT (_REENT, f);
   _newlib_flockfile_start (f);
   if (f->_flags)
     result = __sfileno (f);
   else
     {
       result = -1;
-      errno = EBADF;
+      _REENT_ERRNO(_REENT) = EBADF;
     }
   _newlib_flockfile_end (f);
   return result;

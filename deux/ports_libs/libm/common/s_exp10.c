@@ -49,20 +49,21 @@ PORTABILITY
  * wrapper exp10(x)
  */
 
-#define _GNU_SOURCE
 #undef exp10
 #include "fdlibm.h"
 #include <errno.h>
 #include <math.h>
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-exp1064(__float64 x)		/* wrapper exp10 */
+#ifdef __STDC__
+	double exp10(double x)		/* wrapper exp10 */
+#else
+	double exp10(x)			/* wrapper exp10 */
+	double x;
+#endif
 {
-  return _pow64(_F_64(10.0), x);
+  return pow(10.0, x);
 }
 
-_MATH_ALIAS_d_d(exp10);
-
-#endif /* _NEED_FLOAT64 */
+#endif /* defined(_DOUBLE_IS_32BITS) */

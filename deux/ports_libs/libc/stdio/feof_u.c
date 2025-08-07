@@ -24,7 +24,6 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include "local.h"
 
@@ -35,6 +34,6 @@
 int
 feof_unlocked (FILE * fp)
 {
-  CHECK_INIT();
+  CHECK_INIT(_REENT, fp);
   return __sfeof (fp);
 }

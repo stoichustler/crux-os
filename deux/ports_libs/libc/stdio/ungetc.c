@@ -27,7 +27,7 @@ SYNOPSIS
 	#include <stdio.h>
 	int ungetc(int <[c]>, FILE *<[stream]>);
 
-	int ungetc( int <[c]>, FILE *<[stream]>);
+	int _ungetc_r(struct _reent *<[reent]>, int <[c]>, FILE *<[stream]>);
 
 DESCRIPTION
 <<ungetc>> is used to return bytes back to <[stream]> to be read again.
@@ -61,7 +61,8 @@ Supporting OS subroutines required: <<sbrk>>.
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -76,7 +77,7 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 
 /*static*/
 int
-__submore (
+__submore (struct _reent *rptr,
        register FILE *fp)
 {
   register int i;
@@ -87,7 +88,7 @@ __submore (
       /*
        * Get a new buffer (rather than expanding the old one).
        */
-      if ((p = (unsigned char *) malloc ((size_t) BUFSIZ)) == NULL)
+      if ((p = (unsigned char *) _malloc_r (rptr, (size_t) BUFSIZ)) == NULL)
 	return EOF;
       fp->_ub._base = p;
       fp->_ub._size = BUFSIZ;
@@ -98,7 +99,7 @@ __submore (
       return 0;
     }
   i = fp->_ub._size;
-  p = (unsigned char *) realloc ((void *) (fp->_ub._base), i << 1);
+  p = (unsigned char *) _realloc_r (rptr, (void *) (fp->_ub._base), i << 1);
   if (p == NULL)
     return EOF;
   (void) memcpy ((void *) (p + i), (void *) p, (size_t) i);
@@ -109,7 +110,7 @@ __submore (
 }
 
 int
-ungetc (
+_ungetc_r (struct _reent *rptr,
        int c,
        register FILE *fp)
 {
@@ -120,7 +121,7 @@ ungetc (
      ??? Might be able to remove this as some other stdio routine should
      have already been called to get the char we are un-getting.  */
 
-  CHECK_INIT();
+  CHECK_INIT (rptr, fp);
 
   _newlib_flockfile_start (fp);
 
@@ -140,7 +141,7 @@ ungetc (
         }
       if (fp->_flags & __SWR)
 	{
-	  if (fflush ( fp))
+	  if (_fflush_r (rptr, fp))
             {
               _newlib_flockfile_exit (fp);
               return EOF;
@@ -160,7 +161,7 @@ ungetc (
 
   if (HASUB (fp))
     {
-      if (fp->_r >= fp->_ub._size && __submore (fp))
+      if (fp->_r >= fp->_ub._size && __submore (rptr, fp))
         {
           _newlib_flockfile_exit (fp);
           return EOF;
@@ -200,3 +201,12 @@ ungetc (
   _newlib_flockfile_end (fp);
   return c;
 }
+
+#ifndef _REENT_ONLY
+int
+ungetc (int c,
+       register FILE *fp)
+{
+  return _ungetc_r (_REENT, c, fp);
+}
+#endif /* !_REENT_ONLY */

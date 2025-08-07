@@ -27,7 +27,7 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "fdlibm.h"
-#if !__OBSOLETE_MATH_FLOAT
+#if !__OBSOLETE_MATH
 
 #include <math.h>
 #include <stdint.h>
@@ -72,7 +72,7 @@ logf (float x)
 	return __math_invalidf (x);
       /* x is subnormal, normalize it.  */
       ix = asuint (x * 0x1p23f);
-      ix -= (int32_t) 23 << 23;
+      ix -= 23 << 23;
     }
 
   /* x = 2^k z; where z is in range [OFF,2*OFF] and exact.
@@ -81,7 +81,7 @@ logf (float x)
   tmp = ix - OFF;
   i = (tmp >> (23 - LOGF_TABLE_BITS)) % N;
   k = (int32_t) tmp >> 23; /* arithmetic shift */
-  iz = ix - (tmp & (uint32_t) 0x1ff << 23);
+  iz = ix - (tmp & 0x1ff << 23);
   invc = T[i].invc;
   logc = T[i].logc;
   z = (double_t) asfloat (iz);
@@ -97,4 +97,4 @@ logf (float x)
   y = y * r2 + (y0 + r);
   return (float) y;
 }
-#endif /* !__OBSOLETE_MATH_FLOAT */
+#endif /* !__OBSOLETE_MATH */

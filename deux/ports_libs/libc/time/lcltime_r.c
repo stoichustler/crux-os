@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
  * localtime_r.c
  * Original Author: Adapted from tzcode maintained by Arthur David Olson.
  * Modifications:
@@ -39,7 +23,7 @@ localtime_r (const time_t *__restrict tim_p,
   int hours, mins, secs;
   int year;
   __tzinfo_type *const tz = __gettzinfo ();
-  const uint8_t *ip;
+  const int *ip;
 
   res = gmtime_r (tim_p, res);
 

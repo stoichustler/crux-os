@@ -17,7 +17,8 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -27,7 +28,20 @@
  * vsiscanf
  */
 
-vsiscanf (
+#ifndef _REENT_ONLY
+
+int
+vsiscanf (const char *str,
+       const char *fmt,
+       va_list ap)
+{
+  return _vsiscanf_r (_REENT, str, fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_vsiscanf_r (struct _reent *ptr,
        const char *str,
        const char *fmt,
        va_list ap)
@@ -42,5 +56,5 @@ vsiscanf (
   f._ub._base = NULL;
   f._lb._base = NULL;
   f._file = -1;  /* No file. */
-  return _ssvfiscanf ( &f, fmt, ap);
+  return __ssvfiscanf_r (ptr, &f, fmt, ap);
 }

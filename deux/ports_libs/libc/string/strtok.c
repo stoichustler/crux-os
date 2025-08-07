@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
 FUNCTION
 	<<strtok>>, <<strtok_r>>, <<strsep>>---get next token from a string
 
@@ -87,9 +71,14 @@ QUICKREF
 #undef  __STRICT_ANSI__
 #include <string.h>
 #include <stdlib.h>
+#include <_ansi.h>
+#include <reent.h>
 
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local char *_tls_strtok_last;
+#endif
 
-static __THREAD_LOCAL char *_strtok_last;
+#ifndef _REENT_ONLY
 
 extern char *__strtok_r (char *, const char *, char **, int);
 
@@ -97,5 +86,9 @@ char *
 strtok (register char *__restrict s,
 	register const char *__restrict delim)
 {
-	return __strtok_r (s, delim, &_strtok_last, 1);
+	struct _reent *reent = _REENT;
+
+	_REENT_CHECK_MISC(reent);
+	return __strtok_r (s, delim, &(_REENT_STRTOK_LAST(reent)), 1);
 }
+#endif

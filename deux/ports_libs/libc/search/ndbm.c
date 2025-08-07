@@ -32,12 +32,17 @@
  * SUCH DAMAGE.
  */
 
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "@(#)ndbm.c	8.4 (Berkeley) 7/21/94";
+#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$ : src/lib/libc/db/hash/ndbm.c Nov 20 19:49:47 2017 UTC by pfg - SVN Revision 326025");
+
 /*
  * This package provides a dbm compatible interface to the new hashing
  * package described in db(3).
  */
 
-#define _DEFAULT_SOURCE
 #include <sys/param.h>
 
 #include <stdio.h>

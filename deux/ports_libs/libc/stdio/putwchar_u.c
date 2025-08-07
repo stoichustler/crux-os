@@ -25,12 +25,20 @@
  */
 
 #define _GNU_SOURCE
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 #undef putwchar_unlocked
+
+wint_t
+_putwchar_unlocked_r (struct _reent *ptr,
+	wchar_t wc)
+{
+  return _fputwc_unlocked_r (ptr, wc, stdout);
+}
 
 /*
  * Synonym for fputwc_unlocked(wc, stdout).
@@ -38,5 +46,6 @@
 wint_t
 putwchar_unlocked (wchar_t wc)
 {
+  _REENT_SMALL_CHECK_INIT (_REENT);
   return fputwc_unlocked (wc, stdout);
 }

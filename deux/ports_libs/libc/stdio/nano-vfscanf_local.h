@@ -46,8 +46,8 @@
 #ifndef VFSCANF_LOCAL
 #define VFSCANF_LOCAL
 
-#ifndef __IO_NO_FLOATING_POINT
-#define __IO_FLOATING_POINT
+#ifndef NO_FLOATING_POINT
+#define FLOATING_POINT
 #endif
 
 #ifdef STRING_ONLY
@@ -57,17 +57,17 @@
 #define _newlib_flockfile_start(x) {}
 #define _newlib_flockfile_exit(x) {}
 #define _newlib_flockfile_end(x) {}
-#define ungetc sungetc
-#define _srefill _ssrefill
+#define _ungetc_r _sungetc_r
+#define __srefill_r __ssrefill_r
 #endif
 
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 #include <math.h>
 #include <float.h>
 
 /* Currently a test is made to see if long double processing is warranted.
-   This could be changed in the future should the __ldtoa code be
-   preferred over __dtoa.  */
+   This could be changed in the future should the _ldtoa_r code be
+   preferred over _dtoa_r.  */
 #define _NO_LONGDBL
 
 #include "floatio.h"
@@ -88,8 +88,8 @@
 
 
 #define _NO_LONGLONG
-#undef __IO_C99_FORMATS
-#undef __IO_POS_ARGS
+#undef _WANT_IO_C99_FORMATS
+#undef _WANT_IO_POS_ARGS
 
 #define _NO_POS_ARGS
 
@@ -155,24 +155,24 @@ struct _scan_data_t
   int code;             /* Current conversion specifier.  */
   char buf[BUF];        /* Internal buffer for scan.  */
   /* Internal buffer for scan.  */
-  int (*pfn_ungetc)(int, FILE*);
+  int (*pfn_ungetc)(struct _reent*, int, FILE*);
   /* Internal buffer for scan.  */
-  int (*pfn_refill)(FILE*);
+  int (*pfn_refill)(struct _reent*, FILE*);
 };
 
 extern int
-_scanf_chars (
+_scanf_chars (struct _reent *rptr,
 	      struct _scan_data_t *pdata,
 	      FILE *fp, va_list *ap);
 extern int
-_scanf_i (
+_scanf_i (struct _reent *rptr,
 	  struct _scan_data_t *pdata,
 	  FILE *fp, va_list *ap);
 /* Make _scanf_float weak symbol, so it won't be linked in if target program
    does not need it.  */
 extern int
-_scanf_float (
+_scanf_float (struct _reent *rptr,
 	      struct _scan_data_t *pdata,
-	      FILE *fp, va_list *ap) __weak;
+	      FILE *fp, va_list *ap) _ATTRIBUTE((__weak__));
 
 #endif

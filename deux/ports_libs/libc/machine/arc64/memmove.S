@@ -28,8 +28,6 @@
    POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <sys/asm.h>
 
 ; r0 void* dest

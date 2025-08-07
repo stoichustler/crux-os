@@ -18,7 +18,8 @@
 /* This code created by modifying snprintf.c so copyright inherited. */
 /* doc in siprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
@@ -26,7 +27,7 @@
 #include "local.h"
 
 int
-sniprintf (
+_sniprintf_r (struct _reent *ptr,
 	char *str,
 	size_t size,
 	const char *fmt, ...)
@@ -37,7 +38,7 @@ sniprintf (
 
   if (size > INT_MAX)
     {
-      errno = EOVERFLOW;
+      _REENT_ERRNO(ptr) = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -46,11 +47,45 @@ sniprintf (
   f._bf._size = f._w = (size > 0 ? size - 1 : 0);
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfiprintf ( &f, fmt, ap);
+  ret = _svfiprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
   if (ret < EOF)
-    errno = EOVERFLOW;
+    _REENT_ERRNO(ptr) = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return (ret);
 }
+
+#ifndef _REENT_ONLY
+
+int
+sniprintf (char *str,
+	size_t size,
+	const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+  struct _reent *ptr = _REENT;
+
+  if (size > INT_MAX)
+    {
+      _REENT_ERRNO(ptr) = EOVERFLOW;
+      return EOF;
+    }
+  f._flags = __SWR | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._w = (size > 0 ? size - 1 : 0);
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfiprintf_r (ptr, &f, fmt, ap);
+  va_end (ap);
+  if (ret < EOF)
+    _REENT_ERRNO(ptr) = EOVERFLOW;
+  if (size > 0)
+    *f._p = 0;
+  return (ret);
+}
+
+#endif

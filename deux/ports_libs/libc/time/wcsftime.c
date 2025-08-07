@@ -1,4 +1,3 @@
-/* Copyright (c) 2009 Craig Howland */
 /*
  * wcsftime.c
  * Original Author:	Craig Howland, for Newlib
@@ -63,5 +62,7 @@ SEEALSO
 <<strftime>>
 */
 
+#include <time.h>
+#include <wchar.h>
 #define MAKE_WCSFTIME
 #include "../time/strftime.c"

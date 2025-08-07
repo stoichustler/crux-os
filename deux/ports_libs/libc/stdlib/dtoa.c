@@ -26,10 +26,16 @@
 	dmg@research.att.com or research!dmg
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdlib.h>
+#include <reent.h>
 #include <string.h>
 #include "mprec.h"
+
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local struct _Bigint *_tls_mp_result;
+_Thread_local int _tls_mp_result_k;
+#endif
 
 static int
 quorem (_Bigint * b, _Bigint * S)
@@ -42,9 +48,6 @@ quorem (_Bigint * b, _Bigint * S)
   __Long z;
   __ULong si, zs;
 #endif
-
-  if (!b || !S)
-    return 0;
 
   n = S->_wds;
 #ifdef DEBUG
@@ -177,7 +180,7 @@ quorem (_Bigint * b, _Bigint * S)
 
 
 char *
-__dtoa (
+_dtoa_r (struct _reent *ptr,
 	double _d,
 	int mode,
 	int ndigits,
@@ -233,6 +236,15 @@ __dtoa (
 
   d.d = _d;
 
+  _REENT_CHECK_MP(ptr);
+  if (_REENT_MP_RESULT(ptr))
+    {
+      _REENT_MP_RESULT(ptr)->_k = _REENT_MP_RESULT_K(ptr);
+      _REENT_MP_RESULT(ptr)->_maxwds = 1 << _REENT_MP_RESULT_K(ptr);
+      Bfree (ptr, _REENT_MP_RESULT(ptr));
+      _REENT_MP_RESULT(ptr) = 0;
+    }
+
   if (word0 (d) & Sign_bit)
     {
       /* set sign for everything, including 0's and NaNs */
@@ -277,9 +289,7 @@ __dtoa (
       return s;
     }
 
-  b = d2b (d.d, &be, &bbits);
-  if (!b)
-    return NULL;
+  b = d2b (ptr, d.d, &be, &bbits);
 #ifdef Sudden_Underflow
   i = (int) (word0 (d) >> Exp_shift1 & (Exp_mask >> Exp_shift1));
 #else
@@ -398,7 +408,7 @@ __dtoa (
       break;
     case 2:
       leftright = 0;
-      __fallthrough;
+      /* no break */
     case 4:
       if (ndigits <= 0)
 	ndigits = 1;
@@ -406,7 +416,7 @@ __dtoa (
       break;
     case 3:
       leftright = 0;
-      __fallthrough;
+      /* no break */
     case 5:
       i = ndigits + k + 1;
       ilim = i;
@@ -414,11 +424,12 @@ __dtoa (
       if (i <= 0)
 	i = 1;
     }
-  s = s0 = __alloc_dtoa_result(i);
-  if (!s) {
-    Bfree(b);
-    return NULL;
-  }
+  j = sizeof (__ULong);
+  for (_REENT_MP_RESULT_K(ptr) = 0; sizeof (_Bigint) - sizeof (__ULong) + j <= i;
+       j <<= 1)
+    _REENT_MP_RESULT_K(ptr)++;
+  _REENT_MP_RESULT(ptr) = eBalloc (ptr, _REENT_MP_RESULT_K(ptr));
+  s = s0 = (char *) _REENT_MP_RESULT(ptr);
 
   if (ilim >= 0 && ilim <= Quick_max && try_quick)
     {
@@ -619,7 +630,7 @@ __dtoa (
 	}
       b2 += i;
       s2 += i;
-      mhi = i2b (1);
+      mhi = i2b (ptr, 1);
     }
   if (m2 > 0 && s2 > 0)
     {
@@ -634,22 +645,20 @@ __dtoa (
 	{
 	  if (m5 > 0)
 	    {
-	      mhi = pow5mult (mhi, m5);
-	      b1 = mult (mhi, b);
-	      Bfree (b);
+	      mhi = pow5mult (ptr, mhi, m5);
+	      b1 = mult (ptr, mhi, b);
+	      Bfree (ptr, b);
 	      b = b1;
 	    }
          if ((j = b5 - m5) != 0)
-	    b = pow5mult (b, j);
+	    b = pow5mult (ptr, b, j);
 	}
       else
-	b = pow5mult (b, b5);
+	b = pow5mult (ptr, b, b5);
     }
-  S = i2b (1);
+  S = i2b (ptr, 1);
   if (s5 > 0)
-    S = pow5mult (S, s5);
-  if (!S)
-    goto ret;
+    S = pow5mult (ptr, S, s5);
 
   /* Check for special case that d is a normalized power of 2. */
 
@@ -699,23 +708,23 @@ __dtoa (
       s2 += i;
     }
   if (b2 > 0)
-    b = lshift (b, b2);
+    b = lshift (ptr, b, b2);
   if (s2 > 0)
-    S = lshift (S, s2);
+    S = lshift (ptr, S, s2);
   if (k_check)
     {
       if (cmp (b, S) < 0)
 	{
 	  k--;
-	  b = multadd (b, 10, 0);	/* we botched the k estimate */
+	  b = multadd (ptr, b, 10, 0);	/* we botched the k estimate */
 	  if (leftright)
-	    mhi = multadd (mhi, 10, 0);
+	    mhi = multadd (ptr, mhi, 10, 0);
 	  ilim = ilim1;
 	}
     }
   if (ilim <= 0 && mode > 2)
     {
-      if (ilim < 0 || cmp (b, S = multadd (S, 5, 0)) <= 0)
+      if (ilim < 0 || cmp (b, S = multadd (ptr, S, 5, 0)) <= 0)
 	{
 	  /* no digits, fcvt style */
 	no_digits:
@@ -730,7 +739,7 @@ __dtoa (
   if (leftright)
     {
       if (m2 > 0)
-	mhi = lshift (mhi, m2);
+	mhi = lshift (ptr, mhi, m2);
 
       /* Compute mlo -- check for special case
        * that d is a normalized power of 2.
@@ -739,13 +748,9 @@ __dtoa (
       mlo = mhi;
       if (spec_case)
 	{
-	  mhi = Balloc (mhi->_k);
-	  if (!mhi) {
-	    Bfree(mlo);
-	    return NULL;
-	  }
+	  mhi = eBalloc (ptr, mhi->_k);
 	  Bcopy (mhi, mlo);
-	  mhi = lshift (mhi, Log2P);
+	  mhi = lshift (ptr, mhi, Log2P);
 	}
 
       for (i = 1;; i++)
@@ -755,9 +760,9 @@ __dtoa (
 	   * that will round to d?
 	   */
 	  j = cmp (b, mlo);
-	  delta = diff (S, mhi);
+	  delta = diff (ptr, S, mhi);
 	  j1 = delta->_sign ? 1 : cmp (b, delta);
-	  Bfree (delta);
+	  Bfree (ptr, delta);
 #ifndef ROUND_BIASED
 	  if (j1 == 0 && !mode && !(word1 (d) & 1))
 	    {
@@ -777,7 +782,7 @@ __dtoa (
 	    {
 	      if (j1 > 0)
 		{
-		  b = lshift (b, 1);
+		  b = lshift (ptr, b, 1);
 		  j1 = cmp (b, S);
                  if (((j1 > 0) || ((j1 == 0) && (dig & 1)))
 		      && dig++ == '9')
@@ -800,13 +805,13 @@ __dtoa (
 	  *s++ = dig;
 	  if (i == ilim)
 	    break;
-	  b = multadd (b, 10, 0);
+	  b = multadd (ptr, b, 10, 0);
 	  if (mlo == mhi)
-	    mlo = mhi = multadd (mhi, 10, 0);
+	    mlo = mhi = multadd (ptr, mhi, 10, 0);
 	  else
 	    {
-	      mlo = multadd (mlo, 10, 0);
-	      mhi = multadd (mhi, 10, 0);
+	      mlo = multadd (ptr, mlo, 10, 0);
+	      mhi = multadd (ptr, mhi, 10, 0);
 	    }
 	}
     }
@@ -816,12 +821,12 @@ __dtoa (
 	*s++ = dig = quorem (b, S) + '0';
 	if (i >= ilim)
 	  break;
-	b = multadd (b, 10, 0);
+	b = multadd (ptr, b, 10, 0);
       }
 
   /* Round off last digit */
 
-  b = lshift (b, 1);
+  b = lshift (ptr, b, 1);
   j = cmp (b, S);
   if ((j > 0) || ((j == 0) && (dig & 1)))
     {
@@ -841,15 +846,15 @@ __dtoa (
       s++;
     }
 ret:
-  Bfree (S);
+  Bfree (ptr, S);
   if (mhi)
     {
       if (mlo && mlo != mhi)
-	Bfree (mlo);
-      Bfree (mhi);
+	Bfree (ptr, mlo);
+      Bfree (ptr, mhi);
     }
 ret1:
-  Bfree (b);
+  Bfree (ptr, b);
   *s = 0;
   *decpt = k + 1;
   if (rve)

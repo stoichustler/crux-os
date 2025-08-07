@@ -1,5 +1,3 @@
-#include <picolibc.h>
-
 #include <malloc.h>
 
 void *

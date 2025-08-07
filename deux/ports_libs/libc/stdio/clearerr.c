@@ -63,7 +63,7 @@ ANSI C requires <<clearerr>>.
 No supporting OS subroutines are required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -74,7 +74,7 @@ No supporting OS subroutines are required.
 void
 clearerr (FILE * fp)
 {
-  CHECK_INIT();
+  CHECK_INIT(_REENT, fp);
   _newlib_flockfile_start (fp);
   __sclearerr (fp);
   _newlib_flockfile_end (fp);

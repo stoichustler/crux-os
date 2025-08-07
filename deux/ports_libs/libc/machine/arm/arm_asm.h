@@ -29,7 +29,7 @@
 #ifndef ARM_ASM__H
 #define ARM_ASM__H
 
-#include "machine/acle-compat.h"
+#include "arm-acle-compat.h"
 
 #if __ARM_ARCH >= 7 && defined (__ARM_ARCH_ISA_ARM)
 # define _ISA_ARM_7
@@ -150,28 +150,6 @@
 *   epilogue 1, 4 push_ip=1 -> pop {r1-r4, ip}
 *
 ******************************************************************************/
-
-
-/* Don't emit unwind or exception table entries */
-
-        .macro fnstart
-#ifdef __INCLUDE_EXIDX
-        .fnstart
-#endif
-        .endm
-
-        .macro cantunwind
-#ifdef __INCLUDE_EXIDX
-        .cantunwind
-#endif
-        .endm
-
-        .macro fnend
-#ifdef __INCLUDE_EXIDX
-        .fnend
-#endif
-        .endm
-
 
 /* Emit .cfi_restore directives for a consecutive sequence of registers.  */
 	.macro cfirestorelist first, last
@@ -519,18 +497,6 @@
 	.else
 	 _epilogue first=\first, last=\last, push_ip=\push_ip, push_lr=\push_lr
 	.endif
-.endm
-
-.macro	ASM_ALIAS_THUMB_STATE new old
-	.global	\new
-	.type	\new, %function
-	.thumb_set	\new, \old
-.endm
-
-.macro	ASM_ALIAS_ARM_STATE new old
-	.global	\new
-	.type	\new, %function
-	.set	\new, \old
 .endm
 
 #endif /* __ASSEMBLER__ */

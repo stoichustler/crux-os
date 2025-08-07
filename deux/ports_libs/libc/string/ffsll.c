@@ -24,30 +24,11 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <strings.h>
 
 int
 ffsll(long long i)
 {
-#if __HAVE_BUILTIN_FFSLL
+
 	return (__builtin_ffsll(i));
-#elif __HAVE_BUILTIN_CTZLL
-	if (i == 0)
-		return 0;
-	return __builtin_ctzll((unsigned long long)i) + 1;
-#else
-  int r;
-
-  if (!i)
-    return 0;
-
-  r = 0;
-  for (;;)
-    {
-      if (((1LL << r++) & i) != 0)
-       return r;
-    }
-  return 0;
-#endif
 }

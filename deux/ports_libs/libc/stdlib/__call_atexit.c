@@ -1,51 +1,23 @@
 /*
-Copyright (c) 2004 Paul Brook <paul@codesourcery.com> 
-
-Common routine to implement atexit-like functionality.
-
-This is also the key function to be configured as lite exit, a size-reduced
-implementation of exit that doesn't invoke clean-up functions such as _fini
-or global destructors.
-
-Default (without lite exit) call graph is like:
-start -> atexit -> __register_exitproc
-start -> __libc_init_array -> __cxa_atexit -> __register_exitproc
-on_exit -> __register_exitproc
-start -> exit -> __call_exitprocs
-
-Here an -> means arrow tail invokes arrow head. All invocations here
-are non-weak reference in current newlib.
-
-Lite exit makes some of above calls as weak reference, so that size expansive
-functions __register_exitproc and __call_exitprocs may not be linked. These
-calls are:
-start w-> atexit
-cxa_atexit w-> __register_exitproc
-exit w-> __call_exitprocs
-
-Lite exit also makes sure that __call_exitprocs will be referenced as non-weak
-whenever __register_exitproc is referenced as non-weak.
-
-Thus with lite exit libs, a program not explicitly calling atexit or on_exit
-will escape from the burden of cleaning up code. A program with atexit or on_exit
-will work consistently to normal libs.
-
-Lite exit is enabled with --enable-lite-exit, and is controlled with macro
-LITE_EXIT.
- */
-/*
  * COmmon routine to call call registered atexit-like routines.
  */
 
 
 #include <stdlib.h>
+#include <reent.h>
 #include <sys/lock.h>
 #include "atexit.h"
 
 /* Make this a weak reference to avoid pulling in free.  */
 #ifndef MALLOC_PROVIDED
-void free(void *) __weak;
+void free(void *) _ATTRIBUTE((__weak__));
 #endif
+
+#ifndef __SINGLE_THREAD__
+__LOCK_INIT_RECURSIVE(, __atexit_recursive_mutex);
+#endif
+
+struct _atexit *__atexit = _NULL;
 
 #ifdef _WANT_REGISTER_FINI
 
@@ -63,7 +35,7 @@ void free(void *) __weak;
    configure-time option, so that the same C library binary can be
    used with multiple BSPs, some of which register finalizers from
    startup code, while others defer to the C library.  */
-extern char __libc_fini __weak;
+extern char __libc_fini __attribute__((weak));
 
 /* Register the application finalization function with atexit.  These
    finalizers should run last.  Therefore, we want to call atexit as
@@ -75,7 +47,7 @@ static void
 register_fini(void)
 {
   if (&__libc_fini) {
-#ifdef __INIT_FINI_ARRAY
+#ifdef _HAVE_INITFINI_ARRAY
     extern void __libc_fini_array (void);
     atexit (__libc_fini_array);
 #else
@@ -103,15 +75,21 @@ __call_exitprocs (int code, void *d)
   void (*fn) (void);
 
 
-  __LIBC_LOCK();
+#ifndef __SINGLE_THREAD__
+  __lock_acquire_recursive(__atexit_recursive_mutex);
+#endif
 
  restart:
 
-  p = _atexit;
-  lastp = &_atexit;
+  p = __atexit;
+  lastp = &__atexit;
   while (p)
     {
+#ifdef _REENT_SMALL
+      args = p->_on_exit_args_ptr;
+#else
       args = &p->_on_exit_args;
+#endif
       for (n = p->_ind - 1; n >= 0; n--)
 	{
 	  int ind;
@@ -155,11 +133,15 @@ __call_exitprocs (int code, void *d)
       break;
 #else
       /* Move to the next block.  Free empty blocks except the last one,
-	 which is _atexit0.  */
+	 which is part of _GLOBAL_REENT.  */
       if (p->_ind == 0 && p->_next)
 	{
 	  /* Remove empty block from the list.  */
 	  *lastp = p->_next;
+#ifdef _REENT_SMALL
+	  if (args)
+	    free (args);
+#endif
 	  free (p);
 	  p = *lastp;
 	}
@@ -170,5 +152,8 @@ __call_exitprocs (int code, void *d)
 	}
 #endif
     }
-    __LIBC_UNLOCK();
+#ifndef __SINGLE_THREAD__
+  __lock_release_recursive(__atexit_recursive_mutex);
+#endif
+
 }

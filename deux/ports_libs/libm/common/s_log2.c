@@ -61,22 +61,22 @@ C99, POSIX, System V Interface Definition (Issue 6).
  */
 
 #include "fdlibm.h"
-#if __OBSOLETE_MATH_DOUBLE
+#if __OBSOLETE_MATH
 #include <errno.h>
 #include <math.h>
 #undef log2
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-log264(__float64 x)		/* wrapper log2 */
+#ifdef __STDC__
+	double log2(double x)		/* wrapper log2 */
+#else
+	double log2(x)			/* wrapper log2 */
+	double x;
+#endif
 {
-    return (log64(x) / _F_64(_M_LN2));
+  return (log(x) / M_LN2);
 }
 
-_MATH_ALIAS_d_d(log2)
-
-#endif /* _NEED_FLOAT64 */
-#else
-#include "log2.c"
-#endif /* __OBSOLETE_MATH_DOUBLE */
+#endif /* defined(_DOUBLE_IS_32BITS) */
+#endif /* __OBSOLETE_MATH */

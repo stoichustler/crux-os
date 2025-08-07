@@ -66,19 +66,19 @@ QUICKREF
  * software is freely granted, provided that this notice is preserved.
  */
 
-#define _GNU_SOURCE
+#include <sys/cdefs.h>
 
 #include <ctype.h>
 #include <string.h>
 #include <strings.h>
 
-#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
 # define RETURN_TYPE char *
 # define AVAILABLE(h, h_l, j, n_l)			\
   (!memchr ((h) + (h_l), '\0', (j) + (n_l) - (h_l))	\
    && ((h_l) = (j) + (n_l)))
 # define CANON_ELEMENT(c) tolower (c)
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
+#if __GNUC_PREREQ (4, 2)
 /* strncasecmp uses signed char, CMP_FUNC is expected to use unsigned char. */
 #pragma GCC diagnostic ignored "-Wpointer-sign"
 #endif
@@ -93,7 +93,7 @@ char *
 strcasestr (const char *s,
 	const char *find)
 {
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
 
   /* Less code size, but quadratic performance in the worst case.  */
 	char c, sc;

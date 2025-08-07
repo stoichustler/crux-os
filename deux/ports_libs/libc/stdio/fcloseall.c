@@ -49,14 +49,26 @@ Required OS subroutines: <<close>>, <<fstat>>, <<isatty>>, <<lseek>>,
 */
 /* This file based upon fwalk.c. */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "local.h"
 
 int
+_fcloseall_r (struct _reent *ptr)
+{
+  /* There are no thread-specific FILE objects */
+  return 0;
+}
+
+#ifndef _REENT_ONLY
+
+int
 fcloseall (void)
 {
-  return _fwalk_sglue (fclose, &__sglue);
+  return _fwalk_sglue (_GLOBAL_REENT, _fclose_r, &__sglue);
 }
+
+#endif

@@ -27,8 +27,6 @@
  * SUCH DAMAGE.
  */
 
-#include <picolibc.h>
-
 #ifdef ANDROID_CHANGES
 # include "machine/asm.h"
 # include "machine/regdef.h"

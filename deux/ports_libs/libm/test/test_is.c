@@ -1,22 +1,5 @@
-/*
- * Copyright (c) 1994 Cygnus Support.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * and/or other materials related to such
- * distribution and use acknowledge that the software was developed
- * at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
- * endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
 #include "test.h"
 #include <ctype.h>
-#include <stdlib.h>
 
 int setascii;
 int setlower;
@@ -34,7 +17,7 @@ int mylower;
 int mygraph;
 int mypunct;
 
-static void
+void
 test_is_single (int i)
 {
   setascii = 0;
@@ -355,7 +338,7 @@ test_is_single (int i)
       setlower = 39;
       setupper = 39;
       break;
-    case '(':
+    case '\(':
       myascii = 1;
       mygraph = 1;
       myprint = 1;
@@ -1929,26 +1912,26 @@ test_is_single (int i)
 }
 
 
-static int def_isascii (int i) { return isascii(i); }
-static int def_iscntrl (int i) { return iscntrl(i); }
-static int def_isspace (int i) { return isspace(i); }
-static int def_isprint (int i) { return isprint(i); }
-static int def_isalnum (int i) { return isalnum(i); }
-static int def_isdigit (int i) { return isdigit(i); }
-static int def_isxdigit (int i) { return isxdigit(i); }
-static int def_isalpha (int i) { return isalpha(i); }
-static int def_isupper (int i) { return isupper(i); }
-static int def_islower (int i) { return islower(i); }
-static int def_isgraph (int i) { return isgraph(i); }
-static int def_ispunct (int i) { return ispunct(i); }
-static int def_tolower (int i) { return tolower(i); }
-static int def_toupper (int i) { return toupper(i); }
-static int def_toascii (int i) { return toascii(i); }
-static int def__tolower (int i) { return _tolower(i); }
-static int def__toupper (int i) { return _toupper(i); }
+int def_isascii (int i) { return isascii(i); }
+int def_iscntrl (int i) { return iscntrl(i); }
+int def_isspace (int i) { return isspace(i); }
+int def_isprint (int i) { return isprint(i); }
+int def_isalnum (int i) { return isalnum(i); }
+int def_isdigit (int i) { return isdigit(i); }
+int def_isxdigit (int i) { return isxdigit(i); }
+int def_isalpha (int i) { return isalpha(i); }
+int def_isupper (int i) { return isupper(i); }
+int def_islower (int i) { return islower(i); }
+int def_isgraph (int i) { return isgraph(i); }
+int def_ispunct (int i) { return ispunct(i); }
+int def_tolower (int i) { return tolower(i); }
+int def_toupper (int i) { return toupper(i); }
+int def_toascii (int i) { return toascii(i); }
+int def__tolower (int i) { return _tolower(i); }
+int def__toupper (int i) { return _toupper(i); }
 
-static void
-test_is_set (int (*func)(int),
+void
+test_is_set (int (*func)(),
        char *name,
        int *p)
 {
@@ -1965,9 +1948,8 @@ test_is_set (int (*func)(int),
       }
   }
 }
-
-static void
-test_to_set (int (*func)(int),
+void
+test_to_set (int (*func)(),
        char *name,
        int *p,
        int low,
@@ -2032,8 +2014,8 @@ test_is (void)
   test_is_set(isspace, "isspace function", &myspace);
   test_is_set(isupper, "isupper function", &myupper);
   test_is_set(isxdigit, "isxdigit function", &myxdigit);
-  test_to_set(tolower, "tolower function", &setlower, 'A','Z');
-  test_to_set(toupper, "toupper function", &setupper, 'a','z');
+  test_to_set(_tolower, "_tolower function", &setlower, 'A','Z');
+  test_to_set(_toupper, "_toupper function", &setupper, 'a','z');
   test_to_set(def__tolower, "_tolower define", &setlower, 'A','Z');
   test_to_set(def__toupper, "_toupper define", &setupper, 'a','z');
   test_to_set(def_toascii, "toascii define", &setascii, 0,255);

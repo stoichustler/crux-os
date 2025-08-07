@@ -62,7 +62,6 @@ This function is being added to POSIX 200x, but is not in POSIX 2001.
 Supporting OS subroutines required: <<sbrk>>.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -83,11 +82,11 @@ typedef struct fmemcookie {
 
 /* Read up to non-zero N bytes into BUF from stream described by
    COOKIE; return number of bytes read (0 on EOF).  */
-static ssize_t
-fmemreader (
+static _READ_WRITE_RETURN_TYPE
+fmemreader (struct _reent *ptr,
        void *cookie,
        char *buf,
-       size_t n)
+       _READ_WRITE_BUFSIZE_TYPE n)
 {
   fmemcookie *c = (fmemcookie *) cookie;
   /* Can't read beyond current size, but EOF condition is not an error.  */
@@ -102,11 +101,11 @@ fmemreader (
 
 /* Write up to non-zero N bytes of BUF into the stream described by COOKIE,
    returning the number of bytes written or EOF on failure.  */
-static ssize_t
-fmemwriter (
+static _READ_WRITE_RETURN_TYPE
+fmemwriter (struct _reent *ptr,
        void *cookie,
        const char *buf,
-       size_t n)
+       _READ_WRITE_BUFSIZE_TYPE n)
 {
   fmemcookie *c = (fmemcookie *) cookie;
   int adjust = 0; /* true if at EOF, but still need to write NUL.  */
@@ -149,7 +148,7 @@ fmemwriter (
     memcpy (c->buf + c->pos - n, buf, n - adjust);
   else
     {
-      errno = ENOSPC;
+      _REENT_ERRNO(ptr) = ENOSPC;
       return EOF;
     }
   return n;
@@ -158,7 +157,7 @@ fmemwriter (
 /* Seek to position POS relative to WHENCE within stream described by
    COOKIE; return resulting position or fail with EOF.  */
 static _fpos_t
-fmemseeker (
+fmemseeker (struct _reent *ptr,
        void *cookie,
        _fpos_t pos,
        int whence)
@@ -176,18 +175,18 @@ fmemseeker (
     offset += c->eof;
   if (offset < 0)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       offset = -1;
     }
-  else if (offset > (off_t) c->max)
+  else if (offset > c->max)
     {
-      errno = ENOSPC;
+      _REENT_ERRNO(ptr) = ENOSPC;
       offset = -1;
     }
 #ifdef __LARGE64_FILES
   else if ((_fpos_t) offset != offset)
     {
-      errno = EOVERFLOW;
+      _REENT_ERRNO(ptr) = EOVERFLOW;
       offset = -1;
     }
 #endif /* __LARGE64_FILES */
@@ -212,7 +211,7 @@ fmemseeker (
    COOKIE; return resulting position or fail with EOF.  */
 #ifdef __LARGE64_FILES
 static _fpos64_t
-fmemseeker64 (
+fmemseeker64 (struct _reent *ptr,
        void *cookie,
        _fpos64_t pos,
        int whence)
@@ -225,12 +224,12 @@ fmemseeker64 (
     offset += c->eof;
   if (offset < 0)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       offset = -1;
     }
-  else if (offset > (_off64_t) c->max)
+  else if (offset > c->max)
     {
-      errno = ENOSPC;
+      _REENT_ERRNO(ptr) = ENOSPC;
       offset = -1;
     }
   else
@@ -253,18 +252,18 @@ fmemseeker64 (
 
 /* Reclaim resources used by stream described by COOKIE.  */
 static int
-fmemcloser (
+fmemcloser (struct _reent *ptr,
        void *cookie)
 {
   fmemcookie *c = (fmemcookie *) cookie;
-  free (c->storage);
+  _free_r (ptr, c->storage);
   return 0;
 }
 
 /* Open a memstream around buffer BUF of SIZE bytes, using MODE.
    Return the new stream, or fail with NULL.  */
 FILE *
-fmemopen (
+_fmemopen_r (struct _reent *ptr,
        void *__restrict buf,
        size_t size,
        const char *__restrict mode)
@@ -274,21 +273,23 @@ fmemopen (
   int flags;
   int dummy;
 
-  if ((flags = __sflags (mode, &dummy)) == 0)
+  if ((flags = __sflags (ptr, mode, &dummy)) == 0)
     return NULL;
   if (!size || !(buf || flags & __SRW))
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return NULL;
     }
-  if ((fp = __sfp ()) == NULL)
+  if ((fp = __sfp (ptr)) == NULL)
     return NULL;
-  if ((c = (fmemcookie *) malloc (sizeof *c + (buf ? 0 : size)))
+  if ((c = (fmemcookie *) _malloc_r (ptr, sizeof *c + (buf ? 0 : size)))
       == NULL)
     {
       _newlib_sfp_lock_start ();
       fp->_flags = 0;		/* release */
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       _newlib_sfp_lock_end ();
       return NULL;
     }
@@ -315,7 +316,7 @@ fmemopen (
 	case 'a':
 	  /* a/a+ and buf: position and size at first NUL.  */
 	  buf = memchr (c->buf, '\0', size);
-	  c->eof = c->pos = buf ? (size_t) ((char *) buf - c->buf) : size;
+	  c->eof = c->pos = buf ? (char *) buf - c->buf : size;
 	  if (!buf && c->writeonly)
 	    /* a: guarantee a NUL within size even if no writes.  */
 	    c->buf[size - 1] = '\0';
@@ -351,3 +352,13 @@ fmemopen (
   _newlib_flockfile_end (fp);
   return fp;
 }
+
+#ifndef _REENT_ONLY
+FILE *
+fmemopen (void *__restrict buf,
+       size_t size,
+       const char *__restrict mode)
+{
+  return _fmemopen_r (_REENT, buf, size, mode);
+}
+#endif /* !_REENT_ONLY */

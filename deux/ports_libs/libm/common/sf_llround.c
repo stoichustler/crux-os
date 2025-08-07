@@ -11,7 +11,6 @@
  */
 
 #include "fdlibm.h"
-#include <limits.h>
 
 long long int
 llroundf(float x)
@@ -40,16 +39,17 @@ llroundf(float x)
         }
     }
   else
-    {
-      /* Result other than LONG_MIN is too large to be represented by
-       * a long int.
-       */
-      if (x != (float) LLONG_MIN)
-          __math_set_invalidf();
-      return sign == 1 ? LLONG_MAX : LLONG_MIN;
-    }
+      return (long long int) x;
 
   return sign * result;
 }
 
-_MATH_ALIAS_k_f(llround)
+#ifdef _DOUBLE_IS_32BITS
+
+long long int
+llround(double x)
+{
+	return llroundf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

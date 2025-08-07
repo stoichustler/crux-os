@@ -1,31 +1,3 @@
-/*
-  Copyright (c) 1982, 1986, 1993
-  The Regents of the University of California.  All rights reserved.
-
-  Redistribution and use in source and binary forms, with or without
-  modification, are permitted provided that the following conditions
-  are met:
-  1. Redistributions of source code must retain the above copyright
-  notice, this list of conditions and the following disclaimer.
-  2. Redistributions in binary form must reproduce the above copyright
-  notice, this list of conditions and the following disclaimer in the
-  documentation and/or other materials provided with the distribution.
-  3. Neither the name of the University nor the names of its contributors
-  may be used to endorse or promote products derived from this software
-  without specific prior written permission.
-
-  THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-  ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-  SUCH DAMAGE.
-*/
 #ifndef __SYS_CONFIG_H__
 #define __SYS_CONFIG_H__
 
@@ -34,6 +6,10 @@
 
 #ifdef __aarch64__
 #define MALLOC_ALIGNMENT 16
+#endif
+
+#ifdef __AMDGCN__
+#define __DYNAMIC_REENT__
 #endif
 
 /* exceptions first */
@@ -103,13 +79,25 @@
 #define _POINTER_INT short
 #endif
 
+#if defined(__m68k__) || defined(__mc68000__) || defined(__riscv)
+#define _READ_WRITE_RETURN_TYPE _ssize_t
+#endif
+
+#ifdef ___AM29K__
+#define _FLOAT_RET double
+#endif
+
 #ifdef __i386__
+#ifndef __unix__
+/* in other words, go32 */
+#define _FLOAT_RET double
+#endif
 #if defined(__linux__) || defined(__RDOS__)
 /* we want the reentrancy structure to be returned by a function */
+#define __DYNAMIC_REENT__
 #define HAVE_GETDATE
-#ifndef __LARGE64_FILES
+#define _READ_WRITE_RETURN_TYPE _ssize_t
 #define __LARGE64_FILES 1
-#endif
 /* we use some glibc header files so turn on glibc large file feature */
 #define _LARGEFILE64_SOURCE 1
 #endif
@@ -124,11 +112,33 @@
 #define _POINTER_INT short
 #endif
 
+#if defined(__v850) && !defined(__rtems__)
+#define __ATTRIBUTE_IMPURE_PTR__ __attribute__((__sda__))
+#endif
+
+/* For the PowerPC eabi, force the _impure_ptr to be in .sdata */
+#if defined(__PPC__)
+#if defined(_CALL_SYSV)
+#define __ATTRIBUTE_IMPURE_PTR__ __attribute__((__section__(".sdata")))
+#endif
+#ifdef __SPE__
+#define _LONG_DOUBLE double
+#endif
+#endif
+
+/* Configure small REENT structure for Xilinx MicroBlaze platforms */
 #if defined (__MICROBLAZE__) && !defined(__rtems__)
+#ifndef _REENT_SMALL
+#define _REENT_SMALL
+#endif
 /* Xilinx XMK uses Unix98 mutex */
 #ifdef __XMK__
 #define _UNIX98_THREAD_MUTEX_ATTRIBUTES
 #endif
+#endif
+
+#if defined(__mips__) && !defined(__rtems__)
+#define __ATTRIBUTE_IMPURE_PTR__ __attribute__((__section__(".sdata")))
 #endif
 
 #ifdef __xstormy16__
@@ -140,9 +150,13 @@
 #define MALLOC_ALIGNMENT 8
 #define _POINTER_INT short
 #define __BUFSIZ__ 16
+#define _REENT_SMALL
 #endif
 
 #if defined __MSP430__
+#ifndef _REENT_SMALL
+#define _REENT_SMALL
+#endif
 
 #define __BUFSIZ__ 256
 #define __SMALL_BITFIELDS
@@ -167,11 +181,16 @@
 #define _POINTER_INT long
 #endif
 #define __BUFSIZ__ 16
+#define _REENT_SMALL
 #endif /* __m32c__ */
 
 #ifdef __SPU__
 #define MALLOC_ALIGNMENT 16
 #define __CUSTOM_FILE_IO__
+#endif
+
+#if defined(__or1k__) || defined(__or1knd__)
+#define __DYNAMIC_REENT__
 #endif
 
 /* This block should be kept in sync with GCC's limits.h.  The point
@@ -192,7 +211,7 @@
 #  define __LONG_MAX__ LONG_MAX
 # else
 #  if defined (__alpha__) || (defined (__sparc__) && defined(__arch64__)) \
-    || defined (__sparcv9)
+      || defined (__sparcv9)
 #   define __LONG_MAX__ 9223372036854775807L
 #  else
 #   define __LONG_MAX__ 2147483647L
@@ -205,6 +224,9 @@
 #define _POINTER_INT long
 #endif
 
+#ifdef __frv__
+#define __ATTRIBUTE_IMPURE_PTR__ __attribute__((__section__(".sdata")))
+#endif
 #undef __RAND_MAX
 #if __INT_MAX__ == 32767
 #define __RAND_MAX 32767
@@ -212,9 +234,35 @@
 #define __RAND_MAX 0x7fffffff
 #endif
 
+#if defined(__CYGWIN__)
+#include <cygwin/config.h>
+#endif
 
 #if defined(__rtems__)
 #define __FILENAME_MAX__ 255
+#define _READ_WRITE_RETURN_TYPE _ssize_t
+#define __DYNAMIC_REENT__
+#endif
+
+#ifndef __EXPORT
+#define __EXPORT
+#endif
+
+#ifndef __IMPORT
+#define __IMPORT
+#endif
+
+/* Define return type of read/write routines.  In POSIX, the return type
+   for read()/write() is "ssize_t" but legacy newlib code has been using
+   "int" for some time.  If not specified, "int" is defaulted.  */
+#ifndef _READ_WRITE_RETURN_TYPE
+#define _READ_WRITE_RETURN_TYPE int
+#endif
+/* Define `count' parameter of read/write routines.  In POSIX, the `count'
+   parameter is "size_t" but legacy newlib code has been using "int" for some
+   time.  If not specified, "int" is defaulted.  */
+#ifndef _READ_WRITE_BUFSIZE_TYPE
+#define _READ_WRITE_BUFSIZE_TYPE int
 #endif
 
 #ifndef __WCHAR_MAX__
@@ -223,62 +271,44 @@
 #endif
 #endif
 
-#ifdef __THREAD_LOCAL_STORAGE
-#if (defined(__cplusplus) && (__cplusplus) >= 201103L) ||               \
-    (defined(__STDC_VERSION__) && (__STDC_VERSION__) >= 202311L)
-#define __THREAD_LOCAL thread_local
-#elif defined(__STDC_VERSION__) && (__STDC_VERSION__) >= 201112L
-#define __THREAD_LOCAL _Thread_local
-#else
-#define __THREAD_LOCAL __thread
+/* See if small reent asked for at configuration time and
+   is not chosen by the platform by default.  */
+#ifdef _WANT_REENT_SMALL
+#ifndef _REENT_SMALL
+#define _REENT_SMALL
 #endif
-#else
-#define __THREAD_LOCAL
 #endif
 
-#ifndef __MB_CAPABLE
-/* Make sure all of these are disabled if multi-byte is disabled*/
-#undef __MB_EXTENDED_CHARSETS_ALL
-#undef __MB_EXTENDED_CHARSETS_ANY
-#undef __MB_EXTENDED_CHARSETS_UCS
-#undef __MB_EXTENDED_CHARSETS_ISO
-#undef __MB_EXTENDED_CHARSETS_WINDOWS
-#undef __MB_EXTENDED_CHARSETS_JIS
+#ifdef _WANT_USE_LONG_TIME_T
+#ifndef _USE_LONG_TIME_T
+#define _USE_LONG_TIME_T
+#endif
 #endif
 
-/* If __MB_EXTENDED_CHARSETS_ALL is set, we want all of the extended
+#ifdef _WANT_USE_GDTOA
+#ifndef _USE_GDTOA
+#define _USE_GDTOA
+#endif
+#endif
+
+#ifdef _WANT_REENT_BACKWARD_BINARY_COMPAT
+#ifndef _REENT_BACKWARD_BINARY_COMPAT
+#define _REENT_BACKWARD_BINARY_COMPAT
+#endif
+#endif
+
+#ifdef _WANT_REENT_THREAD_LOCAL
+#ifndef _REENT_THREAD_LOCAL
+#define _REENT_THREAD_LOCAL
+#endif
+#endif
+
+/* If _MB_EXTENDED_CHARSETS_ALL is set, we want all of the extended
    charsets.  The extended charsets add a few functions and a couple
    of tables of a few K each. */
-#ifdef __MB_EXTENDED_CHARSETS_ALL
-#define __MB_EXTENDED_CHARSETS_UCS 1
-#define __MB_EXTENDED_CHARSETS_ISO 1
-#define __MB_EXTENDED_CHARSETS_WINDOWS 1
-#define __MB_EXTENDED_CHARSETS_JIS 1
-#endif
-
-#if defined(__MB_EXTENDED_CHARSETS_ISO) ||       \
-    defined(__MB_EXTENDED_CHARSETS_WINDOWS) ||   \
-    defined(__MB_EXTENDED_CHARSETS_JIS)
-#define __MB_EXTENDED_CHARSETS_NON_UNICODE
-#endif
-
-#if defined(__MB_EXTENDED_CHARSETS_UCS) ||       \
-    defined(__MB_EXTENDED_CHARSETS_NON_UNICODE)
-#define __MB_EXTENDED_CHARSETS_ANY
-#endif
-
-/* Figure out if the compiler supports the long double type. */
-#ifdef __SIZEOF_LONG_DOUBLE__
-#define __HAVE_LONG_DOUBLE
-#endif
-
-/* Newlib doesn't fully support long double math functions so far.
-   On platforms where long double equals double the long double functions
-   simply call the double functions.  On Cygwin the long double functions
-   are implemented independently from newlib to be able to use optimized
-   assembler functions despite using the Microsoft x86_64 ABI. */
-#if defined (_LDBL_EQ_DBL) || defined (__CYGWIN__) || (defined(__HAVE_LONG_DOUBLE) && __SIZEOF_LONG_DOUBLE__ <= 8) || (__LDBL_MANT_DIG__ == 64 || __LDBL_MANT_DIG__ == 113)
-#define __HAVE_LONG_DOUBLE_MATH
+#ifdef _MB_EXTENDED_CHARSETS_ALL
+#define _MB_EXTENDED_CHARSETS_ISO 1
+#define _MB_EXTENDED_CHARSETS_WINDOWS 1
 #endif
 
 #endif /* __SYS_CONFIG_H__ */

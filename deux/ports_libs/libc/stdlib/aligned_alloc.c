@@ -26,13 +26,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include <reent.h>
 #include <stdlib.h>
 #include <malloc.h>
 
-#ifndef __strong_reference
 void *
 aligned_alloc (size_t align, size_t size)
 {
-  return memalign (align, size);
+  return _memalign_r (_REENT, align, size);
 }
-#endif

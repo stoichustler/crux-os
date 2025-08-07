@@ -32,28 +32,33 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
 #if 0
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "from @(#)strtol.c	8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
+__FBSDID("FreeBSD: src/lib/libc/stdlib/strtoimax.c,v 1.8 2002/09/06 11:23:59 tjr Exp ");
 #endif
+__FBSDID("$FreeBSD: head/lib/libc/locale/wcstoimax.c 314436 2017-02-28 23:42:47Z imp $");
 
 #include <errno.h>
 #include <inttypes.h>
 #include <stdlib.h>
 #include <wchar.h>
 #include <wctype.h>
+#include <reent.h>
 #include <stdint.h>
-#include "local.h"
+#include "../locale/setlocale.h"
 
 /*
  * Convert a wide character string to an intmax_t integer.
  */
 
-
-intmax_t
-wcstoimax_l(const wchar_t * __restrict nptr,
+/*
+ *Reentrant version of wcstoimax.
+ */
+static intmax_t
+_wcstoimax_l(struct _reent *rptr, const wchar_t * __restrict nptr,
 	     wchar_t ** __restrict endptr, int base, locale_t loc)
 {
 	const wchar_t *s = nptr;
@@ -62,13 +67,6 @@ wcstoimax_l(const wchar_t * __restrict nptr,
 	uintmax_t cutoff;
 	int neg = 0, any, cutlim;
 
-        /* Check for invalid base value */
-        if ((unsigned) base > 36 || base == 1) {
-                errno = EINVAL;
-                if (endptr)
-                        *endptr = (wchar_t *) nptr;
-                return 0;
-        }
 	/*
 	 * See strtoimax for comments as to the logic used.
 	 */
@@ -86,7 +84,6 @@ wcstoimax_l(const wchar_t * __restrict nptr,
 	if ((base == 0 || base == 16) &&
 	    c == L'0' && (*s == L'x' || *s == L'X')) {
 		c = s[1];
-                nptr = s;
 		s += 2;
 		base = 16;
 	}
@@ -113,9 +110,9 @@ wcstoimax_l(const wchar_t * __restrict nptr,
 			c -= L'a' - 10;
 		else
 			break;
-		if ((int) c >= base)
+		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || (acc == cutoff && (int) c > cutlim))
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
 			any = -1;
 		else {
 			any = 1;
@@ -125,10 +122,10 @@ wcstoimax_l(const wchar_t * __restrict nptr,
 	}
 	if (any < 0) {
 		acc = neg ? INTMAX_MIN : INTMAX_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (!any) {
 noconv:
-		errno = EINVAL;
+		_REENT_ERRNO(rptr) = EINVAL;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != NULL)
@@ -137,8 +134,25 @@ noconv:
 }
 
 intmax_t
-wcstoimax(const wchar_t* __restrict nptr, wchar_t** __restrict endptr, int base)
+_wcstoimax_r(struct _reent *rptr, const wchar_t *__restrict nptr,
+	     wchar_t **__restrict endptr, int base)
 {
-	return wcstoimax_l(nptr, endptr, base, __get_current_locale());
+	return _wcstoimax_l(rptr, nptr, endptr, base, __get_current_locale());
 }
 
+#ifndef _REENT_ONLY
+
+intmax_t
+wcstoimax_l(const wchar_t * __restrict nptr, wchar_t ** __restrict endptr,
+	    int base, locale_t loc)
+{
+	return _wcstoimax_l(_REENT, nptr, endptr, base, loc);
+}
+
+intmax_t
+wcstoimax(const wchar_t* __restrict nptr, wchar_t** __restrict endptr, int base)
+{
+	return _wcstoimax_l(_REENT, nptr, endptr, base, __get_current_locale());
+}
+
+#endif

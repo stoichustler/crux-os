@@ -67,21 +67,29 @@ SEEALSO
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-static const __float64
+#ifdef __STDC__
+static const double
+#else
+static double 
+#endif
 TWO52[2]={
-    _F_64(4.50359962737049600000e+15), /* 0x43300000, 0x00000000 */
-    _F_64(-4.50359962737049600000e+15), /* 0xC3300000, 0x00000000 */
+  4.50359962737049600000e+15, /* 0x43300000, 0x00000000 */
+ -4.50359962737049600000e+15, /* 0xC3300000, 0x00000000 */
 };
 
-__float64
-rint64(__float64 x)
+#ifdef __STDC__
+	double rint(double x)
+#else
+	double rint(x)
+	double x;
+#endif
 {
 	__int32_t i0,j0,sx;
 	__uint32_t i,i1;
-	__float64 t;
-	volatile __float64 w;
+	double t;
+	volatile double w;
 	EXTRACT_WORDS(i0,i1,x);
 	sx = (i0>>31)&1;		/* sign */
 	j0 = ((i0>>20)&0x7ff)-0x3ff;	/* exponent */
@@ -95,7 +103,7 @@ rint64(__float64 x)
 	        w = TWO52[sx]+x;
 	        t =  w-TWO52[sx];
 		GET_HIGH_WORD(i0,t);
-		SET_HIGH_WORD(t,(i0&0x7fffffff)|lsl(sx, 31));
+		SET_HIGH_WORD(t,(i0&0x7fffffff)|(sx<<31));
 	        return t;
 	    } else {			/* x has integer and maybe fraction */
 		i = (0x000fffff)>>j0;
@@ -108,14 +116,8 @@ rint64(__float64 x)
 		}
 	    }
 	} else if (j0>51) {
-            /*
-             * Use barrier to avoid overflow on clang which would
-             * otherwise always do this add on arm and use a
-             * conditional move instead of a branch for the if
-             */
-            if (j0 == 0x400)
-                return opt_barrier_double(x+x);
-            return x;
+	    if(j0==0x400) return x+x;	/* inf or NaN */
+	    else return x;		/* x is integral */
 	} else {
 	    i = ((__uint32_t)(0xffffffff))>>(j0-20);
 	    if((i1&i)==0) return x;	/* x is integral */
@@ -127,6 +129,4 @@ rint64(__float64 x)
 	return w-TWO52[sx];
 }
 
-_MATH_ALIAS_d_d(rint)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

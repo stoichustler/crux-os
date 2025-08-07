@@ -1,10 +1,7 @@
-/* Copyright (c) 2003 Anthony Green <green@moxielogic.com> */
 /* This is a simple version of setjmp and longjmp for iq2000. */
 
 
 /* int setjmp (jmp_buf);  */
-#include <picolibc.h>
-
 	.globl	setjmp
 	.ent	setjmp
 setjmp:

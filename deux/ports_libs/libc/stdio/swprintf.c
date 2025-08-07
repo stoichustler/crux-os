@@ -41,10 +41,10 @@ SYNOPSIS
         int swprintf(wchar_t *__restrict <[str]>, size_t <[size]>,
                      const wchar_t *__restrict <[format]>, ...);
 
-        int wprintf( const wchar_t *<[format]>, ...);
-        int fwprintf( FILE *<[fd]>,
+        int _wprintf_r(struct _reent *<[ptr]>, const wchar_t *<[format]>, ...);
+        int _fwprintf_r(struct _reent *<[ptr]>, FILE *<[fd]>,
                         const wchar_t *<[format]>, ...);
-        int swprintf( wchar_t *<[str]>,
+        int _swprintf_r(struct _reent *<[ptr]>, wchar_t *<[str]>,
                         size_t <[size]>, const wchar_t *<[format]>, ...);
 
 DESCRIPTION
@@ -539,13 +539,59 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 */
 
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
 #include <limits.h>
 #include <errno.h>
 #include "local.h"
+
+/* NOTE:  _swprintf_r() should be identical to swprintf() except for the
+ * former having ptr as a parameter and the latter needing to declare it as
+ * a variable set to _REENT.  */
+
+int
+_swprintf_r (struct _reent *ptr,
+       wchar_t *str,
+       size_t size,
+       const wchar_t *fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  if (size > INT_MAX / sizeof (wchar_t))
+    {
+      _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
+      return EOF;
+    }
+  f._flags = __SWR | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._w = (size > 0 ? (size - 1) * sizeof (wchar_t) : 0);
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfwprintf_r (ptr, &f, fmt, ap);
+  va_end (ap);
+  /* _svfwprintf_r() does not put in a terminating NUL, so add one if
+   * appropriate, which is whenever size is > 0.  _svfwprintf_r() stops
+   * after n-1, so always just put at the end.  */
+  if (size > 0)  {
+    *(wchar_t *)f._p = L'\0';	/* terminate the string */
+  }
+  if(ret >= size)  {
+    /* _svfwprintf_r() returns how many wide characters it would have printed
+     * if there were enough space.  Return an error if too big to fit in str,
+     * unlike snprintf, which returns the size needed.  */
+    _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
+    ret = -1;
+  }
+  return (ret);
+}
+
+#ifndef _REENT_ONLY
 
 int
 swprintf (wchar_t *__restrict str,
@@ -555,10 +601,11 @@ swprintf (wchar_t *__restrict str,
   int ret;
   va_list ap;
   FILE f;
+  struct _reent *ptr = _REENT;
 
   if (size > INT_MAX / sizeof (wchar_t))
     {
-      errno = EOVERFLOW;	/* POSIX extension */
+      _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -567,20 +614,22 @@ swprintf (wchar_t *__restrict str,
   f._bf._size = f._w = (size > 0 ? (size - 1) * sizeof (wchar_t) : 0);
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfwprintf ( &f, fmt, ap);
+  ret = _svfwprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
-  /* svfwprintf( so add one if
+  /* _svfwprintf_r() does not put in a terminating NUL, so add one if
    * appropriate, which is whenever size is > 0.  _svfwprintf_r() stops
    * after n-1, so always just put at the end.  */
   if (size > 0)  {
     *(wchar_t *)f._p = L'\0';	/* terminate the string */
   }
-  if(ret >= 0 && (size_t) ret >= size)  {
+  if(ret >= size)  {
     /* _svfwprintf_r() returns how many wide characters it would have printed
      * if there were enough space.  Return an error if too big to fit in str,
      * unlike snprintf, which returns the size needed.  */
-    errno = EOVERFLOW;	/* POSIX extension */
+    _REENT_ERRNO(ptr) = EOVERFLOW;	/* POSIX extension */
     ret = -1;
   }
   return (ret);
 }
+
+#endif

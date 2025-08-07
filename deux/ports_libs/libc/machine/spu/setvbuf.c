@@ -30,8 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
+#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -48,6 +47,7 @@ typedef struct
   unsigned int pad3[ 3 ];
 } c99_setvbuf_t;
 
+#ifndef _REENT_ONLY
 
 int
 setvbuf (FILE * fp,
@@ -67,3 +67,4 @@ setvbuf (FILE * fp,
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_SETVBUF, &args);
 }
 
+#endif /* ! _REENT_ONLY */

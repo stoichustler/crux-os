@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
@@ -17,11 +17,11 @@
  * kernel function:
  *	__kernel_sin		... sine function on [-pi/4,pi/4]
  *	__kernel_cos		... cosine function on [-pi/4,pi/4]
- *	__rem_pio2	... argument reduction routine
+ *	__ieee754_rem_pio2	... argument reduction routine
  *
  * Method.
- *      Let S,C and T denote the sin, cos and tan respectively on
- *	[-PI/4, +PI/4]. Reduce the argument x to y1+y2 = x-k*pi/2
+ *      Let S,C and T denote the sin, cos and tan respectively on 
+ *	[-PI/4, +PI/4]. Reduce the argument x to y1+y2 = x-k*pi/2 
  *	in [-pi/4 , +pi/4], and let n = k mod 4.
  *	We have
  *
@@ -39,54 +39,44 @@
  *      trig(NaN)    is that NaN;
  *
  * Accuracy:
- *	TRIG(x) returns trig(x) nearly rounded
+ *	TRIG(x) returns trig(x) nearly rounded 
  */
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-cos64(__float64 x)
+#ifdef __STDC__
+	double cos(double x)
+#else
+	double cos(x)
+	double x;
+#endif
 {
-    __float64 y[2], z = 0.0;
-    __int32_t n, ix;
+	double y[2],z=0.0;
+	__int32_t n,ix;
 
     /* High word of x. */
-    GET_HIGH_WORD(ix, x);
+	GET_HIGH_WORD(ix,x);
 
     /* |x| ~< pi/4 */
-    ix &= 0x7fffffff;
-    if (ix <= 0x3fe921fb)
-        return __kernel_cos(x, z);
+	ix &= 0x7fffffff;
+	if(ix <= 0x3fe921fb) return __kernel_cos(x,z);
 
     /* cos(Inf or NaN) is NaN */
-    else if (ix >= 0x7ff00000)
-        return __math_invalid(x);
+	else if (ix>=0x7ff00000) return x-x;
 
     /* argument reduction needed */
-    else {
-        n = __rem_pio2(x, y);
-        switch (n & 3) {
-        case 0:
-            return __kernel_cos(y[0], y[1]);
-        case 1:
-            return -__kernel_sin(y[0], y[1], 1);
-        case 2:
-            return -__kernel_cos(y[0], y[1]);
-        default:
-            return __kernel_sin(y[0], y[1], 1);
-        }
-    }
+	else {
+	    n = __ieee754_rem_pio2(x,y);
+	    switch(n&3) {
+		case 0: return  __kernel_cos(y[0],y[1]);
+		case 1: return -__kernel_sin(y[0],y[1],1);
+		case 2: return -__kernel_cos(y[0],y[1]);
+		default:
+		        return  __kernel_sin(y[0],y[1],1);
+	    }
+	}
 }
 
-#ifdef __strong_reference
-#if defined(__GNUCLIKE_PRAGMA_DIAGNOSTIC) && !defined(__clang__)
-#pragma GCC diagnostic ignored "-Wmissing-attributes"
-#endif
-__strong_reference(_NAME_64(cos), _NAME_64(_cos));
-#endif
-
-_MATH_ALIAS_d_d(cos)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

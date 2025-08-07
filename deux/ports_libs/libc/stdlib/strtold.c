@@ -28,13 +28,12 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define _GNU_SOURCE
 #include <stdlib.h>
 #include "local.h"
 #include "mprec.h"
 #undef FLT_ROUNDS
 
-#if defined(__HAVE_LONG_DOUBLE) && __LDBL_MANT_DIG__ == 64 && !defined(_LDBL_EQ_DBL)
+#ifdef _HAVE_LONG_DOUBLE
 
 /* Intel MCU has no x87 floating point unit */
 #if (defined (__x86_64__) || defined (__i386__)) && !defined (__iamcu__)
@@ -45,37 +44,62 @@ static const int map[] = {
         0       /* round to positive infinity */
 };
 
-static int
+int
 __flt_rounds(void)
 {
         int x;
 
         /* Assume that the x87 and the SSE unit agree on the rounding mode. */
-        __asm__("fnstcw %0" : "=m" (x));
+        __asm("fnstcw %0" : "=m" (x));
         return (map[(x >> 10) & 0x03]);
 }
 #define FLT_ROUNDS __flt_rounds()
 #else
-#define FLT_ROUNDS 1
+#define FLT_ROUNDS 0
 #endif
+
+long double
+_strtold_r (struct _reent *ptr, const char *__restrict s00,
+	    char **__restrict se)
+{
+#ifdef _LDBL_EQ_DBL
+  /* On platforms where long double is as wide as double.  */
+  return _strtod_l (ptr, s00, se, __get_current_locale ());
+#else
+  long double result;
+
+  _strtorx_l (ptr, s00, se, FLT_ROUNDS, &result, __get_current_locale ());
+  return result;
+#endif
+}
 
 long double
 strtold_l (const char *__restrict s00, char **__restrict se, locale_t loc)
 {
+#ifdef _LDBL_EQ_DBL
+  /* On platforms where long double is as wide as double.  */
+  return _strtod_l (_REENT, s00, se, loc);
+#else
   long double result;
 
-  _strtorx_l (s00, se, FLT_ROUNDS, &result, loc);
+  _strtorx_l (_REENT, s00, se, FLT_ROUNDS, &result, loc);
   return result;
+#endif
 }
 
 long double
 strtold (const char *__restrict s00, char **__restrict se)
 {
+#ifdef _LDBL_EQ_DBL
+  /* On platforms where long double is as wide as double.  */
+  return _strtod_l (_REENT, s00, se, __get_current_locale ());
+#else
   long double result;
 
-  _strtorx_l (s00, se, FLT_ROUNDS, &result, __get_current_locale ());
+  _strtorx_l (_REENT, s00, se, FLT_ROUNDS, &result, __get_current_locale ());
   return result;
+#endif
 }
 
-#endif /* __HAVE_LONG_DOUBLE */
+#endif /* _HAVE_LONG_DOUBLE */
 

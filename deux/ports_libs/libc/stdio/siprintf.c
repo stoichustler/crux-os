@@ -56,16 +56,16 @@ SYNOPSIS
         char *asniprintf(char *<[str]>, size_t *<[size]>, 
 			const char *<[format]>, ...);
 
-        int iprintf( const char *<[format]>, ...);
-        int fiprintf( FILE *<[fd]>,
+        int _iprintf_r(struct _reent *<[ptr]>, const char *<[format]>, ...);
+        int _fiprintf_r(struct _reent *<[ptr]>, FILE *<[fd]>,
                         const char *<[format]>, ...);
-        int siprintf( char *<[str]>,
+        int _siprintf_r(struct _reent *<[ptr]>, char *<[str]>,
                         const char *<[format]>, ...);
-        int sniprintf( char *<[str]>, size_t <[size]>,
+        int _sniprintf_r(struct _reent *<[ptr]>, char *<[str]>, size_t <[size]>,
                          const char *<[format]>, ...);
-        int asiprintf( char **<[strp]>,
+        int _asiprintf_r(struct _reent *<[ptr]>, char **<[strp]>,
                          const char *<[format]>, ...);
-        char *asniprintf( char *<[str]>,
+        char *_asniprintf_r(struct _reent *<[ptr]>, char *<[str]>,
                             size_t *<[size]>, const char *<[format]>, ...);
 
 DESCRIPTION
@@ -91,14 +91,15 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
 #include "local.h"
 
 int
-siprintf (
+_siprintf_r (struct _reent *ptr,
        char *str,
        const char *fmt, ...)
 {
@@ -112,8 +113,32 @@ siprintf (
   f._bf._size = f._w = INT_MAX;
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfiprintf ( &f, fmt, ap);
+  ret = _svfiprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
   *f._p = 0;
   return (ret);
 }
+
+#ifndef _REENT_ONLY
+
+int
+siprintf (char *str,
+       const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  f._flags = __SWR | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._w = INT_MAX;
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfiprintf_r (_REENT, &f, fmt, ap);
+  va_end (ap);
+  *f._p = 0;
+  return (ret);
+}
+
+#endif

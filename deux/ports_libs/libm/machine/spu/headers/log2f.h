@@ -114,7 +114,7 @@ static __inline float _log2f(float x)
    */
   result += (float)(exponent);
 
-#ifndef __IEEE_LIBM
+#ifndef _IEEE_LIBM
   vx = spu_promote(x, 0);
   dom_chkf_less_than(vx, vc);
 #endif

@@ -46,10 +46,28 @@ variables vary from one system to another.
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _GNU_SOURCE
+#ifndef _REENT_ONLY
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+
+/*
+ * _findenv --
+ *	Returns pointer to value associated with name, if any, else NULL.
+ *	Sets offset to be the offset of the name/value combination in the
+ *	environmental array, for use by setenv(3) and unsetenv(3).
+ *	Explicitly removes '=' in argument name.
+ *
+ *	This routine *should* be a static; don't use it.
+ */
+
+char *
+_findenv (register const char *name,
+	int *offset)
+{
+  return _findenv_r (_REENT, name, offset);
+}
 
 /*
  * getenv --
@@ -61,5 +79,7 @@ getenv (const char *name)
 {
   int offset;
 
-  return _findenv (name, &offset);
+  return _findenv_r (_REENT, name, &offset);
 }
+
+#endif /* !_REENT_ONLY */

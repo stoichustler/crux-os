@@ -30,8 +30,7 @@
  */
 
 #include <complex.h>
-
-#ifdef __HAVE_LONG_DOUBLE_MATH
+#include <math.h>
 
 #ifdef __weak_alias
 __weak_alias(casinl, _casinl)
@@ -50,12 +49,12 @@ casinl(long double complex z)
 #if 0 /* MD: test is incorrect, casin(>1) is defined */
 	if (y == 0.0L) {
 		if (fabsl(x) > 1.0L) {
-			w = M_PI_2L + 0.0L * (double complex) I;
+			w = M_PI_2L + 0.0L * I;
 #if 0
 			mtherr ("casinl", DOMAIN);
 #endif
 		} else {
-			w = asinl(x) + 0.0L * (double complex) I;
+			w = asinl(x) + 0.0L * I;
 		}
 		return w;
 	}
@@ -102,21 +101,20 @@ return;
 */
 
 
-	ca = x + y * (long double complex) I;
-	ct = ca * (long double complex) I;
+	ca = x + y * I;
+	ct = ca * I;
 	/* sqrtl( 1 - z*z) */
 	/* cmull( &ca, &ca, &zz ) */
 	/*x * x  -  y * y */
-	zz = (x - y) * (x + y) + (2.0L * x * y) * (long double complex) I;
+	zz = (x - y) * (x + y) + (2.0L * x * y) * I;
 
-	zz = 1.0L - creall(zz) - cimagl(zz) * (long double complex) I;
+	zz = 1.0L - creall(zz) - cimagl(zz) * I;
 	z2 = csqrtl(zz);
 
 	zz = ct + z2;
 	zz = clogl(zz);
 	/* multiply by 1/i = -i */
-	w = zz * (-1.0L * (long double complex) I);
+	w = zz * (-1.0L * I);
 	return w;
 }
 
-#endif

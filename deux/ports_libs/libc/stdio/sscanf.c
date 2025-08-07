@@ -39,10 +39,10 @@ SYNOPSIS
         int fscanf(FILE *restrict <[fd]>, const char *restrict <[format]>, ...);
         int sscanf(const char *restrict <[str]>, const char *restrict <[format]>, ...);
 
-        int scanf( const char *restrict <[format]>, ...);
-        int fscanf( FILE *restrict <[fd]>, 
+        int _scanf_r(struct _reent *<[ptr]>, const char *restrict <[format]>, ...);
+        int _fscanf_r(struct _reent *<[ptr]>, FILE *restrict <[fd]>, 
                       const char *restrict <[format]>, ...);
-        int sscanf( const char *restrict <[str]>,
+        int _sscanf_r(struct _reent *<[ptr]>, const char *restrict <[str]>,
                       const char *restrict <[format]>, ...);
 
 DESCRIPTION
@@ -411,13 +411,16 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
 #include "local.h"
 
-int
+#ifndef _REENT_ONLY 
+
+int 
 sscanf (const char *__restrict str,
        const char * fmt, ...)
 {
@@ -434,9 +437,44 @@ sscanf (const char *__restrict str,
   f._lb._base = NULL;
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = _ssvfscanf ( &f, fmt, ap);
+  ret = __ssvfscanf_r (_REENT, &f, fmt, ap);
   va_end (ap);
   return ret;
 }
 
-__nano_reference(sscanf, siscanf);
+#ifdef _NANO_FORMATTED_IO
+int
+siscanf (const char *, const char *, ...)
+       _ATTRIBUTE ((__alias__("sscanf")));
+#endif
+
+#endif /* !_REENT_ONLY */
+
+int 
+_sscanf_r (struct _reent *ptr,
+       const char *__restrict str,
+       const char *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+
+  f._flags = __SRD | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._r = strlen (str);
+  f._read = __seofread;
+  f._ub._base = NULL;
+  f._lb._base = NULL;
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = __ssvfscanf_r (ptr, &f, fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+_siscanf_r (struct _reent *, const char *, const char *, ...)
+       _ATTRIBUTE ((__alias__("_sscanf_r")));
+#endif

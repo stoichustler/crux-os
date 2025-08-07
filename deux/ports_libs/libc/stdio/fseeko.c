@@ -32,9 +32,9 @@ SYNOPSIS
 	#include <stdio.h>
 	int fseek(FILE *<[fp]>, long <[offset]>, int <[whence]>)
 	int fseeko(FILE *<[fp]>, off_t <[offset]>, int <[whence]>)
-	int fseek( FILE *<[fp]>,
+	int _fseek_r(struct _reent *<[ptr]>, FILE *<[fp]>,
 	             long <[offset]>, int <[whence]>)
-	int fseeko( FILE *<[fp]>,
+	int _fseeko_r(struct _reent *<[ptr]>, FILE *<[fp]>,
 	             off_t <[offset]>, int <[whence]>)
 
 DESCRIPTION
@@ -74,7 +74,8 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -92,27 +93,25 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
  */
 
 int
-fseeko (
+_fseeko_r (struct _reent *ptr,
        register FILE *fp,
        _off_t offset,
        int whence)
 {
-  _fpos_t (*seekfn) (void *, _fpos_t, int);
-#ifdef __FSEEK_OPTIMIZATION
+  _fpos_t (*seekfn) (struct _reent *, void *, _fpos_t, int);
   _fpos_t target;
+  _fpos_t curoff = 0;
   size_t n;
 #ifdef __USE_INTERNAL_STAT64
   struct stat64 st;
 #else
   struct stat st;
 #endif
-#endif
-  _fpos_t curoff = 0;
   int havepos;
 
   /* Make sure stdio is set up.  */
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start (fp);
 
@@ -122,14 +121,14 @@ fseeko (
   if (fp->_flags & __SAPP && fp->_flags & __SWR)
     {
       /* So flush the buffer and seek to the end.  */
-      fflush ( fp);
+      _fflush_r (ptr, fp);
     }
 
   /* Have to be able to seek.  */
 
   if ((seekfn = fp->_seek) == NULL)
     {
-      errno = ESPIPE;	/* ??? */
+      _REENT_ERRNO(ptr) = ESPIPE;	/* ??? */
       _newlib_flockfile_exit (fp);
       return EOF;
     }
@@ -147,12 +146,12 @@ fseeko (
        * we have to first find the current stream offset a la
        * ftell (see ftell for details).
        */
-      fflush ( fp);   /* may adjust seek offset on append stream */
+      _fflush_r (ptr, fp);   /* may adjust seek offset on append stream */
       if (fp->_flags & __SOFF)
 	curoff = fp->_offset;
       else
 	{
-	  curoff = seekfn (fp->_cookie, (_fpos_t) 0, SEEK_CUR);
+	  curoff = seekfn (ptr, fp->_cookie, (_fpos_t) 0, SEEK_CUR);
 	  if (curoff == -1L)
 	    {
 	      _newlib_flockfile_exit (fp);
@@ -179,12 +178,10 @@ fseeko (
       break;
 
     default:
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       _newlib_flockfile_exit (fp);
       return (EOF);
     }
-
-  (void) havepos;
 
   /*
    * Can only optimise if:
@@ -196,9 +193,9 @@ fseeko (
    */
 
   if (fp->_bf._base == NULL)
-    _smakebuf ( fp);
+    __smakebuf_r (ptr, fp);
 
-#ifdef __FSEEK_OPTIMIZATION
+#ifdef _FSEEK_OPTIMIZATION
   if (fp->_flags & (__SWR | __SRW | __SNBF | __SNPT))
     goto dumb;
   if ((fp->_flags & __SOPT) == 0)
@@ -208,7 +205,7 @@ fseeko (
 #ifdef __USE_INTERNAL_STAT64
 	  || _fstat64_r (ptr, fp->_file, &st)
 #else
-	  || fstat ( fp->_file, &st)
+	  || _fstat_r (ptr, fp->_file, &st)
 #endif
 	  || (st.st_mode & S_IFMT) != S_IFREG)
 	{
@@ -235,7 +232,7 @@ fseeko (
 #ifdef __USE_INTERNAL_STAT64
       if (_fstat64_r (ptr, fp->_file, &st))
 #else
-      if (fstat ( fp->_file, &st))
+      if (_fstat_r (ptr, fp->_file, &st))
 #endif
 	goto dumb;
       target = st.st_size + offset;
@@ -247,7 +244,7 @@ fseeko (
 	curoff = fp->_offset;
       else
 	{
-	  curoff = seekfn (fp->_cookie, 0L, SEEK_CUR);
+	  curoff = seekfn (ptr, fp->_cookie, 0L, SEEK_CUR);
 	  if (curoff == POS_ERR)
 	    goto dumb;
 	}
@@ -283,7 +280,7 @@ fseeko (
    * and return.
    */
 
-  if (target >= curoff && (size_t) target < (size_t) curoff + n)
+  if (target >= curoff && target < curoff + n)
     {
       register int o = target - curoff;
 
@@ -307,7 +304,7 @@ fseeko (
    */
 
   curoff = target & ~(fp->_blksize - 1);
-  if (seekfn (fp->_cookie, curoff, SEEK_SET) == POS_ERR)
+  if (seekfn (ptr, fp->_cookie, curoff, SEEK_SET) == POS_ERR)
     goto dumb;
   fp->_r = 0;
   fp->_p = fp->_bf._base;
@@ -317,7 +314,7 @@ fseeko (
   n = target - curoff;
   if (n)
     {
-      if (_srefill ( fp) || fp->_r < (int) n)
+      if (__srefill_r (ptr, fp) || fp->_r < n)
 	goto dumb;
       fp->_p += n;
       fp->_r -= n;
@@ -330,11 +327,11 @@ fseeko (
    * We get here if we cannot optimise the seek ... just
    * do it.  Allow the seek function to change fp->_bf._base.
    */
-dumb:
 #endif
 
-  if (fflush ( fp)
-      || seekfn (fp->_cookie, offset, whence) == POS_ERR)
+dumb:
+  if (_fflush_r (ptr, fp)
+      || seekfn (ptr, fp->_cookie, offset, whence) == POS_ERR)
     {
       _newlib_flockfile_exit (fp);
       return EOF;
@@ -357,3 +354,15 @@ dumb:
   _newlib_flockfile_end (fp);
   return 0;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fseeko (register FILE *fp,
+       _off_t offset,
+       int whence)
+{
+  return _fseeko_r (_REENT, fp, offset, whence);
+}
+
+#endif /* !_REENT_ONLY */

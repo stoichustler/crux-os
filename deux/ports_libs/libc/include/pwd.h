@@ -30,12 +30,13 @@
  */
 
 #ifndef _PWD_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define	_PWD_H_
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
-
-_BEGIN_STD_C
 
 #if __BSD_VISIBLE
 #define	_PATH_PASSWD		"/etc/passwd"
@@ -76,6 +77,7 @@ int		 setpassent (int);
 #endif
 #endif /*!__INSIDE_CYGWIN__*/
 
-_END_STD_C
-
+#ifdef __cplusplus
+}
+#endif
 #endif /* _PWD_H_ */

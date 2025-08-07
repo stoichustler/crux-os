@@ -39,19 +39,20 @@ ANSI C, POSIX.
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-fdim64(__float64 x, __float64 y)
+#ifdef __STDC__
+	double fdim(double x, double y)
+#else
+	double fdim(x,y)
+	double x;
+	double y;
+#endif
 {
-  if (isnan(x) || isnan(y)) return(x+y);
+  if (__fpclassifyd(x) == FP_NAN)  return(x);
+  if (__fpclassifyd(y) == FP_NAN)  return(y);
 
-  __float64 z = x > y ? x - y : _F_64(0.0);
-  if (!isinf(x) && !isinf(y))
-    z = check_oflow(z);
-  return z;
+  return x > y ? x - y : 0.0;
 }
 
-_MATH_ALIAS_d_dd(fdim)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

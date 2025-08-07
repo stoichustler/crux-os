@@ -1,7 +1,5 @@
 #! /bin/sh -f
 
-# Copyright (c) 2018 Thomas Wolff <towo@towo.net>
-
 # generate a table for Unicode case conversion; entries:
 # struct caseconv_entry defined in towctrans_l.c
 

@@ -38,6 +38,7 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)regfree.c	8.3 (Berkeley) 3/20/94";
 #endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 
 #include <sys/types.h>
 #include <stdio.h>
@@ -53,7 +54,8 @@ static char sccsid[] = "@(#)regfree.c	8.3 (Berkeley) 3/20/94";
  = extern void regfree(regex_t *);
  */
 void
-regfree(regex_t *preg)
+regfree(preg)
+regex_t *preg;
 {
 	struct re_guts *g;
 
@@ -75,7 +77,7 @@ regfree(regex_t *preg)
 	if (g->must != NULL)
 		free(g->must);
 	if (g->charjump != NULL)
-                free(g->charjump);
+		free(&g->charjump[CHAR_MIN]);
 	if (g->matchjump != NULL)
 		free(g->matchjump);
 	free((char *)g);

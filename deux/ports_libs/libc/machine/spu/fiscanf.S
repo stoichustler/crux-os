@@ -28,7 +28,5 @@
   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <picolibc.h>
-
 #define fscanf    fiscanf
 #include "fscanf.S"

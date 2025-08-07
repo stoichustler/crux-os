@@ -14,7 +14,7 @@
 #include "rand48.h"
 
 long
-_nrand48_r (struct _rand48 *r,
+_nrand48_r (struct _reent *r,
        unsigned short xseed[3])
 {
   __dorand48 (r, xseed);
@@ -22,8 +22,10 @@ _nrand48_r (struct _rand48 *r,
     ((unsigned long) xseed[1] >> 1);
 }
 
+#ifndef _REENT_ONLY
 long
 nrand48 (unsigned short xseed[3])
 {
-  return _nrand48_r (&_rand48, xseed);
+  return _nrand48_r (_REENT, xseed);
 }
+#endif /* !_REENT_ONLY */

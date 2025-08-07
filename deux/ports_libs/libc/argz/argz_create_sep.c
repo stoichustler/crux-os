@@ -4,7 +4,6 @@
  * is freely granted, provided that this notice is preserved.
  */
 
-#define _DEFAULT_SOURCE
 #include <argz.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -17,7 +16,7 @@ argz_create_sep (const char *string,
        char **argz,
        size_t *argz_len)
 {
-  size_t len = 0;
+  int len = 0;
   int i = 0;
   int num_strings = 0;
   char delim[2];
@@ -34,7 +33,7 @@ argz_create_sep (const char *string,
       return 0;
     }
 
-  delim[0] = (char) sep;
+  delim[0] = sep;
   delim[1] = '\0';
 
   running = strdup(string);
@@ -47,10 +46,10 @@ argz_create_sep (const char *string,
       num_strings++;
     }
 
-  free(old_running);
-
   if(!(*argz = (char *)malloc(*argz_len)))
     return ENOMEM;
+
+  free(old_running);
 
   running = strdup(string);
   old_running = running;

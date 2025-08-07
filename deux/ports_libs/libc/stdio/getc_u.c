@@ -59,7 +59,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 
 /*
@@ -69,10 +69,20 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #undef getc_unlocked
 
 int
-getc_unlocked (
+_getc_unlocked_r (struct _reent *ptr,
        register FILE *fp)
 {
   /* CHECK_INIT is called (eventually) by __srefill_r.  */
 
-  return _sgetc ( fp);
+  return __sgetc_r (ptr, fp);
 }
+
+#ifndef _REENT_ONLY
+
+int
+getc_unlocked (register FILE *fp)
+{
+  return __sgetc_r (_REENT, fp);
+}
+
+#endif /* !_REENT_ONLY */

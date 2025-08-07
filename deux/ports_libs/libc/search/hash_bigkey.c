@@ -30,11 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <sys/param.h>
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
 #endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 
 /*
  * PACKAGE: hash
@@ -70,8 +70,8 @@ static char sccsid[] = "@(#)hash_bigkey.c	8.3 (Berkeley) 5/31/94";
 #include "page.h"
 #include "extern.h"
 
-static size_t collect_key(HTAB *, BUFHEAD *, size_t, DBT *, int);
-static size_t collect_data(HTAB *, BUFHEAD *, size_t, int);
+static int collect_key(HTAB *, BUFHEAD *, int, DBT *, int);
+static int collect_data(HTAB *, BUFHEAD *, int, int);
 
 /*
  * Big_insert
@@ -91,8 +91,7 @@ __big_insert(
 )
 {
 	__uint16_t *p;
-	size_t key_size, n;
-        size_t val_size;
+	int key_size, n, val_size;
 	__uint16_t space, move_bytes, off;
 	char *cp, *key_data, *val_data;
 
@@ -286,7 +285,7 @@ __find_bigpair(
 	kkey = key;
 
 	for (bytes = hashp->BSIZE - bp[ndx];
-             (int) bytes <= size && bp[ndx + 1] == PARTIAL_KEY;
+	    bytes <= size && bp[ndx + 1] == PARTIAL_KEY;
 	    bytes = hashp->BSIZE - bp[ndx]) {
 		if (memcmp(p + bp[ndx], kkey, bytes))
 			return (-2);
@@ -300,7 +299,7 @@ __find_bigpair(
 		ndx = 1;
 	}
 
-	if ((int) bytes != ksize || memcmp(p + bp[ndx], kkey, bytes)) {
+	if (bytes != ksize || memcmp(p + bp[ndx], kkey, bytes)) {
 #ifdef HASH_STATISTICS
 		++hash_collisions;
 #endif
@@ -436,8 +435,8 @@ __big_return(
 			return (0);
 		}
 
-	val->size = collect_data(hashp, bufp, len, set_current);
-	if (val->size == (size_t) -1)
+	val->size = collect_data(hashp, bufp, (int)len, set_current);
+	if (val->size == -1)
 		return (-1);
 	if (save_p->addr != save_addr) {
 		/* We are pretty short on buffers. */
@@ -452,11 +451,11 @@ __big_return(
  * Count how big the total datasize is by recursing through the pages.  Then
  * allocate a buffer and copy the data as you recurse up.
  */
-static size_t
+static int
 collect_data(
 	HTAB *hashp,
 	BUFHEAD *bufp,
-	size_t len,
+	int len,
 	int set
 )
 {
@@ -464,7 +463,7 @@ collect_data(
 	char *p;
 	BUFHEAD *xbp;
 	__uint16_t save_addr;
-	size_t mylen, totlen;
+	int mylen, totlen;
 
 	p = bufp->page;
 	bp = (__uint16_t *)p;
@@ -495,11 +494,9 @@ collect_data(
 		}
 	} else {
 		xbp = __get_buf(hashp, bp[bp[0] - 1], bufp, 0);
-                if (!xbp)
-                        return (-1);
-                totlen = collect_data(hashp, xbp, len + mylen, set);
-		if (totlen < 1 || totlen == (size_t) -1)
-                        return (-1);
+		if (!xbp || ((totlen =
+		    collect_data(hashp, xbp, len + mylen, set)) < 1))
+			return (-1);
 	}
 	if (bufp->addr != save_addr) {
 		errno = EINVAL;			/* Out of buffers. */
@@ -522,7 +519,7 @@ __big_keydata(
 )
 {
 	key->size = collect_key(hashp, bufp, 0, val, set);
-	if (key->size == (size_t) -1)
+	if (key->size == -1)
 		return (-1);
 	key->data = (u_char *)hashp->tmp_key;
 	return (0);
@@ -532,18 +529,18 @@ __big_keydata(
  * Count how big the total key size is by recursing through the pages.  Then
  * collect the data, allocate a buffer and copy the key as you recurse up.
  */
-static size_t
+static int
 collect_key(
 	HTAB *hashp,
 	BUFHEAD *bufp,
-	size_t len,
+	int len,
 	DBT *val,
 	int set
 )
 {
 	BUFHEAD *xbp;
 	char *p;
-	size_t mylen, totlen;
+	int mylen, totlen;
 	__uint16_t *bp, save_addr;
 
 	p = bufp->page;

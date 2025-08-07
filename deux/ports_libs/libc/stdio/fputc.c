@@ -37,10 +37,10 @@ SYNOPSIS
 	int fputc_unlocked(int <[ch]>, FILE *<[fp]>);
 
 	#include <stdio.h>
-	int fputc( int <[ch]>, FILE *<[fp]>);
+	int _fputc_r(struct _rent *<[ptr]>, int <[ch]>, FILE *<[fp]>);
 
 	#include <stdio.h>
-	int fputc_unlocked( int <[ch]>, FILE *<[fp]>);
+	int _fputc_unlocked_r(struct _rent *<[ptr]>, int <[ch]>, FILE *<[fp]>);
 
 DESCRIPTION
 <<fputc>> converts the argument <[ch]> from an <<int>> to an
@@ -82,19 +82,39 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
 int
-fputc (
+_fputc_r (struct _reent *ptr,
        int ch,
        FILE * file)
 {
   int result;
-  CHECK_INIT();
+  CHECK_INIT(ptr, file);
    _newlib_flockfile_start (file);
-  result = putc ( ch, file);
+  result = _putc_r (ptr, ch, file);
   _newlib_flockfile_end (file);
   return result;
 }
+
+#ifndef _REENT_ONLY
+int
+fputc (int ch,
+       FILE * file)
+{
+#if !defined(__OPTIMIZE_SIZE__) && !defined(PREFER_SIZE_OVER_SPEED)
+  int result;
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, file);
+   _newlib_flockfile_start (file);
+  result = _putc_r (reent, ch, file);
+  _newlib_flockfile_end (file);
+  return result;
+#else
+  return _fputc_r (_REENT, ch, file);
+#endif
+}
+#endif /* !_REENT_ONLY */

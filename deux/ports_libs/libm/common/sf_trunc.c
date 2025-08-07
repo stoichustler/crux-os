@@ -4,37 +4,63 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
 
 #include "fdlibm.h"
 
-float
-truncf(float x)
+#ifdef __STDC__
+	float truncf(float x)
+#else
+	float truncf(x)
+	float x;
+#endif
 {
-    int32_t ix = _asint32 (x);
-    int32_t mask;
-    int exp;
+  __int32_t signbit, w, exponent_less_127;
 
-    exp = _exponent32(ix) - 127;
+  GET_FLOAT_WORD(w,x);
 
-    if (unlikely(exp == 128))
+  /* Extract sign bit. */
+  signbit = w & 0x80000000;
+
+  /* Extract exponent field. */
+  exponent_less_127 = ((w & 0x7f800000) >> 23) - 127;
+
+  if (exponent_less_127 < 23)
+    {
+      if (exponent_less_127 < 0)
+        {
+          /* -1 < x < 1, so result is +0 or -0. */
+          SET_FLOAT_WORD(x, signbit);
+        }
+      else
+        {
+          SET_FLOAT_WORD(x, signbit | (w & ~(0x007fffff >> exponent_less_127)));
+        }
+    }
+  else
+    {
+      if (exponent_less_127 == 128)
+        /* x is NaN or infinite. */
         return x + x;
 
-    /* compute portion of value with useful bits */
-    if (exp < 0)
-        /* less than one, save sign bit */
-        mask = 0x80000000;
-    else {
-        /* otherwise, save sign, exponent and any useful bits */
-        if (exp >= 32)
-            exp = 31;
-        mask = ~(0x007fffff >> exp);
+      /* All bits in the fraction field are relevant. */
     }
-
-    return _asfloat(ix & mask);
+  return x;
 }
 
-_MATH_ALIAS_f_f(trunc)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double trunc(double x)
+#else
+	double trunc(x)
+	double x;
+#endif
+{
+	return (double) truncf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

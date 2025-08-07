@@ -16,20 +16,41 @@
  */
 /* doc in swprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
 #include "local.h"
 
 int
-wprintf (const wchar_t *__restrict fmt, ...)
+_wprintf_r (struct _reent *ptr,
+       const wchar_t *fmt, ...)
 {
   int ret;
   va_list ap;
 
+  _REENT_SMALL_CHECK_INIT (ptr);
   va_start (ap, fmt);
-  ret = vfwprintf ( stdout, fmt, ap);
+  ret = _vfwprintf_r (ptr, _stdout_r (ptr), fmt, ap);
   va_end (ap);
   return ret;
 }
+
+#ifndef _REENT_ONLY
+
+int
+wprintf (const wchar_t *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+  struct _reent *ptr = _REENT;
+
+  _REENT_SMALL_CHECK_INIT (ptr);
+  va_start (ap, fmt);
+  ret = _vfwprintf_r (ptr, _stdout_r (ptr), fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#endif /* ! _REENT_ONLY */

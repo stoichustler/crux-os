@@ -40,13 +40,9 @@ ANSI C requires <<exit>>, and specifies that <<EXIT_SUCCESS>> and
 Supporting OS subroutines required: <<_exit>>.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <unistd.h>	/* for _exit() declaration */
-#ifndef __TINY_STDIO
-#include "../stdio/local.h"
-#include <stdio.h>
-#endif
+#include <reent.h>
 #include "atexit.h"
 
 /*
@@ -56,14 +52,15 @@ Supporting OS subroutines required: <<_exit>>.
 void
 exit (int code)
 {
-  /* Refer to comments in __atexit.c and pico-onexit.c for why this is weak */
-  void __call_exitprocs (int, void *) __weak;
+#ifdef _LITE_EXIT
+  /* Refer to comments in __atexit.c for more details of lite exit.  */
+  void __call_exitprocs (int, void *) __attribute__((weak));
   if (__call_exitprocs)
+#endif
     __call_exitprocs (code, NULL);
 
-#ifndef __TINY_STDIO
-  if (_stdio_cleanup)
-    (*_stdio_cleanup) ();
-#endif
+  if (__stdio_exit_handler != NULL)
+    (*__stdio_exit_handler) ();
+
   _exit (code);
 }

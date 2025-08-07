@@ -20,13 +20,14 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 
 int
-_fwalk_sglue (int (*func) (FILE *),
+_fwalk_sglue (struct _reent *ptr, int (*func) (struct _reent *, FILE *),
     struct _glue *g)
 {
   FILE *fp;
@@ -43,7 +44,7 @@ _fwalk_sglue (int (*func) (FILE *),
   do {
     for (fp = g->_iobs, n = g->_niobs; --n >= 0; fp++)
       if (fp->_flags != 0 && fp->_flags != 1 && fp->_file != -1)
-	ret |= (*func) (fp);
+	ret |= (*func) (ptr, fp);
     g = g->_next;
   } while (g != NULL);
 

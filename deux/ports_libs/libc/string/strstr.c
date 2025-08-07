@@ -27,22 +27,6 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
 FUNCTION
 	<<strstr>>---find string segment
 
@@ -72,11 +56,10 @@ QUICKREF
 	strstr ansi pure
 */
 
-#define _DEFAULT_SOURCE
 #include <string.h>
 #include <limits.h>
 
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__) \
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__) \
     || CHAR_BIT > 8
 
 /* Small and efficient strstr implementation.  */
@@ -117,7 +100,7 @@ strstr (const char *hs, const char *ne)
 static inline char *
 strstr2 (const unsigned char *hs, const unsigned char *ne)
 {
-  uint32_t h1 = ((uint32_t) ne[0] << 16) | ne[1];
+  uint32_t h1 = (ne[0] << 16) | ne[1];
   uint32_t h2 = 0;
   int c;
   for (c = hs[0]; h1 != h2 && c != 0; c = *++hs)
@@ -128,7 +111,7 @@ strstr2 (const unsigned char *hs, const unsigned char *ne)
 static inline char *
 strstr3 (const unsigned char *hs, const unsigned char *ne)
 {
-  uint32_t h1 = ((uint32_t) ne[0] << 24) | ((uint32_t) ne[1] << 16) | ((uint32_t) ne[2] << 8);
+  uint32_t h1 = (ne[0] << 24) | (ne[1] << 16) | (ne[2] << 8);
   uint32_t h2 = 0;
   int c;
   for (c = hs[0]; h1 != h2 && c != 0; c = *++hs)
@@ -139,7 +122,7 @@ strstr3 (const unsigned char *hs, const unsigned char *ne)
 static inline char *
 strstr4 (const unsigned char *hs, const unsigned char *ne)
 {
-  uint32_t h1 = ((uint32_t) ne[0] << 24) | ((uint32_t) ne[1] << 16) | ((uint32_t) ne[2] << 8) | ne[3];
+  uint32_t h1 = (ne[0] << 24) | (ne[1] << 16) | (ne[2] << 8) | ne[3];
   uint32_t h2 = 0;
   int c;
   for (c = hs[0]; c != 0 && h1 != h2; c = *++hs)
@@ -162,13 +145,13 @@ strstr (const char *haystack, const char *needle)
 {
   const unsigned char *hs = (const unsigned char *) haystack;
   const unsigned char *ne = (const unsigned char *) needle;
-  size_t i;
+  int i;
 
   /* Handle short needle special cases first.  */
   if (ne[0] == '\0')
     return (char *) hs;
   if (ne[1] == '\0')
-    return (char*)strchr ((const char *) hs, (char) ne[0]);
+    return (char*)strchr ((const char *) hs, ne[0]);
   if (ne[2] == '\0')
     return strstr2 (hs, ne);
   if (ne[3] == '\0')

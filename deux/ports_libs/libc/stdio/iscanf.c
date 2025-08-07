@@ -15,10 +15,13 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY
 
 int
 iscanf(const char *fmt, ...)
@@ -26,8 +29,25 @@ iscanf(const char *fmt, ...)
   int ret;
   va_list ap;
 
+  _REENT_SMALL_CHECK_INIT (_REENT);
   va_start (ap, fmt);
-  ret = _svfiscanf (stdin, fmt, ap);
+  ret = __svfiscanf_r (_REENT, _stdin_r (_REENT), fmt, ap);
   va_end (ap);
   return ret;
 }
+
+#endif /* !_REENT_ONLY */
+
+int
+_iscanf_r(struct _reent *ptr, const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  _REENT_SMALL_CHECK_INIT (ptr);
+  va_start (ap, fmt);
+  ret = __svfiscanf_r (ptr, _stdin_r (ptr), fmt, ap);
+  va_end (ap);
+  return (ret);
+}
+

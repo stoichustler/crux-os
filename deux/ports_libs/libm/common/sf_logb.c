@@ -21,23 +21,42 @@
 #include "fdlibm.h"
 
 float
+#ifdef __STDC__
 logbf(float x)
+#else
+logbf(x)
+float x;
+#endif
 {
 	__int32_t hx,ix;
 
 	GET_FLOAT_WORD(hx,x);
 	hx &= 0x7fffffff;
 	if(FLT_UWORD_IS_ZERO(hx))  {
+		float  xx;
 		/* arg==0:  return -inf and raise divide-by-zero exception */
-		return -1.f/fabsf(x);	/* logbf(0) = -inf */
+		SET_FLOAT_WORD(xx,hx);	/* +0.0 */
+		return -1./xx;	/* logbf(0) = -inf */
 		}
 	if(FLT_UWORD_IS_SUBNORMAL(hx)) {
-	    for (ix = -126,hx = lsl(hx, 8); hx>0; hx = lsl(hx, 1)) ix -=1;
+	    for (ix = -126,hx<<=8; hx>0; hx<<=1) ix -=1;
 	    return (float) ix;
 	}
 	else if (FLT_UWORD_IS_INFINITE(hx)) return HUGE_VALF;	/* x==+|-inf */
-	else if (FLT_UWORD_IS_NAN(hx)) return x + x;
+	else if (FLT_UWORD_IS_NAN(hx)) return x;
 	else return (float) ((hx>>23)-127);
 }
 
-_MATH_ALIAS_f_f(logb)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double logb(double x)
+#else
+	double logb(x)
+	double x;
+#endif
+{
+	return (double) logbf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

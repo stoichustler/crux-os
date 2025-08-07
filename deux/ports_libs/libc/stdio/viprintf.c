@@ -56,17 +56,17 @@ SYNOPSIS
 	char *vasniprintf(char *<[str]>, size_t *<[size]>, const char *<[fmt]>,
                           va_list <[list]>);
 
-	int viprintf( const char *<[fmt]>,
+	int _viprintf_r(struct _reent *<[reent]>, const char *<[fmt]>,
                         va_list <[list]>);
-	int vfiprintf( FILE *<[fp]>,
+	int _vfiprintf_r(struct _reent *<[reent]>, FILE *<[fp]>,
                         const char *<[fmt]>, va_list <[list]>);
-	int vsiprintf( char *<[str]>,
+	int _vsiprintf_r(struct _reent *<[reent]>, char *<[str]>,
                         const char *<[fmt]>, va_list <[list]>);
-	int vsniprintf( char *<[str]>,
+	int _vsniprintf_r(struct _reent *<[reent]>, char *<[str]>,
                           size_t <[size]>, const char *<[fmt]>, va_list <[list]>);
-	int vasiprintf( char **<[str]>,
+	int _vasiprintf_r(struct _reent *<[reent]>, char **<[str]>,
                           const char *<[fmt]>, va_list <[list]>);
-	char *vasniprintf( char *<[str]>,
+	char *_vasniprintf_r(struct _reent *<[reent]>, char *<[str]>,
                              size_t *<[size]>, const char *<[fmt]>, va_list <[list]>);
 
 DESCRIPTION
@@ -92,14 +92,31 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY
 
 int
 viprintf (const char *fmt,
        va_list ap)
 {
-  return vfiprintf ( stdout, fmt, ap);
+  struct _reent *reent = _REENT;
+
+  _REENT_SMALL_CHECK_INIT (reent);
+  return _vfiprintf_r (reent, _stdout_r (reent), fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_viprintf_r (struct _reent *ptr,
+       const char *fmt,
+       va_list ap)
+{
+  _REENT_SMALL_CHECK_INIT (ptr);
+  return _vfiprintf_r (ptr, _stdout_r (ptr), fmt, ap);
 }

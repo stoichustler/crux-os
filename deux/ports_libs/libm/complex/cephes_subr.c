@@ -32,7 +32,6 @@
  * Marco Atzeri <marco_atzeri@yahoo.it>
  */
 
-#define _DEFAULT_SOURCE
 #include <complex.h>
 #include <math.h>
 #include "cephes_subr.h"

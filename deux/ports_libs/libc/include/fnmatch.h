@@ -48,8 +48,8 @@
 #define	FNM_FILE_NAME	FNM_PATHNAME
 #endif
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 int	 fnmatch(const char *, const char *, int);
-_END_STD_C
+__END_DECLS
 
 #endif /* !_FNMATCH_H_ */

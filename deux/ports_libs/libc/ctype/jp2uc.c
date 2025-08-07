@@ -30,22 +30,31 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
+#include <newlib.h>
 
+#ifdef _MB_CAPABLE
+/* Under Cygwin, the incoming wide character is already given in UTF due
+   to the requirements of the underlying OS. */
+#ifndef __CYGWIN__
+
+#include <_ansi.h>
 #include <string.h>
 #include <wctype.h>
 #include "local.h"
 
-/* Japanese to Unicode conversion routine */
-#ifdef __MB_EXTENDED_CHARSETS_JIS
+/* Japanese encoding types supported */
+#define JP_JIS		1
+#define JP_SJIS		2
+#define JP_EUCJP	3
 
+/* Japanese to Unicode conversion routine */
 #include "jp2uc.h"
 
-wint_t
+static wint_t
 __jp2uc (wint_t c, int type)
 {
-  unsigned index;
-  unsigned char byte1, byte2, sjis1, sjis2;
+  int index, adj;
+  unsigned char byte1, byte2;
   wint_t ret;
 
   /* we actually use tables of EUCJP to Unicode.  For JIS, we simply
@@ -61,100 +70,54 @@ __jp2uc (wint_t c, int type)
     case JP_EUCJP:
       byte1 = (c >> 8);
       byte2 = (c & 0xff);
-      if (byte1 == 0)
-        {
-          switch (byte2) {
-          case 0x8e:
-          case 0x8f:
-          case 0xa0:
-          case 0xff:
-            break;
-          default:
-            return byte2;
-          }
-        }
       break;
     case JP_SJIS:
-      sjis1 = c >> 8;
-      sjis2 = c & 0xff;
-      if (sjis1 == 0)
+      byte1 = c >> 8;
+      byte2 = c & 0xff;
+      if (byte2 <= 0x9e)
         {
-          switch(sjis2) {
-          case 0x5c:
-            return 0xa5;        /* ¥ */
-          case 0x7e:
-            return 0x203e;      /* ‾ */
-          default:
-            if (0xa1 <= sjis2 && sjis2 <= 0xdf)
-              return sjis2 + (0xff61 - 0xa1);
-            return sjis2;
-          }
+          adj = 0xa1 - 0x22;
+          byte2 = (byte2 - 31) + 0xa1;
         }
-
-      if (0x81 <= sjis1 && sjis1 <= 0x9f)
-          byte1 = (sjis1 - 112 + 64) << 1;
-      else if (0xe0 <= sjis1 && sjis1 <= 0xef)
-          byte1 = (sjis1 - 176 + 64) << 1;
       else
-          return WEOF;
-
-      if (0x40 <= sjis2 && sjis2 <= 0x9e && sjis2 != 0x7f) {
-          byte1 -= 1;
-          byte2 = sjis2 - 31 + 128;
-          if (sjis2 >= 0x7f)
-              byte2--;
-      } else if (0x9f <= sjis2 && sjis2 <= 0xfc) {
-          byte2 = sjis2 - 126 + 128;
-      } else {
-          return WEOF;
-      }
+        {
+          adj = 0xa1 - 0x21;
+          byte2 = (byte2 - 126) + 0xa1;
+        }
+      if (byte1 <= 0x9f)
+        byte1 = ((byte1 - 112) << 1) + adj;
+      else
+        byte1 = ((byte1 - 176) << 1) + adj;
       break;
     default:
       return WEOF;
     }
 
-#define in_bounds(array, val)   (val < (sizeof(array)/sizeof(array[0])))
-
-#define in_bounds_o(array, val, offset)   (offset <= val && val < offset + (sizeof(array)/sizeof(array[0])))
-
   /* find conversion in jp2uc arrays */
 
   /* handle larger ranges first */
-  if (byte1 >= 0xb0 && byte1 <= 0xcf && c <= (wint_t) 0xcfd3 && byte2 >= 0xa1)
+  if (byte1 >= 0xb0 && byte1 <= 0xcf && c <= 0xcfd3)
     {
-      index = (byte1 - 0xb0) * 94 + (byte2 - 0xa1);
-      if (in_bounds(b02cf, index))
-        return b02cf[index];
+      index = (byte1 - 0xb0) * 0xfe + (byte2 - 0xa1);
+      return b02cf[index];
     }
-  else if (byte1 >= 0xd0 && byte1 <= 0xf4 && c <= (wint_t) 0xf4a6 && byte2 >= 0xa1)
+  else if (byte1 >= 0xd0 && byte1 <= 0xf4 && c <= 0xf4a6)
     {
-      index = (byte1 - 0xd0) * 94 + (byte2 - 0xa1);
-      if (in_bounds(d02f4, index))
-        return d02f4[index];
+      index = (byte1 - 0xd0) * 0xfe + (byte2 - 0xa1);
+      return d02f4[index];
     }
 
   /* handle smaller ranges here */
   switch (byte1)
     {
-    case 0x8E:
-        /* Upper half of JIS X 0201 */
-        if (0xa1 <= byte2 && byte2 <= 0xdf)
-            return byte2 + (0xff61 - 0xa1);
-        break;
     case 0xA1:
-      if (!in_bounds_o (a1, byte2, 0xa1))
-        break;
       return (wint_t)a1[byte2 - 0xa1];
     case 0xA2:
-      if (!in_bounds_o (a2, byte2, 0xa1))
-        break;
       ret = a2[byte2 - 0xa1];
       if (ret != 0)
 	return (wint_t)ret;
       break;
     case 0xA3:
-      if (!in_bounds_o (a3, byte2, 0xa1))
-        break;
       if (a3[byte2 - 0xa1])
 	return (wint_t)(0xff00 + (byte2 - 0xa0));
       break;
@@ -167,8 +130,6 @@ __jp2uc (wint_t c, int type)
 	return (wint_t)(0x3000 + byte2);
       break;
     case 0xA6:
-      if (!in_bounds_o (a6, byte2, 0xa1))
-        break;
       ret = 0;
       if (byte2 <= 0xd8)
 	ret = (wint_t)a6[byte2 - 0xa1];
@@ -176,8 +137,6 @@ __jp2uc (wint_t c, int type)
 	return ret;
       break;
     case 0xA7:
-      if (!in_bounds_o (a7, byte2, 0xa1))
-        break;
       ret = 0;
       if (byte2 <= 0xf1)
 	ret = (wint_t)a7[byte2 - 0xa1];
@@ -185,31 +144,57 @@ __jp2uc (wint_t c, int type)
 	return ret;
       break;
     case 0xA8:
-      if (!in_bounds_o (a8, byte2, 0xa1))
-        break;
       if (byte2 <= 0xc0)
 	return (wint_t)a8[byte2 - 0xa1];
       break;
     default:
-      break;
+      return WEOF;
     }
 
   return WEOF;
 }
 
-/* Unicode to Japanese conversion routine. Not the most elegant solution. */
-wint_t
+/* Unicode to Japanese conversion routine */
+static wint_t
 __uc2jp (wint_t c, int type)
 {
-  wint_t u;
-  if (c == WEOF)
-    return WEOF;
-  for (u = 0x0000; ; u++) {
-    if (__jp2uc(u, type) == c)
-      return u;
-    if (u == 0xffff)
-      return WEOF;
-  }
+#warning back-conversion Unicode to Japanese not implemented; needed for towupper/towlower
+  return c;
 }
 
-#endif /* __MB_EXTENDED_CHARSETS_JIS */
+/* Japanese to Unicode conversion interface */
+wint_t
+_jp2uc_l (wint_t c, struct __locale_t * l)
+{
+  const char * cs = l ? __locale_charset(l) : __current_locale_charset();
+  if (0 == strcmp (cs, "JIS"))
+    c = __jp2uc (c, JP_JIS);
+  else if (0 == strcmp (cs, "SJIS"))
+    c = __jp2uc (c, JP_SJIS);
+  else if (0 == strcmp (cs, "EUCJP"))
+    c = __jp2uc (c, JP_EUCJP);
+  return c;
+}
+
+wint_t
+_jp2uc (wint_t c)
+{
+  return _jp2uc_l (c, 0);
+}
+
+/* Unicode to Japanese conversion interface */
+wint_t
+_uc2jp_l (wint_t c, struct __locale_t * l)
+{
+  const char * cs = l ? __locale_charset(l) : __current_locale_charset();
+  if (0 == strcmp (cs, "JIS"))
+    c = __uc2jp (c, JP_JIS);
+  else if (0 == strcmp (cs, "SJIS"))
+    c = __uc2jp (c, JP_SJIS);
+  else if (0 == strcmp (cs, "EUCJP"))
+    c = __uc2jp (c, JP_EUCJP);
+  return c;
+}
+
+#endif /* !__CYGWIN__ */
+#endif /* _MB_CAPABLE */

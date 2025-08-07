@@ -12,14 +12,10 @@
 #ifndef _FENV_H
 #define _FENV_H
 
-#include <sys/cdefs.h>
+#include <sys/fenv.h>
 
-_BEGIN_STD_C
-
-#include <machine/fenv.h>
-
-#ifndef FE_ALL_EXCEPT
-#define FE_ALL_EXCEPT	0
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /* Exception */
@@ -39,38 +35,8 @@ int feholdexcept(fenv_t *envp);
 int fesetenv(const fenv_t *envp);
 int feupdateenv(const fenv_t *envp);
 
-#if __GNU_VISIBLE
-int feenableexcept(int);
-int fedisableexcept(int);
-int fegetexcept(void);
+#ifdef __cplusplus
+}
 #endif
-
-/*
- * Lastly, a FE_DFL_ENV macro must be defined, representing a pointer
- * to const fenv_t that contains the value of the default floating point
- * environment.
- *
- * NOTE: The extern'ed variable fe_default_env_p is an implementation
- *       detail of this stub.  FE_DFL_ENV must point to an instance of
- *       fenv_t with the default fenv_t. The format of fenv_t and where
- *       FE_DFL_ENV is are implementation specific.
- */
-extern fenv_t _fe_dfl_env;
-#define FE_DFL_ENV ((const fenv_t *) &_fe_dfl_env)
-
-#ifdef __STDC_WANT_IEC_60559_BFP_EXT__
-
-#ifndef FE_DFL_MODE
-typedef struct { int round, except; } femode_t;
-#define FE_DFL_MODE     ((femode_t *) 0)
-#endif
-
-int fegetmode(femode_t *modep);
-int fesetmode(femode_t *modep);
-int fesetexcept(int excepts);
-
-#endif
-
-_END_STD_C
 
 #endif

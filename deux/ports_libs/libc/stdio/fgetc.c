@@ -37,11 +37,11 @@ SYNOPSIS
 	int fgetc_unlocked(FILE *<[fp]>);
 
 	#include <stdio.h>
-	int fgetc( FILE *<[fp]>);
+	int _fgetc_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 	#define _BSD_SOURCE
 	#include <stdio.h>
-	int fgetc_unlocked( FILE *<[fp]>);
+	int _fgetc_unlocked_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 DESCRIPTION
 Use <<fgetc>> to get the next single character from the file or stream
@@ -80,19 +80,40 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
 int
-fgetc (
+_fgetc_r (struct _reent * ptr,
        FILE * fp)
 {
   int result;
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
   _newlib_flockfile_start (fp);
-  result = _sgetc ( fp);
+  result = __sgetc_r (ptr, fp);
   _newlib_flockfile_end (fp);
   return result;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fgetc (FILE * fp)
+{
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
+  int result;
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  _newlib_flockfile_start (fp);
+  result = __sgetc_r (reent, fp);
+  _newlib_flockfile_end (fp);
+  return result;
+#else
+  return _fgetc_r (_REENT, fp);
+#endif
+}
+
+#endif /* !_REENT_ONLY */
 

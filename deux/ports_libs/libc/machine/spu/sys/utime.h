@@ -1,10 +1,9 @@
-/* Copyright (c) 2007 Patrick Mansfield <patmans@us.ibm.com> */
 #ifndef _SYS_UTIME_H
 #define _SYS_UTIME_H
 
-#include <sys/cdefs.h>
-
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Per POSIX
@@ -17,6 +16,8 @@ struct utimbuf
 
 int utime(const char *, const struct utimbuf *);
 
-_END_STD_C
+#ifdef __cplusplus
+};
+#endif
 
 #endif

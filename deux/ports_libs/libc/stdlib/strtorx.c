@@ -29,23 +29,23 @@ THIS SOFTWARE.
 /* Please send bug reports to David M. Gay (dmg at acm dot org,
  * with " at " changed at "@" and " dot " changed to ".").	*/
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include "mprec.h"
 #include "gdtoa.h"
 
-#if defined(__HAVE_LONG_DOUBLE) && !defined (_LDBL_EQ_DBL) && __LDBL_MANT_DIG__ == 64
+#if defined (_HAVE_LONG_DOUBLE) && !defined (_LDBL_EQ_DBL)
 
 /* one or the other of IEEE_MC68k or IEEE_8087 should be #defined */
 
 #ifdef IEEE_MC68k
 #define _0 0
-#define _1 2
-#define _2 3
-#define _3 4
-#define _4 5
+#define _1 1
+#define _2 2
+#define _3 3
+#define _4 4
 #endif
 #ifdef IEEE_8087
 #define _0 4
@@ -55,13 +55,17 @@ THIS SOFTWARE.
 #define _4 0
 #endif
 
-static void
+ void
+#ifdef KR_headers
+ULtox(L, bits, exp, k) __UShort *L; __ULong *bits; Long exp; int k;
+#else
 ULtox(__UShort *L, __ULong *bits, Long exp, int k)
+#endif
 {
 	switch(k & STRTOG_Retmask) {
 	  case STRTOG_NoNumber:
 	  case STRTOG_Zero:
-		L[_0] = L[_1] = L[_2] = L[_3] = L[_4] = 0;
+		L[0] = L[1] = L[2] = L[3] = L[4] = 0;
 		break;
 
 	  case STRTOG_Denormal:
@@ -76,7 +80,6 @@ ULtox(__UShort *L, __ULong *bits, Long exp, int k)
 		L[_3] = (__UShort)(bits[0] >> 16);
 		L[_2] = (__UShort)bits[1];
 		L[_1] = (__UShort)(bits[1] >> 16);
-
 		break;
 
 	  case STRTOG_Infinite:
@@ -94,9 +97,9 @@ ULtox(__UShort *L, __ULong *bits, Long exp, int k)
 
  int
 #ifdef KR_headers
-_strtorx_l(s, sp, rounding, L, loc) const char *s; char **sp; int rounding; void *L; locale_t loc;
+_strtorx_l(p, s, sp, rounding, L, loc) struct _reent *p; const char *s; char **sp; int rounding; void *L; locale_t loc;
 #else
-_strtorx_l(const char *s, char **sp, int rounding, void *L,
+_strtorx_l(struct _reent *p, const char *s, char **sp, int rounding, void *L,
 	   locale_t loc)
 #endif
 {
@@ -112,9 +115,9 @@ _strtorx_l(const char *s, char **sp, int rounding, void *L,
 		fpi1.rounding = rounding;
 		fpi = &fpi1;
 		}
-	k = _strtodg_l(s, sp, fpi, &exp, bits, loc);
+	k = _strtodg_l(p, s, sp, fpi, &exp, bits, loc);
 	ULtox((__UShort*)L, bits, exp, k);
 	return k;
 	}
 
-#endif /* __HAVE_LONG_DOUBLE && !_LDBL_EQ_DBL */
+#endif /* _HAVE_LONG_DOUBLE && !_LDBL_EQ_DBL */

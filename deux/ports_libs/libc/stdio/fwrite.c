@@ -39,11 +39,11 @@ SYNOPSIS
 		      size_t <[count]>, FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	size_t fwrite( const void *restrict <[buf]>, size_t <[size]>,
+	size_t _fwrite_r(struct _reent *<[ptr]>, const void *restrict <[buf]>, size_t <[size]>,
 		      size_t <[count]>, FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	size_t fwrite_unlocked( const void *restrict <[buf]>, size_t <[size]>,
+	size_t _fwrite_unlocked_r(struct _reent *<[ptr]>, const void *restrict <[buf]>, size_t <[size]>,
 		      size_t <[count]>, FILE *restrict <[fp]>);
 
 DESCRIPTION
@@ -86,7 +86,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #if 0
@@ -108,20 +108,19 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  */
 
 size_t
-fwrite (
+_fwrite_r (struct _reent * ptr,
        const void *__restrict buf,
        size_t size,
        size_t count,
        FILE * __restrict fp)
 {
   size_t n;
-#ifdef __FVWRITE_IN_STREAMIO
+#ifdef _FVWRITE_IN_STREAMIO
   struct __suio uio;
   struct __siov iov;
 
   iov.iov_base = buf;
-  if (!(uio.uio_resid = iov.iov_len = n = count * size))
-      return 0;
+  uio.uio_resid = iov.iov_len = n = count * size;
   uio.uio_iov = &iov;
   uio.uio_iovcnt = 1;
 
@@ -131,7 +130,7 @@ fwrite (
    * generally slow and since this occurs whenever size==0.
    */
 
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
@@ -139,7 +138,7 @@ fwrite (
       _newlib_flockfile_exit (fp);
       return 0;
     }
-  if (_sfvwrite (fp, &uio) == 0)
+  if (__sfvwrite_r (ptr, fp, &uio) == 0)
     {
       _newlib_flockfile_exit (fp);
       return count;
@@ -149,9 +148,8 @@ fwrite (
 #else
   size_t i = 0;
   const char *p = buf;
-  if (!(n = count * size))
-      return 0;
-  CHECK_INIT();
+  n = count * size;
+  CHECK_INIT (ptr, fp);
 
   _newlib_flockfile_start (fp);
   /* Make sure we can write.  */
@@ -160,7 +158,7 @@ fwrite (
 
   while (i < n)
     {
-      if (_sputc ( p[i], fp) == EOF)
+      if (__sputc_r (ptr, p[i], fp) == EOF)
 	break;
 
       i++;
@@ -171,3 +169,14 @@ ret:
   return i / size;
 #endif
 }
+
+#ifndef _REENT_ONLY
+size_t
+fwrite (const void *__restrict buf,
+       size_t size,
+       size_t count,
+       FILE * fp)
+{
+  return _fwrite_r (_REENT, buf, size, count, fp);
+}
+#endif

@@ -9,10 +9,8 @@
    http://www.opensource.org/licenses.
 */
 
-#include <picolibc.h>
-
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
-.section .text.memcpy
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+.text
 .global memcpy
 .type	memcpy, @function
 memcpy:

@@ -39,11 +39,11 @@ SYNOPSIS
 	int vfscanf(FILE *<[fp]>, const char *<[fmt]>, va_list <[list]>);
 	int vsscanf(const char *<[str]>, const char *<[fmt]>, va_list <[list]>);
 
-	int vscanf( const char *<[fmt]>,
+	int _vscanf_r(struct _reent *<[reent]>, const char *<[fmt]>,
                        va_list <[list]>);
-	int vfscanf( FILE *<[fp]>, const char *<[fmt]>,
+	int _vfscanf_r(struct _reent *<[reent]>, FILE *<[fp]>, const char *<[fmt]>,
                        va_list <[list]>);
-	int vsscanf( const char *<[str]>,
+	int _vsscanf_r(struct _reent *<[reent]>, const char *<[str]>,
                        const char *<[fmt]>, va_list <[list]>);
 
 DESCRIPTION
@@ -74,7 +74,9 @@ These are GNU extensions.
 Supporting OS subroutines required:
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
+#include <newlib.h>
 #include <ctype.h>
 #include <wctype.h>
 #include <stdio.h>
@@ -90,20 +92,24 @@ Supporting OS subroutines required:
 
 #ifdef INTEGER_ONLY
 #define VFSCANF vfiscanf
+#define _VFSCANF_R _vfiscanf_r
+#define __SVFSCANF __svfiscanf
 #ifdef STRING_ONLY
-#  define _SVFSCANF _ssvfiscanf
+#  define __SVFSCANF_R __ssvfiscanf_r
 #else
-#  define _SVFSCANF _svfiscanf
+#  define __SVFSCANF_R __svfiscanf_r
 #endif
 #else
 #define VFSCANF vfscanf
+#define _VFSCANF_R _vfscanf_r
+#define __SVFSCANF __svfscanf
 #ifdef STRING_ONLY
-#  define _SVFSCANF _ssvfscanf
+#  define __SVFSCANF_R __ssvfscanf_r
 #else
-#  define _SVFSCANF _svfscanf
+#  define __SVFSCANF_R __svfscanf_r
 #endif
-#ifndef __IO_NO_FLOATING_POINT
-#define __IO_FLOATING_POINT
+#ifndef NO_FLOATING_POINT
+#define FLOATING_POINT
 #endif
 #endif
 
@@ -119,16 +125,16 @@ Supporting OS subroutines required:
 #define _fread_r _sfread_r
 #endif
 
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 #include <math.h>
 #include <float.h>
 #include <locale.h>
 
 /* Currently a test is made to see if long double processing is warranted.
-   This could be changed in the future should the __ldtoa code be
-   preferred over __dtoa.  */
+   This could be changed in the future should the _ldtoa_r code be
+   preferred over _dtoa_r.  */
 #define _NO_LONGDBL
-#if defined __IO_LONG_DOUBLE && (LDBL_MANT_DIG == 64)
+#if defined _WANT_IO_LONG_DOUBLE && (LDBL_MANT_DIG > DBL_MANT_DIG)
 #undef _NO_LONGDBL
 #endif
 
@@ -144,13 +150,13 @@ Supporting OS subroutines required:
 #endif
 
 #define _NO_LONGLONG
-#if defined __IO_LONG_LONG \
+#if defined _WANT_IO_LONG_LONG \
 	&& (defined __GNUC__ || __STDC_VERSION__ >= 199901L)
 # undef _NO_LONGLONG
 #endif
 
 #define _NO_POS_ARGS
-#ifdef __IO_POS_ARGS
+#ifdef _WANT_IO_POS_ARGS
 # undef _NO_POS_ARGS
 # ifdef NL_ARGMAX
 #  define MAX_POS_ARGS NL_ARGMAX
@@ -158,12 +164,8 @@ Supporting OS subroutines required:
 #  define MAX_POS_ARGS 32
 # endif
 
-typedef struct {
-    va_list ap;
-} my_va_list;
-
-static void * get_arg (int, my_va_list *, int *, void **);
-#endif /* __IO_POS_ARGS */
+static void * get_arg (int, va_list *, int *, void **);
+#endif /* _WANT_IO_POS_ARGS */
 
 /*
  * Flags used during conversion.
@@ -216,18 +218,41 @@ typedef unsigned long long u_long_long;
  * vfscanf
  */
 
-#define BufferEmpty (fp->_r <= 0 && _srefill( fp))
+#define BufferEmpty (fp->_r <= 0 && __srefill_r(rptr, fp))
 
 #ifndef STRING_ONLY
 
+#ifndef _REENT_ONLY
+
 int
-VFSCANF (
+VFSCANF (register FILE *fp,
+       const char *fmt,
+       va_list ap)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  return __SVFSCANF_R (reent, fp, fmt, ap);
+}
+
+int
+__SVFSCANF (register FILE *fp,
+       char const *fmt0,
+       va_list ap)
+{
+  return __SVFSCANF_R (_REENT, fp, fmt0, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_VFSCANF_R (struct _reent *data,
        register FILE *fp,
        const char *fmt,
        va_list ap)
 {
-  CHECK_INIT();
-  return _SVFSCANF (fp, fmt, ap);
+  CHECK_INIT(data, fp);
+  return __SVFSCANF_R (data, fp, fmt, ap);
 }
 #endif /* !STRING_ONLY */
 
@@ -236,7 +261,7 @@ VFSCANF (
  * regular ungetc which will drag in file I/O items we don't need.
  * So, we create our own trimmed-down version.  */
 int
-sungetc (
+_sungetc_r (struct _reent *data,
 	int c,
 	register FILE *fp)
 {
@@ -254,7 +279,7 @@ sungetc (
 
   if (HASUB (fp))
     {
-      if (fp->_r >= fp->_ub._size && __submore (fp))
+      if (fp->_r >= fp->_ub._size && __submore (data, fp))
         {
           return EOF;
         }
@@ -293,7 +318,7 @@ sungetc (
 
 /* String only version of __srefill_r for sscanf family.  */
 int
-_ssrefill (
+__ssrefill_r (struct _reent * ptr,
        register FILE * fp)
 {
   /*
@@ -318,7 +343,7 @@ _ssrefill (
 }
 
 size_t
-_sfread (
+_sfread_r (struct _reent * ptr,
        void *buf,
        size_t size,
        size_t count,
@@ -335,14 +360,14 @@ _sfread (
   total = resid;
   p = buf;
 
-  while (resid > (size_t) (r = fp->_r))
+  while (resid > (r = fp->_r))
     {
       (void) memcpy ((void *) p, (void *) fp->_p, (size_t) r);
       fp->_p += r;
       fp->_r = 0;
       p += r;
       resid -= r;
-      if (_ssrefill ( fp))
+      if (__ssrefill_r (ptr, fp))
         {
           /* no more input: return partial result */
           return (total - resid) / size;
@@ -354,13 +379,13 @@ _sfread (
   return count;
 }
 #else /* !STRING_ONLY || !INTEGER_ONLY */
-int sungetc ( int, register FILE *);
-int _ssrefill ( register FILE *);
-size_t sfread ( void *buf, size_t, size_t, FILE *);
+int _sungetc_r (struct _reent *, int, register FILE *);
+int __ssrefill_r (struct _reent *, register FILE *);
+size_t _sfread_r (struct _reent *, void *buf, size_t, size_t, FILE *);
 #endif /* !STRING_ONLY || !INTEGER_ONLY */
 
 static inline int
-__wctob (wint_t wc)
+__wctob (struct _reent *rptr, wint_t wc)
 {
   mbstate_t mbs;
   unsigned char pmb[MB_LEN_MAX];
@@ -368,11 +393,11 @@ __wctob (wint_t wc)
   if (wc == WEOF)
     return EOF;
   memset (&mbs, '\0', sizeof (mbs));
-  return __WCTOMB ((char *) pmb, wc, &mbs) == 1 ? (int) pmb[0] : 0;
+  return __WCTOMB (rptr, (char *) pmb, wc, &mbs) == 1 ? (int) pmb[0] : 0;
 }
 
 int
-_SVFSCANF (
+__SVFSCANF_R (struct _reent *rptr,
        register FILE *fp,
        char const *fmt0,
        va_list ap)
@@ -390,8 +415,6 @@ _SVFSCANF (
   int N;			/* arg number */
   int arg_index = 0;		/* index into args processed directly */
   int numargs = 0;		/* number of varargs read */
-  my_va_list my_ap;
-  va_copy(my_ap.ap, ap);
   void *args[MAX_POS_ARGS];	/* positional args read */
   int is_pos_arg;		/* is current format positional? */
 #endif
@@ -400,19 +423,13 @@ _SVFSCANF (
   wchar_t wc;                   /* wchar to use to read format string */
   wchar_t *wcp;                 /* handy wide character pointer */
   size_t mbslen = 0;            /* length of converted multibyte sequence */
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
   mbstate_t state;              /* value to keep track of multibyte state */
 #endif
-#ifdef __IO_C99_FORMATS
-#define __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_C99_FORMATS
+#define _WANT_IO_POSIX_EXTENSIONS
 #endif
-#ifdef __IO_POSIX_EXTENSIONS
-#ifdef __GNUCLIKE_PRAGMA_DIAGNOSTIC
-#pragma GCC diagnostic ignored "-Wpragmas"
-#pragma GCC diagnostic ignored "-Wunknown-warning-option"
-#pragma GCC diagnostic ignored "-Wanalyzer-null-dereference"
-#endif
-
+#ifdef _WANT_IO_POSIX_EXTENSIONS
   /* POSIX requires that fscanf frees all allocated strings from 'm'
      conversions in case it returns EOF.  m_ptr is used to keep track.
      It will be allocated on the stack the first time an 'm' conversion
@@ -426,13 +443,13 @@ _SVFSCANF (
     void ***m_arr;		/* Array of pointer args to 'm' conversion */
     uint16_t m_siz;		/* Number of slots in m_arr */
     uint16_t m_cnt;		/* Number of valid entries in m_arr */
-  } *m_ptr = NULL, m_store;
+  } *m_ptr = NULL;
   #define init_m_ptr()							\
     do									\
       {									\
 	if (!m_ptr)							\
 	  {								\
-	    m_ptr = &m_store;		                                \
+	    m_ptr = (struct m_ptrs *) alloca (sizeof *m_ptr);		\
 	    m_ptr->m_arr = NULL;					\
 	    m_ptr->m_siz = 0;						\
 	    m_ptr->m_cnt = 0;						\
@@ -484,8 +501,8 @@ _SVFSCANF (
       size_t _nw = (_w);						\
       ptrdiff_t _dif = _p - _p0;					\
       if (_p_p &&							\
-	  ((sizeof (_type) == 2 && (size_t) _dif >= _nw - 1)             \
-	   || (size_t) _dif >= _nw))                                    \
+	  ((sizeof (_type) == 2 && _dif >= _nw - 1)			\
+	   || _dif >= _nw))						\
 	{								\
 	  _p0 = (_type *) realloc (_p0, (_nw << 1) * sizeof (_type));			\
 	  if (!_p0)							\
@@ -517,7 +534,7 @@ _SVFSCANF (
 	  {								\
 	    if (nassigned == EOF)					\
 	      {								\
-		unsigned i;						\
+		int i;							\
 		for (i = 0; i < m_ptr->m_cnt; ++i)			\
 		  {							\
 		    free (*m_ptr->m_arr[i]);				\
@@ -531,7 +548,7 @@ _SVFSCANF (
     while (0)
 #endif
 
-  #define CCFN_PARAMS	(const char *, char **, int)
+  #define CCFN_PARAMS	(struct _reent *, const char *, char **, int)
   u_long (*ccfn)CCFN_PARAMS=0;	/* conversion function (strtol/strtoul) */
   char ccltab[256];		/* character class table for %[...] */
   char buf[BUF];		/* buffer for numeric conversions */
@@ -540,9 +557,9 @@ _SVFSCANF (
   char *cp;
   short *sp;
   int *ip;
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
   float *flp;
-  long double *ldp;
+  _LONG_DOUBLE *ldp;
   double *dp;
 #endif
   long *lp;
@@ -560,12 +577,12 @@ _SVFSCANF (
   ((type) (is_pos_arg						\
 	   ? (n < numargs					\
 	      ? args[n]						\
-	      : get_arg (n, &my_ap, &numargs, args))      \
+	      : get_arg (n, &ap, &numargs, args))		\
 	   : (arg_index++ < numargs				\
 	      ? args[n]						\
 	      : (numargs < MAX_POS_ARGS				\
-		 ? args[numargs++] = va_arg (my_ap.ap, void *)	\
-		 : va_arg (my_ap.ap, void *)))))
+		 ? args[numargs++] = va_arg (ap, void *)	\
+		 : va_arg (ap, void *)))))
 #else
 # define GET_ARG(n, ap, type) (va_arg (ap, type))
 #endif
@@ -580,16 +597,16 @@ _SVFSCANF (
 
   nassigned = 0;
   nread = 0;
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
   memset (&state, 0, sizeof (state));
 #endif
 
   for (;;)
     {
-#ifndef __MB_CAPABLE
+#ifndef _MB_CAPABLE
       wc = *fmt;
 #else
-      nbytes = __MBTOWC (&wc, (char *) fmt, MB_CUR_MAX, &state);
+      nbytes = __MBTOWC (rptr, &wc, (char *) fmt, MB_CUR_MAX, &state);
       if (nbytes < 0) {
 	wc = 0xFFFD; /* Unicode replacement character */
 	nbytes = 1;
@@ -653,7 +670,7 @@ _SVFSCANF (
 	case 'l':
 	  if (flags & (CHAR | SHORT | LONG | LONGDBL))
 	    goto match_failure;
-#if defined __IO_C99_FORMATS || !defined _NO_LONGLONG
+#if defined _WANT_IO_C99_FORMATS || !defined _NO_LONGLONG
 	  if (*fmt == 'l')	/* Check for 'll' = long long (SUSv3) */
 	    {
 	      ++fmt;
@@ -671,7 +688,7 @@ _SVFSCANF (
 	case 'h':
 	  if (flags & (CHAR | SHORT | LONG | LONGDBL))
 	    goto match_failure;
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	  if (*fmt == 'h')	/* Check for 'hh' = char int (SUSv3) */
 	    {
 	      ++fmt;
@@ -681,7 +698,7 @@ _SVFSCANF (
 #endif
 	    flags |= SHORT;
 	  goto again;
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	case 'j': /* intmax_t */
 	  if (flags & (CHAR | SHORT | LONG | LONGDBL))
 	    goto match_failure;
@@ -725,8 +742,8 @@ _SVFSCANF (
 	       have size_t as wide as long long.  */
 	    flags |= LONGDBL;
 	  goto again;
-#endif /* __IO_C99_FORMATS */
-#ifdef __IO_POSIX_EXTENSIONS
+#endif /* _WANT_IO_C99_FORMATS */
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	case 'm':
 	  if (flags & (CHAR | SHORT | LONG | LONGDBL | MALLOC))
 	    goto match_failure;
@@ -761,7 +778,7 @@ _SVFSCANF (
 	      width = 0;
 	      goto again;
 	    }
-	  errno = EINVAL;
+	  _REENT_ERRNO(rptr) = EINVAL;
 	  goto input_failure;
 #endif /* !_NO_POS_ARGS */
 
@@ -775,31 +792,31 @@ _SVFSCANF (
 
 	case 'D':		/* compat */
 	  flags |= LONG;
-	  __fallthrough;
+	  /* FALLTHROUGH */
 	case 'd':
 	  c = CT_INT;
-	  ccfn = (u_long (*)CCFN_PARAMS)strtol;
+	  ccfn = (u_long (*)CCFN_PARAMS)_strtol_r;
 	  base = 10;
 	  break;
 
 	case 'i':
 	  c = CT_INT;
-	  ccfn = (u_long (*)CCFN_PARAMS)strtol;
+	  ccfn = (u_long (*)CCFN_PARAMS)_strtol_r;
 	  base = 0;
 	  break;
 
 	case 'O':		/* compat */
 	  flags |= LONG;
-	  __fallthrough;
+	  /* FALLTHROUGH */
 	case 'o':
 	  c = CT_INT;
-	  ccfn = strtoul;
+	  ccfn = _strtoul_r;
 	  base = 8;
 	  break;
 
 	case 'u':
 	  c = CT_INT;
-	  ccfn = strtoul;
+	  ccfn = _strtoul_r;
 	  base = 10;
 	  break;
 
@@ -807,12 +824,12 @@ _SVFSCANF (
 	case 'x':
 	  flags |= PFXOK;	/* enable 0x prefixing */
 	  c = CT_INT;
-	  ccfn = strtoul;
+	  ccfn = _strtoul_r;
 	  base = 16;
 	  break;
 
-#ifdef __IO_FLOATING_POINT
-# ifdef __IO_C99_FORMATS
+#ifdef FLOATING_POINT
+# ifdef _WANT_IO_C99_FORMATS
 	case 'a':
 	case 'A':
 	case 'F':
@@ -826,10 +843,10 @@ _SVFSCANF (
 	  break;
 #endif
 
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	case 'S':
 	  flags |= LONG;
-          __fallthrough;
+	  /* FALLTHROUGH */
 #endif
 
 	case 's':
@@ -842,10 +859,10 @@ _SVFSCANF (
 	  c = CT_CCL;
 	  break;
 
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	case 'C':
 	  flags |= LONG;
-          __fallthrough;
+	  /* FALLTHROUGH */
 #endif
 
 	case 'c':
@@ -856,14 +873,14 @@ _SVFSCANF (
 	case 'p':		/* pointer format is like hex */
 	  flags |= POINTER | PFXOK;
 	  c = CT_INT;
-	  ccfn = strtoul;
+	  ccfn = _strtoul_r;
 	  base = 16;
 	  break;
 
 	case 'n':
 	  if (flags & SUPPRESS)	/* ??? */
 	    continue;
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	  if (flags & CHAR)
 	    {
 	      cp = GET_ARG (N, ap, char *);
@@ -917,7 +934,7 @@ _SVFSCANF (
 	      if (--fp->_r > 0)
 		fp->_p++;
 	      else
-	      if (_srefill ( fp))
+	      if (__srefill_r (rptr, fp))
 		goto input_failure;
 	    }
 	  /*
@@ -937,10 +954,10 @@ _SVFSCANF (
 	  /* scan arbitrary characters (sets NOSKIP) */
 	  if (width == 0)
 	    width = 1;
-#if !defined(__ELIX_LEVEL) || __ELIX_LEVEL >= 2
+#if !defined(_ELIX_LEVEL) || _ELIX_LEVEL >= 2
           if (flags & LONG)
             {
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      wchar_t **wcp_p = NULL;
 	      wchar_t *wcp0 = NULL;
 	      size_t wcp_siz = 0;
@@ -948,53 +965,53 @@ _SVFSCANF (
               mbstate_t state;
               if (flags & SUPPRESS)
                 wcp = NULL;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      else if (flags & MALLOC)
 		wcp_siz = alloc_m_ptr (wchar_t, wcp, wcp0, wcp_p, 32);
 #endif
               else
                 wcp = GET_ARG (N, ap, wchar_t *);
-              size_t s = 0;
+              n = 0;
               while (width != 0)
                 {
-                  if (s == MB_CUR_MAX)
+                  if (n == MB_CUR_MAX)
                     goto input_failure;
-                  buf[s++] = *fp->_p;
+                  buf[n++] = *fp->_p;
                   fp->_r -= 1;
                   fp->_p += 1;
 		  /* Got a high surrogate, allow low surrogate to slip
 		     through */
 		  if (mbslen != 3 || state.__count != 4)
 		    memset (&state, 0, sizeof (mbstate_t));
-                  if ((mbslen = mbrtowc (wcp, buf, s, &state))
+                  if ((mbslen = _mbrtowc_r (rptr, wcp, buf, n, &state))
                                                          == (size_t)-1)
                     goto input_failure; /* Invalid sequence */
                   if (mbslen == 0 && !(flags & SUPPRESS))
                     *wcp = L'\0';
                   if (mbslen != (size_t)-2) /* Incomplete sequence */
                     {
-                      nread += s;
+                      nread += n;
 		      /* Handle high surrogate */
 		      if (mbslen != 3 || state.__count != 4)
 			width -= 1;
                       if (!(flags & SUPPRESS))
 			{
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 			  wcp_siz = realloc_m_ptr (wchar_t, wcp, wcp0, wcp_p,
 						   wcp_siz);
 #endif
 			  wcp++;
 			}
-                      s = 0;
+                      n = 0;
                     }
                   if (BufferEmpty)
 	            {
-                      if (s != 0)
+                      if (n != 0)
                         goto input_failure;
                       break;
                     }
                 }
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      shrink_m_ptr (wchar_t, wcp_p, wcp - wcp0, wcp_siz);
 #endif
               if (!(flags & SUPPRESS))
@@ -1012,7 +1029,7 @@ _SVFSCANF (
 		      sum += n;
 		      width -= n;
 		      fp->_p += n;
-		      if (_srefill ( fp))
+		      if (__srefill_r (rptr, fp))
 			{
 			  if (sum == 0)
 			    goto input_failure;
@@ -1032,17 +1049,17 @@ _SVFSCANF (
 	  else
 	    {
 	      size_t r;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      char **p_p = NULL;
 	      if (flags & MALLOC)
 		alloc_m_ptr (char, p, p0, p_p, width);
 	      else
 #endif
 		p = GET_ARG (N, ap, char *);
-	      r = fread ( p, 1, width, fp);
+	      r = _fread_r (rptr, p, 1, width, fp);
 	      if (r == 0)
 		goto input_failure;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      shrink_m_ptr (char, p_p, r, width);
 #endif
 	      nread += r;
@@ -1055,10 +1072,10 @@ _SVFSCANF (
 	  if (width == 0)
 	    width = SIZE_MAX;
 	  /* take only those things in the class */
-#if !defined(__ELIX_LEVEL) || __ELIX_LEVEL >= 2
+#if !defined(_ELIX_LEVEL) || _ELIX_LEVEL >= 2
 	  if (flags & LONG)
 	    {
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      wchar_t **wcp_p = NULL;
 	      wchar_t *wcp0 = NULL;
 	      size_t wcp_siz = 0;
@@ -1066,54 +1083,53 @@ _SVFSCANF (
               mbstate_t state;
               if (flags & SUPPRESS)
                 wcp = &wc;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      else if (flags & MALLOC)
 		wcp_siz = alloc_m_ptr (wchar_t, wcp, wcp0, wcp_p, 32);
 #endif
               else
 		wcp = GET_ARG (N, ap, wchar_t *);
-              size_t s = 0;
+              n = 0;
               while (width != 0) {
-                  if (s == MB_CUR_MAX)
+                  if (n == MB_CUR_MAX)
                     goto input_failure;
-                  buf[s++] = *fp->_p;
+                  buf[n++] = *fp->_p;
                   fp->_r -= 1;
                   fp->_p += 1;
 		  /* Got a high surrogate, allow low surrogate to slip
 		     through */
 		  if (mbslen != 3 || state.__count != 4)
 		    memset (&state, 0, sizeof (mbstate_t));
-                  if ((mbslen = mbrtowc (wcp, buf, s, &state))
+                  if ((mbslen = _mbrtowc_r (rptr, wcp, buf, n, &state))
                                                         == (size_t)-1)
                     goto input_failure;
                   if (mbslen == 0)
                     *wcp = L'\0';
                   if (mbslen != (size_t)-2) /* Incomplete sequence */
                     {
-                      int wcb = __wctob(*wcp);
-                      if (wcb == EOF || !ccltab[wcb])
+                      if (!ccltab[__wctob (rptr, *wcp)])
                         {
-                          while (s != 0)
-                            ungetc ( (unsigned char) buf[--s], fp);
+                          while (n != 0)
+                            _ungetc_r (rptr, (unsigned char) buf[--n], fp);
                           break;
                         }
-                      nread += s;
+                      nread += n;
 		      /* Handle high surrogate */
 		      if (mbslen != 3 || state.__count != 4)
 			width -= 1;
                       if ((flags & SUPPRESS) == 0)
 			{
 			  wcp += 1;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 			  wcp_siz = realloc_m_ptr (wchar_t, wcp, wcp0, wcp_p,
 						   wcp_siz);
 #endif
 			}
-                      s = 0;
+                      n = 0;
                     }
                   if (BufferEmpty)
                     {
-                      if (s != 0)
+                      if (n != 0)
                         goto input_failure;
                       break;
                     }
@@ -1121,7 +1137,7 @@ _SVFSCANF (
               if (!(flags & SUPPRESS))
                 {
                   *wcp = L'\0';
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 		  shrink_m_ptr (wchar_t, wcp_p, wcp - wcp0 + 1, wcp_siz);
 #endif
                   nassigned++;
@@ -1150,7 +1166,7 @@ _SVFSCANF (
 	    }
 	  else
 	    {
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      char **p_p = NULL;
 	      size_t p_siz = 0;
 
@@ -1163,7 +1179,7 @@ _SVFSCANF (
 		{
 		  fp->_r--;
 		  *p++ = *fp->_p++;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 		  p_siz = realloc_m_ptr (char, p, p0, p_p, p_siz);
 #endif
 		  if (--width == 0)
@@ -1179,7 +1195,7 @@ _SVFSCANF (
 	      if (n == 0)
 		goto match_failure;
 	      *p = 0;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      shrink_m_ptr (char, p_p, n + 1, p_siz);
 #endif
 	      nassigned++;
@@ -1191,10 +1207,10 @@ _SVFSCANF (
 	  /* like CCL, but zero-length string OK, & no NOSKIP */
 	  if (width == 0)
 	    width = SIZE_MAX;
-#if !defined(__ELIX_LEVEL) || __ELIX_LEVEL >= 2
+#if !defined(_ELIX_LEVEL) || _ELIX_LEVEL >= 2
           if (flags & LONG)
             {
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      wchar_t **wcp_p = NULL;
 	      wchar_t *wcp0 = NULL;
 	      size_t wcp_siz = 0;
@@ -1203,25 +1219,25 @@ _SVFSCANF (
               mbstate_t state;
               if (flags & SUPPRESS)
                 wcp = &wc;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      else if (flags & MALLOC)
 		wcp_siz = alloc_m_ptr (wchar_t, wcp, wcp0, wcp_p, 32);
 #endif
               else
 		wcp = GET_ARG (N, ap, wchar_t *);
-              size_t s = 0;
+              n = 0;
               while (!isspace (*fp->_p) && width != 0)
                 {
-                  if (s == MB_CUR_MAX)
+                  if (n == MB_CUR_MAX)
                     goto input_failure;
-                  buf[s++] = *fp->_p;
+                  buf[n++] = *fp->_p;
                   fp->_r -= 1;
                   fp->_p += 1;
 		  /* Got a high surrogate, allow low surrogate to slip
 		     through */
 		  if (mbslen != 3 || state.__count != 4)
 		    memset (&state, 0, sizeof (mbstate_t));
-                  if ((mbslen = mbrtowc (wcp, buf, s, &state))
+                  if ((mbslen = _mbrtowc_r (rptr, wcp, buf, n, &state))
                                                         == (size_t)-1)
                     goto input_failure;
                   if (mbslen == 0)
@@ -1230,27 +1246,27 @@ _SVFSCANF (
                     {
                       if (iswspace(*wcp))
                         {
-                          while (s != 0)
-                            ungetc ( (unsigned char) buf[--s], fp);
+                          while (n != 0)
+                            _ungetc_r (rptr, (unsigned char) buf[--n], fp);
                           break;
                         }
-                      nread += s;
+                      nread += n;
 		      /* Handle high surrogate */
 		      if (mbslen != 3 || state.__count != 4)
 			width -= 1;
                       if ((flags & SUPPRESS) == 0)
 			{
 			  wcp += 1;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 			  wcp_siz = realloc_m_ptr (wchar_t, wcp, wcp0, wcp_p,
 						   wcp_siz);
 #endif
 			}
-                      s = 0;
+                      n = 0;
                     }
                   if (BufferEmpty)
                     {
-                      if (s != 0)
+                      if (n != 0)
                         goto input_failure;
                       break;
                     }
@@ -1258,7 +1274,7 @@ _SVFSCANF (
               if (!(flags & SUPPRESS))
                 {
                   *wcp = L'\0';
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 		  shrink_m_ptr (wchar_t, wcp_p, wcp - wcp0 + 1, wcp_siz);
 #endif
                   nassigned++;
@@ -1281,7 +1297,7 @@ _SVFSCANF (
 	    }
 	  else
 	    {
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      char **p_p = NULL;
 	      size_t p_siz = 0;
 
@@ -1295,7 +1311,7 @@ _SVFSCANF (
 		{
 		  fp->_r--;
 		  *p++ = *fp->_p++;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 		  p_siz = realloc_m_ptr (char, p, p0, p_p, p_siz);
 #endif
 		  if (--width == 0)
@@ -1304,7 +1320,7 @@ _SVFSCANF (
 		    break;
 		}
 	      *p = 0;
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
 	      shrink_m_ptr (char, p_p, p - p0 + 1, p_siz);
 #endif
 	      nread += p - p0;
@@ -1448,7 +1464,7 @@ _SVFSCANF (
 	      if (--fp->_r > 0)
 		fp->_p++;
 	      else
-	      if (_srefill ( fp))
+	      if (__srefill_r (rptr, fp))
 		break;		/* EOF */
 	    }
 	  /*
@@ -1462,7 +1478,7 @@ _SVFSCANF (
 	  if (flags & NDIGITS)
 	    {
 	      if (p > buf)
-		ungetc ( *--p, fp); /* [-+xX] */
+		_ungetc_r (rptr, *--p, fp); /* [-+xX] */
 	      if (p == buf)
 		goto match_failure;
 	    }
@@ -1471,7 +1487,7 @@ _SVFSCANF (
 	      u_long res;
 
 	      *p = 0;
-	      res = (*ccfn) (buf, (char **) NULL, base);
+	      res = (*ccfn) (rptr, buf, (char **) NULL, base);
 	      if (flags & POINTER)
 		{
 		  void **vp = GET_ARG (N, ap, void **);
@@ -1479,14 +1495,14 @@ _SVFSCANF (
 		  if (sizeof (uintptr_t) > sizeof (u_long))
 		    {
 		      u_long_long resll;
-		      resll = strtoull (buf, (char **) NULL, base);
+		      resll = _strtoull_r (rptr, buf, (char **) NULL, base);
 		      *vp = (void *) (uintptr_t) resll;
 		    }
 		  else
 #endif /* !_NO_LONGLONG */
 		    *vp = (void *) (uintptr_t) res;
 		}
-#ifdef __IO_C99_FORMATS
+#ifdef _WANT_IO_C99_FORMATS
 	      else if (flags & CHAR)
 		{
 		  cp = GET_ARG (N, ap, char *);
@@ -1507,10 +1523,10 @@ _SVFSCANF (
 	      else if (flags & LONGDBL)
 		{
 		  u_long_long resll;
-		  if (ccfn == strtoul)
-		    resll = strtoull (buf, (char **) NULL, base);
+		  if (ccfn == _strtoul_r)
+		    resll = _strtoull_r (rptr, buf, (char **) NULL, base);
 		  else
-		    resll = strtoll (buf, (char **) NULL, base);
+		    resll = _strtoll_r (rptr, buf, (char **) NULL, base);
 		  llp = GET_ARG (N, ap, long long*);
 		  *llp = resll;
 		}
@@ -1525,7 +1541,7 @@ _SVFSCANF (
 	  nread += p - buf + skips;
 	  break;
 	}
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 	case CT_FLOAT:
 	{
 	  /* scan a floating point number as if by strtod */
@@ -1539,8 +1555,8 @@ _SVFSCANF (
 	  unsigned width_left = 0;
 	  char nancount = 0;
 	  char infcount = 0;
-	  const char *decpt = DECIMAL_POINT;
-#ifdef __MB_CAPABLE
+	  const char *decpt = _localeconv_r (rptr)->decimal_point;
+#ifdef _MB_CAPABLE
 	  int decptpos = 0;
 #endif
 #ifdef hardway
@@ -1577,7 +1593,7 @@ _SVFSCANF (
 			}
 		      goto fskip;
 		    }
-                  __fallthrough;
+		  /* Fall through.  */
 		case '1':
 		case '2':
 		case '3':
@@ -1751,7 +1767,7 @@ _SVFSCANF (
 		    }
 		  break;
 		default:
-#ifndef __MB_CAPABLE
+#ifndef _MB_CAPABLE
 		  if ((unsigned char) c == (unsigned char) decpt[0]
 		      && (flags & DPTOK))
 		    {
@@ -1778,7 +1794,7 @@ _SVFSCANF (
 			  ++nread;
 			  if (--fp->_r > 0)
 			    fp->_p++;
-			  else if (_srefill ( fp))
+			  else if (__srefill_r (rptr, fp))
 			    break;		/* EOF */
 			  c = *fp->_p;
 			}
@@ -1789,7 +1805,7 @@ _SVFSCANF (
 			     so back off. */
 			  while (decptpos-- > 0)
 			    {
-			      ungetc ( (unsigned char) decpt[decptpos],
+			      _ungetc_r (rptr, (unsigned char) decpt[decptpos],
 					 fp);
 			      --nread;
 			    }
@@ -1807,7 +1823,7 @@ _SVFSCANF (
 	      if (--fp->_r > 0)
 		fp->_p++;
 	      else
-	      if (_srefill ( fp))
+	      if (__srefill_r (rptr, fp))
 		break;		/* EOF */
 	    }
 	  if (zeroes)
@@ -1827,7 +1843,7 @@ _SVFSCANF (
 		 guarantee that in all implementations of ungetc.  */
 	      while (p > buf)
 		{
-		  ungetc ( *--p, fp); /* [-+nNaA] */
+		  _ungetc_r (rptr, *--p, fp); /* [-+nNaA] */
 		  --nread;
 		}
 	      goto match_failure;
@@ -1840,14 +1856,14 @@ _SVFSCANF (
 	      if (infcount >= 3) /* valid 'inf', but short of 'infinity' */
 		while (infcount-- > 3)
 		  {
-		    ungetc ( *--p, fp); /* [iInNtT] */
+		    _ungetc_r (rptr, *--p, fp); /* [iInNtT] */
 		    --nread;
 		  }
 	      else
 		{
 		  while (p > buf)
 		    {
-		      ungetc ( *--p, fp); /* [-+iInN] */
+		      _ungetc_r (rptr, *--p, fp); /* [-+iInN] */
 		      --nread;
 		    }
 		  goto match_failure;
@@ -1865,7 +1881,7 @@ _SVFSCANF (
 		  /* no digits at all */
 		  while (p > buf)
 		    {
-		      ungetc ( *--p, fp); /* [-+.] */
+		      _ungetc_r (rptr, *--p, fp); /* [-+.] */
 		      --nread;
 		    }
 		  goto match_failure;
@@ -1875,11 +1891,11 @@ _SVFSCANF (
 	      --nread;
 	      if (c != 'e' && c != 'E')
 		{
-		  ungetc ( c, fp); /* [-+] */
+		  _ungetc_r (rptr, c, fp); /* [-+] */
 		  c = *--p;
 		  --nread;
 		}
-	      ungetc ( c, fp); /* [eE] */
+	      _ungetc_r (rptr, c, fp); /* [eE] */
 	    }
 	  if ((flags & SUPPRESS) == 0)
 	    {
@@ -1900,7 +1916,7 @@ _SVFSCANF (
 		  exp_start = p;
 		}
 	      else if (exp_adjust)
-                new_exp = strtol ((exp_start + 1), NULL, 10) - exp_adjust;
+                new_exp = _strtol_r (rptr, (exp_start + 1), NULL, 10) - exp_adjust;
 	      if (exp_adjust)
 		{
 
@@ -1912,15 +1928,15 @@ _SVFSCANF (
 		}
 
 	      /* FIXME: Is that still true?
-	         Current strtold routine is markedly slower than
-	         strtod.  Only use it if we have a long double
+	         Current _strtold routine is markedly slower than
+	         _strtod_r.  Only use it if we have a long double
 	         result.  */
 #ifndef _NO_LONGDBL /* !_NO_LONGDBL */
 	      if (flags & LONGDBL)
-		qres = strtold (buf, NULL);
+		qres = _strtold_r (rptr, buf, NULL);
 	      else
 #endif
-	        res = strtod (buf, NULL);
+	        res = _strtod_r (rptr, buf, NULL);
 
 	      if (flags & LONG)
 		{
@@ -1929,8 +1945,8 @@ _SVFSCANF (
 		}
 	      else if (flags & LONGDBL)
 		{
-		  ldp = GET_ARG (N, ap, long double *);
-		  *ldp = (long double) QUAD_RES;
+		  ldp = GET_ARG (N, ap, _LONG_DOUBLE *);
+		  *ldp = QUAD_RES;
 		}
 	      else
 		{
@@ -1944,7 +1960,7 @@ _SVFSCANF (
 	    }
 	  break;
 	}
-#endif /* __IO_FLOATING_POINT */
+#endif /* FLOATING_POINT */
 	}
     }
 input_failure:
@@ -1957,7 +1973,7 @@ match_failure:
 all_done:
   /* Return number of matches, which can be 0 on match failure.  */
   _newlib_flockfile_end (fp);
-#ifdef __IO_POSIX_EXTENSIONS
+#ifdef _WANT_IO_POSIX_EXTENSIONS
   free_m_ptr ();
 #endif
   return nassigned;
@@ -1968,11 +1984,11 @@ all_done:
    intermediate arguments are sizeof(void*), so we don't need to scan
    ahead in the format string.  */
 static void *
-get_arg (int n, my_va_list *ap, int *numargs_p, void **args)
+get_arg (int n, va_list *ap, int *numargs_p, void **args)
 {
   int numargs = *numargs_p;
   while (n >= numargs)
-    args[numargs++] = va_arg (ap->ap, void *);
+    args[numargs++] = va_arg (*ap, void *);
   *numargs_p = numargs;
   return args[n];
 }

@@ -1,49 +1,18 @@
-/*
-Copyright (c) 1991, 1993
-The Regents of the University of California.  All rights reserved.
-c) UNIX System Laboratories, Inc.
-All or some portions of this file are derived from material licensed
-to the University of California by American Telephone and Telegraph
-Co. or Unix System Laboratories, Inc. and are reproduced herein with
-the permission of UNIX System Laboratories, Inc.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
- */
-
 #ifndef  _MATH_H_
+
 #define  _MATH_H_
 
+#include <sys/reent.h>
 #include <sys/cdefs.h>
+#include <machine/ieeefp.h>
+#include "_ansi.h"
 
 _BEGIN_STD_C
 
 /* Natural log of 2 */
 #define _M_LN2        0.693147180559945309417
-#define _M_LN2_LD     0.693147180559945309417232121458176568l
 
-#if __GNUC_PREREQ (3, 3) || defined(__clang__) || defined(__COMPCERT__)
+#if __GNUC_PREREQ (3, 3)
  /* gcc >= 3.3 implicitly defines builtins for HUGE_VALx values.  */
 
 # ifndef HUGE_VAL
@@ -88,7 +57,7 @@ _BEGIN_STD_C
   #define HUGE_VALF (1.0e999999999F)
  #endif
 
- #if !defined(HUGE_VALL)  &&  defined(__HAVE_LONG_DOUBLE)
+ #if !defined(HUGE_VALL)  &&  defined(_HAVE_LONG_DOUBLE)
   #define HUGE_VALL (1.0e999999999L)
  #endif
 
@@ -111,6 +80,9 @@ _BEGIN_STD_C
 
 #endif /* !gcc >= 3.3  */
 
+/* Reentrant ANSI C functions.  */
+
+#ifndef __math_68881
 extern double atan (double);
 extern double cos (double);
 extern double sin (double);
@@ -121,7 +93,12 @@ extern double modf (double, double *);
 extern double ceil (double);
 extern double fabs (double);
 extern double floor (double);
+#endif /* ! defined (__math_68881) */
 
+/* Non reentrant ANSI C functions.  */
+
+#ifndef _REENT_ONLY
+#ifndef __math_68881
 extern double acos (double);
 extern double asin (double);
 extern double atan2 (double, double);
@@ -134,14 +111,16 @@ extern double log10 (double);
 extern double pow (double, double);
 extern double sqrt (double);
 extern double fmod (double, double);
+#endif /* ! defined (__math_68881) */
+#endif /* ! defined (_REENT_ONLY) */
 
 #if __MISC_VISIBLE
 extern int finite (double);
 extern int finitef (float);
+extern int finitel (long double);
 extern int isinff (float);
 extern int isnanf (float);
-#if defined(__HAVE_LONG_DOUBLE)
-extern int finitel (long double);
+#ifdef __CYGWIN__ /* not implemented in newlib yet */
 extern int isinfl (long double);
 extern int isnanl (long double);
 #endif
@@ -221,18 +200,6 @@ extern int isnan (double);
 # define FP_ILOGBNAN __INT_MAX__
 #endif
 
-#if !defined(FP_FAST_FMA) && (__HAVE_FAST_FMA || defined(__FP_FAST_FMA))
-#define FP_FAST_FMA
-#endif
-
-#if !defined(FP_FAST_FMAF) && (__HAVE_FAST_FMAF || defined(__FP_FAST_FMAF))
-#define FP_FAST_FMAF
-#endif
-
-#if !defined(FP_FAST_FMAL) && (__HAVE_FAST_FMAL || defined(__FP_FAST_FMAL))
-#define FP_FAST_FMAL
-#endif
-
 #ifndef MATH_ERRNO
 # define MATH_ERRNO 1
 #endif
@@ -240,7 +207,7 @@ extern int isnan (double);
 # define MATH_ERREXCEPT 2
 #endif
 #ifndef math_errhandling
-# ifdef __IEEE_LIBM
+# ifdef _IEEE_LIBM
 #  define _MATH_ERRHANDLING_ERRNO 0
 # else
 #  define _MATH_ERRHANDLING_ERRNO MATH_ERRNO
@@ -253,16 +220,6 @@ extern int isnan (double);
 # define math_errhandling (_MATH_ERRHANDLING_ERRNO | _MATH_ERRHANDLING_ERREXCEPT)
 #endif
 
-/*
- * Specifies whether the target uses the snan/nan discriminator
- * definition from IEEE 754 2008 (top bit of significand is 1 for qNaN
- * and 0 for sNaN). This is set to zero in machine/math.h for targets
- * that don't do this (such as MIPS).
- */
-#ifndef _IEEE_754_2008_SNAN
-# define _IEEE_754_2008_SNAN 1
-#endif
-
 extern int __isinff (float);
 extern int __isinfd (double);
 extern int __isnanf (float);
@@ -271,15 +228,6 @@ extern int __fpclassifyf (float);
 extern int __fpclassifyd (double);
 extern int __signbitf (float);
 extern int __signbitd (double);
-extern int __finite (double);
-extern int __finitef (float);
-#if defined(__HAVE_LONG_DOUBLE)
-extern int __fpclassifyl (long double);
-extern int __isinfl (long double);
-extern int __isnanl (long double);
-extern int __finitel (long double);
-extern int __signbitl (long double);
-#endif
 
 /* Note: isinf and isnan were once functions in newlib that took double
  *       arguments.  C99 specifies that these names are reserved for macros
@@ -288,127 +236,56 @@ extern int __signbitl (long double);
  *       taking double arguments still exist for compatibility purposes
  *       (prototypes for them are earlier in this header).  */
 
-/*
- * GCC bug 66462 raises INVALID exception when __builtin_fpclassify is
- * passed snan, so we cannot use it when building with snan support.
- * clang doesn't appear to have an option to control snan behavior, and
- * it's builtin fpclassify also raises INVALID for snan, so always use
- * our version for that.
- */
-#if __GNUC_PREREQ (4, 4) && !defined(__SUPPORT_SNAN__) && !defined(__clang__)
+#if __GNUC_PREREQ (4, 4)
   #define fpclassify(__x) (__builtin_fpclassify (FP_NAN, FP_INFINITE, \
 						 FP_NORMAL, FP_SUBNORMAL, \
 						 FP_ZERO, __x))
-  #define isfinite(__x)	(__builtin_isfinite (__x))
-  #define isinf(__x) (__builtin_isinf_sign (__x))
-  #define isnan(__x) (__builtin_isnan (__x))
+  #ifndef isfinite
+    #define isfinite(__x)	(__builtin_isfinite (__x))
+  #endif
+  #ifndef isinf
+    #define isinf(__x) (__builtin_isinf_sign (__x))
+  #endif
+  #ifndef isnan
+    #define isnan(__x) (__builtin_isnan (__x))
+  #endif
   #define isnormal(__x) (__builtin_isnormal (__x))
-  #define issubnormal(__x) (__builtin_issubnormal (__x))
-  #define iszero(__x) (__builtin_iszero(__x))
 #else
-# if defined(__HAVE_LONG_DOUBLE)
-#  define __float_generic3(__f, __d, __l, __x)                           \
-    ((sizeof(__x) == sizeof(float))  ? __f(__x)                    \
-     : (sizeof(__x) == sizeof(double)) ?  __d((double) (__x))       \
-     : __l((long double) (__x)))
-# else
-#  define __float_generic3(__f, __d, __l, __x)           \
-    ((sizeof(__x) == sizeof(float))  ? __f(__x)    \
-     : __d((double) (__x)))
-# endif
-# define __float_generic(__p, __x) __float_generic3(__p ## f, __p ## d, __p ## l, __x)
-# define fpclassify(__x) __float_generic(__fpclassify, __x)
-# define isfinite(__x) __float_generic3(__finitef, __finite, __finitel, __x)
-# define isinf(__x) __float_generic(__isinf, __x)
-# define isnan(__x) __float_generic(__isnan, __x)
-# define isnormal(__x) (fpclassify(__x) == FP_NORMAL)
-# define issubnormal(__x) (fpclassify(__x) == FP_SUBNORMAL)
-# define iszero(__x) (fpclassify(__x) == FP_ZERO)
-#endif
-
-#define isfinitef(x) isfinite((float) (x))
-#define isinff(x) isinf((float) (x))
-#define isnanf(x) isnan((float) (x))
-#define isnormalf(x) isnormal((float) (x))
-#define iszerof(x) iszero((float) (x))
-
-#ifdef __HAVE_LONG_DOUBLE
-#define isfinitel(x) isfinite((long double) (x))
-#define isinfl(x) isinf((long double) (x))
-#define isnanl(x) isnan((long double) (x))
-#define isnormall(x) isnormal((long double) (x))
-#define iszerol(x) iszero((long double) (x))
-#endif
-
-#ifndef iseqsig
-int __iseqsigd(double x, double y);
-int __iseqsigf(float x, float y);
-
-#ifdef __HAVE_LONG_DOUBLE
-int __iseqsigl(long double x, long double y);
-#define iseqsig(__x,__y)                                                \
-    ((sizeof(__x) == sizeof(float) && sizeof(__y) == sizeof(float)) ?   \
-     __iseqsigf(__x, __y) :                                             \
-     (sizeof(__x) == sizeof(double) && sizeof(__y) == sizeof(double)) ? \
-     __iseqsigd(__x, __y) :                                             \
-     __iseqsigl(__x, __y))
-#else
-#ifdef _DOUBLE_IS_32BITS
-#define iseqsig(__x, __y) __iseqsigf((float)(__x), (float)(__y))
-#else
-#define iseqsig(__x,__y)                                                \
-    ((sizeof(__x) == sizeof(float) && sizeof(__y) == sizeof(float)) ?   \
-     __iseqsigf(__x, __y) : __iseqsigd(__x, __y))
-#endif
-#endif
-#endif
-
-#ifndef issignaling
-int __issignalingf(float f);
-int __issignaling(double d);
-
-#if defined(__HAVE_LONG_DOUBLE)
-int __issignalingl(long double d);
-#define issignaling(__x)						\
-	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
-	 (sizeof(__x) == sizeof(double)) ? __issignaling ((double) (__x)) :	\
-	 __issignalingl((long double) (__x)))
-#else
-#ifdef _DOUBLE_IS_32BITS
-#define issignaling(__x) __issignalingf((float) (__x))
-#else
-#define issignaling(__x)						\
-	((sizeof(__x) == sizeof(float))  ? __issignalingf(__x) :	\
-	 __issignaling ((double) (__x)))
-#endif /* _DOUBLE_IS_32BITS */
-#endif /* __HAVE_LONG_DOUBLE */
+  #define fpclassify(__x) \
+	  ((sizeof(__x) == sizeof(float))  ? __fpclassifyf(__x) : \
+	  __fpclassifyd(__x))
+  #ifndef isfinite
+    #define isfinite(__y) \
+	    (__extension__ ({int __cy = fpclassify(__y); \
+			     __cy != FP_INFINITE && __cy != FP_NAN;}))
+  #endif
+  #ifndef isinf
+    #define isinf(__x) (fpclassify(__x) == FP_INFINITE)
+  #endif
+  #ifndef isnan
+    #define isnan(__x) (fpclassify(__x) == FP_NAN)
+  #endif
+  #define isnormal(__x) (fpclassify(__x) == FP_NORMAL)
 #endif
 
 #if __GNUC_PREREQ (4, 0)
-  #if defined(__HAVE_LONG_DOUBLE)
-    #define signbit(__x)							\
-	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) :	\
-	     ((sizeof(__x) == sizeof(double)) ? __builtin_signbit ((double)(__x)) : \
-	      __builtin_signbitl((long double)(__x))))
-  #else
-    #define signbit(__x)							\
-	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) :	\
-	     __builtin_signbit ((double) (__x)))
-  #endif
-#else
-  #if defined(__HAVE_LONG_DOUBLE)
-    #define signbit(__x)							\
-	    ((sizeof(__x) == sizeof(float))  ? __signbitf(__x) :	\
-	     ((sizeof(__x) == sizeof(double)) ? __signbit ((double)(__x)) : \
-	      __signbitl((long double)(__x))))
+  #if defined(_HAVE_LONG_DOUBLE)
+    #define signbit(__x) \
+	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) : \
+	     (sizeof(__x) == sizeof(double)) ? __builtin_signbit (__x) : \
+					       __builtin_signbitl(__x))
   #else
     #define signbit(__x) \
-            ((sizeof(__x) == sizeof(float))  ?  __signbitf(__x) : \
-                                        __signbitd((double) (__x)))
+	    ((sizeof(__x) == sizeof(float))  ? __builtin_signbitf(__x) : \
+					       __builtin_signbit (__x))
   #endif
+#else
+  #define signbit(__x) \
+	  ((sizeof(__x) == sizeof(float))  ?  __signbitf(__x) : \
+		  __signbitd(__x))
 #endif
 
-#if __GNUC_PREREQ (2, 97) && !(defined(__riscv) && defined(__clang__))
+#if __GNUC_PREREQ (2, 97)
 #define isgreater(__x,__y)	(__builtin_isgreater (__x, __y))
 #define isgreaterequal(__x,__y)	(__builtin_isgreaterequal (__x, __y))
 #define isless(__x,__y)		(__builtin_isless (__x, __y))
@@ -450,9 +327,6 @@ extern double cbrt (double);
 extern double nextafter (double, double);
 extern double rint (double);
 extern double scalbn (double, int);
-extern double scalb (double, double);
-extern double getpayload(const double *x);
-extern double significand (double);
 
 extern double exp2 (double);
 extern double scalbln (double, long int);
@@ -470,9 +344,12 @@ extern double fmax (double, double);
 extern double fmin (double, double);
 extern double fma (double, double, double);
 
+#ifndef __math_68881
 extern double log1p (double);
 extern double expm1 (double);
+#endif /* ! defined (__math_68881) */
 
+#ifndef _REENT_ONLY
 extern double acosh (double);
 extern double atanh (double);
 extern double remainder (double, double);
@@ -485,7 +362,11 @@ extern double log2 (double);
 #define log2(x) (log (x) / _M_LN2)
 #endif
 
+#ifndef __math_68881
 extern double hypot (double, double);
+#endif
+
+#endif /* ! defined (_REENT_ONLY) */
 
 /* Single precision versions of ANSI functions.  */
 
@@ -500,6 +381,7 @@ extern float ceilf (float);
 extern float fabsf (float);
 extern float floorf (float);
 
+#ifndef _REENT_ONLY
 extern float acosf (float);
 extern float asinf (float);
 extern float atan2f (float, float);
@@ -512,6 +394,7 @@ extern float log10f (float);
 extern float powf (float, float);
 extern float sqrtf (float);
 extern float fmodf (float, float);
+#endif /* ! defined (_REENT_ONLY) */
 
 /* Other single precision functions.  */
 
@@ -542,12 +425,10 @@ extern float cbrtf (float);
 extern float nextafterf (float, float);
 extern float rintf (float);
 extern float scalbnf (float, int);
-extern float scalbf (float, float);
 extern float log1pf (float);
 extern float expm1f (float);
-extern float getpayloadf(const float *x);
-extern float significandf (float);
 
+#ifndef _REENT_ONLY
 extern float acoshf (float);
 extern float atanhf (float);
 extern float remainderf (float, float);
@@ -557,100 +438,108 @@ extern float erff (float);
 extern float erfcf (float);
 extern float log2f (float);
 extern float hypotf (float, float);
+#endif /* ! defined (_REENT_ONLY) */
 
-#ifdef __HAVE_LONG_DOUBLE
-
-/* These functions are always available for long double */
-
-extern long double hypotl (long double, long double);
-extern long double infinityl (void);
-extern long double sqrtl (long double);
-extern long double frexpl (long double, int *);
-extern long double scalbnl (long double, int);
-extern long double scalblnl (long double, long);
-extern long double rintl (long double);
-extern long int lrintl (long double);
-extern long long int llrintl (long double);
-extern int ilogbl (long double);
-extern long double logbl (long double);
-extern long double ldexpl (long double, int);
-extern long double nearbyintl (long double);
-extern long double ceill (long double);
-extern long double fmaxl (long double, long double);
-extern long double fminl (long double, long double);
-extern long double roundl (long double);
-extern long lroundl (long double);
-extern long long int llroundl (long double);
-extern long double truncl (long double);
-extern long double nanl (const char *);
-extern long double floorl (long double);
-extern long double scalbl (long double, long double);
-extern long double significandl(long double);
-/* Compiler provides these */
-extern long double fabsl (long double);
-extern long double copysignl (long double, long double);
-
-#ifdef __HAVE_LONG_DOUBLE_MATH
+/* Newlib doesn't fully support long double math functions so far.
+   On platforms where long double equals double the long double functions
+   simply call the double functions.  On Cygwin the long double functions
+   are implemented independently from newlib to be able to use optimized
+   assembler functions despite using the Microsoft x86_64 ABI. */
+#if defined (_LDBL_EQ_DBL) || defined (__CYGWIN__) || \
+	defined(__aarch64__) || defined(__i386__) || defined(__x86_64__) || \
+	defined(__riscv)
+/* Reentrant ANSI C functions.  */
+#ifndef __math_68881
 extern long double atanl (long double);
 extern long double cosl (long double);
 extern long double sinl (long double);
 extern long double tanl (long double);
 extern long double tanhl (long double);
+extern long double frexpl (long double, int *);
 extern long double modfl (long double, long double *);
+extern long double ceill (long double);
+extern long double fabsl (long double);
+extern long double floorl (long double);
 extern long double log1pl (long double);
 extern long double expm1l (long double);
+#endif /* ! defined (__math_68881) */
+/* Non reentrant ANSI C functions.  */
+#ifndef _REENT_ONLY
+#ifndef __math_68881
 extern long double acosl (long double);
 extern long double asinl (long double);
 extern long double atan2l (long double, long double);
 extern long double coshl (long double);
 extern long double sinhl (long double);
 extern long double expl (long double);
+extern long double ldexpl (long double, int);
 extern long double logl (long double);
 extern long double log10l (long double);
 extern long double powl (long double, long double);
+extern long double sqrtl (long double);
 extern long double fmodl (long double, long double);
+extern long double hypotl (long double, long double);
+#endif /* ! defined (__math_68881) */
+#endif /* ! defined (_REENT_ONLY) */
+extern long double copysignl (long double, long double);
+extern long double nanl (const char *);
+extern int ilogbl (long double);
 extern long double asinhl (long double);
 extern long double cbrtl (long double);
 extern long double nextafterl (long double, long double);
 extern float nexttowardf (float, long double);
 extern double nexttoward (double, long double);
 extern long double nexttowardl (long double, long double);
+extern long double logbl (long double);
 extern long double log2l (long double);
+extern long double rintl (long double);
+extern long double scalbnl (long double, int);
 extern long double exp2l (long double);
+extern long double scalblnl (long double, long);
 extern long double tgammal (long double);
+extern long double nearbyintl (long double);
+extern long int lrintl (long double);
+extern long long int llrintl (long double);
+extern long double roundl (long double);
+extern long lroundl (long double);
+extern long long int llroundl (long double);
+extern long double truncl (long double);
 extern long double remquol (long double, long double, int *);
 extern long double fdiml (long double, long double);
+extern long double fmaxl (long double, long double);
+extern long double fminl (long double, long double);
 extern long double fmal (long double, long double, long double);
+#ifndef _REENT_ONLY
 extern long double acoshl (long double);
 extern long double atanhl (long double);
 extern long double remainderl (long double, long double);
 extern long double lgammal (long double);
-extern long double gammal (long double);
 extern long double erfl (long double);
 extern long double erfcl (long double);
-extern long double j0l(long double);
-extern long double y0l(long double);
-extern long double j1l(long double);
-extern long double y1l(long double);
-extern long double jnl(int, long double);
-extern long double ynl(int, long double);
-
-extern long double getpayloadl(const long double *x);
-
-#endif /* __HAVE_LONG_DOUBLE_MATH */
-
-#endif /* __HAVE_LONG_DOUBLE */
+#endif /* ! defined (_REENT_ONLY) */
+#else /* !_LDBL_EQ_DBL && !__CYGWIN__ */
+extern long double hypotl (long double, long double);
+extern long double sqrtl (long double);
+extern long double frexpl (long double, int *);
+#ifdef __i386__
+/* Other long double precision functions.  */
+extern _LONG_DOUBLE rintl (_LONG_DOUBLE);
+extern long int lrintl (_LONG_DOUBLE);
+extern long long int llrintl (_LONG_DOUBLE);
+#endif /* __i386__ */
+#endif /* !_LDBL_EQ_DBL && !__CYGWIN__ */
 
 #endif /* __ISO_C_VISIBLE >= 1999 */
 
 #if __MISC_VISIBLE
 extern double drem (double, double);
 extern float dremf (float, float);
-#ifdef __HAVE_LONG_DOUBLE_MATH
-extern long double dreml (long double, long double);
-extern long double lgammal_r (long double, int *);
-#endif
+#ifdef __CYGWIN__
+extern float dreml (long double, long double);
+#endif /* __CYGWIN__ */
+extern double gamma_r (double, int *);
 extern double lgamma_r (double, int *);
+extern float gammaf_r (float, int *);
 extern float lgammaf_r (float, int *);
 #endif
 
@@ -676,21 +565,39 @@ extern float jnf (int, float);
 #if __GNU_VISIBLE
 extern void sincos (double, double *, double *);
 extern void sincosf (float, float *, float *);
-#ifdef __HAVE_LONG_DOUBLE_MATH
+#ifdef __CYGWIN__
 extern void sincosl (long double, long double *, long double *);
-#endif
+#endif /* __CYGWIN__ */
+# ifndef exp10
 extern double exp10 (double);
+# endif
+# ifndef pow10
 extern double pow10 (double);
+# endif
+# ifndef exp10f
 extern float exp10f (float);
+# endif
+# ifndef pow10f
 extern float pow10f (float);
-#ifdef __HAVE_LONG_DOUBLE_MATH
-extern long double exp10l (long double);
-extern long double pow10l (long double);
-#endif
+# endif
+#ifdef __CYGWIN__
+# ifndef exp10l
+extern float exp10l (float);
+# endif
+# ifndef pow10l
+extern float pow10l (float);
+# endif
+#endif /* __CYGWIN__ */
 #endif /* __GNU_VISIBLE */
 
 #if __MISC_VISIBLE || __XSI_VISIBLE
-extern int signgam;
+/* The gamma functions use a global variable, signgam.  */
+#ifndef _REENT_ONLY
+#define signgam (*__signgam())
+extern int *__signgam (void);
+#endif /* ! defined (_REENT_ONLY) */
+
+#define __signgam_r(ptr) _REENT_SIGNGAM(ptr)
 #endif /* __MISC_VISIBLE || __XSI_VISIBLE */
 
 /* Useful constants.  */
@@ -700,30 +607,18 @@ extern int signgam;
 #define MAXFLOAT	3.40282347e+38F
 
 #define M_E		2.7182818284590452354
-#define _M_E_L          2.718281828459045235360287471352662498L
 #define M_LOG2E		1.4426950408889634074
 #define M_LOG10E	0.43429448190325182765
 #define M_LN2		_M_LN2
 #define M_LN10		2.30258509299404568402
 #define M_PI		3.14159265358979323846
-#define _M_PI_L         3.141592653589793238462643383279502884L
 #define M_PI_2		1.57079632679489661923
-#define _M_PI_2		1.57079632679489661923
-#define _M_PI_2L	1.570796326794896619231321691639751442L
 #define M_PI_4		0.78539816339744830962
-#define _M_PI_4L	0.785398163397448309615660845819875721L
 #define M_1_PI		0.31830988618379067154
 #define M_2_PI		0.63661977236758134308
 #define M_2_SQRTPI	1.12837916709551257390
 #define M_SQRT2		1.41421356237309504880
 #define M_SQRT1_2	0.70710678118654752440
-
-#ifdef __GNU_VISIBLE
-#define M_PIl           _M_PI_L
-#define M_PI_2l         _M_PI_2L
-#define M_PI_4l         _M_PI_4L
-#define M_El            _M_E_L
-#endif
 
 #endif
 
@@ -736,18 +631,15 @@ extern int signgam;
 #define M_LN2HI         6.9314718036912381649E-1
 #define M_SQRT3	1.73205080756887719000
 #define M_IVLN10        0.43429448190325182765 /* 1 / log(10) */
-#define _M_IVLN10L      0.43429448190325182765112891891660508229439700580366656611445378316586464920887L
 #define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
 #endif /* __BSD_VISIBLE */
 
-#include <machine/math.h>
+_END_STD_C
 
 #ifdef __FAST_MATH__
 #include <machine/fastmath.h>
 #endif
-
-_END_STD_C
 
 #endif /* _MATH_H_ */

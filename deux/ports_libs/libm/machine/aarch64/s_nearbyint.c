@@ -24,24 +24,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_FP & 0x8
 #include <math.h>
 
 double
 nearbyint (double x)
 {
-    if (isnan(x)) return x + x;
-#if defined(FE_INEXACT)
-    fenv_t env;
-    fegetenv(&env);
-#endif
-    __asm__("frinti\t%d0, %d1" : "=w" (x) : "w" (x));
-#if defined(FE_INEXACT)
-    fesetenv(&env);
-#endif
-    return x;
+  double result;
+  asm ("frinti\t%d0, %d1" : "=w" (result) : "w" (x));
+  return result;
 }
-
-#else
-#include "../../math/s_nearbyint.c"
-#endif

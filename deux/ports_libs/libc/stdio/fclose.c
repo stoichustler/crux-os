@@ -27,7 +27,7 @@ INDEX
 SYNOPSIS
 	#include <stdio.h>
 	int fclose(FILE *<[fp]>);
-	int fclose( FILE *<[fp]>);
+	int _fclose_r(struct _reent *<[reent]>, FILE *<[fp]>);
 
 DESCRIPTION
 If the file or stream identified by <[fp]> is open, <<fclose>> closes
@@ -48,14 +48,15 @@ Required OS subroutines: <<close>>, <<fstat>>, <<isatty>>, <<lseek>>,
 <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/lock.h>
 #include "local.h"
 
 int
-fclose (
+_fclose_r (struct _reent *rptr,
       register FILE * fp)
 {
   int r;
@@ -63,7 +64,7 @@ fclose (
   if (fp == NULL)
     return (0);			/* on NULL */
 
-  CHECK_INIT();
+  CHECK_INIT (rptr, fp);
 
   /* We can't use the _newlib_flockfile_XXX macros here due to the
      interlocked locking with the sfp_lock. */
@@ -85,17 +86,17 @@ fclose (
     }
 #ifdef _STDIO_BSD_SEMANTICS
   /* BSD and Glibc systems only flush streams which have been written to. */
-  r = (fp->_flags & __SWR) ? _sflush ( fp) : 0;
+  r = (fp->_flags & __SWR) ? __sflush_r (rptr, fp) : 0;
 #else
   /* Follow POSIX semantics exactly.  Unconditionally flush to allow
      special handling for seekable read files to reposition file to last
      byte processed as opposed to last byte read ahead into the buffer. */
-  r = _sflush ( fp);
+  r = __sflush_r (rptr, fp);
 #endif
-  if (fp->_close != NULL && fp->_close (fp->_cookie) < 0)
+  if (fp->_close != NULL && fp->_close (rptr, fp->_cookie) < 0)
     r = EOF;
   if (fp->_flags & __SMBF)
-    free ((char *) fp->_bf._base);
+    _free_r (rptr, (char *) fp->_bf._base);
   if (HASUB (fp))
     FREEUB (rptr, fp);
   if (HASLB (fp))
@@ -104,7 +105,9 @@ fclose (
   fp->_flags = 0;		/* release this FILE for reuse */
   if (!(fp->_flags2 & __SNLK))
     _funlockfile (fp);
+#ifndef __SINGLE_THREAD__
   __lock_close_recursive (fp->_lock);
+#endif
 
   __sfp_lock_release ();
 #ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
@@ -113,3 +116,13 @@ fclose (
 
   return (r);
 }
+
+#ifndef _REENT_ONLY
+
+int
+fclose (register FILE * fp)
+{
+  return _fclose_r(_REENT, fp);
+}
+
+#endif

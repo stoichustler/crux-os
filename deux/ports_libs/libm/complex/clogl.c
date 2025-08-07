@@ -32,17 +32,18 @@
 #include <complex.h>
 #include <math.h>
 
-#ifdef __HAVE_LONG_DOUBLE_MATH
-
+/* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double complex
 clogl(long double complex z)
 {
+	long double complex w;
 	long double p, rr;
 
 	rr = cabsl(z);
 	p = logl(rr);
 	rr = atan2l(cimagl(z), creall(z));
-	return (long double complex) p + rr * (long double complex) I;
+	w = p + rr * I;
+	return w;
 }
-
 #endif

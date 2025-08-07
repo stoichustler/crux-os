@@ -28,7 +28,7 @@ SYNOPSIS
 	#include <stdio.h>
 	int puts(const char *<[s]>);
 
-	int puts( const char *<[s]>);
+	int _puts_r(struct _reent *<[reent]>, const char *<[s]>);
 
 DESCRIPTION
 <<puts>> writes the string at <[s]> (followed by a newline, instead of
@@ -53,7 +53,8 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <string.h>
 #include "fvwrite.h"
@@ -64,10 +65,10 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  */
 
 int
-puts (
+_puts_r (struct _reent *ptr,
        const char * s)
 {
-#ifdef __FVWRITE_IN_STREAMIO
+#ifdef _FVWRITE_IN_STREAMIO
   int result;
   size_t c = strlen (s);
   struct __suio uio;
@@ -82,22 +83,24 @@ puts (
   uio.uio_iov = &iov[0];
   uio.uio_iovcnt = 2;
 
-  fp = stdout;
-  CHECK_INIT();
+  _REENT_SMALL_CHECK_INIT (ptr);
+  fp = _stdout_r (ptr);
+  CHECK_INIT (ptr, fp);
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
     result = EOF;
   else
-    result = (_sfvwrite (fp, &uio) ? EOF : '\n');
+    result = (__sfvwrite_r (ptr, fp, &uio) ? EOF : '\n');
   _newlib_flockfile_end (fp);
   return result;
 #else
   int result = EOF;
   const char *p = s;
   FILE *fp;
+  _REENT_SMALL_CHECK_INIT (ptr);
 
-  fp = stdout;
-  CHECK_INIT();
+  fp = _stdout_r (ptr);
+  CHECK_INIT (ptr, fp);
   _newlib_flockfile_start (fp);
   /* Make sure we can write.  */
   if (cantwrite (ptr, fp))
@@ -105,10 +108,10 @@ puts (
 
   while (*p)
     {
-      if (_sputc ( *p++, fp) == EOF)
+      if (__sputc_r (ptr, *p++, fp) == EOF)
 	goto err;
     }
-  if (_sputc ( '\n', fp) == EOF)
+  if (__sputc_r (ptr, '\n', fp) == EOF)
     goto err;
 
   result = '\n';
@@ -118,3 +121,13 @@ err:
   return result;
 #endif
 }
+
+#ifndef _REENT_ONLY
+
+int
+puts (char const * s)
+{
+  return _puts_r (_REENT, s);
+}
+
+#endif

@@ -57,11 +57,11 @@ SYNOPSIS
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t fgetwc( FILE *<[fp]>);
+	wint_t _fgetwc_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t fgetwc_unlocked( FILE *<[fp]>);
+	wint_t _fgetwc_unlocked_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
@@ -74,11 +74,11 @@ SYNOPSIS
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t getwc( FILE *<[fp]>);
+	wint_t _getwc_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t getwc_unlocked( FILE *<[fp]>);
+	wint_t _getwc_unlocked_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 DESCRIPTION
 Use <<fgetwc>> to get the next wide character from the file or stream
@@ -116,7 +116,8 @@ PORTABILITY
 <<fgetwc_unlocked>> and <<getwc_unlocked>> are GNU extensions.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,13 +125,13 @@ PORTABILITY
 #include "local.h"
 
 wint_t
-__fgetwc (
+__fgetwc (struct _reent *ptr,
 	register FILE *fp)
 {
   wchar_t wc;
   size_t nconv;
 
-  if (fp->_r <= 0 && _srefill ( fp))
+  if (fp->_r <= 0 && __srefill_r (ptr, fp))
     return (WEOF);
   if (MB_CUR_MAX == 1)
     {
@@ -141,7 +142,7 @@ __fgetwc (
     }
   do
     {
-      nconv = mbrtowc (&wc, (char *) fp->_p, fp->_r, &fp->_mbstate);
+      nconv = _mbrtowc_r (ptr, &wc, (char *) fp->_p, fp->_r, &fp->_mbstate);
       if (nconv == (size_t)-1)
 	break;
       else if (nconv == (size_t)-2)
@@ -163,14 +164,14 @@ __fgetwc (
 	  return (wc);
 	}
     }
-  while (_srefill( fp) == 0);
+  while (__srefill_r(ptr, fp) == 0);
   fp->_flags |= __SERR;
   errno = EILSEQ;
   return (WEOF);
 }
 
 wint_t
-fgetwc (
+_fgetwc_r (struct _reent *ptr,
 	register FILE *fp)
 {
   wint_t r;
@@ -179,7 +180,16 @@ fgetwc (
   if (ORIENT(fp, 1) != 1)
     r = WEOF;
   else
-    r = __fgetwc (fp);
+    r = __fgetwc (ptr, fp);
   _newlib_flockfile_end (fp);
   return r;
+}
+
+wint_t
+fgetwc (FILE *fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  return _fgetwc_r (reent, fp);
 }

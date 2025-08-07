@@ -47,8 +47,6 @@
  *      |      .      |        
  */        
 
-#include <picolibc.h>
-
     
 .globl setjmp
 .section .text

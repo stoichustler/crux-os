@@ -24,7 +24,7 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -35,6 +35,6 @@
 void
 clearerr_unlocked (FILE * fp)
 {
-  CHECK_INIT();
+  CHECK_INIT(_REENT, fp);
   __sclearerr (fp);
 }

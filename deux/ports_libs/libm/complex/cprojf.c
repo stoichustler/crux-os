@@ -29,6 +29,8 @@
  * Marco Atzeri <marco_atzeri@yahoo.it>
  */
 
+#include <sys/cdefs.h>
+/*__RCSID("$NetBSD: cprojf.c,v 1.3 2010/09/20 17:51:38 christos Exp $"); */
 
 #include <complex.h>
 #include <math.h>

@@ -28,8 +28,6 @@
   POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <stddef.h>
 #include <string.h>
 #include "straddr.h"

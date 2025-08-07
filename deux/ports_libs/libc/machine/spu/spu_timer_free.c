@@ -29,8 +29,6 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* SPU timer free library service.  */
-#include <picolibc.h>
-
 #include <spu_timer.h>
 #include "spu_timer_internal.h"
 

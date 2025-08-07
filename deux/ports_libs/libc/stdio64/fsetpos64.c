@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1990 The Regents of the University of California.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-by the University of California, Berkeley.  The name of the
-University may not be used to endorse or promote products derived
-from this software without specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
 FUNCTION
 <<fsetpos64>>---restore position of a large stream or file
 
@@ -52,21 +36,31 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek64>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 
 #ifdef __LARGE64_FILES
 
 int
-fsetpos64 (
+_fsetpos64_r (struct _reent *ptr,
 	FILE * iop,
 	const _fpos64_t * pos)
 {
-  int x = fseeko64 (iop, (_off64_t)(*pos), SEEK_SET);
+  int x = _fseeko64_r (ptr, iop, (_off64_t)(*pos), SEEK_SET);
 
   if (x != 0)
     return 1;
   return 0;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fsetpos64 (FILE * iop,
+	const _fpos64_t * pos)
+{
+  return _fsetpos64_r (_REENT, iop, pos);
+}
+
+#endif /* !_REENT_ONLY */
 
 #endif /* __LARGE64_FILES */

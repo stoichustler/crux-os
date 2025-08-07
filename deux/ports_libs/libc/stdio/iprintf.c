@@ -16,19 +16,40 @@
  */
 /* doc in siprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "local.h"
+
+#ifndef _REENT_ONLY
 
 int
 iprintf (const char *fmt, ...)
 {
   int ret;
   va_list ap;
+  struct _reent *ptr = _REENT;
 
+  _REENT_SMALL_CHECK_INIT (ptr);
   va_start (ap, fmt);
-  ret = vfiprintf ( stdout, fmt, ap);
+  ret = _vfiprintf_r (ptr, _stdout_r (ptr), fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#endif /* ! _REENT_ONLY */
+
+int
+_iprintf_r (struct _reent *ptr,
+       const char *fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  _REENT_SMALL_CHECK_INIT (ptr);
+  va_start (ap, fmt);
+  ret = _vfiprintf_r (ptr, _stdout_r (ptr), fmt, ap);
   va_end (ap);
   return ret;
 }

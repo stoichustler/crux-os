@@ -20,14 +20,28 @@
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <limits.h>
 #include <stdarg.h>
 
 #include "local.h"
 
-vsiprintf (
+#ifndef _REENT_ONLY
+
+int
+vsiprintf (char *str,
+       const char *fmt,
+       va_list ap)
+{
+  return _vsiprintf_r (_REENT, str, fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_vsiprintf_r (struct _reent *ptr,
        char *str,
        const char *fmt,
        va_list ap)
@@ -40,7 +54,7 @@ vsiprintf (
   f._bf._base = f._p = (unsigned char *) str;
   f._bf._size = f._w = INT_MAX;
   f._file = -1;  /* No file. */
-  ret = svfiprintf ( &f, fmt, ap);
+  ret = _svfiprintf_r (ptr, &f, fmt, ap);
   *f._p = 0;
   return ret;
 }

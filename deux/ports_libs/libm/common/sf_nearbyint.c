@@ -13,18 +13,26 @@
 #include <math.h>
 #include "fdlibm.h"
 
-float nearbyintf(float x)
+#ifdef __STDC__
+	float nearbyintf(float x)
+#else
+	float nearbyintf(x)
+	float x;
+#endif
 {
-    if (isnan(x)) return x + x;
-#if defined(FE_INEXACT) && !defined(__DOUBLE_NOEXCEPT)
-    fenv_t env;
-    fegetenv(&env);
-#endif
-    x = rintf(x);
-#if defined(FE_INEXACT) && !defined(__DOUBLE_NOEXCEPT)
-    fesetenv(&env);
-#endif
-    return x;
+  return rintf(x);
 }
 
-_MATH_ALIAS_f_f(nearbyint)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double nearbyint(double x)
+#else
+	double nearbyint(x)
+	double x;
+#endif
+{
+  return (double) nearbyintf((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

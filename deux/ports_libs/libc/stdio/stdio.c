@@ -16,7 +16,8 @@
  */
 /* No user fns here.  Pesch 15apr92. */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -28,11 +29,11 @@
  * These maintain the `known seek offset' for seek optimisation.
  */
 
-ssize_t
-__sread (
+_READ_WRITE_RETURN_TYPE
+__sread (struct _reent *ptr,
        void *cookie,
        char *buf,
-       size_t n)
+       _READ_WRITE_BUFSIZE_TYPE n)
 {
   register FILE *fp = (FILE *) cookie;
   register ssize_t ret;
@@ -43,7 +44,7 @@ __sread (
     oldmode = setmode (fp->_file, O_BINARY);
 #endif
 
-  ret = read (fp->_file, buf, n);
+  ret = _read_r (ptr, fp->_file, buf, n);
 
 #ifdef __SCLE
   if (oldmode)
@@ -60,23 +61,20 @@ __sread (
 }
 
 /* Dummy function used in sscanf/swscanf. */
-ssize_t
-__seofread (
+_READ_WRITE_RETURN_TYPE
+__seofread (struct _reent *_ptr,
        void *cookie,
        char *buf,
-       size_t len)
+       _READ_WRITE_BUFSIZE_TYPE len)
 {
-  (void) cookie;
-  (void) buf;
-  (void) len;
   return 0;
 }
 
-ssize_t
-__swrite (
+_READ_WRITE_RETURN_TYPE
+__swrite (struct _reent *ptr,
        void *cookie,
        char const *buf,
-       size_t n)
+       _READ_WRITE_BUFSIZE_TYPE n)
 {
   register FILE *fp = (FILE *) cookie;
   ssize_t w;
@@ -85,7 +83,7 @@ __swrite (
 #endif
 
   if (fp->_flags & __SAPP)
-    lseek (fp->_file, (_off_t) 0, SEEK_END);
+    _lseek_r (ptr, fp->_file, (_off_t) 0, SEEK_END);
   fp->_flags &= ~__SOFF;	/* in case O_APPEND mode is set */
 
 #ifdef __SCLE
@@ -93,7 +91,7 @@ __swrite (
     oldmode = setmode (fp->_file, O_BINARY);
 #endif
 
-  w = write (fp->_file, buf, n);
+  w = _write_r (ptr, fp->_file, buf, n);
 
 #ifdef __SCLE
   if (oldmode)
@@ -104,7 +102,7 @@ __swrite (
 }
 
 _fpos_t
-__sseek (
+__sseek (struct _reent *ptr,
        void *cookie,
        _fpos_t offset,
        int whence)
@@ -112,7 +110,7 @@ __sseek (
   register FILE *fp = (FILE *) cookie;
   register _off_t ret;
 
-  ret = lseek (fp->_file, (_off_t) offset, whence);
+  ret = _lseek_r (ptr, fp->_file, (_off_t) offset, whence);
   if (ret == -1L)
     fp->_flags &= ~__SOFF;
   else
@@ -124,18 +122,23 @@ __sseek (
 }
 
 int
-__sclose (
+__sclose (struct _reent *ptr,
        void *cookie)
 {
   FILE *fp = (FILE *) cookie;
 
-  return close (fp->_file);
+  return _close_r (ptr, fp->_file);
 }
 
 #ifdef __SCLE
 int
 __stextmode (int fd)
 {
+#ifdef __CYGWIN__
+  extern int _cygwin_istext_for_stdio (int);
+  return _cygwin_istext_for_stdio (fd);
+#else
   return 0;
+#endif
 }
 #endif

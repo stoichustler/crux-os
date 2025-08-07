@@ -1,4 +1,3 @@
-/* Copyright (c) 2007 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 	<<wcpncpy>>---copy part of a wide-character string returning a pointer to its end
@@ -30,7 +29,7 @@ PORTABILITY
 No supporting OS subroutines are required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <wchar.h>
 
 wchar_t *

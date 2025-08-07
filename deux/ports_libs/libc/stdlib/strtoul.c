@@ -115,19 +115,20 @@ PORTABILITY
  */
 
 #define _GNU_SOURCE
+#include <_ansi.h>
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a string to an unsigned long integer.
  */
-
-unsigned long
-strtoul_l (const char *__restrict nptr, char **__restrict endptr, int base,
-	   locale_t loc)
+static unsigned long
+_strtoul_l (struct _reent *rptr, const char *__restrict nptr,
+	    char **__restrict endptr, int base, locale_t loc)
 {
 	register const unsigned char *s = (const unsigned char *)nptr;
 	register unsigned long acc;
@@ -177,7 +178,7 @@ strtoul_l (const char *__restrict nptr, char **__restrict endptr, int base,
 	}
 	if (any < 0) {
 		acc = ULONG_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -186,10 +187,29 @@ strtoul_l (const char *__restrict nptr, char **__restrict endptr, int base,
 }
 
 unsigned long
+_strtoul_r (struct _reent *rptr,
+	const char *__restrict nptr,
+	char **__restrict endptr,
+	int base)
+{
+  return _strtoul_l (rptr, nptr, endptr, base, __get_current_locale ());
+}
+
+#ifndef _REENT_ONLY
+
+unsigned long
+strtoul_l (const char *__restrict s, char **__restrict ptr, int base,
+	   locale_t loc)
+{
+	return _strtoul_l (_REENT, s, ptr, base, loc);
+}
+
+unsigned long
 strtoul (const char *__restrict s,
 	char **__restrict ptr,
 	int base)
 {
-	return strtoul_l (s, ptr, base, __get_current_locale ());
+	return _strtoul_l (_REENT, s, ptr, base, __get_current_locale ());
 }
 
+#endif

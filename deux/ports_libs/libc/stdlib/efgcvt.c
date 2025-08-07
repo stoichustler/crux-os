@@ -1,8 +1,4 @@
 /*
-Copyright (c) 1990 Regents of the University of California.
-All rights reserved.
- */
-/*
 FUNCTION
 <<ecvt>>, <<ecvtf>>, <<fcvt>>, <<fcvtf>>---double or float to string
 
@@ -100,6 +96,8 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 
 #define _XOPEN_SOURCE
 #define _XOPEN_SOURCE_EXTENDED
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "local.h"
@@ -122,7 +120,7 @@ fcvtf (float d,
 	int *decpt,
 	int *sign)
 {
-  return fcvt ((double) d, ndigit, decpt, sign);
+  return fcvt ((float) d, ndigit, decpt, sign);
 }
 
 
@@ -137,7 +135,7 @@ gcvt (double d,
     buf++;
     ndigit--;
   }
-  return (_gcvt (d, ndigit, buf, 'g', 0) ? tbuf : 0);
+  return (_gcvt (_REENT, d, ndigit, buf, 'g', 0) ? tbuf : 0);
 }
 
 
@@ -146,7 +144,7 @@ gcvtf (float d,
 	int ndigit,
 	char *buf)
 {
-  double asd = (double) d;
+  double asd = d;
   return gcvt (asd, ndigit, buf);
 }
 

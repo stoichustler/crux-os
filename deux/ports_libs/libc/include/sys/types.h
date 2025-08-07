@@ -1,31 +1,3 @@
-/*
-Copyright (c) 1982, 1986, 1993
-The Regents of the University of California.  All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
- */
 /* unified sys/types.h: 
    start with sef's sysvi386 version.
    merge go32 version -- a few ifdefs.
@@ -45,6 +17,7 @@ SUCH DAMAGE.
 
 #ifndef _SYS_TYPES_H
 
+#include <_ansi.h>
 #include <sys/cdefs.h>
 #include <machine/_types.h>
 
@@ -74,6 +47,7 @@ typedef __intptr_t register_t;
 
 #if __BSD_VISIBLE
 #include <machine/endian.h>
+#include <sys/select.h>
 #  define	physadr		physadr_t
 #  define	quad		quad_t
 
@@ -129,13 +103,15 @@ typedef	__blksize_t	blksize_t;
 #define	_BLKSIZE_T_DECLARED
 #endif
 
-#ifndef _CLOCK_T_DECLARED
+#if !defined(__clock_t_defined) && !defined(_CLOCK_T_DECLARED)
 typedef	_CLOCK_T_	clock_t;
+#define	__clock_t_defined
 #define	_CLOCK_T_DECLARED
 #endif
 
-#ifndef _TIME_T_DECLARED
+#if !defined(__time_t_defined) && !defined(_TIME_T_DECLARED)
 typedef	_TIME_T_	time_t;
+#define	__time_t_defined
 #define	_TIME_T_DECLARED
 #endif
 
@@ -168,31 +144,25 @@ typedef unsigned long vm_offset_t;
 typedef unsigned long vm_size_t;
 #endif /* __i386__ && (GO32 || __MSDOS__) */
 
-#ifndef _SSIZE_T_DECLARED
-typedef _ssize_t ssize_t;
-#define	_SSIZE_T_DECLARED
-#endif
+/*
+ * All these should be machine specific - right now they are all broken.
+ * However, for all of Cygnus' embedded targets, we want them to all be
+ * the same.  Otherwise things like sizeof (struct stat) might depend on
+ * how the file was compiled (e.g. -mint16 vs -mint32, etc.).
+ */
 
 #ifndef _OFF_T_DECLARED
 typedef	__off_t		off_t;		/* file offset */
 #define	_OFF_T_DECLARED
 #endif
-
-#ifndef _OFF64_T_DECLARED
-typedef __off64_t       off64_t;        /* 64-bit file offset */
-#define	_OFF64_T_DECLARED
-#endif
-
 #ifndef _DEV_T_DECLARED
 typedef	__dev_t		dev_t;		/* device number or struct cdev */
 #define	_DEV_T_DECLARED
 #endif
-
 #ifndef _UID_T_DECLARED
 typedef	__uid_t		uid_t;		/* user id */
 #define	_UID_T_DECLARED
 #endif
-
 #ifndef _GID_T_DECLARED
 typedef	__gid_t		gid_t;		/* group id */
 #define	_GID_T_DECLARED
@@ -208,6 +178,11 @@ typedef	__key_t		key_t;		/* IPC key */
 #define	_KEY_T_DECLARED
 #endif
 
+#ifndef _SSIZE_T_DECLARED
+typedef _ssize_t ssize_t;
+#define	_SSIZE_T_DECLARED
+#endif
+
 #ifndef _MODE_T_DECLARED
 typedef	__mode_t	mode_t;		/* permissions */
 #define	_MODE_T_DECLARED
@@ -218,20 +193,16 @@ typedef	__nlink_t	nlink_t;	/* link count */
 #define	_NLINK_T_DECLARED
 #endif
 
-#ifndef _CLOCKID_T_DECLARED
+#if !defined(__clockid_t_defined) && !defined(_CLOCKID_T_DECLARED)
 typedef	__clockid_t	clockid_t;
+#define	__clockid_t_defined
 #define	_CLOCKID_T_DECLARED
-#ifdef __ZEPHYR__
-#define __clockid_t_defined             /* Zephyr <= 3.7 compat */
-#endif
 #endif
 
-#ifndef _TIMER_T_DECLARED
+#if !defined(__timer_t_defined) && !defined(_TIMER_T_DECLARED)
 typedef	__timer_t	timer_t;
+#define	__timer_t_defined
 #define	_TIMER_T_DECLARED
-#ifdef __ZEPHYR__
-#define __timer_t_defined               /* Zephyr <= 3.7 compat */
-#endif
 #endif
 
 #ifndef _USECONDS_T_DECLARED
@@ -244,24 +215,14 @@ typedef	__suseconds_t	suseconds_t;
 #define	_SUSECONDS_T_DECLARED
 #endif
 
-#if __BSD_VISIBLE
-
-#ifndef _SBINTIME_T_DECLARED
 typedef	__int64_t	sbintime_t;
-#define _SBINTIME_T_DECLARED
-#endif
-
-#endif
 
 #include <sys/features.h>
+#include <sys/_pthreadtypes.h>
 #include <machine/types.h>
 
 #endif  /* !__need_inttypes */
 
 #undef __need_inttypes
-
-#include <stdint.h>
-#define __Long int32_t
-#define __ULong uint32_t
 
 #endif	/* _SYS_TYPES_H */

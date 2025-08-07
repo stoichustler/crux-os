@@ -16,27 +16,27 @@
 #ifndef _AMDGCN_EXIT_VALUE_H_
 #define _AMDGCN_EXIT_VALUE_H_
 
-static inline void  __noreturn
+static inline void  __attribute__((noreturn))
 exit_with_int (int val)
 {
   /* Write the exit value to the conventional place.  */
   int *return_value;
 #if defined(__has_builtin) && __has_builtin(__builtin_gcn_kernarg_ptr)
-  __asm__ ("s_load_dwordx2	%0, %1, 16 glc\n\t"
+  asm ("s_load_dwordx2	%0, %1, 16 glc\n\t"
        "s_waitcnt	0"
        : "=Sg"(return_value) : "r"(__builtin_gcn_kernarg_ptr()));
 #else
-  __asm__ ("s_load_dwordx2	%0, s[8:9], 16 glc\n\t"
+  asm ("s_load_dwordx2	%0, s[8:9], 16 glc\n\t"
        "s_waitcnt	0" : "=Sg"(return_value));
 #endif
   *return_value = val;
 
   /* Terminate the current kernel.  */
-  __asm__ ("s_endpgm");
+  asm ("s_endpgm");
   __builtin_unreachable ();
 }
 
-static inline void  __noreturn
+static inline void  __attribute__((noreturn))
 exit_with_status_and_signal (int val, int signal)
 {
   if (signal == 0)

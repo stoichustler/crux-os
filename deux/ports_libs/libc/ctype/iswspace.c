@@ -62,16 +62,11 @@ PORTABILITY
 
 No supporting OS subroutines are required.
 */
-#define _DEFAULT_SOURCE
-#include <ctype.h>
+#include <_ansi.h>
 #include <wctype.h>
 
 int
 iswspace (wint_t c)
 {
-#ifdef __MB_CAPABLE
-    return iswspace_l (c, 0);
-#else
-    return c < (wint_t)0x100 ? isspace (c) : 0;
-#endif
+  return iswspace_l (c, 0);
 }

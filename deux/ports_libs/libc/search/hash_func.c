@@ -30,10 +30,10 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)hash_func.c	8.2 (Berkeley) 2/21/94";
 #endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #include "db_local.h"
@@ -46,6 +46,10 @@ static __uint32_t hash1(const void *, size_t);
 static __uint32_t hash2(const void *, size_t);
 static __uint32_t hash3(const void *, size_t);
 #endif
+static __uint32_t hash4(const void *, size_t);
+
+/* Global default hash function */
+__uint32_t (*__default_hash)(const void *, size_t) = hash4;
 
 /*
  * HASH FUNCTIONS
@@ -133,25 +137,25 @@ hash3(keyarg, len)
 		case 0:
 			do {
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 7:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 6:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 5:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 4:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 3:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 2:
 				HASHC;
-				__fallthrough;
+				/* FALLTHROUGH */
 		case 1:
 				HASHC;
 			} while (--loop);
@@ -162,13 +166,14 @@ hash3(keyarg, len)
 #endif
 
 /* Hash function from Chris Torek. */
-__uint32_t
-__default_hash(
+static __uint32_t
+hash4(
 	const void *keyarg,
 	size_t len
 )
 {
 	const u_char *key;
+	size_t loop;
 	__uint32_t h;
 
 #define HASH4a   h = (h << 5) - h + *key++;
@@ -177,8 +182,36 @@ __default_hash(
 
 	h = 0;
 	key = keyarg;
-	while (len--) {
-		HASH4;
+	if (len > 0) {
+		loop = (len + 8 - 1) >> 3;
+
+		switch (len & (8 - 1)) {
+		case 0:
+			do {
+				HASH4;
+				/* FALLTHROUGH */
+		case 7:
+				HASH4;
+				/* FALLTHROUGH */
+		case 6:
+				HASH4;
+				/* FALLTHROUGH */
+		case 5:
+				HASH4;
+				/* FALLTHROUGH */
+		case 4:
+				HASH4;
+				/* FALLTHROUGH */
+		case 3:
+				HASH4;
+				/* FALLTHROUGH */
+		case 2:
+				HASH4;
+				/* FALLTHROUGH */
+		case 1:
+				HASH4;
+			} while (--loop);
+		}
 	}
 	return (h);
 }

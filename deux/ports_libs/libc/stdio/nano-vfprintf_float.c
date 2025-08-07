@@ -30,8 +30,10 @@
  * SUCH DAMAGE.
  */
 
+#include <newlib.h>
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,13 +49,13 @@
 #include "vfieeefp.h"
 #include "nano-vfprintf_local.h"
 
-char *__cvt (_PRINTF_FLOAT_TYPE value, int ndigits,
+char *__cvt (struct _reent *data, _PRINTF_FLOAT_TYPE value, int ndigits,
 	     int flags, char *sign, int *decpt, int ch, int *length,
 	     char *buf);
 
 int __exponent (char *p0, int exp, int fmtch);
 
-#ifdef __IO_FLOATING_POINT
+#ifdef FLOATING_POINT
 
 /* Using reentrant DATA, convert finite VALUE into a string of digits
    with no decimal point, using NDIGITS precision and FLAGS as guides
@@ -63,14 +65,13 @@ int __exponent (char *p0, int exp, int fmtch);
    [aAeEfFgG]; if it is [aA], then the return string lives in BUF,
    otherwise the return value shares the mprec reentrant storage.  */
 char *
-__cvt (_PRINTF_FLOAT_TYPE value, int ndigits, int flags,
+__cvt (struct _reent *data, _PRINTF_FLOAT_TYPE value, int ndigits, int flags,
        char *sign, int *decpt, int ch, int *length, char *buf)
 {
   int mode, dsgn;
   char *digits, *bp, *rve;
   union double_union tmp;
 
-  (void) buf;
   tmp.d = value;
   /* This will check for "< 0" and "-0.0".  */
   if (word0 (tmp) & Sign_bit)
@@ -98,7 +99,7 @@ __cvt (_PRINTF_FLOAT_TYPE value, int ndigits, int flags,
       mode = 2;
     }
 
-  digits = _DTOA (value, mode, ndigits, decpt, &dsgn, &rve);
+  digits = _DTOA_R (data, value, mode, ndigits, decpt, &dsgn, &rve);
 
   /* Print trailing zeros.  */
   if ((ch != 'g' && ch != 'G') || flags & ALT)
@@ -161,14 +162,15 @@ __exponent (char *p0, int exp, int fmtch)
 
 /* Decode and print floating point number specified by "eEfgG".  */
 int
-_printf_float (struct _prt_data_t *pdata,
+_printf_float (struct _reent *data,
+	       struct _prt_data_t *pdata,
 	       FILE * fp,
-	       int (*pfunc) (FILE *, const char *,
+	       int (*pfunc) (struct _reent *, FILE *, const char *,
 			     size_t len), va_list * ap)
 {
 #define _fpvalue (pdata->_double_)
 
-  char *decimal_point = DECIMAL_POINT;
+  char *decimal_point = _localeconv_r (data)->decimal_point;
   size_t decp_len = strlen (decimal_point);
   /* Temporary negative sign for floats.  */
   char softsign;
@@ -178,14 +180,15 @@ _printf_float (struct _prt_data_t *pdata,
   int expsize = 0;
   /* Actual number of digits returned by cvt.  */
   int ndig = 0;
-  char *cp = NULL;
+  char *cp;
+  int n;
   /* Field size expanded by dprec(not for _printf_float).  */
   int realsz;
   char code = pdata->code;
 
   if (pdata->flags & LONGDBL)
     {
-      _fpvalue = (double) GET_ARG (N, *ap, long double);
+      _fpvalue = (double) GET_ARG (N, *ap, _LONG_DOUBLE);
     }
   else
     {
@@ -233,7 +236,7 @@ _printf_float (struct _prt_data_t *pdata,
 
   pdata->flags |= FPT;
 
-  cp = __cvt (_fpvalue, pdata->prec, pdata->flags, &softsign,
+  cp = __cvt (data, _fpvalue, pdata->prec, pdata->flags, &softsign,
 	      &expt, code, &ndig, cp);
 
   if (code == 'g' || code == 'G')
@@ -284,7 +287,7 @@ _printf_float (struct _prt_data_t *pdata,
   if (softsign)
     pdata->l_buf[0] = '-';
 print_float:
-  if (_printf_common (pdata, &realsz, fp, pfunc) == -1)
+  if (_printf_common (data, pdata, &realsz, fp, pfunc) == -1)
     goto error;
 
   if ((pdata->flags & FPT) == 0)

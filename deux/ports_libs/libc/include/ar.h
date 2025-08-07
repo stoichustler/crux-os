@@ -42,10 +42,6 @@
 #ifndef _AR_H_
 #define	_AR_H_
 
-#include <sys/cdefs.h>
-
-_BEGIN_STD_C
-
 /* Pre-4BSD archives had these magic numbers in them. */
 #define	OARMAG1	0177555
 #define	OARMAG2	0177545
@@ -65,7 +61,5 @@ struct ar_hdr {
 #define	ARFMAG	"`\n"
 	char ar_fmag[2];		/* consistency check */
 };
-
-_END_STD_C
 
 #endif /* !_AR_H_ */

@@ -1,4 +1,3 @@
-/* Copyright (c) 2016 Joel Sherrill <joel@rtems.org> */
 /*
 FUNCTION
 <<random>>, <<srandom>>---pseudo-random numbers
@@ -36,7 +35,7 @@ random seed at the outset.
 
 RETURNS
 <<random>> returns the next pseudo-random integer in sequence; it is a
-number between <<0>> and <<2**31 - 1>> (inclusive).
+number between <<0>> and <<RAND_MAX>> (inclusive).
 
 <<srandom>> does not return a result.
 
@@ -52,18 +51,32 @@ algorithm as <<rand>>.
 <<random>> requires no supporting OS subroutines.
 */
 
-#define _DEFAULT_SOURCE
-#include <stdlib.h>
-#include <stdint.h>
+#ifndef _REENT_ONLY
 
-__THREAD_LOCAL uint64_t _rand_next = 1;
+#include <stdlib.h>
+#include <reent.h>
+
+void
+srandom (unsigned int seed)
+{
+  struct _reent *reent = _REENT;
+
+  _REENT_CHECK_RAND48(reent);
+  _REENT_RAND_NEXT(reent) = seed;
+}
 
 long int
 random (void)
 {
+  struct _reent *reent = _REENT;
+
   /* This multiplier was obtained from Knuth, D.E., "The Art of
      Computer Programming," Vol 2, Seminumerical Algorithms, Third
      Edition, Addison-Wesley, 1998, p. 106 (line 26) & p. 108 */
-  _rand_next = _rand_next * 6364136223846793005ULL + 1;
-  return (long int)((_rand_next >> 32) & 0x7fffffffL);
+  _REENT_CHECK_RAND48(reent);
+  _REENT_RAND_NEXT(reent) =
+     _REENT_RAND_NEXT(reent) * __extension__ 6364136223846793005LL + 1;
+  return (long int)((_REENT_RAND_NEXT(reent) >> 32) & RAND_MAX);
 }
+
+#endif /* _REENT_ONLY */

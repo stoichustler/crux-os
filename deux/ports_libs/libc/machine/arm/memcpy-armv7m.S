@@ -46,8 +46,6 @@
      __OPT_BIG_BLOCK_SIZE: Size of big block in words.  Default to 64.
      __OPT_MID_BLOCK_SIZE: Size of big block in words.  Default to 16.
  */
-#include <picolibc.h>
-
 #include "arm_asm.h"
 
 #ifndef __OPT_BIG_BLOCK_SIZE
@@ -89,17 +87,14 @@
 	.global	memcpy
 	.thumb
 	.thumb_func
-	fnstart
+	.fnstart
 	.cfi_sections .debug_frame
 	.cfi_startproc
 	.type	memcpy, %function
-	ASM_ALIAS_THUMB_STATE __aeabi_memcpy, memcpy
-	ASM_ALIAS_THUMB_STATE __aeabi_memcpy4, memcpy
-	ASM_ALIAS_THUMB_STATE __aeabi_memcpy8, memcpy
 memcpy:
-	// r0: dst
-	// r1: src
-	// r2: len
+	@ r0: dst
+	@ r1: src
+	@ r2: len
 #ifdef __ARM_FEATURE_UNALIGNED
 	/* In case of UNALIGNED access supported, ip is not used in
 	   function body.  */
@@ -345,6 +340,6 @@ memcpy:
 	epilogue 0 push_ip=HAVE_PAC_LEAF
 #endif /* __ARM_FEATURE_UNALIGNED */
 	.cfi_endproc
-	cantunwind
-	fnend
+	.cantunwind
+	.fnend
 	.size	memcpy, .-memcpy

@@ -29,18 +29,18 @@
 /* The structure of the following #if #else #endif conditional chain
    must match the chain in memcpy-stub.c.  */
 
-#include <picolibc.h>
+#include "arm-acle-compat.h"
 
-#include "machine/acle-compat.h"
-
-#if defined (__OPTIMIZE_SIZE__) || defined (__PREFER_SIZE_OVER_SPEED)
+#if defined (__OPTIMIZE_SIZE__) || defined (PREFER_SIZE_OVER_SPEED)
   /* Defined in memcpy-stub.c.  */
 
 #elif (__ARM_ARCH >= 7 && __ARM_ARCH_PROFILE == 'A' \
        && defined (__ARM_FEATURE_UNALIGNED))
 #include "memcpy-armv7a.S"
+
 #elif __ARM_ARCH_ISA_THUMB == 2 && !__ARM_ARCH_ISA_ARM
 #include "memcpy-armv7m.S"
+
 #else
   /* Defined in memcpy-stub.c.  */
 

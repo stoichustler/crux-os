@@ -50,10 +50,14 @@ PORTABILITY
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-nextafter64(__float64 x, __float64 y)
+#ifdef __STDC__
+	double nextafter(double x, double y)
+#else
+	double nextafter(x,y)
+	double x,y;
+#endif
 {
 	__int32_t	hx,hy,ix,iy;
 	__uint32_t lx,ly;
@@ -69,8 +73,8 @@ nextafter64(__float64 x, __float64 y)
 	if(x==y) return y;		/* x=y, return y */
 	if((ix|lx)==0) {			/* x == 0 */
 	    INSERT_WORDS(x,hy&0x80000000,1);	/* return +-minsubnormal */
-            force_eval_float64(opt_barrier_float64(x)*x);
-            return x;
+	    y = x*x;
+	    if(y==x) return y; else return x;	/* raise underflow flag */
 	} 
 	if(hx>=0) {				/* x > 0 */
 	    if(hx>hy||((hx==hy)&&(lx>ly))) {	/* x > y, x -= ulp */
@@ -90,14 +94,16 @@ nextafter64(__float64 x, __float64 y)
 	    }
 	}
 	hy = hx&0x7ff00000;
-	if(hy>=0x7ff00000)
-            return __math_oflow(hx<0);	/* overflow  */
+	if(hy>=0x7ff00000) return x+x;	/* overflow  */
+	if(hy<0x00100000) {		/* underflow */
+	    y = x*x;
+	    if(y!=x) {		/* raise underflow flag */
+	        INSERT_WORDS(y,hx,lx);
+		return y;
+	    }
+	}
 	INSERT_WORDS(x,hx,lx);
-	if(hy<0x00100000)		/* underflow */
-            return __math_denorm(x);
-	return (x);
+	return x;
 }
 
-_MATH_ALIAS_d_dd(nextafter)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

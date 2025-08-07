@@ -82,10 +82,10 @@ typedef struct {
 #define	GLOB_ABEND	(-2)	/* Unignored error. */
 #define	GLOB_NOMATCH	(-3)	/* No match and GLOB_NOCHECK not set. */
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 int	glob(const char *__restrict, int, int (*)(const char *, int), 
 		glob_t *__restrict);
 void	globfree(glob_t *);
-_END_STD_C
+__END_DECLS
 
 #endif /* !_GLOB_H_ */

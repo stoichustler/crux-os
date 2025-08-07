@@ -1,42 +1,48 @@
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright (c) 2005-2020 Rich Felker, et al.
  *
- * Copyright © 2022 Keith Packard
+ * SPDX-License-Identifier: MIT
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Please see https://git.musl-libc.org/cgit/musl/tree/COPYRIGHT
+ * for all contributors to musl.
  */
+#include <math.h>
+#include <float.h>
+#include "math_private.h"
+#include "fpmath.h"
+/*
+ * scalbnl (long double x, int n)
+ * scalbnl(x,n) returns x* 2**n  computed by  exponent
+ * manipulation rather than by actually performing an
+ * exponentiation or a multiplication.
+ */
+#if (LDBL_MANT_DIG == 64 || LDBL_MANT_DIG == 113) && LDBL_MAX_EXP == 16384
+long double scalbnl(long double x, int n)
+{
+	union IEEEl2bits u;
 
-#include "math_ld.h"
-
-#ifdef _NEED_FLOAT_HUGE
-
-#include "common/s_scalbnl.c"
-
+	if (n > 16383) {
+		x *= 0x1p16383L;
+		n -= 16383;
+		if (n > 16383) {
+			x *= 0x1p16383L;
+			n -= 16383;
+			if (n > 16383)
+				n = 16383;
+		}
+	} else if (n < -16382) {
+		x *= 0x1p-16382L * 0x1p113L;
+		n += 16382 - 113;
+		if (n < -16382) {
+			x *= 0x1p-16382L * 0x1p113L;
+			n += 16382 - 113;
+			if (n < -16382)
+				n = -16382;
+		}
+	}
+	u.e = 1.0;
+	u.xbits.expsign = 0x3fff + n;
+	return x * u.e;
+}
+__strong_reference(scalbnl, ldexpl);
 #endif

@@ -28,8 +28,6 @@
   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <picolibc.h>
-
 #include "c99ppe.h"
 
 	.text

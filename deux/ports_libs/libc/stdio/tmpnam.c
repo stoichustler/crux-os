@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1990 The Regents of the University of California.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-by the University of California, Berkeley.  The name of the
-University may not be used to endorse or promote products derived
-from this software without specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
  * tmpname.c
  * Original Author:	G. Haley
  */
@@ -35,8 +19,8 @@ SYNOPSIS
 	#include <stdio.h>
 	char *tmpnam(char *<[s]>);
 	char *tempnam(char *<[dir]>, char *<[pfx]>);
-	char *tmpnam( char *<[s]>);
-	char *tempnam( char *<[dir]>, char *<[pfx]>);
+	char *_tmpnam_r(struct _reent *<[reent]>, char *<[s]>);
+	char *_tempnam_r(struct _reent *<[reent]>, char *<[dir]>, char *<[pfx]>);
 
 DESCRIPTION
 Use either of these functions to generate a name for a temporary file.
@@ -89,22 +73,25 @@ Supporting OS subroutines required: <<close>>,  <<fstat>>, <<getpid>>,
 The global pointer <<environ>> is also required.
 */
 
-#define _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+#include <reent.h>
 #include <errno.h>
-#include <unistd.h>
 
-static __THREAD_LOCAL int _tls_inc;
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local int _tls_inc;
+_Thread_local char _tls_emergency[_REENT_EMERGENCY_SIZE];
+#endif
 
 /* Try to open the file specified, if it can't be opened then try
    another one.  Return nonzero if successful, otherwise zero.  */
 
 static int
-worker (
+worker (struct _reent *ptr,
        char *result,
        const char *part1,
        const char *part2,
@@ -117,29 +104,25 @@ worker (
   while (1)
     {
       int t;
-      sprintf ( result, "%s/%s%x.%x", part1, part2, part3, *part4);
+      _sprintf_r (ptr, result, "%s/%s%x.%x", part1, part2, part3, *part4);
       (*part4)++;
-      t = open (result, O_RDONLY, 0);
+      t = _open_r (ptr, result, O_RDONLY, 0);
       if (t == -1)
 	{
-	  if (errno == ENOSYS)
+	  if (_REENT_ERRNO(ptr) == ENOSYS)
 	    {
 	      result[0] = '\0';
 	      return 0;
 	    }
 	  break;
 	}
-      close (t);
+      _close_r (ptr, t);
     }
   return 1;
 }
 
-#define _TMPNAM_SIZE 25
-
-static __THREAD_LOCAL char _tmpnam_buf[_TMPNAM_SIZE];
-
 char *
-tmpnam (
+_tmpnam_r (struct _reent *p,
        char *s)
 {
   char *result;
@@ -148,17 +131,18 @@ tmpnam (
   if (s == NULL)
     {
       /* ANSI states we must use an internal static buffer if s is NULL */
-      result = _tmpnam_buf;
+      _REENT_CHECK_EMERGENCY(p);
+      result = _REENT_EMERGENCY(p);
     }
   else
     {
       result = s;
     }
-  pid = getpid ();
+  pid = _getpid_r (p);
 
-  if (worker (result, P_tmpdir, "t", pid, &_tls_inc))
+  if (worker (p, result, P_tmpdir, "t", pid, &_REENT_INC(p)))
     {
-      _tls_inc++;
+      _REENT_INC(p)++;
       return result;
     }
 
@@ -166,7 +150,7 @@ tmpnam (
 }
 
 char *
-tempnam (
+_tempnam_r (struct _reent *p,
        const char *dir,
        const char *pfx)
 {
@@ -179,15 +163,29 @@ tempnam (
   /* two 8 digit numbers + . / */
   length = strlen (dir) + strlen (prefix) + (4 * sizeof (int)) + 2 + 1;
 
-  filename = malloc (length);
+  filename = _malloc_r (p, length);
   if (filename)
     {
-      if (! worker (filename, dir, prefix,
-		    getpid (), &_tls_inc))
-      {
-        free(filename);
+      if (! worker (p, filename, dir, prefix,
+		    _getpid_r (p) ^ (int) (_POINTER_INT) p, &_REENT_INC(p)))
 	return NULL;
-      }
     }
   return filename;
 }
+
+#ifndef _REENT_ONLY
+
+char *
+tempnam (const char *dir,
+       const char *pfx)
+{
+  return _tempnam_r (_REENT, dir, pfx);
+}
+
+char *
+tmpnam (char *s)
+{
+  return _tmpnam_r (_REENT, s);
+}
+
+#endif

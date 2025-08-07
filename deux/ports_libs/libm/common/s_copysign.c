@@ -53,10 +53,14 @@ Definition (Issue 2).
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-copysign64(__float64 x, __float64 y)
+#ifdef __STDC__
+	double copysign(double x, double y)
+#else
+	double copysign(x,y)
+	double x,y;
+#endif
 {
 	__uint32_t hx,hy;
 	GET_HIGH_WORD(hx,x);
@@ -65,6 +69,4 @@ copysign64(__float64 x, __float64 y)
         return x;
 }
 
-_MATH_ALIAS_d_dd(copysign)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

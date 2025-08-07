@@ -1,31 +1,3 @@
-/*
-Copyright (c) 1982, 1986, 1993
-The Regents of the University of California.  All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
- */
 /* ANSI C namespace clean utility typedefs */
 
 /* This file defines various typedefs needed by the system calls that support
@@ -50,19 +22,12 @@ SUCH DAMAGE.
 #define __need_size_t
 #define __need_wint_t
 #include <stddef.h>
-
-/* The Arm Compiler doesn't define wint_t as part of stddef.h so
- * define it here.
- */
-#if defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6100100)
-typedef __WINT_TYPE__ wint_t;
-#endif
-
+#include <newlib.h>
+#include <sys/config.h>
 #include <machine/_types.h>
 
 #ifndef __machine_blkcnt_t_defined
 typedef long __blkcnt_t;
-typedef __int64_t __blkcnt64_t;
 #endif
 
 #ifndef __machine_blksize_t_defined
@@ -78,11 +43,7 @@ typedef __uint32_t __fsfilcnt_t;
 #endif
 
 #ifndef __machine_off_t_defined
-#if __SIZEOF_SIZE_T__ == 8 && __SIZEOF_LONG__ < 8
-typedef __uint64_t _off_t;
-#else
 typedef long _off_t;
-#endif
 #endif
 
 #if defined(__XMK__)
@@ -92,26 +53,14 @@ typedef int __pid_t;
 #endif
 
 #ifndef __machine_dev_t_defined
-#ifdef __linux
-typedef __uint64_t __dev_t;
-#else
 typedef short __dev_t;
-#endif
 #endif
 
 #ifndef __machine_uid_t_defined
-#ifdef __linux
-typedef __uint32_t __uid_t;
-#else
 typedef unsigned short __uid_t;
 #endif
-#endif
 #ifndef __machine_gid_t_defined
-#ifdef __linux
-typedef __uint32_t __gid_t;
-#else
 typedef unsigned short __gid_t;
-#endif
 #endif
 
 #ifndef __machine_id_t_defined
@@ -120,12 +69,11 @@ typedef __uint32_t __id_t;
 
 #ifndef __machine_ino_t_defined
 #if (defined(__i386__) && (defined(GO32) || defined(__MSDOS__))) || \
-	defined(__sparc__) || defined(__SPU__) || defined(__linux)
+    defined(__sparc__) || defined(__SPU__)
 typedef unsigned long __ino_t;
 #else
 typedef unsigned short __ino_t;
 #endif
-typedef __uint64_t      __ino64_t;
 #endif
 
 #ifndef __machine_mode_t_defined
@@ -148,8 +96,11 @@ typedef __uint32_t __mode_t;
 __extension__ typedef long long _off64_t;
 #endif
 
+#if defined(__CYGWIN__) && !defined(__LP64__)
+typedef _off64_t __off_t;
+#else
 typedef _off_t __off_t;
-typedef __uint64_t __off64_t;
+#endif
 
 typedef _off64_t __loff_t;
 
@@ -166,8 +117,10 @@ typedef long _fpos_t;		/* XXX must match off_t in <sys/types.h> */
 				/* (and must be `long' for now) */
 #endif
 
+#ifdef __LARGE64_FILES
 #ifndef __machine_fpos64_t_defined
 typedef _off64_t _fpos64_t;
+#endif
 #endif
 
 /* Defined by GCC provided <stddef.h> */
@@ -213,16 +166,13 @@ typedef struct
   {
     wint_t __wch;
     unsigned char __wchb[4];
-    __uint32_t __ucs;
-    __uint16_t __ucs2;
   } __value;		/* Value so far.  */
 } _mbstate_t;
 #endif
 
 #ifndef __machine_iconv_t_defined
 /* Iconv descriptor type */
-struct __iconv_t;
-typedef struct __iconv_t *_iconv_t;
+typedef void *_iconv_t;
 #endif
 
 #ifndef __machine_clock_t_defined
@@ -231,7 +181,7 @@ typedef struct __iconv_t *_iconv_t;
 
 typedef	_CLOCK_T_	__clock_t;
 
-#if __SIZEOF_LONG__ == 8
+#if defined(_USE_LONG_TIME_T) || __LONG_MAX__ > 0x7fffffffL
 #define	_TIME_T_ long
 #else
 #define	_TIME_T_ __int_least64_t
@@ -259,20 +209,20 @@ typedef	__uint8_t	__sa_family_t;
 typedef	__uint32_t	__socklen_t;
 #endif
 
-typedef	__int32_t	__nl_item;
+typedef	int		__nl_item;
 typedef	unsigned short	__nlink_t;
 typedef	long		__suseconds_t;	/* microseconds (signed) */
 typedef	unsigned long	__useconds_t;	/* microseconds (unsigned) */
 
-#ifdef __STDC_WANT_LIB_EXT1__
-#if (__STDC_WANT_LIB_EXT1__ != 0) && (__STDC_WANT_LIB_EXT1__ != 1)
-#error Please define __STDC_WANT_LIB_EXT__ as 0 or 1
-#endif
-
-#if __STDC_WANT_LIB_EXT1__ == 1
-typedef size_t __rsize_t;
-typedef int __errno_t;
-#endif
+/*
+ * Must be identical to the __GNUCLIKE_BUILTIN_VAALIST definition in
+ * <sys/cdefs.h>.  The <sys/cdefs.h> must not be included here to avoid cyclic
+ * header dependencies.
+ */
+#if __GNUC_MINOR__ > 95 || __GNUC__ >= 3
+typedef	__builtin_va_list	__va_list;
+#else
+typedef	char *			__va_list;
 #endif
 
 #endif	/* _SYS__TYPES_H */

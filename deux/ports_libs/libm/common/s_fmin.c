@@ -31,23 +31,22 @@ ANSI C, POSIX.
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-fmin64(__float64 x, __float64 y)
+#ifdef __STDC__
+	double fmin(double x, double y)
+#else
+	double fmin(x,y)
+	double x;
+	double y;
+#endif
 {
-    if (issignaling(x) || issignaling(y))
-        return x + y;
-
-    if (isnan(x))
-        return y;
-
-    if (isnan(y))
-        return x;
-
-    return x < y ? x : y;
+  if (__fpclassifyd(x) == FP_NAN)
+    return y;
+  if (__fpclassifyd(y) == FP_NAN)
+    return x;
+  
+  return x < y ? x : y;
 }
 
-_MATH_ALIAS_d_dd(fmin)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

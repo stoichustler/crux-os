@@ -1,24 +1,20 @@
-/*
-Copyright (c) 2016 Corinna Vinschen <corinna@vinschen.de> 
-Modified (m) 2017 Thomas Wolff: revise Unicode and locale/wchar handling
- */
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <ctype.h>
-#if defined (__MB_EXTENDED_CHARSETS_ISO) \
-    || defined (__MB_EXTENDED_CHARSETS_WINDOWS)
+#if defined (_MB_EXTENDED_CHARSETS_ISO) \
+    || defined (_MB_EXTENDED_CHARSETS_WINDOWS)
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <wctype.h>
 #include <wchar.h>
-#include "locale_private.h"
+#include <../locale/setlocale.h>
 #endif
 
 int
-toupper_l (int c, locale_t locale)
+toupper_l (int c, struct __locale_t *locale)
 {
-#if defined (__MB_EXTENDED_CHARSETS_ISO) \
-    || defined (__MB_EXTENDED_CHARSETS_WINDOWS)
+#if defined (_MB_EXTENDED_CHARSETS_ISO) \
+    || defined (_MB_EXTENDED_CHARSETS_WINDOWS)
   if ((unsigned char) c <= 0x7f)
     return islower_l (c, locale) ? c - 'a' + 'A' : c;
   else if (c != EOF && __locale_mb_cur_max_l (locale) == 1
@@ -29,8 +25,8 @@ toupper_l (int c, locale_t locale)
       mbstate_t state;
 
       memset (&state, 0, sizeof state);
-      if (__MBTOWC_L(locale) (&wc, s, 1, &state) >= 0
-	  && __WCTOMB_L(locale) (s,
+      if (locale->mbtowc (_REENT, &wc, s, 1, &state) >= 0
+	  && locale->wctomb (_REENT, s,
 			     (wchar_t) towupper_l ((wint_t) wc, locale),
 			     &state) == 1)
 	c = (unsigned char) s[0];

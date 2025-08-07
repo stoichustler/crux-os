@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Jeff Johnston <jjohnstn@redhat.com> */
 /*
 FUNCTION
         <<memccpy>>---copy memory regions with end-token check
@@ -28,11 +27,33 @@ PORTABILITY
 
 	*/
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
-#include "local.h"
+
+/* Nonzero if either X or Y is not aligned on a "long" boundary.  */
+#define UNALIGNED(X, Y) \
+  (((long)X & (sizeof (long) - 1)) | ((long)Y & (sizeof (long) - 1)))
+
+/* How many bytes are copied each iteration of the word copy loop.  */
+#define LITTLEBLOCKSIZE (sizeof (long))
+
+/* Threshhold for punting to the byte copier.  */
+#define TOO_SMALL(LEN)  ((LEN) < LITTLEBLOCKSIZE)
+
+/* Macros for detecting endchar */
+#if LONG_MAX == 2147483647L
+#define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
+#else
+#if LONG_MAX == 9223372036854775807L
+/* Nonzero if X (a long int) contains a NULL byte. */
+#define DETECTNULL(X) (((X) - 0x0101010101010101) & ~(X) & 0x8080808080808080)
+#else
+#error long int is not a 32bit or 64bit type.
+#endif
+#endif
+
 
 void *
 memccpy (void *__restrict dst0,
@@ -41,8 +62,7 @@ memccpy (void *__restrict dst0,
 	size_t len0)
 {
 
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__) || \
-    defined(_PICOLIBC_NO_OUT_OF_BOUNDS_READS)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
   void *ptr = NULL;
   char *dst = (char *) dst0;
   char *src = (char *) src0;
@@ -68,10 +88,10 @@ memccpy (void *__restrict dst0,
 
   /* If the size is small, or either SRC or DST is unaligned,
      then punt into the byte copy loop.  This should be rare.  */
-  if (!TOO_SMALL_LITTLE_BLOCK(len0) && !UNALIGNED_X_Y(src, dst))
+  if (!TOO_SMALL(len0) && !UNALIGNED (src, dst))
     {
       unsigned int i;
-      unsigned long mask;
+      unsigned long mask = 0;
 
       aligned_dst = (long*)dst;
       aligned_src = (long*)src;
@@ -82,20 +102,19 @@ memccpy (void *__restrict dst0,
          the word-sized segment with a word-sized block of the search
          character and then detecting for the presence of NULL in the
          result.  */
-      mask = endchar << 8 | endchar;
-      mask = mask << 16 | mask;
-      for (i = 32; i < sizeof(mask) * 8; i <<= 1)
-        mask = (mask << i) | mask;
+      for (i = 0; i < LITTLEBLOCKSIZE; i++)
+        mask = (mask << 8) + endchar;
+
 
       /* Copy one long word at a time if possible.  */
-      while (!TOO_SMALL_LITTLE_BLOCK(len0))
+      while (len0 >= LITTLEBLOCKSIZE)
         {
           unsigned long buffer = (unsigned long)(*aligned_src);
           buffer ^=  mask;
-          if (DETECT_NULL(buffer))
+          if (DETECTNULL (buffer))
             break; /* endchar is found, go byte by byte from here */
           *aligned_dst++ = *aligned_src++;
-          len0 -= LITTLE_BLOCK_SIZE;
+          len0 -= LITTLEBLOCKSIZE;
         }
 
        /* Pick up any residual with a byte copier.  */
@@ -113,5 +132,5 @@ memccpy (void *__restrict dst0,
     }
 
   return ptr;
-#endif /* not __PREFER_SIZE_OVER_SPEED */
+#endif /* not PREFER_SIZE_OVER_SPEED */
 }

@@ -30,8 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
+#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -51,6 +50,7 @@ typedef struct
   va_list ap;
 } c99_vsscanf_t;
 
+#ifndef _REENT_ONLY
 
 int
 vsscanf (const char *__restrict str,
@@ -68,3 +68,4 @@ vsscanf (const char *__restrict str,
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_VSSCANF, &args);
 }
 
+#endif /* ! _REENT_ONLY */

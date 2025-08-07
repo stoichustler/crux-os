@@ -1,7 +1,7 @@
-/* Copyright (c) 2002 Thomas Fitzsimmons <fitzsim@redhat.com> */
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <reent.h>
 #include <string.h>
 #include "local.h"
 
@@ -21,7 +21,9 @@ btowc (int c)
   /* Put mbs in initial state. */
   memset (&mbs, '\0', sizeof (mbs));
 
-  retval = __MBTOWC (&pwc, (const char *) &b, 1, &mbs);
+  _REENT_CHECK_MISC(_REENT);
+
+  retval = __MBTOWC (_REENT, &pwc, (const char *) &b, 1, &mbs);
 
   if (retval != 0 && retval != 1)
     return WEOF;

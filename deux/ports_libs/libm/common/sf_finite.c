@@ -20,7 +20,12 @@
 
 #include "fdlibm.h"
 
-int finitef(float x)
+#ifdef __STDC__
+	int finitef(float x)
+#else
+	int finitef(x)
+	float x;
+#endif
 {
 	__int32_t ix;
 	GET_FLOAT_WORD(ix,x);
@@ -28,15 +33,16 @@ int finitef(float x)
 	return (FLT_UWORD_IS_FINITE(ix));
 }
 
-#ifdef __strong_reference
-__strong_reference(finitef, __finitef);
-#else
-int
-__finitef(float x)
-{
-    return finitef(x);
-}
-#endif
+#ifdef _DOUBLE_IS_32BITS
 
-_MATH_ALIAS_i_f(finite)
-_MATH_ALIAS_i_f(__finite)
+#ifdef __STDC__
+	int finite(double x)
+#else
+	int finite(x)
+	double x;
+#endif
+{
+	return finitef((float) x);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

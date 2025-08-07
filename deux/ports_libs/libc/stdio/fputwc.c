@@ -57,11 +57,11 @@ SYNOPSIS
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t fputwc( wchar_t <[wc]>, FILE *<[fp]>);
+	wint_t _fputwc_r(struct _reent *<[ptr]>, wchar_t <[wc]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t fputwc_unlocked( wchar_t <[wc]>, FILE *<[fp]>);
+	wint_t _fputwc_unlocked_r(struct _reent *<[ptr]>, wchar_t <[wc]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
@@ -74,11 +74,11 @@ SYNOPSIS
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t putwc( wchar_t <[wc]>, FILE *<[fp]>);
+	wint_t _putwc_r(struct _reent *<[ptr]>, wchar_t <[wc]>, FILE *<[fp]>);
 
 	#include <stdio.h>
 	#include <wchar.h>
-	wint_t putwc_unlocked( wchar_t <[wc]>, FILE *<[fp]>);
+	wint_t _putwc_unlocked_r(struct _reent *<[ptr]>, wchar_t <[wc]>, FILE *<[fp]>);
 
 DESCRIPTION
 <<fputwc>> writes the wide character argument <[wc]> to the file or
@@ -118,7 +118,8 @@ PORTABILITY
 <<fputwc_unlocked>> and <<putwc_unlocked>> are GNU extensions.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -127,7 +128,7 @@ PORTABILITY
 #include "local.h"
 
 wint_t
-__fputwc (
+__fputwc (struct _reent *ptr,
 	wchar_t wc,
 	FILE *fp)
 {
@@ -146,7 +147,7 @@ __fputwc (
     }
   else
     {
-      if ((len = wcrtomb (buf, wc, &fp->_mbstate)) == (size_t) -1)
+      if ((len = _wcrtomb_r (ptr, buf, wc, &fp->_mbstate)) == (size_t) -1)
 	{
 	  fp->_flags |= __SERR;
 	  return WEOF;
@@ -154,21 +155,36 @@ __fputwc (
     }
 
   for (i = 0; i < len; i++)
-    if (__swputc ((unsigned char) buf[i], fp) == EOF)
+    if (__swputc_r (ptr, (unsigned char) buf[i], fp) == EOF)
       return WEOF;
 
   return (wint_t) wc;
 }
 
 wint_t
-fputwc (
+_fputwc_r (struct _reent *ptr,
 	wchar_t wc,
 	FILE *fp)
 {
   wint_t r;
 
   _newlib_flockfile_start (fp);
-  r = __fputwc(wc, fp);
+  r = __fputwc(ptr, wc, fp);
+  _newlib_flockfile_end (fp);
+  return r;
+}
+
+wint_t
+fputwc (wchar_t wc,
+	FILE *fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  wint_t r;
+
+  _newlib_flockfile_start (fp);
+  r = __fputwc(reent, wc, fp);
   _newlib_flockfile_end (fp);
   return r;
 }

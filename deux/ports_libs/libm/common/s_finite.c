@@ -18,23 +18,18 @@
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-int
-finite64(__float64 x)
+#ifdef __STDC__
+	int finite(double x)
+#else
+	int finite(x)
+	double x;
+#endif
 {
 	__int32_t hx;
 	GET_HIGH_WORD(hx,x);
 	return  (int)((__uint32_t)((hx&0x7fffffff)-0x7ff00000)>>31);
 }
 
-#ifdef __strong_reference
-__strong_reference(finite64, __finite64);
-#else
-int __finite64(__float64 x) { return finite64(x); }
-#endif
-
-_MATH_ALIAS_i_d(finite)
-_MATH_ALIAS_i_d(__finite)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

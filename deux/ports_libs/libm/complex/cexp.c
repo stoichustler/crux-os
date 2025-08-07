@@ -71,10 +71,12 @@ QUICKREF
 double complex
 cexp(double complex z)
 {
+	double complex w;
 	double r, x, y;
 
 	x = creal(z);
 	y = cimag(z);
 	r = exp(x);
-	return (double complex) (r * cos(y)) + r * sin(y) * (double complex) I;
+	w = r * cos(y) + r * sin(y) * I;
+	return w;
 }

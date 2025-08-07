@@ -1,6 +1,3 @@
-/* Copyright (c) 2002 Dave Brolley  <brolley@redhat.com> */
-#include <picolibc.h>
-
 # setjmp/longjmp for Frv.  The jmpbuf looks like this:
 #	
 # Register	jmpbuf offset

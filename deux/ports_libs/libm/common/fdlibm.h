@@ -11,17 +11,10 @@
  * ====================================================
  */
 
-#ifndef _FDLIBM_H_
-#define _FDLIBM_H_
-
 /* REDHAT LOCAL: Include files.  */
-#ifndef _DEFAULT_SOURCE
-#define _DEFAULT_SOURCE
-#endif
 #include <math.h>
 #include <sys/types.h>
 #include <machine/ieeefp.h>
-#include <fenv.h>
 #include "math_config.h"
 
 /* Most routines need to check whether a float is finite, infinite, or not a
@@ -85,39 +78,6 @@
 #define FLT_UWORD_HALF_MAX (FLT_UWORD_MAX-(1L<<23))
 #define FLT_LARGEST_EXP (FLT_UWORD_MAX>>23)
 
-/* rounding mode tests; nearest if not set. Assumes hardware
- * without rounding mode support uses nearest
- */
-
-/* If there are rounding modes other than FE_TONEAREST defined, then
- * add code to check which is active
- */
-#if (defined(FE_UPWARD) + defined(FE_DOWNWARD) + defined(FE_TOWARDZERO)) >= 1
-#define FE_DECL_ROUND(v)        int v = fegetround()
-#define __is_nearest(r)         ((r) == FE_TONEAREST)
-#else
-#define FE_DECL_ROUND(v)
-#define __is_nearest(r)         1
-#endif
-
-#ifdef FE_UPWARD
-#define __is_upward(r)          ((r) == FE_UPWARD)
-#else
-#define __is_upward(r)          0
-#endif
-
-#ifdef FE_DOWNWARD
-#define __is_downward(r)        ((r) == FE_DOWNWARD)
-#else
-#define __is_downward(r)        0
-#endif
-
-#ifdef FE_TOWARDZERO
-#define __is_towardzero(r)      ((r) == FE_TOWARDZERO)
-#else
-#define __is_towardzero(r)      0
-#endif
-
 /* Many routines check for zero and subnormal numbers.  Such things depend
    on whether the target supports denormals or not:
 
@@ -161,6 +121,13 @@
 #define FLT_SMALLEST_EXP -22
 #endif
 
+#ifdef __STDC__
+#undef __P
+#define	__P(p)	p
+#else
+#define	__P(p)	()
+#endif
+
 /* 
  * set X_TLOSS = pi*2**52, which is possibly defined in <values.h>
  * (one may replace the following line by "#include <values.h>")
@@ -168,23 +135,115 @@
 
 #define X_TLOSS		1.41484755040568800000e+16 
 
-#ifdef _NEED_FLOAT64
-extern __int32_t __rem_pio2 (__float64,__float64*);
+/* Functions that are not documented, and are not in <math.h>.  */
 
-/* fdlibm kernel function */
-extern __float64 __kernel_sin (__float64,__float64,int);
-extern __float64 __kernel_cos (__float64,__float64);
-extern __float64 __kernel_tan (__float64,__float64,int);
-extern int    __kernel_rem_pio2 (__float64*,__float64*,int,int,int,const __int32_t*);
+#ifdef _SCALB_INT
+extern double scalb __P((double, int));
+#else
+extern double scalb __P((double, double));
+#endif
+extern double significand __P((double));
+
+extern long double __ieee754_hypotl __P((long double, long double));
+
+/* ieee style elementary functions */
+extern double __ieee754_sqrt __P((double));			
+extern double __ieee754_acos __P((double));			
+extern double __ieee754_acosh __P((double));			
+extern double __ieee754_log __P((double));			
+extern double __ieee754_atanh __P((double));			
+extern double __ieee754_asin __P((double));			
+extern double __ieee754_atan2 __P((double,double));			
+extern double __ieee754_exp __P((double));
+extern double __ieee754_cosh __P((double));
+extern double __ieee754_fmod __P((double,double));
+extern double __ieee754_pow __P((double,double));
+extern double __ieee754_lgamma_r __P((double,int *));
+extern double __ieee754_gamma_r __P((double,int *));
+extern double __ieee754_tgamma __P((double));
+extern double __ieee754_log10 __P((double));
+extern double __ieee754_sinh __P((double));
+extern double __ieee754_hypot __P((double,double));
+extern double __ieee754_j0 __P((double));
+extern double __ieee754_j1 __P((double));
+extern double __ieee754_y0 __P((double));
+extern double __ieee754_y1 __P((double));
+extern double __ieee754_jn __P((int,double));
+extern double __ieee754_yn __P((int,double));
+extern double __ieee754_remainder __P((double,double));
+extern __int32_t __ieee754_rem_pio2 __P((double,double*));
+#ifdef _SCALB_INT
+extern double __ieee754_scalb __P((double,int));
+#else
+extern double __ieee754_scalb __P((double,double));
 #endif
 
-extern __int32_t __rem_pio2f (float,float*);
+/* fdlibm kernel function */
+extern double __kernel_standard __P((double,double,int));
+extern double __kernel_sin __P((double,double,int));
+extern double __kernel_cos __P((double,double));
+extern double __kernel_tan __P((double,double,int));
+extern int    __kernel_rem_pio2 __P((double*,double*,int,int,int,const __int32_t*));
+
+/* Undocumented float functions.  */
+#ifdef _SCALB_INT
+extern float scalbf __P((float, int));
+#else
+extern float scalbf __P((float, float));
+#endif
+extern float significandf __P((float));
+
+/* ieee style elementary float functions */
+extern float __ieee754_sqrtf __P((float));			
+extern float __ieee754_acosf __P((float));			
+extern float __ieee754_acoshf __P((float));			
+extern float __ieee754_logf __P((float));			
+extern float __ieee754_atanhf __P((float));			
+extern float __ieee754_asinf __P((float));			
+extern float __ieee754_atan2f __P((float,float));			
+extern float __ieee754_expf __P((float));
+extern float __ieee754_coshf __P((float));
+extern float __ieee754_fmodf __P((float,float));
+extern float __ieee754_powf __P((float,float));
+extern float __ieee754_lgammaf_r __P((float,int *));
+extern float __ieee754_gammaf_r __P((float,int *));
+extern float __ieee754_tgammaf __P((float));
+extern float __ieee754_log10f __P((float));
+extern float __ieee754_sinhf __P((float));
+extern float __ieee754_hypotf __P((float,float));
+extern float __ieee754_j0f __P((float));
+extern float __ieee754_j1f __P((float));
+extern float __ieee754_y0f __P((float));
+extern float __ieee754_y1f __P((float));
+extern float __ieee754_jnf __P((int,float));
+extern float __ieee754_ynf __P((int,float));
+extern float __ieee754_remainderf __P((float,float));
+extern __int32_t __ieee754_rem_pio2f __P((float,float*));
+#ifdef _SCALB_INT
+extern float __ieee754_scalbf __P((float,int));
+#else
+extern float __ieee754_scalbf __P((float,float));
+#endif
+
+#if !__OBSOLETE_MATH
+/* The new math code does not provide separate wrapper function
+   for error handling, so the extern symbol is called directly.
+   This is valid as long as there are no namespace issues (the
+   extern symbol is reserved whenever the caller is reserved)
+   and there are no observable error handling side effects.  */
+# define __ieee754_exp(x) exp(x)
+# define __ieee754_log(x) log(x)
+# define __ieee754_pow(x,y) pow(x,y)
+# define __ieee754_expf(x) expf(x)
+# define __ieee754_logf(x) logf(x)
+# define __ieee754_powf(x,y) powf(x,y)
+#endif
 
 /* float versions of fdlibm kernel functions */
-extern float __kernel_sinf (float,float,int);
-extern float __kernel_cosf (float,float);
-extern float __kernel_tanf (float,float,int);
-extern int   __kernel_rem_pio2f (float*,float*,int,int,int,const __int32_t*);
+extern float __kernel_sinf __P((float,float,int));
+extern float __kernel_cosf __P((float,float));
+extern float __kernel_tanf __P((float,float,int));
+extern int   __kernel_rem_pio2f __P((float*,float*,int,int,int,const __int32_t*));
 
 /* The original code used statements like
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *
@@ -208,10 +267,10 @@ extern int   __kernel_rem_pio2f (float*,float*,int,int,int,const __int32_t*);
 
 #ifdef __IEEE_BIG_ENDIAN
 
-typedef union
+typedef union 
 {
-  uint64_t bits;
-  struct
+  double value;
+  struct 
   {
     __uint32_t msw;
     __uint32_t lsw;
@@ -222,10 +281,10 @@ typedef union
 
 #ifdef __IEEE_LITTLE_ENDIAN
 
-typedef union
+typedef union 
 {
-  uint64_t bits;
-  struct
+  double value;
+  struct 
   {
     __uint32_t lsw;
     __uint32_t msw;
@@ -239,7 +298,7 @@ typedef union
 #define EXTRACT_WORDS(ix0,ix1,d)				\
 do {								\
   ieee_double_shape_type ew_u;					\
-  ew_u.bits = asuint64(d);					\
+  ew_u.value = (d);						\
   (ix0) = ew_u.parts.msw;					\
   (ix1) = ew_u.parts.lsw;					\
 } while (0)
@@ -249,7 +308,7 @@ do {								\
 #define GET_HIGH_WORD(i,d)					\
 do {								\
   ieee_double_shape_type gh_u;					\
-  gh_u.bits = asuint64(d);					\
+  gh_u.value = (d);						\
   (i) = gh_u.parts.msw;						\
 } while (0)
 
@@ -258,7 +317,7 @@ do {								\
 #define GET_LOW_WORD(i,d)					\
 do {								\
   ieee_double_shape_type gl_u;					\
-  gl_u.bits = asuint64(d);					\
+  gl_u.value = (d);						\
   (i) = gl_u.parts.lsw;						\
 } while (0)
 
@@ -269,7 +328,7 @@ do {								\
   ieee_double_shape_type iw_u;					\
   iw_u.parts.msw = (ix0);					\
   iw_u.parts.lsw = (ix1);					\
-  (d) = asfloat64(iw_u.bits);                                   \
+  (d) = iw_u.value;						\
 } while (0)
 
 /* Set the more significant 32 bits of a double from an int.  */
@@ -277,9 +336,9 @@ do {								\
 #define SET_HIGH_WORD(d,v)					\
 do {								\
   ieee_double_shape_type sh_u;					\
-  sh_u.bits = asuint64(d);					\
+  sh_u.value = (d);						\
   sh_u.parts.msw = (v);						\
-  (d) = asfloat64(sh_u.bits);                                   \
+  (d) = sh_u.value;						\
 } while (0)
 
 /* Set the less significant 32 bits of a double from an int.  */
@@ -287,88 +346,46 @@ do {								\
 #define SET_LOW_WORD(d,v)					\
 do {								\
   ieee_double_shape_type sl_u;					\
-  sl_u.bits = asuint64(d);					\
+  sl_u.value = (d);						\
   sl_u.parts.lsw = (v);						\
-  (d) = asfloat64(sl_u.bits);                                   \
+  (d) = sl_u.value;						\
 } while (0)
 
 /* A union which permits us to convert between a float and a 32 bit
    int.  */
 
+typedef union
+{
+  float value;
+  __uint32_t word;
+} ieee_float_shape_type;
+
 /* Get a 32 bit int from a float.  */
 
-#define GET_FLOAT_WORD(i,d) ((i) = asuint(d))
+#define GET_FLOAT_WORD(i,d)					\
+do {								\
+  ieee_float_shape_type gf_u;					\
+  gf_u.value = (d);						\
+  (i) = gf_u.word;						\
+} while (0)
 
 /* Set a float from a 32 bit int.  */
 
-#define SET_FLOAT_WORD(d,i) ((d) = asfloat(i))
+#define SET_FLOAT_WORD(d,i)					\
+do {								\
+  ieee_float_shape_type sf_u;					\
+  sf_u.word = (i);						\
+  (d) = sf_u.value;						\
+} while (0)
 
 /* Macros to avoid undefined behaviour that can arise if the amount
    of a shift is exactly equal to the size of the shifted operand.  */
 
 #define SAFE_LEFT_SHIFT(op,amt)					\
-  (((amt) < (int) (8 * sizeof(op))) ? ((op) << (amt)) : 0)
+  (((amt) < 8 * sizeof(op)) ? ((op) << (amt)) : 0)
 
 #define SAFE_RIGHT_SHIFT(op,amt)				\
-  (((amt) < (int) (8 * sizeof(op))) ? ((op) >> (amt)) : 0)
-
-int
-__undefined_shift_size(int x, int s);
-
-/*
- * Shift left of negative integers is UB. Cast to unsigned, shift,
- * cast back.
- *
- * Shift right of negative integers is ID. When we want arithmetic
- * shifts, we use the shift operator directly when the sanitizer is
- * disabled because the alternative is a whole lotta code.
- */
-#define lsl(__x,__s) ((sizeof(__x) == sizeof(char)) ?                   \
-                      (__typeof(__x)) ((unsigned char) (__x) << (__s)) :  \
-                      (sizeof(__x) == sizeof(short)) ?                  \
-                      (__typeof(__x)) ((unsigned short) (__x) << (__s)) : \
-                      (sizeof(__x) == sizeof(int)) ?                    \
-                      (__typeof(__x)) ((unsigned int) (__x) << (__s)) :   \
-                      (sizeof(__x) == sizeof(long)) ?                   \
-                      (__typeof(__x)) ((unsigned long) (__x) << (__s)) :  \
-                      (sizeof(__x) == sizeof(long long)) ?              \
-                      (__typeof(__x)) ((unsigned long long) (__x) << (__s)) : \
-                      __undefined_shift_size(__x, __s))
-
-#if defined(__has_feature) && __has_feature(undefined_behavior_sanitizer)
-
-/*
- * Compute arithmetic right shift. For negative values, flip the bits,
- * shift and flip back. Otherwise, just shift. Thanks to Per Vognsen
- * for this version which both gcc and clang both currently optimize
- * to a single asr instruction in small tests.
- */
-#define __asr(t, n)                             \
-    static inline t                             \
-    __asr_ ## n(t x, int s) {                   \
-        return x < 0 ? ~(~x >> s) : x >> s;     \
-    }                                           \
-
-__asr(signed char, signed_char)
-__asr(short, short)
-__asr(int, int)
-__asr(long, long)
-__asr(long long, long_long)
-
-#define asr(__x,__s) ((sizeof(__x) == sizeof(char)) ?                   \
-                      (__typeof(__x))__asr_signed_char(__x, __s) :      \
-                      (sizeof(__x) == sizeof(short)) ?                  \
-                      (__typeof(__x))__asr_short(__x, __s) :            \
-                      (sizeof(__x) == sizeof(int)) ?                    \
-                      (__typeof(__x))__asr_int(__x, __s) :              \
-                      (sizeof(__x) == sizeof(long)) ?                   \
-                      (__typeof(__x))__asr_long(__x, __s) :             \
-                      (sizeof(__x) == sizeof(long long)) ?              \
-                      (__typeof(__x))__asr_long_long(__x, __s):         \
-                      __undefined_shift_size(__x, __s))
-#else
-#define asr(__x, __s) ((__x) >> (__s))
-#endif
+  (((amt) < 8 * sizeof(op)) ? ((op) >> (amt)) : 0)
 
 #ifdef  _COMPLEX_H
 
@@ -401,4 +418,3 @@ typedef union {
 
 #endif  /* _COMPLEX_H */
 
-#endif /* _FDLIBM_H_ */

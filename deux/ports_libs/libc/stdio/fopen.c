@@ -28,7 +28,7 @@ SYNOPSIS
 	#include <stdio.h>
 	FILE *fopen(const char *<[file]>, const char *<[mode]>);
 
-	FILE *fopen( 
+	FILE *_fopen_r(struct _reent *<[reent]>, 
                        const char *<[file]>, const char *<[mode]>);
 
 DESCRIPTION
@@ -102,18 +102,18 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <errno.h>
-#include <unistd.h>
 #include <sys/lock.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#ifdef __CYGWIN__
 #include <fcntl.h>
+#endif
 #include "local.h"
 
 FILE *
-fopen (
+_fopen_r (struct _reent *ptr,
        const char *__restrict file,
        const char *__restrict mode)
 {
@@ -121,16 +121,18 @@ fopen (
   register int f;
   int flags, oflags;
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     return NULL;
-  if ((fp = __sfp ()) == NULL)
+  if ((fp = __sfp (ptr)) == NULL)
     return NULL;
 
-  if ((f = open (file, oflags, 0666)) < 0)
+  if ((f = _open_r (ptr, file, oflags, 0666)) < 0)
     {
       _newlib_sfp_lock_start (); 
       fp->_flags = 0;		/* release */
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       _newlib_sfp_lock_end (); 
       return NULL;
     }
@@ -146,7 +148,7 @@ fopen (
   fp->_close = __sclose;
 
   if (fp->_flags & __SAPP)
-    fseek ( fp, 0, SEEK_END);
+    _fseek_r (ptr, fp, 0, SEEK_END);
 
 #ifdef __SCLE
   if (__stextmode (fp->_file))
@@ -156,3 +158,14 @@ fopen (
   _newlib_flockfile_end (fp);
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+fopen (const char *file,
+       const char *mode)
+{
+  return _fopen_r (_REENT, file, mode);
+}
+
+#endif

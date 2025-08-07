@@ -15,19 +15,18 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "mul_overflow.h"
 
 void *
 reallocarray(void *optr, size_t nmemb, size_t size)
 {
-	size_t bytes;
+	ptrdiff_t bytes;
 
-	if (mul_overflow (nmemb, size, &bytes))
+	if (__builtin_mul_overflow (nmemb, size, &bytes))
 	{
 		errno = ENOMEM;
 		return NULL;

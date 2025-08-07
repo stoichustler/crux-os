@@ -12,8 +12,6 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #if __INT__ == 32
 # define val 4
 # define INT32(X) X

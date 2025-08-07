@@ -33,30 +33,17 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 32
 
+#include "riscv_math.h"
 int finitef(float x)
 {
 	long fclass = _fclass_f (x);
 	return (fclass & (FCLASS_INF | FCLASS_NAN)) == 0;
 }
-
-#ifdef __strong_reference
-__strong_reference(finitef, __finitef);
-#else
-
-int
-__finitef(float x)
-{
-    return finitef(x);
-}
-#endif
-
-_MATH_ALIAS_i_f(finite)
-_MATH_ALIAS_i_f(__finite)
-
 #else
 #include "../../common/sf_finite.c"
 #endif

@@ -33,14 +33,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 64 && __riscv_xlen >= 64
 long long int
-llround64(__float64 x)
+llround(double x)
 {
   long long result;
-  __asm__(
+  asm (
 #if __riscv_xlen == 64
        "fcvt.l.d"
 #else
@@ -49,9 +50,6 @@ llround64(__float64 x)
        "\t%0, %1, rmm" : "=r"(result) : "f"(x));
   return result;
 }
-
-_MATH_ALIAS_k_d(llround)
-
 #else
 #include "../../common/s_llround.c"
 #endif

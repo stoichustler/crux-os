@@ -73,7 +73,7 @@ typedef struct __db DB;   /* Forward-declaration */
 typedef DB DBM;
 #define	dbm_pagfno(a)	DBM_PAGFNO_NOT_AVAILABLE
 
-_BEGIN_STD_C
+__BEGIN_DECLS
 int	 dbm_clearerr(DBM *);
 void	 dbm_close(DBM *);
 int	 dbm_delete(DBM *, datum);
@@ -86,6 +86,6 @@ int	 dbm_store(DBM *, datum, datum, int);
 #if __BSD_VISIBLE
 int	 dbm_dirfno(DBM *);
 #endif
-_END_STD_C
+__END_DECLS
 
 #endif /* !_NDBM_H_ */

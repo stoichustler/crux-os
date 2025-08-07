@@ -57,7 +57,7 @@
  *      0        (0x00000000)  otherwise (always on the SPU)
  *
  */
-static __inline vector unsigned int _isnanf4(vector float __unusedx)
+static __inline vector unsigned int _isnanf4(vector float __attribute__((__unused__))x)
 {
   return spu_splats((unsigned int)0);	
 }

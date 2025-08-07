@@ -42,7 +42,10 @@ PORTABILITY
 Supporting OS subroutines required: <<fwrite>>.
 */
 
-#define _DEFAULT_SOURCE
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "%W% (Berkeley) %G%";
+#endif /* LIBC_SCCS and not lint */
+
 #include <stdio.h>
 
 int

@@ -1,46 +1,80 @@
+/* @(#)s_nextafter.c 5.1 93/09/24 */
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Copyright © 2022 Keith Packard
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
  */
 
-#include "math_ld.h"
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
 
-#if LDBL_MANT_DIG == 64
+/* IEEE functions
+ *	nextafter(x,y)
+ *	return the next machine floating-point number of x in the
+ *	direction toward y.
+ *   Special cases:
+ */
 
-#include "ld80/s_nextafterl.c"
+#include <float.h>
 
-#elif LDBL_MANT_DIG == 113
+#include "fpmath.h"
+#include "math.h"
+#include "math_private.h"
 
-#include "ld128/s_nextafterl.c"
-
+#if LDBL_MAX_EXP != 0x4000
+#error "Unsupported long double format"
 #endif
+
+long double
+nextafterl(long double x, long double y)
+{
+	volatile long double t;
+	union IEEEl2bits ux, uy;
+
+	ux.e = x;
+	uy.e = y;
+
+	if ((ux.bits.exp == 0x7fff &&
+	     ((ux.bits.manh&~LDBL_NBIT)|ux.bits.manl) != 0) ||
+	    (uy.bits.exp == 0x7fff &&
+	     ((uy.bits.manh&~LDBL_NBIT)|uy.bits.manl) != 0))
+	   return x+y;	/* x or y is nan */
+	if(x==y) return y;		/* x=y, return y */
+	if(x==0.0) {
+	    ux.bits.manh = 0;			/* return +-minsubnormal */
+	    ux.bits.manl = 1;
+	    ux.bits.sign = uy.bits.sign;
+	    t = ux.e*ux.e;
+	    if(t==ux.e) return t; else return ux.e; /* raise underflow flag */
+	}
+	if(x>0.0 ^ x<y) {			/* x -= ulp */
+	    if(ux.bits.manl==0) {
+		if ((ux.bits.manh&~LDBL_NBIT)==0)
+		    ux.bits.exp -= 1;
+		ux.bits.manh = (ux.bits.manh - 1) | (ux.bits.manh & LDBL_NBIT);
+	    }
+	    ux.bits.manl -= 1;
+	} else {				/* x += ulp */
+	    ux.bits.manl += 1;
+	    if(ux.bits.manl==0) {
+		ux.bits.manh = (ux.bits.manh + 1) | (ux.bits.manh & LDBL_NBIT);
+		if ((ux.bits.manh&~LDBL_NBIT)==0)
+		    ux.bits.exp += 1;
+	    }
+	}
+	if(ux.bits.exp==0x7fff) return x+x;	/* overflow  */
+	if(ux.bits.exp==0) {			/* underflow */
+	    mask_nbit_l(ux);
+	    t = ux.e * ux.e;
+	    if(t!=ux.e)			/* raise underflow flag */
+		return ux.e;
+	}
+	return ux.e;
+}
+
+__strong_reference(nextafterl, nexttowardl);

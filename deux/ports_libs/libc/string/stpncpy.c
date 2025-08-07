@@ -1,7 +1,4 @@
 /*
-Copyright (c) 2007 Corinna Vinschen <corinna@vinschen.de>
- */
-/*
 FUNCTION
 	<<stpncpy>>---counted copy string returning a pointer to its end
 
@@ -36,13 +33,32 @@ QUICKREF
 	stpncpy gnu
 */
 
-#define _DEFAULT_SOURCE
 #include <string.h>
 #include <limits.h>
-#include "local.h"
 
 /*SUPPRESS 560*/
 /*SUPPRESS 530*/
+
+/* Nonzero if either X or Y is not aligned on a "long" boundary.  */
+#define UNALIGNED(X, Y) \
+  (((long)X & (sizeof (long) - 1)) | ((long)Y & (sizeof (long) - 1)))
+
+#if LONG_MAX == 2147483647L
+#define DETECTNULL(X) (((X) - 0x01010101) & ~(X) & 0x80808080)
+#else
+#if LONG_MAX == 9223372036854775807L
+/* Nonzero if X (a long int) contains a NULL byte. */
+#define DETECTNULL(X) (((X) - 0x0101010101010101) & ~(X) & 0x8080808080808080)
+#else
+#error long int is not a 32bit or 64bit type.
+#endif
+#endif
+
+#ifndef DETECTNULL
+#error long int is not a 32bit or 64bit byte
+#endif
+
+#define TOO_SMALL(LEN) ((LEN) < sizeof (long))
 
 char *
 stpncpy (char *__restrict dst,
@@ -51,29 +67,28 @@ stpncpy (char *__restrict dst,
 {
   char *ret = NULL;
 
-#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && \
-    !defined(_PICOLIBC_NO_OUT_OF_BOUNDS_READS)
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__)
   long *aligned_dst;
   const long *aligned_src;
 
   /* If SRC and DEST is aligned and count large enough, then copy words.  */
-  if (!UNALIGNED_X_Y (src, dst) && !TOO_SMALL_LITTLE_BLOCK (count))
+  if (!UNALIGNED (src, dst) && !TOO_SMALL (count))
     {
       aligned_dst = (long*)dst;
       aligned_src = (long*)src;
 
-      /* SRC and DEST are both LITTLE_BLOCK_SIZE aligned,
-	 try to do LITTLE_BLOCK_SIZE sized copies.  */
-      while (!TOO_SMALL_LITTLE_BLOCK (count) && !DETECT_NULL(*aligned_src))
+      /* SRC and DEST are both "long int" aligned, try to do "long int"
+	 sized copies.  */
+      while (count >= sizeof (long int) && !DETECTNULL(*aligned_src))
 	{
-	  count -= LITTLE_BLOCK_SIZE;
+	  count -= sizeof (long int);
 	  *aligned_dst++ = *aligned_src++;
 	}
 
       dst = (char*)aligned_dst;
       src = (char*)aligned_src;
     }
-#endif /* not __PREFER_SIZE_OVER_SPEED */
+#endif /* not PREFER_SIZE_OVER_SPEED */
 
   while (count > 0)
     {

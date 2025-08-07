@@ -1,50 +1,101 @@
 /*
- * SPDX-License-Identifier: BSD-3-Clause
+ * ====================================================
+ * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
  *
- * Copyright © 2022 Keith Packard
+ * Developed at SunPro, a Sun Microsystems, Inc. business.
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above
- *    copyright notice, this list of conditions and the following
- *    disclaimer in the documentation and/or other materials provided
- *    with the distribution.
- *
- * 3. Neither the name of the copyright holder nor the names of its
- *    contributors may be used to endorse or promote products derived
- *    from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
+ * From: @(#)s_floor.c 5.1 93/09/24
  */
 
-#include "math_ld.h"
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD$");
 
-#if LDBL_MANT_DIG == 64
+/*
+ * floorl(x)
+ * Return x rounded toward -inf to integral value
+ * Method:
+ *	Bit twiddling.
+ * Exception:
+ *	Inexact flag raised if x not equal to floorl(x).
+ */
 
-#include "ld80/s_floorl.c"
+#include <float.h>
+#include <math.h>
+#include <stdint.h>
 
-#elif LDBL_MANT_DIG == 113
+#include "fpmath.h"
 
-#include "ld128/s_floorl.c"
-
-#elif defined(_DOUBLE_DOUBLE_FLOAT)
-
-#include "ldd/s_floorl.c"
-
+#ifdef LDBL_IMPLICIT_NBIT
+#define	MANH_SIZE	(LDBL_MANH_SIZE + 1)
+#define	INC_MANH(u, c)	do {					\
+	uint64_t o = u.bits.manh;				\
+	u.bits.manh += (c);					\
+	if (u.bits.manh < o)					\
+		u.bits.exp++;					\
+} while (0)
+#else
+#define	MANH_SIZE	LDBL_MANH_SIZE
+#define	INC_MANH(u, c)	do {					\
+	uint64_t o = u.bits.manh;				\
+	u.bits.manh += (c);					\
+	if (u.bits.manh < o) {					\
+		u.bits.exp++;					\
+		u.bits.manh |= 1llu << (LDBL_MANH_SIZE - 1);	\
+	}							\
+} while (0)
 #endif
+
+static const long double huge = 1.0e300;
+
+long double
+floorl(long double x)
+{
+	union IEEEl2bits u = { .e = x };
+	int e = u.bits.exp - LDBL_MAX_EXP + 1;
+
+	if (e < MANH_SIZE - 1) {
+		if (e < 0) {			/* raise inexact if x != 0 */
+			if (huge + x > 0.0)
+				if (u.bits.exp > 0 ||
+				    (u.bits.manh | u.bits.manl) != 0)
+					u.e = u.bits.sign ? -1.0 : 0.0;
+		} else {
+			uint64_t m = ((1llu << MANH_SIZE) - 1) >> (e + 1);
+			if (((u.bits.manh & m) | u.bits.manl) == 0)
+				return (x);	/* x is integral */
+			if (u.bits.sign) {
+#ifdef LDBL_IMPLICIT_NBIT
+				if (e == 0)
+					u.bits.exp++;
+				else
+#endif
+				INC_MANH(u, 1llu << (MANH_SIZE - e - 1));
+			}
+			if (huge + x > 0.0) {	/* raise inexact flag */
+				u.bits.manh &= ~m;
+				u.bits.manl = 0;
+			}
+		}
+	} else if (e < LDBL_MANT_DIG - 1) {
+		uint64_t m = (uint64_t)-1 >> (64 - LDBL_MANT_DIG + e + 1);
+		if ((u.bits.manl & m) == 0)
+			return (x);	/* x is integral */
+		if (u.bits.sign) {
+			if (e == MANH_SIZE - 1)
+				INC_MANH(u, 1);
+			else {
+				uint64_t o = u.bits.manl;
+				u.bits.manl += 1llu << (LDBL_MANT_DIG - e - 1);
+				if (u.bits.manl < o)	/* got a carry */
+					INC_MANH(u, 1);
+			}
+		}
+		if (huge + x > 0.0)		/* raise inexact flag */
+			u.bits.manl &= ~m;
+	}
+	return (u.e);
+}

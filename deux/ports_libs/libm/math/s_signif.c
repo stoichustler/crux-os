@@ -6,7 +6,7 @@
  *
  * Developed at SunPro, a Sun Microsystems, Inc. business.
  * Permission to use, copy, modify, and distribute this
- * software is freely granted, provided that this notice
+ * software is freely granted, provided that this notice 
  * is preserved.
  * ====================================================
  */
@@ -19,14 +19,16 @@
 
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-__float64
-significand64(__float64 x)
+#ifdef __STDC__
+	double significand(double x)
+#else
+	double significand(x)
+	double x;
+#endif
 {
-    return scalbn64(x, -ilogb64(x));
+	return __ieee754_scalb(x,(double) -ilogb(x));
 }
 
-_MATH_ALIAS_d_d(significand)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

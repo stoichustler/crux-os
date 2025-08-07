@@ -1,20 +1,4 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
-/*
  * mktime.c
  * Original Author:	G. Haley
  *
@@ -27,22 +11,18 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  * represented, returns the value (time_t) -1.
  *
  * Modifications:	Fixed tm_isdst usage - 27 August 2008 Craig Howland.
- * 			Added timegm - 15 May 2021 R. Diez.
  */
 
 /*
 FUNCTION
-<<mktime>>, <<timegm>>---convert time to arithmetic representation
+<<mktime>>---convert time to arithmetic representation
 
 INDEX
 	mktime
-INDEX
-	timegm
 
 SYNOPSIS
 	#include <time.h>
 	time_t mktime(struct tm *<[timp]>);
-	time_t timegm(struct tm *<[timp]>);
 
 DESCRIPTION
 <<mktime>> assumes the time at <[timp]> is a local time, and converts
@@ -50,17 +30,6 @@ its representation from the traditional representation defined by
 <<struct tm>> into a representation suitable for arithmetic.
 
 <<localtime>> is the inverse of <<mktime>>.
-
-<<timegm>> is similar to <<mktime>>, but assumes that the time at
-<[timp]> is Coordinated Universal Time (UTC).
-
-<<timegm>> could be emulated by setting the TZ environment variable to UTC,
-calling <<mktime>> and restoring the value of TZ. However, other concurrent
-threads could be affected by the temporary change to TZ.
-
-<<timegm>> is the inverse of <<gmtime>>.
-
-<<timegm>> is available if _BSD_SOURCE || _SVID_SOURCE || _DEFAULT_SOURCE.
 
 RETURNS
 If the contents of the structure at <[timp]> do not form a valid
@@ -70,30 +39,27 @@ result is the time, converted to a <<time_t>> value.
 PORTABILITY
 ANSI C requires <<mktime>>.
 
-<<timegm>> is a nonstandard GNU extension that is also present on the BSDs.
-
-<<mktime>> and <<timegm>> require no supporting OS subroutines.
+<<mktime>> requires no supporting OS subroutines.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
 #include <time.h>
 #include "local.h"
 
+#define _SEC_IN_MINUTE 60L
+#define _SEC_IN_HOUR 3600L
+#define _SEC_IN_DAY 86400L
 
-#define _DAYS_IN_MONTH(x) ((x == 1) ? days_in_feb : __month_lengths[0][x])
+static const int DAYS_IN_MONTH[12] =
+{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-static const int16_t _DAYS_BEFORE_MONTH[12] =
+#define _DAYS_IN_MONTH(x) ((x == 1) ? days_in_feb : DAYS_IN_MONTH[x])
+
+static const int _DAYS_BEFORE_MONTH[12] =
 {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
 
-#define _DAYS_IN_YEAR(year) (isleap(year+YEAR_BASE) ? 366 : 365)
-
-static void
-set_tm_wday (long days, struct tm *tim_p)
-{
-  if ((tim_p->tm_wday = (days + 4) % 7) < 0)
-    tim_p->tm_wday += 7;
-}
+#define _ISLEAP(y) (((y) % 4) == 0 && (((y) % 100) != 0 || (((y)+1900) % 400) == 0))
+#define _DAYS_IN_YEAR(year) (_ISLEAP(year) ? 366 : 365)
 
 static void 
 validate_structure (struct tm *tim_p)
@@ -146,7 +112,7 @@ validate_structure (struct tm *tim_p)
         }
     }
 
-  if (isleap (tim_p->tm_year+YEAR_BASE))
+  if (_DAYS_IN_YEAR (tim_p->tm_year) == 366)
     days_in_feb = 29;
 
   if (tim_p->tm_mday <= 0)
@@ -158,7 +124,7 @@ validate_structure (struct tm *tim_p)
 	      tim_p->tm_year--;
 	      tim_p->tm_mon = 11;
 	      days_in_feb =
-		(isleap (tim_p->tm_year+YEAR_BASE) ?
+		((_DAYS_IN_YEAR (tim_p->tm_year) == 366) ?
 		 29 : 28);
 	    }
 	  tim_p->tm_mday += _DAYS_IN_MONTH (tim_p->tm_mon);
@@ -174,31 +140,32 @@ validate_structure (struct tm *tim_p)
 	      tim_p->tm_year++;
 	      tim_p->tm_mon = 0;
 	      days_in_feb =
-		(isleap (tim_p->tm_year+YEAR_BASE) ?
+		((_DAYS_IN_YEAR (tim_p->tm_year) == 366) ?
 		 29 : 28);
 	    }
 	}
     }
 }
 
-static time_t
-mktime_utc (struct tm *tim_p, long *days_p)
+time_t 
+mktime (struct tm *tim_p)
 {
   time_t tim = 0;
   long days = 0;
-  int year;
+  int year, isdst=0;
+  __tzinfo_type *tz = __gettzinfo ();
 
   /* validate structure */
   validate_structure (tim_p);
 
   /* compute hours, minutes, seconds */
-  tim += tim_p->tm_sec + (tim_p->tm_min * SECSPERMIN) +
-    (tim_p->tm_hour * SECSPERHOUR);
+  tim += tim_p->tm_sec + (tim_p->tm_min * _SEC_IN_MINUTE) +
+    (tim_p->tm_hour * _SEC_IN_HOUR);
 
   /* compute days in year */
   days += tim_p->tm_mday - 1;
   days += _DAYS_BEFORE_MONTH[tim_p->tm_mon];
-  if (tim_p->tm_mon > 1 && isleap (tim_p->tm_year+YEAR_BASE))
+  if (tim_p->tm_mon > 1 && _DAYS_IN_YEAR (tim_p->tm_year) == 366)
     days++;
 
   /* compute day of the year */
@@ -221,29 +188,7 @@ mktime_utc (struct tm *tim_p, long *days_p)
     }
 
   /* compute total seconds */
-  tim += (time_t)days * SECSPERDAY;
-
-  *days_p = days;
-  return tim;
-}
-
-time_t
-mktime (struct tm *tim_p)
-{
-  long days;
-  time_t tim;
-  int year;
-  int isdst=0;
-  __tzinfo_type *tz;
-
-  tim = mktime_utc (tim_p, &days);
-
-  if (tim == (time_t) -1)
-    return tim;
-
-  year = tim_p->tm_year;
-
-  tz = __gettzinfo ();
+  tim += (time_t)days * _SEC_IN_DAY;
 
   TZ_LOCK;
 
@@ -329,24 +274,9 @@ mktime (struct tm *tim_p)
   /* reset isdst flag to what we have calculated */
   tim_p->tm_isdst = isdst;
 
-  set_tm_wday(days, tim_p);
+  /* compute day of the week */
+  if ((tim_p->tm_wday = (days + 4) % 7) < 0)
+    tim_p->tm_wday += 7;
 	
-  return tim;
-}
-
-time_t
-timegm (struct tm *tim_p)
-{
-  long days;
-  time_t tim = mktime_utc (tim_p, &days);
-
-  if (tim == (time_t) -1)
-    return tim;
-
-  /* The time is always UTC, so there is no daylight saving time. */
-  tim_p->tm_isdst = 0;
-
-  set_tm_wday(days, tim_p);
-
   return tim;
 }

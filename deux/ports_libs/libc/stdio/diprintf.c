@@ -21,9 +21,9 @@ SYNOPSIS
 	#include <stdarg.h>
 	int diprintf(int <[fd]>, const char *<[format]>, ...);
 	int vdiprintf(int <[fd]>, const char *<[format]>, va_list <[ap]>);
-	int diprintf( int <[fd]>,
+	int _diprintf_r(struct _reent *<[ptr]>, int <[fd]>,
 			const char *<[format]>, ...);
-	int vdiprintf( int <[fd]>,
+	int _vdiprintf_r(struct _reent *<[ptr]>, int <[fd]>,
 			const char *<[format]>, va_list <[ap]>);
 
 DESCRIPTION
@@ -42,10 +42,27 @@ This set of functions is an integer-only extension, and is not portable.
 Supporting OS subroutines required: <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdarg.h>
+
+int
+_diprintf_r (struct _reent *ptr,
+       int fd,
+       const char *format, ...)
+{
+  va_list ap;
+  int n;
+
+  va_start (ap, format);
+  n = _vdiprintf_r (ptr, fd, format, ap);
+  va_end (ap);
+  return n;
+}
+
+#ifndef _REENT_ONLY
 
 int
 diprintf (int fd,
@@ -55,7 +72,9 @@ diprintf (int fd,
   int n;
 
   va_start (ap, format);
-  n = vdiprintf ( fd, format, ap);
+  n = _vdiprintf_r (_REENT, fd, format, ap);
   va_end (ap);
   return n;
 }
+
+#endif /* ! _REENT_ONLY */

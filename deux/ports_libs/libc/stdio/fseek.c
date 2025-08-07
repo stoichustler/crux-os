@@ -32,9 +32,9 @@ SYNOPSIS
 	#include <stdio.h>
 	int fseek(FILE *<[fp]>, long <[offset]>, int <[whence]>);
 	int fseeko(FILE *<[fp]>, off_t <[offset]>, int <[whence]>);
-	int fseek( FILE *<[fp]>,
+	int _fseek_r(struct _reent *<[ptr]>, FILE *<[fp]>,
 	             long <[offset]>, int <[whence]>);
-	int fseeko( FILE *<[fp]>,
+	int _fseeko_r(struct _reent *<[ptr]>, FILE *<[fp]>,
 	             off_t <[offset]>, int <[whence]>);
 
 DESCRIPTION
@@ -74,16 +74,29 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
 
 int
-fseek (
+_fseek_r (struct _reent *ptr,
        register FILE *fp,
        long offset,
        int whence)
 {
-  return fseeko ( fp, offset, whence);
+  return _fseeko_r (ptr, fp, offset, whence);
 }
+
+#ifndef _REENT_ONLY
+
+int
+fseek (register FILE *fp,
+       long offset,
+       int whence)
+{
+  return _fseek_r (_REENT, fp, offset, whence);
+}
+
+#endif /* !_REENT_ONLY */

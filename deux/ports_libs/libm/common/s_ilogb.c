@@ -63,40 +63,35 @@ C99, POSIX
 #include <limits.h>
 #include "fdlibm.h"
 
-#ifdef _NEED_FLOAT64
+#ifndef _DOUBLE_IS_32BITS
 
-int
-ilogb64(__float64 x)
+#ifdef __STDC__
+	int ilogb(double x)
+#else
+	int ilogb(x)
+	double x;
+#endif
 {
 	__int32_t hx,lx,ix;
 
 	EXTRACT_WORDS(hx,lx,x);
 	hx &= 0x7fffffff;
 	if(hx<0x00100000) {
-	    if((hx|lx)==0) {
-                (void) __math_invalid(_F_64(0.0));
+	    if((hx|lx)==0) 
 		return FP_ILOGB0;	/* ilogb(0) = special case error */
-	    } else			/* subnormal x */
+	    else			/* subnormal x */
 		if(hx==0) {
-		    for (ix = -1043; lx>0; lx = lsl(lx, 1)) ix -=1;
+		    for (ix = -1043; lx>0; lx<<=1) ix -=1;
 		} else {
-		    for (ix = -1022, hx = lsl(hx, 11); hx>0; hx = lsl(hx, 1)) ix -=1;
+		    for (ix = -1022,hx<<=11; hx>0; hx<<=1) ix -=1;
 		}
 	    return ix;
 	}
 	else if (hx<0x7ff00000) return (hx>>20)-1023;
-#if FP_ILOGBNAN != INT_MAX
-	else if (hx>0x7ff00000) {
-            (void) __math_invalid(_F_64(0.0));
-            return FP_ILOGBNAN;	/* NAN */
-        }
-#endif
-	else {
-            (void) __math_invalid(_F_64(0.0));
-            return INT_MAX;	/* infinite (or, possibly, NAN) */
-        }
+	#if FP_ILOGBNAN != INT_MAX
+	else if (hx>0x7ff00000) return FP_ILOGBNAN;	/* NAN */
+	#endif
+	else return INT_MAX;	/* infinite (or, possibly, NAN) */
 }
 
-_MATH_ALIAS_i_d(ilogb)
-
-#endif /* _NEED_FLOAT64 */
+#endif /* _DOUBLE_IS_32BITS */

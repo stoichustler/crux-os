@@ -38,6 +38,7 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)regexec.c	8.3 (Berkeley) 3/20/94";
 #endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 
 /*
  * the outer shell of regexec()
@@ -153,11 +154,12 @@ static int nope = 0;		/* for use in asserts; shuts lint up */
  * have been prototyped.
  */
 int				/* 0 success, REG_NOMATCH failure */
-regexec(const regex_t *__restrict preg,
-        const char *__restrict string,
-        size_t nmatch,
-        regmatch_t pmatch[__restrict],
-        int eflags)
+regexec(preg, string, nmatch, pmatch, eflags)
+const regex_t *__restrict preg;
+const char *__restrict string;
+size_t nmatch;
+regmatch_t pmatch[__restrict];
+int eflags;
 {
 	struct re_guts *g = preg->re_g;
 #ifdef REDEBUG
@@ -173,7 +175,7 @@ regexec(const regex_t *__restrict preg,
 		return(REG_BADPAT);
 	eflags = GOODFLAGS(eflags);
 
-	if (g->nstates <= (sopno) (CHAR_BIT*sizeof(states1)) && !(eflags&REG_LARGE))
+	if (g->nstates <= CHAR_BIT*sizeof(states1) && !(eflags&REG_LARGE))
 		return(smatcher(g, (char *)string, nmatch, pmatch, eflags));
 	else
 		return(lmatcher(g, (char *)string, nmatch, pmatch, eflags));

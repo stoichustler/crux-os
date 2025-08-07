@@ -28,15 +28,15 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "math_config.h"
-
-#if defined(_NEED_FLOAT_HUGE) && __HAVE_BUILTIN_COPYSIGNL
+#include <math.h>
+#include "local.h"
 
 /* On platforms where long double is as wide as double.  */
+#ifdef _LDBL_EQ_DBL
 long double
 copysignl (long double x, long double y)
 {
-  return __builtin_copysignl(x, y);
+  return copysign(x, y);
 }
-
 #endif
+

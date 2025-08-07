@@ -1,49 +1,20 @@
-/*
-Copyright (c) 1991, 1993
-The Regents of the University of California.  All rights reserved.
-c) UNIX System Laboratories, Inc.
-All or some portions of this file are derived from material licensed
-to the University of California by American Telephone and Telegraph
-Co. or Unix System Laboratories, Inc. and are reproduced herein with
-the permission of UNIX System Laboratories, Inc.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. Neither the name of the University nor the names of its contributors
-may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
- */
 /* malloc.h -- header file for memory routines.  */
 
 #ifndef _INCLUDE_MALLOC_H_
 #define _INCLUDE_MALLOC_H_
 
-#include <sys/cdefs.h>
+#include <_ansi.h>
+#include <sys/reent.h>
+
 #define __need_size_t
 #include <stddef.h>
 
 /* include any machine-specific extensions */
 #include <machine/malloc.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* This version of struct mallinfo must match the one in
    libc/stdlib/mallocr.c.  */
@@ -63,25 +34,118 @@ struct mallinfo {
 
 /* The routines.  */
 
-void	free (void *) __nothrow;
-void	*malloc(size_t) __malloc_like __warn_unused_result __alloc_size(1) __nothrow;
-void	*calloc(size_t, size_t) __malloc_like __warn_unused_result
-    __alloc_size2(1, 2) __nothrow;
-void	*realloc(void *, size_t) __warn_unused_result __alloc_size(2) __nothrow;
-void    *memalign (size_t __alignment, size_t __size)  __malloc_like
-    __warn_unused_result __alloc_size(2) __nothrow;
+extern void *malloc (size_t);
+#ifdef __CYGWIN__
+#undef _malloc_r
+#define _malloc_r(r, s) malloc (s)
+#else
+extern void *_malloc_r (struct _reent *, size_t);
+#endif
 
-struct mallinfo mallinfo (void);
-void malloc_stats (void);
-int mallopt (int, int);
-size_t malloc_usable_size (void *);
+extern void free (void *);
+#ifdef __CYGWIN__
+#undef _free_r
+#define _free_r(r, p) free (p)
+#else
+extern void _free_r (struct _reent *, void *);
+#endif
+
+extern void *realloc (void *, size_t);
+#ifdef __CYGWIN__
+#undef _realloc_r
+#define _realloc_r(r, p, s) realloc (p, s)
+#else
+extern void *_realloc_r (struct _reent *, void *, size_t);
+#endif
+
+extern void *calloc (size_t, size_t);
+#ifdef __CYGWIN__
+#undef _calloc_r
+#define _calloc_r(r, s1, s2) calloc (s1, s2);
+#else
+extern void *_calloc_r (struct _reent *, size_t, size_t);
+#endif
+
+extern void *memalign (size_t, size_t);
+#ifdef __CYGWIN__
+#undef _memalign_r
+#define _memalign_r(r, s1, s2) memalign (s1, s2);
+#else
+extern void *_memalign_r (struct _reent *, size_t, size_t);
+#endif
+
+extern struct mallinfo mallinfo (void);
+#ifdef __CYGWIN__
+#undef _mallinfo_r
+#define _mallinfo_r(r) mallinfo ()
+#else
+extern struct mallinfo _mallinfo_r (struct _reent *);
+#endif
+
+extern void malloc_stats (void);
+#ifdef __CYGWIN__
+#undef _malloc_stats_r
+#define _malloc_stats_r(r) malloc_stats ()
+#else
+extern void _malloc_stats_r (struct _reent *);
+#endif
+
+extern int mallopt (int, int);
+#ifdef __CYGWIN__
+#undef _mallopt_r
+#define _mallopt_r(i1, i2) mallopt (i1, i2)
+#else
+extern int _mallopt_r (struct _reent *, int, int);
+#endif
+
+extern size_t malloc_usable_size (void *);
+#ifdef __CYGWIN__
+#undef _malloc_usable_size_r
+#define _malloc_usable_size_r(r, p) malloc_usable_size (p)
+#else
+extern size_t _malloc_usable_size_r (struct _reent *, void *);
+#endif
+
 /* These aren't too useful on an embedded system, but we define them
    anyhow.  */
 
-void *pvalloc (size_t);
-int malloc_trim (size_t);
-void __malloc_lock(void);
-void __malloc_unlock(void);
+extern void *valloc (size_t);
+#ifdef __CYGWIN__
+#undef _valloc_r
+#define _valloc_r(r, s) valloc (s)
+#else
+extern void *_valloc_r (struct _reent *, size_t);
+#endif
+
+extern void *pvalloc (size_t);
+#ifdef __CYGWIN__
+#undef _pvalloc_r
+#define _pvalloc_r(r, s) pvalloc (s)
+#else
+extern void *_pvalloc_r (struct _reent *, size_t);
+#endif
+
+extern int malloc_trim (size_t);
+#ifdef __CYGWIN__
+#undef _malloc_trim_r
+#define _malloc_trim_r(r, s) malloc_trim (s)
+#else
+extern int _malloc_trim_r (struct _reent *, size_t);
+#endif
+
+extern void __malloc_lock(struct _reent *);
+
+extern void __malloc_unlock(struct _reent *);
+
+/* A compatibility routine for an earlier version of the allocator.  */
+
+extern void mstats (char *);
+#ifdef __CYGWIN__
+#undef _mstats_r
+#define _mstats_r(r, p) mstats (p)
+#else
+extern void _mstats_r (struct _reent *, char *);
+#endif
 
 /* SVID2/XPG mallopt options */
 
@@ -97,9 +161,13 @@ void __malloc_unlock(void);
 #define M_MMAP_THRESHOLD    -3 
 #define M_MMAP_MAX          -4
 
+#ifndef __CYGWIN__
 /* Some systems provide this, so do too for compatibility.  */
-void cfree (void *);
+extern void cfree (void *);
+#endif /* __CYGWIN__ */
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _INCLUDE_MALLOC_H_ */

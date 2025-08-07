@@ -33,10 +33,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _ADD_D_TO_DOUBLE_FUNCS
-#define isnand isnan
-
-#include "fdlibm.h"
+#include <math.h>
+#include <ieeefp.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 32
 
@@ -48,20 +47,6 @@ isnanf (float x)
 	long fclass = _fclass_f (x);
 	return (fclass & FCLASS_NAN);
 }
-
-#ifdef __strong_reference
-__strong_reference(isnanf, __isnanf);
-#else
-int
-__isnanf(float x)
-{
-    return isnanf(x);
-}
-#endif
-
-_MATH_ALIAS_i_f(isnan)
-_MATH_ALIAS_i_f(__isnan)
-
 #else
 #include "../../common/sf_isnan.c"
 #endif

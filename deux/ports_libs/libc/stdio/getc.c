@@ -29,7 +29,7 @@ SYNOPSIS
 	int getc(FILE *<[fp]>);
 
 	#include <stdio.h>
-	int getc( FILE *<[fp]>);
+	int _getc_r(struct _reent *<[ptr]>, FILE *<[fp]>);
 
 DESCRIPTION
 <<getc>> is a macro, defined in <<stdio.h>>.  You can use <<getc>>
@@ -65,7 +65,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include "local.h"
 
@@ -76,13 +76,30 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #undef getc
 
 int
-getc (
+_getc_r (struct _reent *ptr,
        register FILE *fp)
 {
   int result;
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
   _newlib_flockfile_start (fp);
-  result = _sgetc ( fp);
+  result = __sgetc_r (ptr, fp);
   _newlib_flockfile_end (fp);
   return result;
 }
+
+#ifndef _REENT_ONLY
+
+int
+getc (register FILE *fp)
+{
+  int result;
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT (reent, fp);
+  _newlib_flockfile_start (fp);
+  result = __sgetc_r (reent, fp);
+  _newlib_flockfile_end (fp);
+  return result;
+}
+
+#endif /* !_REENT_ONLY */

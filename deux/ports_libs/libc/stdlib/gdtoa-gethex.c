@@ -29,13 +29,14 @@ THIS SOFTWARE.
 /* Please send bug reports to David M. Gay (dmg at acm dot org,
  * with " at " changed at "@" and " dot " changed to ".").	*/
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <string.h>
 #include <locale.h>
 #include "mprec.h"
 #include "gdtoa.h"
 
-#if !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG)
+#if !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG)
 const unsigned char __hexdig[256]=
 {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -55,7 +56,7 @@ const unsigned char __hexdig[256]=
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
-#else /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
+#else /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
 unsigned char
 __hexdig_fun (unsigned char c)
 {
@@ -64,7 +65,7 @@ __hexdig_fun (unsigned char c)
 	else if(c>='A' && c<='F') return c-'A'+0x10+10;
 	else return 0;
 }
-#endif /* !defined(__PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
+#endif /* !defined(PREFER_SIZE_OVER_SPEED) && !defined(__OPTIMIZE_SIZE__) && !defined(_SMALL_HEXDIG) */
 
 static void
 rshift (_Bigint *b,
@@ -97,7 +98,7 @@ rshift (_Bigint *b,
 }
 
 static _Bigint *
-increment (
+increment (struct _reent *ptr,
 	_Bigint *b)
 {
 	__ULong *x, *xe;
@@ -105,9 +106,6 @@ increment (
 #ifdef Pack_16
 	__ULong carry = 1, y;
 #endif
-
-	if (!b)
-		return NULL;
 
 	x = b->_x;
 	xe = x + b->_wds;
@@ -131,13 +129,9 @@ increment (
 #endif
 	{
 		if (b->_wds >= b->_maxwds) {
-			b1 = Balloc(b->_k+1);
-			if (!b1) {
-				Bfree(b);
-				return NULL;
-			}
+			b1 = eBalloc(ptr, b->_k+1);
 			Bcopy(b1, b);
-			Bfree(b);
+			Bfree(ptr, b);
 			b = b1;
 			}
 		b->_x[b->_wds++] = 1;
@@ -147,7 +141,7 @@ increment (
 
 
 int
-gethex (const char **sp, const FPI *fpi,
+gethex (struct _reent *ptr, const char **sp, const FPI *fpi,
 	Long *exp, _Bigint **bp, int sign, locale_t loc)
 {
 	_Bigint *b;
@@ -155,9 +149,9 @@ gethex (const char **sp, const FPI *fpi,
 	int esign, havedig, irv, k, n, nbits, up, zret;
 	__ULong L, lostbits, *x;
 	Long e, e1;
-#ifdef DECIMAL_POINT_L
+#ifdef __HAVE_LOCALE_INFO__
 	const unsigned char *decimalpoint = (const unsigned char *)
-				      DECIMAL_POINT_L(loc);
+				      __get_numeric_locale(loc)->decimal_point;
 	const size_t decp_len = strlen ((const char *) decimalpoint);
 	const unsigned char decp_end = decimalpoint[decp_len - 1];
 #else
@@ -165,7 +159,6 @@ gethex (const char **sp, const FPI *fpi,
 	const size_t decp_len = 1;
 	const unsigned char decp_end = (unsigned char) '.';
 #endif
-        (void) loc;
 
 	havedig = 0;
 	s0 = *(const unsigned char **)sp + 2;
@@ -211,7 +204,7 @@ gethex (const char **sp, const FPI *fpi,
 		switch(*++s) {
 		  case '-':
 			esign = 1;
-			__fallthrough;
+			/* no break */
 		  case '+':
 			s++;
 		  }
@@ -232,9 +225,7 @@ gethex (const char **sp, const FPI *fpi,
 	n = s1 - s0 - 1;
 	for(k = 0; n > 7; n >>= 1)
 		k++;
-	b = Balloc(k);
-	if (!b)
-		return STRTOG_NoNumber;
+	b = eBalloc(ptr, k);
 	x = b->_x;
 	n = 0;
 	L = 0;
@@ -250,7 +241,7 @@ gethex (const char **sp, const FPI *fpi,
 			L = 0;
 			n = 0;
 			}
-		L |= (__ULong) (__get_hexdig(*s1) & 0x0f) << n;
+		L |= (__get_hexdig(*s1) & 0x0f) << n;
 		n += 4;
 		}
 	*x++ = L;
@@ -264,7 +255,7 @@ gethex (const char **sp, const FPI *fpi,
 		if (any_on(b,n)) {
 			lostbits = 1;
 			k = n - 1;
-			if (x[k>>kshift] & (__ULong) 1 << (k & kmask)) {
+			if (x[k>>kshift] & 1 << (k & kmask)) {
 				lostbits = 2;
 				if (k > 1 && any_on(b,k-1))
 					lostbits = 3;
@@ -275,13 +266,13 @@ gethex (const char **sp, const FPI *fpi,
 		}
 	else if (n < nbits) {
 		n = nbits - n;
-		b = lshift(b, n);
+		b = lshift(ptr, b, n);
 		e -= n;
 		x = b->_x;
 		}
 	if (e > fpi->emax) {
  ovfl:
-		Bfree(b);
+		Bfree(ptr, b);
 		*bp = 0;
 		return STRTOG_Infinite | STRTOG_Overflow | STRTOG_Inexhi;
 		}
@@ -309,7 +300,7 @@ gethex (const char **sp, const FPI *fpi,
 						| STRTOG_Underflow;
 					}
 			  }
-			Bfree(b);
+			Bfree(ptr, b);
 			*bp = 0;
 			return STRTOG_Zero | STRTOG_Inexlo | STRTOG_Underflow;
 			}
@@ -318,7 +309,7 @@ gethex (const char **sp, const FPI *fpi,
 			lostbits = 1;
 		else if (k > 0)
 			lostbits = any_on(b,k);
-		if (x[k>>kshift] & (__ULong) 1 << (k & kmask))
+		if (x[k>>kshift] & 1 << (k & kmask))
 			lostbits |= 2;
 		nbits -= n;
 		rshift(b,n);
@@ -342,13 +333,11 @@ gethex (const char **sp, const FPI *fpi,
 		  }
 		if (up) {
 			k = b->_wds;
-			b = increment(b);
-			if (!b)
-				return STRTOG_NoNumber;
+			b = increment(ptr, b);
 			x = b->_x;
 			if (irv == STRTOG_Denormal) {
 				if (nbits == fpi->nbits - 1
-                                    && x[nbits >> kshift] & (__ULong) 1 << (nbits & kmask))
+				 && x[nbits >> kshift] & 1 << (nbits & kmask))
 					irv =  STRTOG_Normal;
 				}
 			else if ((b->_wds > k)

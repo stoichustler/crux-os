@@ -113,17 +113,19 @@ PORTABILITY
  */
 
 #define _GNU_SOURCE
+#include <_ansi.h>
 #include <limits.h>
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a string to an unsigned long long integer.
  */
 static unsigned long long
-_strtoull_l (const char *__restrict nptr,
+_strtoull_l (struct _reent *rptr, const char *__restrict nptr,
 	     char **__restrict endptr, int base, locale_t loc)
 {
 	register const unsigned char *s = (const unsigned char *)nptr;
@@ -151,8 +153,8 @@ _strtoull_l (const char *__restrict nptr,
 	}
 	if (base == 0)
 		base = c == '0' ? 8 : 10;
-	cutoff = (unsigned long long)ULLONG_MAX / (unsigned long long)base;
-	cutlim = (unsigned long long)ULLONG_MAX % (unsigned long long)base;
+	cutoff = (unsigned long long)ULONG_LONG_MAX / (unsigned long long)base;
+	cutlim = (unsigned long long)ULONG_LONG_MAX % (unsigned long long)base;
 	for (acc = 0, any = 0;; c = *s++) {
 		if (c >= '0' && c <= '9')
 			c -= '0';
@@ -173,8 +175,8 @@ _strtoull_l (const char *__restrict nptr,
 		}
 	}
 	if (any < 0) {
-		acc = ULLONG_MAX;
-		errno = ERANGE;
+		acc = ULONG_LONG_MAX;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != 0)
@@ -182,12 +184,22 @@ _strtoull_l (const char *__restrict nptr,
 	return (acc);
 }
 
+unsigned long long
+_strtoull_r (struct _reent *rptr,
+	const char *__restrict nptr,
+	char **__restrict endptr,
+	int base)
+{
+	return _strtoull_l (rptr, nptr, endptr, base, __get_current_locale ());
+}
+
+#ifndef _REENT_ONLY
 
 unsigned long long
 strtoull_l (const char *__restrict s, char **__restrict ptr, int base,
 	    locale_t loc)
 {
-	return _strtoull_l (s, ptr, base, loc);
+	return _strtoull_l (_REENT, s, ptr, base, loc);
 }
 
 unsigned long long
@@ -195,6 +207,7 @@ strtoull (const char *__restrict s,
 	char **__restrict ptr,
 	int base)
 {
-	return _strtoull_l (s, ptr, base, __get_current_locale ());
+	return _strtoull_l (_REENT, s, ptr, base, __get_current_locale ());
 }
 
+#endif

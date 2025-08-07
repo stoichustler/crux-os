@@ -1,4 +1,3 @@
-/* Copyright (c) 2005 Jeff Johnston  <jjohnstn@redhat.com> */
 /*
  * libgen.h - defined by XPG4
  */
@@ -6,9 +5,13 @@
 #ifndef _LIBGEN_H_
 #define _LIBGEN_H_
 
+#include "_ansi.h"
 #include <sys/cdefs.h>
+#include <sys/reent.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* There are two common basename variants.  If you do NOT #include <libgen.h>
    and you do
@@ -26,7 +29,9 @@ _BEGIN_STD_C
 char      *basename (char *) __asm__(__ASMNAME("basename"));
 char      *dirname (char *);
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _LIBGEN_H_ */
 

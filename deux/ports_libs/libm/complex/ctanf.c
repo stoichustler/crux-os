@@ -39,6 +39,7 @@
 float complex
 ctanf(float complex z)
 {
+	float complex w;
 	float d;
 
 	d = cosf(2.0f * crealf(z)) + coshf(2.0f * cimagf(z));
@@ -48,8 +49,10 @@ ctanf(float complex z)
 
 	if (d == 0.0f) {
 		/* mtherr ("ctan", OVERFLOW); */
-		return HUGE_VALF + HUGE_VALF * I;
+		w = HUGE_VALF + HUGE_VALF * I;
+		return w;
 	}
 
-	return (float complex) (sinf(2.0f * crealf(z)) / d) + (sinhf(2.0f * cimagf(z)) / d) * I;
+	w = sinf(2.0f * crealf(z)) / d + (sinhf(2.0f * cimagf(z)) / d) * I;
+	return w;
 }

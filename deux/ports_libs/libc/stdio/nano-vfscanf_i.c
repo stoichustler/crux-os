@@ -26,7 +26,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
+#include <newlib.h>
 #include <ctype.h>
 #include <wctype.h>
 #include <stdio.h>
@@ -43,12 +45,12 @@
 #include "nano-vfscanf_local.h"
 
 int
-_scanf_chars (
+_scanf_chars (struct _reent *rptr,
 	      struct _scan_data_t *pdata,
 	      FILE *fp, va_list *ap)
 {
   int n;
-  char *p = 0;
+  char *p;
 
   if (pdata->width == 0)
     pdata->width = (pdata->code == CT_CHAR) ? 1 : (size_t)~0;
@@ -63,14 +65,14 @@ _scanf_chars (
 	 || (pdata->code == CT_STRING && !isspace (*fp->_p)))
     {
       n++;
-      if (p)
+      if ((pdata->flags & SUPPRESS) == 0)
 	*p++ = *fp->_p;
 	
       fp->_r--, fp->_p++;
       if (--pdata->width == 0)
 	break;
 
-      if ((fp->_r <= 0 && pdata->pfn_refill (fp)))
+      if ((fp->_r <= 0 && pdata->pfn_refill (rptr, fp)))
 	break;
     }
   /* For CT_CHAR, it is impossible to have input_failure(n == 0) here.
@@ -79,7 +81,7 @@ _scanf_chars (
   if (n == 0 && pdata->code == CT_CCL)
     return MATCH_FAILURE;
 
-  if (p)
+  if ((pdata->flags & SUPPRESS) == 0)
     {
       pdata->nassigned++;
       if (pdata->code != CT_CHAR)
@@ -89,11 +91,11 @@ _scanf_chars (
   return 0;
 }
 int
-_scanf_i (
+_scanf_i (struct _reent *rptr,
 	  struct _scan_data_t *pdata,
 	  FILE *fp, va_list *ap)
 {
-#define CCFN_PARAMS	(const char *, char **, int)
+#define CCFN_PARAMS	(struct _reent *, const char *, char **, int)
   /* Conversion function (strtol/strtoul).  */
   u_long (*ccfn)CCFN_PARAMS=0;
   char *p;
@@ -105,7 +107,7 @@ _scanf_i (
   unsigned width_left = 0;
   int skips = 0;
 
-  ccfn = (pdata->code == CT_INT) ? (u_long (*)CCFN_PARAMS)strtol : strtoul;
+  ccfn = (pdata->code == CT_INT) ? (u_long (*)CCFN_PARAMS)_strtol_r : _strtoul_r;
 #ifdef hardway
   if (pdata->width == 0 || pdata->width > BUF - 1)
 #else
@@ -151,7 +153,7 @@ _scanf_i (
 	{
 	  *p++ = *fp->_p++;
 	  fp->_r--;
-	  if ((fp->_r <= 0 && pdata->pfn_refill (fp)))
+	  if ((fp->_r <= 0 && pdata->pfn_refill (rptr, fp)))
 	    goto match_end;
 	}
     }
@@ -189,7 +191,7 @@ _scanf_i (
 skip:
       if (--fp->_r > 0)
 	fp->_p++;
-      else if (pdata->pfn_refill (fp))
+      else if (pdata->pfn_refill (rptr, fp))
 	/* "EOF".  */
 	break;
     }
@@ -203,7 +205,7 @@ match_end:
   if (pdata->flags & NDIGITS)
     {
       if (p > pdata->buf)
-	pdata->pfn_ungetc (*--p, fp); /* "[-+xX]".  */
+	pdata->pfn_ungetc (rptr, *--p, fp); /* "[-+xX]".  */
 
       if (p == pdata->buf)
 	return MATCH_FAILURE;
@@ -212,7 +214,7 @@ match_end:
     {
       u_long ul;
       *p = 0;
-      ul = (*ccfn) (pdata->buf, (char **) NULL, pdata->base);
+      ul = (*ccfn) (rptr, pdata->buf, (char **) NULL, pdata->base);
       if (pdata->flags & POINTER)
 	*GET_ARG (N, *ap, void **) = (void *) (uintptr_t) ul;
       else if (pdata->flags & SHORT)

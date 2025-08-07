@@ -24,15 +24,13 @@
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  */
 
-#include <picolibc.h>
+#include "arm-acle-compat.h"
 
-#include "arm_asm.h"
-
-#if defined __OPTIMIZE_SIZE__ || defined __PREFER_SIZE_OVER_SPEED
+#if defined __OPTIMIZE_SIZE__ || defined PREFER_SIZE_OVER_SPEED
 #if __ARM_ARCH_ISA_THUMB == 2
 #include "strlen-thumb2-Os.S"
 
-#elif defined (__thumb__)
+#elif defined (__ARM_ARCH_ISA_THUMB)
 #include "strlen-thumb1-Os.S"
 
 #else
@@ -40,7 +38,7 @@
 
 #endif
 
-#else /* defined __OPTIMIZE_SIZE__ || defined __PREFER_SIZE_OVER_SPEED */
+#else /* defined __OPTIMIZE_SIZE__ || defined PREFER_SIZE_OVER_SPEED */
 #if defined __thumb__ && ! defined __thumb2__
   /* Implemented in strlen-stub.c.  */
 
@@ -50,8 +48,4 @@
 #else
   /* Implemented in strlen-stub.c.  */
 #endif
-#endif
-
-#if defined(__linux__) && defined(__ELF__)
-.section .note.GNU-stack,"",%progbits
 #endif

@@ -1,4 +1,3 @@
-/* Copyright (c) 2014 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 <<itoa>>---integer to string
@@ -28,7 +27,6 @@ PORTABILITY
 No supporting OS subroutine calls are required.
 */
 
-#define _DEFAULT_SOURCE
 #include <stdlib.h>
 
 char *

@@ -20,8 +20,6 @@
  * Sets first n chars in memory area s to value of character c.
  * Returns s.
  */
-#include <picolibc.h>
-
 #ifndef _NAMESPACE_CLEAN
 #define NOSECDEF   /* prevent _memset from being defined as entry */
 #endif

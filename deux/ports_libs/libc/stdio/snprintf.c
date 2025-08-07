@@ -17,16 +17,16 @@
 /* doc in sprintf.c */
 /* This code created by modifying sprintf.c so copyright inherited. */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <limits.h>
 #include <errno.h>
 #include "local.h"
 
-#undef snprintf
 int
-snprintf (
+_snprintf_r (struct _reent *ptr,
        char *__restrict str,
        size_t size,
        const char *__restrict fmt, ...)
@@ -37,7 +37,7 @@ snprintf (
 
   if (size > INT_MAX)
     {
-      errno = EOVERFLOW;
+      _REENT_ERRNO(ptr) = EOVERFLOW;
       return EOF;
     }
   f._flags = __SWR | __SSTR;
@@ -46,14 +46,56 @@ snprintf (
   f._bf._size = f._w = (size > 0 ? size - 1 : 0);
   f._file = -1;  /* No file. */
   va_start (ap, fmt);
-  ret = svfprintf (&f, fmt, ap);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
   va_end (ap);
   if (ret < EOF)
-    errno = EOVERFLOW;
+    _REENT_ERRNO(ptr) = EOVERFLOW;
   if (size > 0)
     *f._p = 0;
   return (ret);
 }
 
-__nano_reference(snprintf, sniprintf);
-__ieee128_reference(snprintf, __snprintfieee128);
+#ifdef _NANO_FORMATTED_IO
+int
+_sniprintf_r (struct _reent *, char *, size_t, const char *, ...)
+       _ATTRIBUTE ((__alias__("_snprintf_r")));
+#endif
+
+#ifndef _REENT_ONLY
+
+int
+snprintf (char *__restrict str,
+       size_t size,
+       const char *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+  FILE f;
+  struct _reent *ptr = _REENT;
+
+  if (size > INT_MAX)
+    {
+      _REENT_ERRNO(ptr) = EOVERFLOW;
+      return EOF;
+    }
+  f._flags = __SWR | __SSTR;
+  f._flags2 = 0;
+  f._bf._base = f._p = (unsigned char *) str;
+  f._bf._size = f._w = (size > 0 ? size - 1 : 0);
+  f._file = -1;  /* No file. */
+  va_start (ap, fmt);
+  ret = _svfprintf_r (ptr, &f, fmt, ap);
+  va_end (ap);
+  if (ret < EOF)
+    _REENT_ERRNO(ptr) = EOVERFLOW;
+  if (size > 0)
+    *f._p = 0;
+  return (ret);
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+sniprintf (char *, size_t, const char *, ...)
+       _ATTRIBUTE ((__alias__("snprintf")));
+#endif
+#endif

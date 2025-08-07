@@ -24,22 +24,15 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_ARCH >= 8 && (__ARM_FP & 0x4) 
+#if __ARM_ARCH >= 8 && (__ARM_FP & 0x4) && !defined (__SOFTFP__)
 #include <math.h>
 
 float
 nearbyintf (float x)
 {
-    if (isnan(x)) return x + x;
-#if defined(FE_INEXACT)
-    fenv_t env;
-    fegetenv(&env);
-#endif
-    __asm__ volatile ("vrintr.f32\t%0, %1" : "=t" (x) : "t" (x));
-#if defined(FE_INEXACT)
-    fesetenv(&env);
-#endif
-    return x;
+  float result;
+  asm volatile ("vrintr.f32\t%0, %1" : "=t" (result) : "t" (x));
+  return result;
 }
 
 #else

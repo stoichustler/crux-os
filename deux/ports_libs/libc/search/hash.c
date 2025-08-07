@@ -30,19 +30,25 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <sys/param.h>
+#if defined(LIBC_SCCS) && !defined(lint)
+static char sccsid[] = "@(#)hash.c	8.9 (Berkeley) 6/16/94";
+#endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 #include <sys/types.h>
+
 #include <sys/stat.h>
+
+#include <reent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#if !defined(DEBUG) && !defined(NDEBUG)
-#define NDEBUG
-#endif
+#ifdef DEBUG
 #include <assert.h>
+#endif
 
 #define __DBINTERFACE_PRIVATE	/* activate prototypes from db_local.h */
 #include "db_local.h"
@@ -52,7 +58,7 @@
 
 static int   alloc_segs(HTAB *, int);
 static int   flush_meta(HTAB *);
-static int   hash_access(HTAB *, HASH_ACTION, DBT *, DBT *);
+static int   hash_access(HTAB *, ACTION, DBT *, DBT *);
 static int   hash_close(DB *);
 static int   hash_delete(const DB *, const DBT *, u_int);
 static int   hash_fd(const DB *);
@@ -64,7 +70,7 @@ static int   hash_sync(const DB *, u_int);
 static int   hdestroy(HTAB *);
 static HTAB *init_hash(HTAB *, const char *, const HASHINFO *);
 static int   init_htab(HTAB *, int);
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 static void  swap_header(HTAB *);
 static void  swap_header_copy(HASHHDR *, HASHHDR *);
 #endif
@@ -103,7 +109,6 @@ __hash_open (const char *file,
 {
 	HTAB *hashp;
 
-        (void) dflags;
 #ifdef __USE_INTERNAL_STAT64
         struct stat64 statbuf;
 #else
@@ -132,9 +137,9 @@ __hash_open (const char *file,
 	new_table = 0;
 	if (!file || (flags & O_TRUNC) ||
 #ifdef __USE_INTERNAL_STAT64
-	    (stat64(file, &statbuf) && (errno == ENOENT))) {
+	    (_stat64_r(_REENT, file, &statbuf) && (errno == ENOENT))) {
 #else
-	    (stat(file, &statbuf) && (errno == ENOENT))) {
+	    (_stat_r(_REENT, file, &statbuf) && (errno == ENOENT))) {
 #endif
 		if (errno == ENOENT)
 			errno = 0; /* Just in case someone looks at errno */
@@ -148,13 +153,13 @@ __hash_open (const char *file,
 		   a new .db file, then reinitialize the database */
 		if ((flags & O_CREAT) &&
 #ifdef __USE_INTERNAL_STAT64
-		     fstat64(hashp->fp, &statbuf) == 0 && statbuf.st_size == 0)
+		     _fstat64_r(_REENT, hashp->fp, &statbuf) == 0 && statbuf.st_size == 0)
 #else
-		     fstat(hashp->fp, &statbuf) == 0 && statbuf.st_size == 0)
+		     _fstat_r(_REENT, hashp->fp, &statbuf) == 0 && statbuf.st_size == 0)
 #endif
 			new_table = 1;
 
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
 		(void)fcntl(hashp->fp, F_SETFD, 1);
 #endif
 	}
@@ -169,7 +174,7 @@ __hash_open (const char *file,
 			hashp->hash = __default_hash;
 
 		hdrsize = read(hashp->fp, &hashp->hdr, sizeof(HASHHDR));
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 		swap_header(hashp);
 #endif
 		if (hdrsize == -1)
@@ -336,9 +341,9 @@ init_hash(
 	/* Fix bucket size to be optimal for file system */
 	if (file != NULL) {
 #ifdef __USE_INTERNAL_STAT64
-		if (stat64(file, &statbuf))
+		if (_stat64_r(_REENT, file, &statbuf))
 #else
-		if (stat(file, &statbuf))
+		if (_stat_r(_REENT, file, &statbuf))
 #endif
 			return (NULL);
 		hashp->BSIZE = MIN(statbuf.st_blksize, MAX_BSIZE);
@@ -526,7 +531,7 @@ flush_meta(
 )
 {
 	HASHHDR *whdrp;
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 	HASHHDR whdr;
 #endif
 	int fp, i, wsize;
@@ -539,7 +544,7 @@ flush_meta(
 
 	fp = hashp->fp;
 	whdrp = &hashp->hdr;
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 	whdrp = &whdr;
 	swap_header_copy(&hashp->hdr, whdrp);
 #endif
@@ -638,7 +643,7 @@ hash_delete(
 static int
 hash_access(
 	HTAB *hashp,
-	HASH_ACTION action,
+	ACTION action,
 	DBT *key,
 	DBT *val
 )
@@ -667,7 +672,7 @@ hash_access(
 	for (bp = (__uint16_t *)rbufp->page, n = *bp++, ndx = 1; ndx < n;)
 		if (bp[1] >= REAL_KEY) {
 			/* Real key/data pair */
-                        if (size == off - (int) *bp &&
+			if (size == off - *bp &&
 			    memcmp(kp, rbufp->page + *bp, size) == 0)
 				goto found;
 			off = bp[1];
@@ -774,7 +779,7 @@ hash_seq(
 	u_int flag
 )
 {
-	int32_t bucket;
+	__uint32_t bucket;
 	BUFHEAD *bufp;
 	HTAB *hashp;
 	__uint16_t *bp, ndx;
@@ -814,9 +819,10 @@ hash_seq(
 		} else
 			bp = (__uint16_t *)hashp->cpage->page;
 
+#ifdef DEBUG
 		assert(bp);
 		assert(bufp);
-
+#endif
 		while (bp[hashp->cndx + 1] == OVFLPAGE) {
 			bufp = hashp->cpage =
 			    __get_buf(hashp, bp[hashp->cndx], bufp, 0);
@@ -862,7 +868,7 @@ __expand_table(
 	HTAB *hashp
 )
 {
-	int32_t old_bucket, new_bucket;
+	__uint32_t old_bucket, new_bucket;
 	int dirsize, new_segnum, spare_ndx;
 
 #ifdef HASH_STATISTICS
@@ -883,10 +889,9 @@ __expand_table(
 				return (-1);
 			hashp->DSIZE = dirsize << 1;
 		}
-                SEGMENT seg = calloc(hashp->SGSIZE, sizeof(SEGMENT));
-		if (seg == NULL)
+		if ((hashp->dir[new_segnum] =
+		    (SEGMENT)calloc(hashp->SGSIZE, sizeof(SEGMENT))) == NULL)
 			return (-1);
-                hashp->dir[new_segnum] = seg;
 		hashp->exsegs++;
 		hashp->nsegs++;
 	}
@@ -939,7 +944,7 @@ __call_hash(
 	int len
 )
 {
-	int32_t n, bucket;
+	int n, bucket;
 
 	n = hashp->hash(k, len);
 	bucket = n & hashp->HIGH_MASK;
@@ -979,13 +984,12 @@ alloc_segs(
 		errno = save_errno;
 		return (-1);
 	}
-        hashp->dir[0] = store;
-	for (i = 1; i < nsegs; i++, hashp->nsegs++)
+	for (i = 0; i < nsegs; i++, hashp->nsegs++)
 		hashp->dir[i] = &store[i << hashp->SSHIFT];
 	return (0);
 }
 
-#if (_BYTE_ORDER == _LITTLE_ENDIAN)
+#if (BYTE_ORDER == LITTLE_ENDIAN)
 /*
  * Hashp->hdr needs to be byteswapped.
  */

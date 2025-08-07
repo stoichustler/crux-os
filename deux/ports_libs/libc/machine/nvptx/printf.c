@@ -13,8 +13,6 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <stdarg.h>
 
 extern int vprintf (const char *, va_list);

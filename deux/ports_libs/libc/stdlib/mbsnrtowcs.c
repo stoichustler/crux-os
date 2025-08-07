@@ -1,4 +1,3 @@
-/* Copyright (c) 2009 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 <<mbsrtowcs>>, <<mbsnrtowcs>>---convert a character string to a wide-character string
@@ -20,10 +19,19 @@ SYNOPSIS
 			 mbstate_t *__restrict <[ps]>);
 
 	#include <wchar.h>
-	size_t mbsnrtowcs(wchar_t *__ restrict <[dst]>,
+	size_t _mbsrtowcs_r(struct _reent *<[ptr]>, wchar_t *<[dst]>,
+			    const char **<[src]>, size_t <[len]>,
+			    mbstate_t *<[ps]>);
+
+	#include <wchar.h>
+	size_t mbsnrtowcs(wchar_t *__ restrict <[dst]>, 
 			  const char **__restrict <[src]>, size_t <[nms]>,
 			  size_t <[len]>, mbstate_t *__restrict <[ps]>);
 
+	#include <wchar.h>
+	size_t _mbsnrtowcs_r(struct _reent *<[ptr]>, wchar_t *<[dst]>,
+			     const char **<[src]>, size_t <[nms]>,
+			     size_t <[len]>, mbstate_t *<[ps]>);
 
 DESCRIPTION
 The <<mbsrtowcs>> function converts a sequence of multibyte characters
@@ -55,14 +63,19 @@ PORTABILITY
 <<mbsnrtowcs>> is defined by the POSIX.1-2008 standard.
 */
 
-#define _DEFAULT_SOURCE
+#include <reent.h>
+#include <newlib.h>
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local _mbstate_t _tls_mbsrtowcs_state;
+#endif
+
 size_t
-mbsnrtowcs (
+_mbsnrtowcs_r (struct _reent *r,
 	wchar_t *dst,
 	const char **src,
 	size_t nms,
@@ -75,11 +88,11 @@ mbsnrtowcs (
   size_t count = 0;
   int bytes;
 
-#ifdef __MB_CAPABLE
+#ifdef _MB_CAPABLE
   if (ps == NULL)
     {
-      static mbstate_t _mbsrtowcs_state;
-      ps = &_mbsrtowcs_state;
+      _REENT_CHECK_MISC(r);
+      ps = &(_REENT_MBSRTOWCS_STATE(r));
     }
 #endif
 
@@ -90,12 +103,12 @@ mbsnrtowcs (
       len = (size_t)-1;
       tmp_src = *src;
       src = &tmp_src;
-    }
-
+    }      
+  
   max = len;
   while (len > 0)
     {
-      bytes = mbrtowc (ptr, *src, nms, ps);
+      bytes = _mbrtowc_r (r, ptr, *src, nms, ps);
       if (bytes > 0)
 	{
 	  *src += bytes;
@@ -117,10 +130,22 @@ mbsnrtowcs (
       else
 	{
 	  ps->__count = 0;
-	  errno = EILSEQ;
+	  _REENT_ERRNO(r) = EILSEQ;
 	  return (size_t)-1;
 	}
     }
 
   return (size_t)max;
 }
+
+#ifndef _REENT_ONLY
+size_t
+mbsnrtowcs (wchar_t *__restrict dst,
+	const char **__restrict src,
+	size_t nms,
+	size_t len,
+	mbstate_t *__restrict ps)
+{
+  return _mbsnrtowcs_r (_REENT, dst, src, nms, len, ps);
+}
+#endif /* !_REENT_ONLY */

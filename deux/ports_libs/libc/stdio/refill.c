@@ -16,17 +16,17 @@
  */
 /* No user fns here.  Pesch 15apr92. */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "local.h"
 
 static int
-lflush (FILE *fp)
+lflush (struct _reent * ptr __unused, FILE *fp)
 {
   if ((fp->_flags & (__SLBF | __SWR)) == (__SLBF | __SWR))
-    return fflush ( fp);
+    return _fflush_r (_REENT, fp);
   return 0;
 }
 
@@ -36,12 +36,12 @@ lflush (FILE *fp)
  */
 
 int
-_srefill (
+__srefill_r (struct _reent * ptr,
        register FILE * fp)
 {
   /* make sure stdio is set up */
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   fp->_r = 0;			/* largely a convenience for callers */
 
@@ -54,14 +54,14 @@ _srefill (
     {
       if ((fp->_flags & __SRW) == 0)
 	{
-	  errno = EBADF;
+	  _REENT_ERRNO(ptr) = EBADF;
 	  fp->_flags |= __SERR;
 	  return EOF;
 	}
       /* switch to reading */
       if (fp->_flags & __SWR)
 	{
-	  if (fflush ( fp))
+	  if (_fflush_r (ptr, fp))
 	    return EOF;
 	  fp->_flags &= ~__SWR;
 	  fp->_w = 0;
@@ -89,7 +89,7 @@ _srefill (
     }
 
   if (fp->_bf._base == NULL)
-    _smakebuf ( fp);
+    __smakebuf_r (ptr, fp);
 
   /*
    * Before reading from a line buffered or unbuffered file,
@@ -101,16 +101,16 @@ _srefill (
       /* Ignore this file in _fwalk_sglue to avoid potential deadlock. */
       short orig_flags = fp->_flags;
       fp->_flags = 1;
-      (void) _fwalk_sglue (lflush, &__sglue);
+      (void) _fwalk_sglue (_GLOBAL_REENT, lflush, &__sglue);
       fp->_flags = orig_flags;
 
       /* Now flush this file without locking it. */
       if ((fp->_flags & (__SLBF|__SWR)) == (__SLBF|__SWR))
-	_sflush ( fp);
+	__sflush_r (ptr, fp);
     }
 
   fp->_p = fp->_bf._base;
-  fp->_r = fp->_read (fp->_cookie, (char *) fp->_p, fp->_bf._size);
+  fp->_r = fp->_read (ptr, fp->_cookie, (char *) fp->_p, fp->_bf._size);
   if (fp->_r <= 0)
     {
       if (fp->_r == 0)

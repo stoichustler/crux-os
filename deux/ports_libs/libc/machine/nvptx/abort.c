@@ -13,11 +13,9 @@
  * they apply.
  */
 
-#include <picolibc.h>
-
 #include <stdlib.h>
 
-void __noreturn
+void __attribute__((noreturn))
 abort (void)
 {
   for (;;)

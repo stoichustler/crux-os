@@ -9,15 +9,13 @@
    http://www.opensource.org/licenses.
 */
 
-#include <picolibc.h>
+#include <sys/asm.h>
 
-#include "asm.h"
-
-.section .text.strcmp
+.text
 .globl strcmp
 .type  strcmp, @function
 strcmp:
-#if defined(__PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
+#if defined(PREFER_SIZE_OVER_SPEED) || defined(__OPTIMIZE_SIZE__)
 1:
   lbu   a2, 0(a0)
   lbu   a3, 0(a1)
@@ -32,33 +30,26 @@ strcmp:
 
 .size	strcmp, .-strcmp
 #else
-  li    t2, -1
-
-#if !(__riscv_misaligned_slow || __riscv_misaligned_fast)
   or    a4, a0, a1
+  li    t2, -1
   and   a4, a4, SZREG-1
   bnez  a4, .Lmisaligned
-#endif
 
-#ifndef __riscv_zbb
 #if SZREG == 4
   li a5, 0x7f7f7f7f
 #else
   ld a5, mask
 #endif
-#endif
 
   .macro check_one_word i n
     REG_L a2, \i*SZREG(a0)
     REG_L a3, \i*SZREG(a1)
-#ifdef __riscv_zbb
-    orc.b t0, a2
-#else
+
     and   t0, a2, a5
     or    t1, a2, a5
     add   t0, t0, a5
     or    t0, t0, t1
-#endif
+
     bne   t0, t2, .Lnull\i
     .if \i+1-\n
       bne   a2, a3, .Lmismatch
@@ -194,11 +185,12 @@ strcmp:
   foundnull 1 3
   foundnull 2 3
 #endif
-#if !defined(__riscv_zbb) && SZREG != 4
+.size	strcmp, .-strcmp
+
+#if SZREG == 8
+.section .srodata.cst8,"aM",@progbits,8
 .align 3
 mask:
 .dword 0x7f7f7f7f7f7f7f7f
 #endif
-.size	strcmp, .-strcmp
-
 #endif

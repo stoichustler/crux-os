@@ -17,7 +17,7 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -30,12 +30,12 @@
  */
 
 int
-_swsetup (
+__swsetup_r (struct _reent *ptr,
        register FILE * fp)
 {
   /* Make sure stdio is set up.  */
 
-  CHECK_INIT();
+  CHECK_INIT (_REENT, fp);
 
   /*
    * If we are not writing, we had better be reading and writing.
@@ -45,7 +45,7 @@ _swsetup (
     {
       if ((fp->_flags & __SRW) == 0)
         {
-	  errno = EBADF;
+	  _REENT_ERRNO(ptr) = EBADF;
 	  fp->_flags |= __SERR;
 	  return EOF;
         }
@@ -68,7 +68,7 @@ _swsetup (
    */
   if (fp->_bf._base == NULL
         && (!(fp->_flags & __SSTR) || (fp->_flags & __SMBF)))
-    _smakebuf ( fp);
+    __smakebuf_r (ptr, fp);
 
   if (fp->_flags & __SLBF)
     {

@@ -16,13 +16,12 @@
  */
 /* No user fns here. Pesch 15apr92 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <time.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/types.h>
-#include "local.h"
 
 /*
  * Return the (stdio) flags for a given mode.  Store the flags
@@ -31,8 +30,8 @@
  */
 
 int
-__sflags (
-       const char *mode,
+__sflags (struct _reent *ptr,
+       register char *mode,
        int *optr)
 {
   register int ret, m, o;
@@ -57,7 +56,7 @@ __sflags (
       o = O_CREAT | O_APPEND;
       break;
     default:			/* illegal mode */
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return (0);
     }
   while (*++mode)
@@ -73,6 +72,11 @@ __sflags (
 	  m |= O_BINARY;
 #endif
 	  break;
+#ifdef __CYGWIN__
+	case 't':
+	  m |= O_TEXT;
+	  break;
+#endif
 #if defined (O_CLOEXEC) && defined (_GLIBC_EXTENSION)
 	case 'e':
 	  m |= O_CLOEXEC;

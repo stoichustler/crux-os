@@ -36,7 +36,9 @@
 
 #include <sys/fenv.h>
 
-_BEGIN_STD_C
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Exception */
 void feclearexcept(int excepts);
@@ -55,6 +57,8 @@ int feholdexcept(fenv_t *envp);
 void fesetenv(const fenv_t *envp);
 void feupdateenv(const fenv_t *envp);
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif

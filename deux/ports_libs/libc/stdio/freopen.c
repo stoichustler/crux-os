@@ -28,7 +28,7 @@ SYNOPSIS
 	#include <stdio.h>
 	FILE *freopen(const char *restrict <[file]>, const char *restrict <[mode]>,
 		      FILE *restrict <[fp]>);
-	FILE *freopen( const char *restrict <[file]>,
+	FILE *_freopen_r(struct _reent *<[ptr]>, const char *restrict <[file]>,
 		      const char *restrict <[mode]>, FILE *restrict <[fp]>);
 
 DESCRIPTION
@@ -59,7 +59,8 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<open>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
@@ -74,7 +75,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
  */
 
 FILE *
-freopen (
+_freopen_r (struct _reent *ptr,
        const char *__restrict file,
        const char *__restrict mode,
        register FILE *__restrict fp)
@@ -83,7 +84,7 @@ freopen (
   int flags, oflags, oflags2;
   int e = 0;
 
-  CHECK_INIT();
+  CHECK_INIT (ptr, fp);
 
   /* We can't use the _newlib_flockfile_XXX macros here due to the
      interlocked locking with the sfp_lock. */
@@ -95,14 +96,14 @@ freopen (
   if (!(oflags2 & __SNLK))
     _flockfile (fp);
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     {
       if (!(oflags2 & __SNLK))
 	_funlockfile (fp);
 #ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
       pthread_setcancelstate (__oldcancel, &__oldcancel);
 #endif
-      fclose ( fp);
+      _fclose_r (ptr, fp);
       return NULL;
     }
 
@@ -119,13 +120,13 @@ freopen (
   else
     {
       if (fp->_flags & __SWR)
-	fflush ( fp);
+	_fflush_r (ptr, fp);
       /*
        * If close is NULL, closing is a no-op, hence pointless.
        * If file is NULL, the file should not be closed.
        */
       if (fp->_close != NULL && file != NULL)
-	fp->_close (fp->_cookie);
+	fp->_close (ptr, fp->_cookie);
     }
 
   /*
@@ -135,12 +136,12 @@ freopen (
 
   if (file != NULL)
     {
-      f = open ((char *) file, oflags, 0666);
-      e = errno;
+      f = _open_r (ptr, (char *) file, oflags, 0666);
+      e = _REENT_ERRNO(ptr);
     }
   else
     {
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
       int oldflags;
       /*
        * Reuse the file descriptor, but only if the new access mode is
@@ -148,10 +149,10 @@ freopen (
        * ignores creation flags.
        */
       f = fp->_file;
-      if ((oldflags = fcntl (f, F_GETFL, 0)) == -1
+      if ((oldflags = _fcntl_r (ptr, f, F_GETFL, 0)) == -1
 	  || ! ((oldflags & O_ACCMODE) == O_RDWR
 		|| ((oldflags ^ oflags) & O_ACCMODE) == 0)
-	  || fcntl (f, F_SETFL, oflags) == -1)
+	  || _fcntl_r (ptr, f, F_SETFL, oflags) == -1)
 	f = -1;
 #else
       /* We cannot modify without fcntl support.  */
@@ -162,7 +163,7 @@ freopen (
       /*
        * F_SETFL doesn't change textmode.  Don't mess with modes of ttys.
        */
-      if (0 <= f && ! isatty ( f)
+      if (0 <= f && ! _isatty_r (ptr, f)
 	  && setmode (f, oflags & (O_BINARY | O_TEXT)) == -1)
 	f = -1;
 #endif
@@ -171,7 +172,7 @@ freopen (
 	{
 	  e = EBADF;
 	  if (fp->_close != NULL)
-	    fp->_close (fp->_cookie);
+	    fp->_close (ptr, fp->_cookie);
 	}
     }
 
@@ -183,7 +184,7 @@ freopen (
    */
 
   if (fp->_flags & __SMBF)
-    free ((char *) fp->_bf._base);
+    _free_r (ptr, (char *) fp->_bf._base);
   fp->_w = 0;
   fp->_r = 0;
   fp->_p = NULL;
@@ -204,10 +205,12 @@ freopen (
     {				/* did not get it after all */
       __sfp_lock_acquire ();
       fp->_flags = 0;		/* set it free */
-      errno = e;	/* restore in case _close clobbered */
+      _REENT_ERRNO(ptr) = e;	/* restore in case _close clobbered */
       if (!(oflags2 & __SNLK))
 	_funlockfile (fp);
+#ifndef __SINGLE_THREAD__
       __lock_close_recursive (fp->_lock);
+#endif
       __sfp_lock_release ();
 #ifdef _STDIO_WITH_THREAD_CANCELLATION_SUPPORT
       pthread_setcancelstate (__oldcancel, &__oldcancel);
@@ -235,3 +238,15 @@ freopen (
 #endif
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+freopen (const char *__restrict file,
+       const char *__restrict mode,
+       register FILE *__restrict fp)
+{
+  return _freopen_r (_REENT, file, mode, fp);
+}
+
+#endif /*!_REENT_ONLY */

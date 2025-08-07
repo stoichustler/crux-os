@@ -10,8 +10,6 @@
  * This file is distributed WITHOUT ANY WARRANTY; without even the implied
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-#include <picolibc.h>
-
 int puts(const char *s)
 {         /*  Print string Function   */
                                                                                 

@@ -1,4 +1,3 @@
-/* Copyright (c) 2011 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 	<<strchrnul>>---search for character in string
@@ -29,7 +28,6 @@ QUICKREF
 	strchrnul
 */
 
-#define _GNU_SOURCE
 #include <string.h>
 
 char *

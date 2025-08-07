@@ -24,15 +24,25 @@
  * SUCH DAMAGE.
  */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <wchar.h>
 #include "local.h"
 
 wint_t
-fputwc_unlocked (
+_fputwc_unlocked_r (struct _reent *ptr,
 	wchar_t wc,
 	FILE *fp)
 {
-  return __fputwc(wc, fp);
+  return __fputwc(ptr, wc, fp);
+}
+
+wint_t
+fputwc_unlocked (wchar_t wc,
+	FILE *fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT(reent, fp);
+  return __fputwc(reent, wc, fp);
 }

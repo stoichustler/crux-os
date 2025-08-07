@@ -33,19 +33,18 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "fdlibm.h"
+#include <math.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 64
 
-__float64
-copysign64 (__float64 x, __float64 y)
+double
+copysign (double x, double y)
 {
-  __float64 result;
-  __asm__("fsgnj.d\t%0, %1, %2" : "=f"(result) : "f"(x), "f"(y));
+  double result;
+  asm ("fsgnj.d\t%0, %1, %2" : "=f"(result) : "f"(x), "f"(y));
   return result;
 }
-
-_MATH_ALIAS_d_dd(copysign)
 
 #else
 #include "../../common/s_copysign.c"

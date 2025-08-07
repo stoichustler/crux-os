@@ -32,7 +32,6 @@
  * Marco Atzeri <marco_atzeri@yahoo.it>
  */
 
-#define _DEFAULT_SOURCE
 #include <complex.h>
 #include <math.h>
 #include "cephes_subrf.h"
@@ -62,7 +61,7 @@ _cchshf(float x, float *c, float *s)
 static const double DP1 =  3.140625;
 static const double DP2 =  9.67502593994140625E-4;
 static const double DP3 =  1.509957990978376432E-7;
-#define MACHEPF 3.0e-8f
+#define MACHEPF 3.0e-8
 
 float
 _redupif(float x)
@@ -78,7 +77,7 @@ _redupif(float x)
 
 	i = t;	/* the multiple */
 	t = i;
-	t = (((double) x - (double) t * DP1) - (double) t * DP2) - (double) t * DP3;
+	t = ((x - t * DP1) - t * DP2) - t * DP3;
 	return t;
 }
 

@@ -24,18 +24,16 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_ARCH >= 8 && (__ARM_FP & 0x8) 
-#include "math_config.h"
+#if __ARM_ARCH >= 8 && (__ARM_FP & 0x8) && !defined (__SOFTFP__)
+#include <math.h>
 
 double
 floor (double x)
 {
   double result;
-  __asm__ volatile ("vrintm.f64\t%P0, %P1" : "=w" (result) : "w" (x));
+  asm volatile ("vrintm.f64\t%P0, %P1" : "=w" (result) : "w" (x));
   return result;
 }
-
-_MATH_ALIAS_d_d(floor)
 
 #else
 #include "../../math/s_floor.c"

@@ -32,12 +32,14 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
 #if 0
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "from @(#)strtoul.c	8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
+__FBSDID("FreeBSD: src/lib/libc/stdlib/strtoumax.c,v 1.8 2002/09/06 11:23:59 tjr Exp ");
 #endif
+__FBSDID("$FreeBSD: head/lib/libc/locale/wcstoumax.c 314436 2017-02-28 23:42:47Z imp $");
 
 #include <errno.h>
 #include <inttypes.h>
@@ -45,14 +47,18 @@ static char sccsid[] = "from @(#)strtoul.c	8.1 (Berkeley) 6/4/93";
 #include <wchar.h>
 #include <wctype.h>
 #include <stdint.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a wide character string to a uintmax_t integer.
  */
 
-uintmax_t
-wcstoumax_l(const wchar_t * __restrict nptr,
+/*
+ *Reentrant version of wcstoumax.
+ */
+static uintmax_t
+_wcstoumax_l(struct _reent *rptr,const wchar_t * __restrict nptr,
 	     wchar_t ** __restrict endptr, int base, locale_t loc)
 {
 	const wchar_t *s = nptr;
@@ -61,13 +67,6 @@ wcstoumax_l(const wchar_t * __restrict nptr,
 	uintmax_t cutoff;
 	int neg = 0, any, cutlim;
 
-        /* Check for invalid base value */
-        if ((unsigned) base > 36 || base == 1) {
-                errno = EINVAL;
-                if (endptr)
-                        *endptr = (wchar_t *) nptr;
-                return 0;
-        }
 	/*
 	 * See strtoimax for comments as to the logic used.
 	 */
@@ -85,7 +84,6 @@ wcstoumax_l(const wchar_t * __restrict nptr,
 	if ((base == 0 || base == 16) &&
 	    c == L'0' && (*s == L'x' || *s == L'X')) {
 		c = s[1];
-                nptr = s;
 		s += 2;
 		base = 16;
 	}
@@ -111,22 +109,22 @@ wcstoumax_l(const wchar_t * __restrict nptr,
 			c -= L'a' - 10;
 		else
 			break;
-		if ((int) c >= base)
+		if (c >= base)
 			break;
-		if (any < 0 || acc > cutoff || (acc == cutoff && (int) c > cutlim))
+		if (any < 0 || acc > cutoff || (acc == cutoff && c > cutlim))
 			any = -1;
 		else {
 			any = 1;
 			acc *= base;
-			acc += (uintmax_t) c;
+			acc += c;
 		}
 	}
 	if (any < 0) {
 		acc = UINTMAX_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (!any) {
 noconv:
-		errno = EINVAL;
+		_REENT_ERRNO(rptr) = EINVAL;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != NULL)
@@ -135,8 +133,25 @@ noconv:
 }
 
 uintmax_t
-wcstoumax(const wchar_t* __restrict nptr, wchar_t** __restrict endptr, int base)
+_wcstoumax_r(struct _reent *rptr, const wchar_t *__restrict nptr,
+	     wchar_t **__restrict endptr, int base)
 {
-	return wcstoumax_l(nptr, endptr, base, __get_current_locale());
+	return _wcstoumax_l(rptr, nptr, endptr, base, __get_current_locale());
 }
 
+#ifndef _REENT_ONLY
+
+uintmax_t
+wcstoumax_l(const wchar_t * __restrict nptr, wchar_t ** __restrict endptr,
+	    int base, locale_t loc)
+{
+	return _wcstoumax_l(_REENT, nptr, endptr, base, loc);
+}
+
+uintmax_t
+wcstoumax(const wchar_t* __restrict nptr, wchar_t** __restrict endptr, int base)
+{
+	return _wcstoumax_l(_REENT, nptr, endptr, base, __get_current_locale());
+}
+
+#endif

@@ -16,13 +16,14 @@
  */
 /* doc in swprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
 
 int
-fwprintf (
+_fwprintf_r (struct _reent *ptr,
        FILE *fp,
        const wchar_t *fmt, ...)
 {
@@ -30,7 +31,24 @@ fwprintf (
   va_list ap;
 
   va_start (ap, fmt);
-  ret = vfwprintf ( fp, fmt, ap);
+  ret = _vfwprintf_r (ptr, fp, fmt, ap);
   va_end (ap);
   return ret;
 }
+
+#ifndef _REENT_ONLY
+
+int
+fwprintf (FILE *__restrict fp,
+       const wchar_t *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  va_start (ap, fmt);
+  ret = _vfwprintf_r (_REENT, fp, fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#endif /* ! _REENT_ONLY */

@@ -13,32 +13,16 @@
 #ifndef _INTTYPES_H
 #define _INTTYPES_H
 
-#include <sys/cdefs.h>
-#include <stdint.h>
+#include <newlib.h>
+#include <sys/config.h>
 #include <sys/_intsup.h>
-
-_BEGIN_STD_C
+#include "_ansi.h"
+#include <stdint.h>
+#define __need_wchar_t
+#include <stddef.h>
 
 #if __BSD_VISIBLE
 #include <sys/_locale.h>
-#endif
-
-typedef struct {
-  intmax_t	quot;
-  intmax_t	rem;
-} imaxdiv_t;
-
-/*
- * Try to avoid defining wchar_t by using __WCHAR_TYPE__ when
- * available.
- */
-
-#ifdef __WCHAR_TYPE__
-typedef __WCHAR_TYPE__ _wchar_t;
-#else
-#define __need_wchar_t
-#include <stddef.h>
-typdef wchar_t _wchar_t;
 #endif
 
 #define __STRINGIFY(a) #a
@@ -49,20 +33,20 @@ typdef wchar_t _wchar_t;
 #define __PRI8FAST(x) __FAST8 __STRINGIFY(x)
 
 /* NOTICE: scanning 8-bit types requires use of the hh specifier
- * which is only supported on picolibc platforms that
+ * which is only supported on newlib platforms that
  * are built with C99 I/O format support enabled.  If the flag in
- * picolibc.h hasn't been set during configuration to indicate this, the 8-bit
+ * newlib.h hasn't been set during configuration to indicate this, the 8-bit
  * scanning format macros are disabled here as they result in undefined
  * behaviour which can include memory overwrite.  Overriding the flag after the
  * library has been built is not recommended as it will expose the underlying
  * undefined behaviour.
  */
 
-#if defined(__IO_C99_FORMATS)
+#if defined(_WANT_IO_C99_FORMATS)
   #define __SCN8(x) __INT8 __STRINGIFY(x)
 	#define __SCN8LEAST(x) __LEAST8 __STRINGIFY(x)
 	#define __SCN8FAST(x) __FAST8 __STRINGIFY(x)
-#endif /* __IO_C99_FORMATS */
+#endif /* _WANT_IO_C99_FORMATS */
 
 
 #define PRId8		__PRI8(d)
@@ -73,7 +57,7 @@ typdef wchar_t _wchar_t;
 #define PRIX8		__PRI8(X)
 
 /* Macros below are only enabled for a newlib built with C99 I/O format support. */
-#if defined(__IO_C99_FORMATS)
+#if defined(_WANT_IO_C99_FORMATS)
 
 #define SCNd8		__SCN8(d)
 #define SCNi8		__SCN8(i)
@@ -81,7 +65,7 @@ typdef wchar_t _wchar_t;
 #define SCNu8		__SCN8(u)
 #define SCNx8		__SCN8(x)
 
-#endif /* __IO_C99_FORMATS */
+#endif /* _WANT_IO_C99_FORMATS */
 
 
 #define PRIdLEAST8	__PRI8LEAST(d)
@@ -92,7 +76,7 @@ typdef wchar_t _wchar_t;
 #define PRIXLEAST8	__PRI8LEAST(X)
 
 /* Macros below are only enabled for a newlib built with C99 I/O format support. */
-#if defined(__IO_C99_FORMATS)
+#if defined(_WANT_IO_C99_FORMATS)
 
   #define SCNdLEAST8	__SCN8LEAST(d)
   #define SCNiLEAST8	__SCN8LEAST(i)
@@ -100,7 +84,7 @@ typdef wchar_t _wchar_t;
   #define SCNuLEAST8	__SCN8LEAST(u)
   #define SCNxLEAST8	__SCN8LEAST(x)
 
-#endif /* __IO_C99_FORMATS */
+#endif /* _WANT_IO_C99_FORMATS */
 
 #define PRIdFAST8	__PRI8FAST(d)
 #define PRIiFAST8	__PRI8FAST(i)
@@ -110,7 +94,7 @@ typdef wchar_t _wchar_t;
 #define PRIXFAST8	__PRI8FAST(X)
 
 /* Macros below are only enabled for a newlib built with C99 I/O format support. */
-#if defined(__IO_C99_FORMATS)
+#if defined(_WANT_IO_C99_FORMATS)
 
   #define SCNdFAST8	__SCN8FAST(d)
   #define SCNiFAST8	__SCN8FAST(i)
@@ -118,7 +102,7 @@ typdef wchar_t _wchar_t;
   #define SCNuFAST8	__SCN8FAST(u)
   #define SCNxFAST8	__SCN8FAST(x)
 
-#endif /* __IO_C99_FORMATS */
+#endif /* _WANT_IO_C99_FORMATS */
 
 /* 16-bit types */
 #define __PRI16(x) __INT16 __STRINGIFY(x)
@@ -324,20 +308,38 @@ typdef wchar_t _wchar_t;
 #define SCNuPTR		__SCNPTR(u)
 #define SCNxPTR		__SCNPTR(x)
 
-intmax_t  imaxabs(intmax_t);
-imaxdiv_t imaxdiv(intmax_t __numer, intmax_t __denomer);
-intmax_t  strtoimax(const char *__restrict, char **__restrict, int);
-uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
-intmax_t  wcstoimax(const _wchar_t *__restrict, _wchar_t **__restrict, int);
-uintmax_t wcstoumax(const _wchar_t *__restrict, _wchar_t **__restrict, int);
 
-#if __BSD_VISIBLE
-intmax_t  strtoimax_l(const char *__restrict, char **_restrict, int, locale_t);
-uintmax_t strtoumax_l(const char *__restrict, char **_restrict, int, locale_t);
-intmax_t  wcstoimax_l(const _wchar_t *__restrict, _wchar_t **_restrict, int, locale_t);
-uintmax_t wcstoumax_l(const _wchar_t *__restrict, _wchar_t **_restrict, int, locale_t);
+typedef struct {
+  intmax_t	quot;
+  intmax_t	rem;
+} imaxdiv_t;
+
+struct _reent;
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-_END_STD_C
+extern intmax_t  imaxabs(intmax_t);
+extern imaxdiv_t imaxdiv(intmax_t __numer, intmax_t __denomer);
+extern intmax_t  strtoimax(const char *__restrict, char **__restrict, int);
+extern intmax_t  _strtoimax_r(struct _reent *, const char *__restrict, char **__restrict, int);
+extern uintmax_t strtoumax(const char *__restrict, char **__restrict, int);
+extern uintmax_t _strtoumax_r(struct _reent *, const char *__restrict, char **__restrict, int);
+extern intmax_t  wcstoimax(const wchar_t *__restrict, wchar_t **__restrict, int);
+extern intmax_t  _wcstoimax_r(struct _reent *, const wchar_t *__restrict, wchar_t **__restrict, int);
+extern uintmax_t wcstoumax(const wchar_t *__restrict, wchar_t **__restrict, int);
+extern uintmax_t _wcstoumax_r(struct _reent *, const wchar_t *__restrict, wchar_t **__restrict, int);
+
+#if __BSD_VISIBLE
+extern intmax_t  strtoimax_l(const char *__restrict, char **_restrict, int, locale_t);
+extern uintmax_t strtoumax_l(const char *__restrict, char **_restrict, int, locale_t);
+extern intmax_t  wcstoimax_l(const wchar_t *__restrict, wchar_t **_restrict, int, locale_t);
+extern uintmax_t wcstoumax_l(const wchar_t *__restrict, wchar_t **_restrict, int, locale_t);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

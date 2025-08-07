@@ -31,8 +31,6 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Kazunori Asayama <asayama@sm.sony.co.jp>
 */
 
-#include <picolibc.h>
-
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -49,7 +47,7 @@ __sfp (struct _reent *d)
       return &__fp[i];
     }
   }
-  errno = EMFILE;
+  _REENT_ERRNO(d) = EMFILE;
   return NULL;
 }
 

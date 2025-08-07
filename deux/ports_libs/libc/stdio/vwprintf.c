@@ -16,15 +16,32 @@
  */
 /* doc in vfwprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <wchar.h>
 #include <stdarg.h>
 #include "local.h"
 
+#ifndef _REENT_ONLY
+
 int
 vwprintf (const wchar_t *__restrict fmt,
        va_list ap)
 {
-  return vfwprintf ( stdout, fmt, ap);
+  struct _reent *reent = _REENT;
+
+  _REENT_SMALL_CHECK_INIT (reent);
+  return _vfwprintf_r (reent, _stdout_r (reent), fmt, ap);
+}
+
+#endif /* !_REENT_ONLY */
+
+int
+_vwprintf_r (struct _reent *ptr,
+       const wchar_t *fmt,
+       va_list ap)
+{
+  _REENT_SMALL_CHECK_INIT (ptr);
+  return _vfwprintf_r (ptr, _stdout_r (ptr), fmt, ap);
 }

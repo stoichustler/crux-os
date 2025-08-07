@@ -24,17 +24,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_FP & 0x4
 #include <math.h>
 
 float
 truncf (float x)
 {
   float result;
-  __asm__("frintz\t%s0, %s1" : "=w" (result) : "w" (x));
+  asm ("frintz\t%s0, %s1" : "=w" (result) : "w" (x));
   return result;
 }
-
-#else
-#include "../../common/sf_trunc.c"
-#endif

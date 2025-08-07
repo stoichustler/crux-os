@@ -70,9 +70,11 @@ QUICKREF
 double complex
 csinh(double complex z)
 {
+	double complex w;
 	double x, y;
 
 	x = creal(z);
 	y = cimag(z);
-	return (double complex) (sinh(x) * cos(y)) + (cosh(x) * sin(y)) * (double complex) I;
+	w = sinh(x) * cos(y) + (cosh(x) * sin(y)) * I;
+	return w;
 }

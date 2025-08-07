@@ -1,4 +1,3 @@
-/* Copyright (c) 2003 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 	<<wcscoll>>---locale-specific wide-character string compare
@@ -30,6 +29,7 @@ PORTABILITY
 <<wcscoll>> is ISO/IEC 9899/AMD1:1995 (ISO C).
 */
 
+#include <_ansi.h>
 #include <wchar.h>
 
 int

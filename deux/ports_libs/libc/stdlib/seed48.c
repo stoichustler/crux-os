@@ -14,26 +14,29 @@
 #include "rand48.h"
 
 unsigned short *
-_seed48_r (struct _rand48 *r,
+_seed48_r (struct _reent *r,
        unsigned short xseed[3])
 {
-  static __THREAD_LOCAL unsigned short sseed[3];
+  static unsigned short sseed[3];
 
-  sseed[0] = r->_seed[0];
-  sseed[1] = r->_seed[1];
-  sseed[2] = r->_seed[2];
-  r->_seed[0] = xseed[0];
-  r->_seed[1] = xseed[1];
-  r->_seed[2] = xseed[2];
-  r->_mult[0] = _RAND48_MULT_0;
-  r->_mult[1] = _RAND48_MULT_1;
-  r->_mult[2] = _RAND48_MULT_2;
-  r->_add = _RAND48_ADD;
+  _REENT_CHECK_RAND48(r);
+  sseed[0] = __rand48_seed[0];
+  sseed[1] = __rand48_seed[1];
+  sseed[2] = __rand48_seed[2];
+  __rand48_seed[0] = xseed[0];
+  __rand48_seed[1] = xseed[1];
+  __rand48_seed[2] = xseed[2];
+  __rand48_mult[0] = _RAND48_MULT_0;
+  __rand48_mult[1] = _RAND48_MULT_1;
+  __rand48_mult[2] = _RAND48_MULT_2;
+  __rand48_add = _RAND48_ADD;
   return sseed;
 }
 
+#ifndef _REENT_ONLY
 unsigned short *
 seed48 (unsigned short xseed[3])
 {
-  return _seed48_r (&_rand48, xseed);
+  return _seed48_r (_REENT, xseed);
 }
+#endif /* !_REENT_ONLY */

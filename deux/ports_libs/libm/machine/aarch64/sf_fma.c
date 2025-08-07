@@ -24,17 +24,12 @@
    NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#if __ARM_FP & 0x4
 #include <math.h>
 
 float
 fmaf (float x, float y, float z)
 {
   float result;
-  __asm__("fmadd\t%s0, %s1, %s2, %s3" : "=w" (result) : "w" (x), "w" (y), "w" (z));
+  asm ("fmadd\t%s0, %s1, %s2, %s3" : "=w" (result) : "w" (x), "w" (y), "w" (z));
   return result;
 }
-
-#else
-#include "../../common/sf_fma.c"
-#endif

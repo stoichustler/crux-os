@@ -1,6 +1,3 @@
-/* Copyright (c) 2008 Patrick Mansfield <patmans@us.ibm.com> */
-#include <picolibc.h>
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

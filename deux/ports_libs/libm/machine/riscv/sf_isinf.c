@@ -33,10 +33,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define _ADD_D_TO_DOUBLE_FUNCS
-#define isinfd isinf
-
-#include "fdlibm.h"
+#include <math.h>
+#include <ieeefp.h>
+#include "riscv_math.h"
 
 #if defined(__RISCV_HARD_FLOAT) && __RISCV_HARD_FLOAT >= 32
 
@@ -48,20 +47,6 @@ isinff (float x)
 	long fclass = _fclass_f (x);
 	return (fclass & FCLASS_INF);
 }
-
-#ifdef __strong_reference
-__strong_reference(isinff, __isinff);
-#else
-int
-__isinff(float x)
-{
-    return isinff(x);
-}
-#endif
-
-_MATH_ALIAS_i_f(isinf)
-_MATH_ALIAS_i_f(__isinf)
-
 #else
 #include "../../common/sf_isinf.c"
 #endif

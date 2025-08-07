@@ -68,11 +68,16 @@ PORTABILITY
 No supporting OS subroutines are required.
 */
 
-#include "local.h"
+#include <_ansi.h>
+#include <string.h>
+#include <reent.h>
 #include <wctype.h>
+#include <errno.h>
+#include "local.h"
 
 wctype_t
-wctype (const char *c)
+_wctype_r (struct _reent *r,
+	const char *c)
 {
   switch (*c)
     {
@@ -123,6 +128,14 @@ wctype (const char *c)
     }
 
   /* otherwise invalid */
-  errno = EINVAL;
+  _REENT_ERRNO(r) = EINVAL;
   return 0;
 }
+
+#ifndef _REENT_ONLY
+wctype_t
+wctype (const char *c)
+{
+  return _wctype_r (_REENT, c);
+}
+#endif /* !_REENT_ONLY */

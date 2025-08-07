@@ -27,7 +27,7 @@ INDEX
 SYNOPSIS
 	#include <stdio.h>
 	FILE *fdopen(int <[fd]>, const char *<[mode]>);
-	FILE *fdopen(
+	FILE *_fdopen_r(struct _reent *<[reent]>,
                         int <[fd]>, const char *<[mode]>);
 
 DESCRIPTION
@@ -43,40 +43,42 @@ PORTABILITY
 <<fdopen>> is ANSI.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <sys/types.h>
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include "local.h"
+#include <_syslist.h>
 
 FILE *
-fdopen (
+_fdopen_r (struct _reent *ptr,
        int fd,
        const char *mode)
 {
   register FILE *fp;
   int flags, oflags;
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
   int fdflags, fdmode;
 #endif
 
-  if ((flags = __sflags (mode, &oflags)) == 0)
+  if ((flags = __sflags (ptr, mode, &oflags)) == 0)
     return 0;
 
   /* make sure the mode the user wants is a subset of the actual mode */
-#ifdef __HAVE_FCNTL
-  if ((fdflags = fcntl (fd, F_GETFL, 0)) < 0)
+#ifdef HAVE_FCNTL
+  if ((fdflags = _fcntl_r (ptr, fd, F_GETFL, 0)) < 0)
     return 0;
   fdmode = fdflags & O_ACCMODE;
   if (fdmode != O_RDWR && (fdmode != (oflags & O_ACCMODE)))
     {
-      errno = EBADF;
+      _REENT_ERRNO(ptr) = EBADF;
       return 0;
     }
 #endif
 
-  if ((fp = __sfp ()) == 0)
+  if ((fp = __sfp (ptr)) == 0)
     return 0;
 
   _newlib_flockfile_start (fp);
@@ -86,9 +88,9 @@ fdopen (
      streams.  Someone may later clear O_APPEND on fileno(fp), but the
      stream must still remain in append mode.  Rely on __sflags
      setting __SAPP properly.  */
-#ifdef __HAVE_FCNTL
+#ifdef HAVE_FCNTL
   if ((oflags & O_APPEND) && !(fdflags & O_APPEND))
-    fcntl (fd, F_SETFL, fdflags | O_APPEND);
+    _fcntl_r (ptr, fd, F_SETFL, fdflags | O_APPEND);
 #endif
   fp->_file = fd;
   fp->_cookie = (void *) fp;
@@ -116,3 +118,14 @@ fdopen (
   _newlib_flockfile_end (fp);
   return fp;
 }
+
+#ifndef _REENT_ONLY
+
+FILE *
+fdopen (int fd,
+       const char *mode)
+{
+  return _fdopen_r (_REENT, fd, mode);
+}
+
+#endif

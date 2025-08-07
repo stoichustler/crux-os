@@ -1,12 +1,10 @@
-#include <picolibc.h>
-
 !
 ! Fast SH memset
 !
 ! by Toshiyasu Morita (tm@netcom.com)
 !
 ! SH5 code by J"orn Rennecke (joern.rennecke@superh.com)
-/* Copyright 2002 SuperH Ltd. */
+! Copyright 2002 SuperH Ltd.
 !
 
 #include "asm.h"

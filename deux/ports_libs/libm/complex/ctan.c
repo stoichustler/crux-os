@@ -72,6 +72,7 @@ QUICKREF
 double complex
 ctan(double complex z)
 {
+	double complex w;
 	double d;
 
 	d = cos(2.0 * creal(z)) + cosh(2.0 * cimag(z));
@@ -81,8 +82,10 @@ ctan(double complex z)
 
 	if (d == 0.0) {
 		/* mtherr ("ctan", OVERFLOW); */
-		return HUGE_VAL + HUGE_VAL * (double complex) I;
+		w = HUGE_VAL + HUGE_VAL * I;
+		return w;
 	}
 
-	return (double complex) (sin(2.0 * creal(z)) / d) + (sinh(2.0 * cimag(z)) / d) * (double complex) I;
+	w = sin(2.0 * creal(z)) / d + (sinh(2.0 * cimag(z)) / d) * I;
+	return w;
 }

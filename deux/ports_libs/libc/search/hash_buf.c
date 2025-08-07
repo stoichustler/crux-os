@@ -30,11 +30,11 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <sys/param.h>
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)hash_buf.c	8.5 (Berkeley) 7/15/94";
 #endif /* LIBC_SCCS and not lint */
+#include <sys/cdefs.h>
 
 /*
  * PACKAGE: hash

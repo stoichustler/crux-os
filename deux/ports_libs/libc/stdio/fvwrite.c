@@ -16,7 +16,7 @@
  */
 /* No user fns here.  Pesch 15apr92. */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -48,14 +48,14 @@
  */
 
 int
-_sfvwrite (
+__sfvwrite_r (struct _reent *ptr,
        register FILE *fp,
        register struct __suio *uio)
 {
   register size_t len;
   register const char *p = NULL;
   register struct __siov *iov;
-  register ssize_t w, s;
+  register _READ_WRITE_RETURN_TYPE w, s;
   char *nl;
   int nlknown, nldist;
 
@@ -120,7 +120,7 @@ _sfvwrite (
       do
 	{
 	  GETIOV (;);
-	  w = fp->_write (fp->_cookie, p,
+	  w = fp->_write (ptr, fp->_cookie, p,
 			  MIN (len, INT_MAX - INT_MAX % BUFSIZ));
 	  if (w <= 0)
 	    goto err;
@@ -150,7 +150,7 @@ _sfvwrite (
 	  w = fp->_w;
 	  if (fp->_flags & __SSTR)
 	    {
-              if (len >= (size_t) w && fp->_flags & (__SMBF | __SOPT))
+	      if (len >= w && fp->_flags & (__SMBF | __SOPT))
 		{ /* must be asprintf family */
 		  unsigned char *str;
 		  int curpos = (fp->_p - fp->_bf._base);
@@ -162,15 +162,15 @@ _sfvwrite (
 		     reallocating.  The new allocation should thus be
 		     max(prev_size*1.5, curpos+len+1). */
 		  int newsize = fp->_bf._size * 3 / 2;
-		  if ((size_t) newsize < curpos + len + 1)
+		  if (newsize < curpos + len + 1)
 		    newsize = curpos + len + 1;
 		  if (fp->_flags & __SOPT)
 		    {
 		      /* asnprintf leaves original buffer alone.  */
-		      str = (unsigned char *)malloc (newsize);
+		      str = (unsigned char *)_malloc_r (ptr, newsize);
 		      if (!str)
 			{
-			  errno = ENOMEM;
+			  _REENT_ERRNO(ptr) = ENOMEM;
 			  goto err;
 			}
 		      memcpy (str, fp->_bf._base, curpos);
@@ -178,16 +178,16 @@ _sfvwrite (
 		    }
 		  else
 		    {
-		      str = (unsigned char *)realloc (fp->_bf._base,
+		      str = (unsigned char *)_realloc_r (ptr, fp->_bf._base,
 							 newsize);
 		      if (!str)
 			{
 			  /* Free buffer which is no longer used and clear
 			     __SMBF flag to avoid double free in fclose.  */
-			  free (fp->_bf._base);
+			  _free_r (ptr, fp->_bf._base);
 			  fp->_flags &=  ~__SMBF;
 			  /* Ensure correct errno, even if free changed it.  */
-			  errno = ENOMEM;
+			  _REENT_ERRNO(ptr) = ENOMEM;
 			  goto err;
 			}
 		    }
@@ -197,28 +197,28 @@ _sfvwrite (
 		  w = len;
 		  fp->_w = newsize - curpos;
 		}
-	      if (len < (size_t) w)
+	      if (len < w)
 		w = len;
 	      COPY (w);		/* copy MIN(fp->_w,len), */
 	      fp->_w -= w;
 	      fp->_p += w;
 	      w = len;		/* but pretend copied all */
 	    }
-	  else if (fp->_p > fp->_bf._base || len < (size_t) fp->_bf._size)
+	  else if (fp->_p > fp->_bf._base || len < fp->_bf._size)
 	    {
 	      /* pass through the buffer */
-	      w = MIN (len, (size_t) w);
+	      w = MIN (len, w);
 	      COPY (w);
 	      fp->_w -= w;
 	      fp->_p += w;
-	      if (fp->_w == 0 && fflush ( fp))
+	      if (fp->_w == 0 && _fflush_r (ptr, fp))
 		goto err;
 	    }
 	  else
 	    {
 	      /* write directly */
 	      w = ((int)MIN (len, INT_MAX)) / fp->_bf._size * fp->_bf._size;
-	      w = fp->_write (fp->_cookie, p, w);
+	      w = fp->_write (ptr, fp->_cookie, p, w);
 	      if (w <= 0)
 		goto err;
 	    }
@@ -244,22 +244,22 @@ _sfvwrite (
 	  if (!nlknown)
 	    {
 	      nl = memchr ((void *) p, '\n', len);
-	      nldist = nl ? nl + 1 - p : (int) (len + 1);
+	      nldist = nl ? nl + 1 - p : len + 1;
 	      nlknown = 1;
 	    }
-	  s = MIN (len, (size_t) nldist);
+	  s = MIN (len, nldist);
 	  w = fp->_w + fp->_bf._size;
 	  if (fp->_p > fp->_bf._base && s > w)
 	    {
 	      COPY (w);
 	      /* fp->_w -= w; */
 	      fp->_p += w;
-	      if (fflush ( fp))
+	      if (_fflush_r (ptr, fp))
 		goto err;
 	    }
 	  else if (s >= (w = fp->_bf._size))
 	    {
-	      w = fp->_write (fp->_cookie, p, w);
+	      w = fp->_write (ptr, fp->_cookie, p, w);
 	      if (w <= 0)
 		goto err;
 	    }
@@ -273,7 +273,7 @@ _sfvwrite (
 	  if ((nldist -= w) == 0)
 	    {
 	      /* copied the newline: flush and forget */
-	      if (fflush ( fp))
+	      if (_fflush_r (ptr, fp))
 		goto err;
 	      nlknown = 0;
 	    }

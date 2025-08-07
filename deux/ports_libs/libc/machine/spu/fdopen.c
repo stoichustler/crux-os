@@ -28,11 +28,10 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <picolibc.h>
-
 #include <stdio.h>
 #include <errno.h>
 
+#ifndef _REENT_ONLY
 /* Just a stub for now.  */
 FILE *
 fdopen (int fd,
@@ -41,3 +40,4 @@ fdopen (int fd,
   errno = ENOSYS;
   return NULL;
 }
+#endif /* ! _REENT_ONLY */

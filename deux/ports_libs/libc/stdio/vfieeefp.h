@@ -29,9 +29,13 @@
 /* This header file is a modification of mprec.h that only contains floating
    point union code. */
 
+#include <newlib.h>
+#include <ieeefp.h>
 #include <math.h>
 #include <float.h>
 #include <errno.h>
+#include <sys/config.h>
+#include <sys/cdefs.h>
 
 #ifdef __IEEE_LITTLE_ENDIAN
 #define IEEE_8087
@@ -55,7 +59,7 @@
 Exactly one of IEEE_8087, IEEE_MC68k, VAX, or IBM should be defined.
 #endif
 
-#ifdef __IO_LONG_DOUBLE
+#ifdef _WANT_IO_LONG_DOUBLE
 /* If we are going to examine or modify specific bits in a long double using
    the lword0 or lwordx macros, then we must wrap the long double inside
    a union.  This is necessary to avoid undefined behavior according to
@@ -65,74 +69,74 @@ Exactly one of IEEE_8087, IEEE_MC68k, VAX, or IBM should be defined.
 #if LDBL_MANT_DIG == 24
 struct ldieee
 {
-  __uint32_t manh:23;
-  __uint32_t exp:8;
-  __uint32_t sign:1;
+  unsigned manh:23;
+  unsigned exp:8;
+  unsigned sign:1;
 } __packed;
 #elif LDBL_MANT_DIG == 53
 struct ldieee
 {
-  __uint32_t manl:20;
-  __uint32_t manh:32;
-  __uint32_t exp:11;
-  __uint32_t sign:1;
+  unsigned manl:20;
+  unsigned manh:32;
+  unsigned exp:11;
+  unsigned sign:1;
 } __packed;
 #elif LDBL_MANT_DIG == 64
 struct ldieee
 {
-  __uint32_t manl:32;
-  __uint32_t manh:32;
-  __uint32_t exp:15;
-  __uint32_t sign:1;
+  unsigned manl:32;
+  unsigned manh:32;
+  unsigned exp:15;
+  unsigned sign:1;
 } __packed;
 #elif LDBL_MANT_DIG > 64
 struct ldieee
 {
-  __uint32_t manl3:16;
-  __uint32_t manl2:32;
-  __uint32_t manl:32;
-  __uint32_t manh:32;
-  __uint32_t exp:15;
-  __uint32_t sign:1;
+  unsigned manl3:16;
+  unsigned manl2:32;
+  unsigned manl:32;
+  unsigned manh:32;
+  unsigned exp:15;
+  unsigned sign:1;
 } __packed;
 #endif /* LDBL_MANT_DIG */
 #else  /* !IEEE_8087 */
 #if LDBL_MANT_DIG == 24
 struct ldieee
 {
-  __uint32_t sign:1;
-  __uint32_t exp:8;
-  __uint32_t manh:23;
+  unsigned sign:1;
+  unsigned exp:8;
+  unsigned manh:23;
 } __packed;
 #elif LDBL_MANT_DIG == 53
 struct ldieee
 {
-  __uint32_t sign:1;
-  __uint32_t exp:11;
-  __uint32_t manh:32;
-  __uint32_t manl:20;
+  unsigned sign:1;
+  unsigned exp:11;
+  unsigned manh:32;
+  unsigned manl:20;
 } __packed;
 #elif LDBL_MANT_DIG == 64
 struct ldieee
 {
-  __uint32_t sign:1;
-  __uint32_t exp:15;
-  __uint32_t manh:32;
-  __uint32_t manl:32;
+  unsigned sign:1;
+  unsigned exp:15;
+  unsigned manh:32;
+  unsigned manl:32;
 } __packed;
 #elif LDBL_MANT_DIG > 64
 struct ldieee
 {
-  __uint32_t sign:1;
-  __uint32_t exp:15;
-  __uint32_t manh:32;
-  __uint32_t manl:32;
-  __uint32_t manl2:32;
-  __uint32_t manl3:16;
+  unsigned sign:1;
+  unsigned exp:15;
+  unsigned manh:32;
+  unsigned manl:32;
+  unsigned manl2:32;
+  unsigned manl3:16;
 } __packed;
 #endif /* LDBL_MANT_DIG */
 #endif /* !IEEE_8087 */
-#endif /* __IO_LONG_DOUBLE */
+#endif /* _WANT_IO_LONG_DOUBLE */
 
 /* If we are going to examine or modify specific bits in a double using
    the word0 and/or word1 macros, then we must wrap the double inside
@@ -166,7 +170,7 @@ union double_union
 #define Exp_msk11   ((__uint32_t)0x00800000L)
 #define Exp_mask    ((__uint32_t)0x7f800000L)
 #define P    	    24
-#define Bias 	    ((__uint32_t)127)
+#define Bias 	    127
 #define IEEE_Arith
 #define Emin        (-126)
 #define Exp_1       ((__uint32_t)0x3f800000L)
@@ -201,7 +205,7 @@ union double_union
 #define Exp_msk11   ((__uint32_t)0x100000L)
 #define Exp_mask  ((__uint32_t)0x7ff00000L)
 #define P 53
-#define Bias ((__uint32_t) 1023)
+#define Bias 1023
 #define IEEE_Arith
 #define Emin (-1022)
 #define Exp_1  ((__uint32_t)0x3ff00000L)
@@ -233,7 +237,7 @@ union double_union
 #define Exp_msk11  ((__uint32_t)0x1000000L)
 #define Exp_mask  ((__uint32_t)0x7f000000L)
 #define P 14
-#define Bias ((__uint32_T) 65)
+#define Bias 65
 #define Exp_1  ((__uint32_t)0x41000000L)
 #define Exp_11 ((__uint32_t)0x41000000L)
 #define Ebits 8	/* exponent has 7 bits, but 8 is the right value in b2d */
@@ -257,7 +261,7 @@ union double_union
 #define Exp_msk11   ((__uint32_t)0x800000L)
 #define Exp_mask  ((__uint32_t)0x7f80L)
 #define P 56
-#define Bias ((__uint32_t) 129)
+#define Bias 129
 #define Exp_1  ((__uint32_t)0x40800000L)
 #define Exp_11 ((__uint32_t)0x4080L)
 #define Ebits 8

@@ -31,9 +31,11 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef _SPU_TIMER_H_
 #define _SPU_TIMER_H_
 
-#include <stdint.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-_BEGIN_STD_C
+#include <stdint.h>
 
 /* Clock services.  */
 extern void spu_clock_start (void);
@@ -76,6 +78,8 @@ extern unsigned spu_clock_slih (unsigned event_mask);
 #define SPU_TIMER_ERR_FREE              -16
 #define SPU_TIMER_ERR_NOT_STOPPED       -17
 
-_END_STD_C
+#ifdef __cplusplus
+}
+#endif
 
 #endif

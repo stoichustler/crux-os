@@ -1,4 +1,3 @@
-/* Copyright (c) 2009 Corinna Vinschen <corinna@vinschen.de> */
 /*
 FUNCTION
 	<<wcscasecmp>>---case-insensitive wide character string compare
@@ -33,7 +32,6 @@ QUICKREF
 	wcscasecmp 
 */
 
-#define _DEFAULT_SOURCE
 #include <wchar.h>
 #include <wctype.h>
 

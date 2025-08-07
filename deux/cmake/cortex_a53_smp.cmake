@@ -8,3 +8,4 @@ set(MCPU_FLAGS "-mcpu=cortex-a53")
 set(VFP_FLAGS "")
 
 include(${CMAKE_CURRENT_LIST_DIR}/aarch64-none-elf.cmake)
+# include(${CMAKE_CURRENT_LIST_DIR}/aarch64-linux-gnu.cmake)

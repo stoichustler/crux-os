@@ -23,7 +23,6 @@
  * ChaCha based random number generator for OpenBSD.
  */
 
-#define _DEFAULT_SOURCE
 #include <fcntl.h>
 #include <limits.h>
 #include <signal.h>
@@ -51,11 +50,11 @@
 #define RSBUFSZ	(16*BLOCKSZ)
 
 #if SIZE_MAX <= 65535
-#define REKEY_BASE	((size_t)  32 * 1024) /* NB. should be a power of 2 */
+#define REKEY_BASE	(  32*1024) /* NB. should be a power of 2 */
 #elif SIZE_MAX <= 1048575
-#define REKEY_BASE	((size_t) 256 * 1024) /* NB. should be a power of 2 */
+#define REKEY_BASE	( 512*1024) /* NB. should be a power of 2 */
 #else
-#define REKEY_BASE	((size_t)1024 * 1024) /* NB. should be a power of 2 */
+#define REKEY_BASE	(1024*1024) /* NB. should be a power of 2 */
 #endif
 
 /* Marked MAP_INHERIT_ZERO, so zero'd out in fork children. */
@@ -67,24 +66,24 @@ static struct _rs {
 /* Maybe be preserved in fork children, if _rs_allocate() decides. */
 static struct _rsx {
 	chacha_ctx	rs_chacha;	/* chacha context for random keystream */
-	unsigned char	rs_buf[RSBUFSZ];	/* keystream blocks */
+	u_char		rs_buf[RSBUFSZ];	/* keystream blocks */
 } *rsx;
 
 static inline int _rs_allocate(struct _rs **, struct _rsx **);
 static inline void _rs_forkdetect(void);
 #include "arc4random.h"
 
-static inline void _rs_rekey(unsigned char *dat, size_t datlen);
+static inline void _rs_rekey(u_char *dat, size_t datlen);
 
 static inline void
-_rs_init(unsigned char *buf, size_t n)
+_rs_init(u_char *buf, size_t n)
 {
 	if (n < KEYSZ + IVSZ)
 		return;
 
 	if (rs == NULL) {
 		if (_rs_allocate(&rs, &rsx) == -1)
-			abort();
+			_exit(1);
 	}
 
 	chacha_keysetup(&rsx->rs_chacha, buf, KEYSZ * 8);
@@ -94,7 +93,7 @@ _rs_init(unsigned char *buf, size_t n)
 static void
 _rs_stir(void)
 {
-	uint8_t rnd[KEYSZ + IVSZ];
+	u_char rnd[KEYSZ + IVSZ];
 	uint32_t rekey_fuzz = 0;
 
 	memset(rnd, 0, (KEYSZ + IVSZ) * sizeof(u_char));
@@ -131,7 +130,7 @@ _rs_stir_if_needed(size_t len)
 }
 
 static inline void
-_rs_rekey(unsigned char *dat, size_t datlen)
+_rs_rekey(u_char *dat, size_t datlen)
 {
 #ifndef KEYSTREAM_ONLY
 	memset(rsx->rs_buf, 0, sizeof(rsx->rs_buf));
@@ -156,8 +155,8 @@ _rs_rekey(unsigned char *dat, size_t datlen)
 static inline void
 _rs_random_buf(void *_buf, size_t n)
 {
-	unsigned char *buf = (unsigned char *)_buf;
-	unsigned char *keystream;
+	u_char *buf = (u_char *)_buf;
+	u_char *keystream;
 	size_t m;
 
 	_rs_stir_if_needed(n);
@@ -180,7 +179,7 @@ _rs_random_buf(void *_buf, size_t n)
 static inline void
 _rs_random_u32(uint32_t *val)
 {
-	unsigned char *keystream;
+	u_char *keystream;
 
 	_rs_stir_if_needed(sizeof(*val));
 	if (rs->rs_have < sizeof(*val))
@@ -196,16 +195,24 @@ arc4random(void)
 {
 	uint32_t val;
 
+#ifndef __SINGLE_THREAD__
 	_ARC4_LOCK();
+#endif
 	_rs_random_u32(&val);
+#ifndef __SINGLE_THREAD__
 	_ARC4_UNLOCK();
+#endif
 	return val;
 }
 
 void
 arc4random_buf(void *buf, size_t n)
 {
+#ifndef __SINGLE_THREAD__
 	_ARC4_LOCK();
+#endif
 	_rs_random_buf(buf, n);
+#ifndef __SINGLE_THREAD__
 	_ARC4_UNLOCK();
+#endif
 }

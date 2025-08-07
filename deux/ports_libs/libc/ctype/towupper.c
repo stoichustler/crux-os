@@ -65,8 +65,10 @@ PORTABILITY
 No supporting OS subroutines are required.
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <newlib.h>
 #include <string.h>
+#include <reent.h>
 #include <ctype.h>
 #include <wctype.h>
 #include "local.h"
@@ -74,9 +76,9 @@ No supporting OS subroutines are required.
 wint_t
 towupper (wint_t c)
 {
-#ifdef __MB_CAPABLE
-  return towupper_l(c, 0);
+#ifdef _MB_CAPABLE
+  return towctrans (c, WCT_TOUPPER);
 #else
   return c < 0x00ff ? (wint_t)(toupper ((int)c)) : c;
-#endif /* __MB_CAPABLE */
+#endif /* _MB_CAPABLE */
 }

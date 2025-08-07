@@ -30,8 +30,6 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -43,6 +41,7 @@ typedef struct
   _fpos_t * pos;
 } c99_fgetpos_t;
 
+#ifndef _REENT_ONLY
 
 int
 fgetpos (FILE *__restrict fp,
@@ -57,3 +56,4 @@ fgetpos (FILE *__restrict fp,
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_FGETPOS, &arg);
 }
+#endif /* ! _REENT_ONLY */

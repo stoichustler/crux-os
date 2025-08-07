@@ -1,45 +1,15 @@
-/*
- * Copyright (c) 1994 Cygnus Support.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms are permitted
- * provided that the above copyright notice and this paragraph are
- * duplicated in all such forms and that any documentation,
- * and/or other materials related to such
- * distribution and use acknowledge that the software was developed
- * at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
- * endorse or promote products derived from this software without
- * specific prior written permission.
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
 #include "test.h"
 #include <string.h>
 #include <errno.h>
 
 
-/* Suppresses compiler warnings
- *    As described by items in quotes
- */
-
-#if ((__GNUC__ == 4 && __GNUC_MINOR__ >= 2) || __GNUC__ > 4)
-#pragma GCC diagnostic ignored "-Wmemset-transposed-args"
-#ifndef __clang__
-#pragma GCC diagnostic ignored "-Wstringop-overflow="
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-#pragma GCC diagnostic ignored "-Warray-bounds"
-#endif
-
-
-static const char *it = "<UNSET>";	/* Routine name for message routines. */
-static int  errors = 0;
+const char *it = "<UNSET>";	/* Routine name for message routines. */
+int  errors = 0;
 
 /* Complain if condition is not true.  */
 #define check(thing) checkit(thing, __LINE__)
 
-static void
+void
 checkit (int ok,
        int l )
 
@@ -59,7 +29,7 @@ checkit (int ok,
 /* Complain if first two args don't strcmp as equal.  */
 #define equal(a, b)  funcqual(a,b,__LINE__);
 
-static void
+void
 funcqual (char *a,
        char *b,
        int l)
@@ -75,11 +45,11 @@ funcqual (char *a,
 
 
 
-static char one[100];
+static char one[50];
 static char two[50];
 
 
-void test_string(void)
+void test_string()
 {
   /* Test strcmp first because we use it to test other things.  */
   it = "strcmp";
@@ -556,7 +526,7 @@ void test_string(void)
   equal(one+4, "ef");
 
   (void) strcpy(one, "abcdef");
-  bzero(one+2, (0));
+  bzero(one+2, 0);
   equal(one, "abcdef");	/* Zero-length copy. */
 
   /* bcmp - somewhat like memcmp.  */

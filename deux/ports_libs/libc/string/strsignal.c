@@ -46,22 +46,30 @@ QUICKREF
  *  SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
 
-#define _DEFAULT_SOURCE
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <reent.h>
+
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local char _tls_signal_buf[_REENT_SIGNAL_SIZE];
+#endif
 
 char *
 strsignal (int signal)
 {
   char *buffer;
-  static __THREAD_LOCAL char _signal_buf[24];
+  struct _reent *ptr;
 
-  buffer = _signal_buf;
+  ptr = _REENT;
+
+  _REENT_CHECK_SIGNAL_BUF(ptr);
+  buffer = _REENT_SIGNAL_BUF(ptr);
+
 #if defined(SIGRTMIN) && defined(SIGRTMAX)
   if ((signal >= SIGRTMIN) && (signal <= SIGRTMAX)) {
-    sprintf (buffer, "Real-time signal %d", signal - SIGRTMIN);
+    siprintf (buffer, "Real-time signal %d", signal - SIGRTMIN);
     return buffer;
   }
 #endif
@@ -237,7 +245,7 @@ strsignal (int signal)
       break;
 #endif
     default:
-      sprintf (buffer, "Unknown signal %d", signal);
+      siprintf (buffer, "Unknown signal %d", signal);
       break;
   }
 

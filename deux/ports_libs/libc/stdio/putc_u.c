@@ -29,7 +29,7 @@ SYNOPSIS
 	int putc_unlocked(int <[ch]>, FILE *<[fp]>);
 
 	#include <stdio.h>
-	int putc_unlocked( int <[ch]>, FILE *<[fp]>);
+	int _putc_unlocked_r(struct _reent *<[ptr]>, int <[ch]>, FILE *<[fp]>);
 
 DESCRIPTION
 <<putc_unlocked>> is a non-thread-safe version of <<putc>> declared in
@@ -60,7 +60,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 static char sccsid[] = "%W% (Berkeley) %G%";
 #endif /* LIBC_SCCS and not lint */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 
 /*
@@ -70,11 +70,22 @@ static char sccsid[] = "%W% (Berkeley) %G%";
 #undef putc_unlocked
 
 int
-putc_unlocked (
+_putc_unlocked_r (struct _reent *ptr,
        int c,
        register FILE *fp)
 {
   /* CHECK_INIT is (eventually) called by __swbuf.  */
 
-  return _sputc ( c, fp);
+  return __sputc_r (ptr, c, fp);
 }
+
+#ifndef _REENT_ONLY
+int
+putc_unlocked (int c,
+       register FILE *fp)
+{
+  /* CHECK_INIT is (eventually) called by __swbuf.  */
+
+  return __sputc_r (_REENT, c, fp);
+}
+#endif /* !_REENT_ONLY */

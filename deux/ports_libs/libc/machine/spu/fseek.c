@@ -30,8 +30,7 @@ POSSIBILITY OF SUCH DAMAGE.
 Author: Joel Schopp <jschopp@austin.ibm.com>
 */
 
-#include <picolibc.h>
-
+#include <_ansi.h>
 #include <stdio.h>
 
 #include "c99ppe.h"
@@ -45,6 +44,7 @@ typedef struct
   int whence;
 } c99_fseek_t;
 
+#ifndef _REENT_ONLY
 
 int
 fseek (register FILE *fp,
@@ -61,3 +61,4 @@ fseek (register FILE *fp,
 
   return __send_to_ppe(SPE_C99_SIGNALCODE, SPE_C99_FSEEK, &args);
 }
+#endif /* ! _REENT_ONLY */

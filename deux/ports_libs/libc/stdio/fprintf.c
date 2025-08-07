@@ -16,13 +16,13 @@
  */
 /* doc in sprintf.c */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include "local.h"
 
 int
-fprintf (
+_fprintf_r (struct _reent *ptr,
        FILE *__restrict fp,
        const char *__restrict fmt, ...)
 {
@@ -30,9 +30,35 @@ fprintf (
   va_list ap;
 
   va_start (ap, fmt);
-  ret = vfprintf ( fp, fmt, ap);
+  ret = _vfprintf_r (ptr, fp, fmt, ap);
   va_end (ap);
   return ret;
 }
 
-__nano_reference(fprintf, fiprintf);
+#ifdef _NANO_FORMATTED_IO
+int
+_fiprintf_r (struct _reent *, FILE *, const char *, ...)
+       _ATTRIBUTE ((__alias__("_fprintf_r")));
+#endif
+
+#ifndef _REENT_ONLY
+
+int
+fprintf (FILE *__restrict fp,
+       const char *__restrict fmt, ...)
+{
+  int ret;
+  va_list ap;
+
+  va_start (ap, fmt);
+  ret = _vfprintf_r (_REENT, fp, fmt, ap);
+  va_end (ap);
+  return ret;
+}
+
+#ifdef _NANO_FORMATTED_IO
+int
+fiprintf (FILE *, const char *, ...)
+       _ATTRIBUTE ((__alias__("fprintf")));
+#endif
+#endif /* ! _REENT_ONLY */

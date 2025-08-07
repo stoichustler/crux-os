@@ -1,29 +1,17 @@
 /*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-*/
-/*
 FUNCTION
 <<signal>>---specify handler subroutine for a signal
 
 INDEX
 	signal
+INDEX
+	_signal_r
 
 SYNOPSIS
 	#include <signal.h>
 	void (*signal(int <[sig]>, void(*<[func]>)(int))) (int);
+
+	void (*_signal_r(void *<[reent]>, int <[sig]>, void(*<[func]>)(int))) (int);
 
 DESCRIPTION
 <<signal>> provides a simple signal-handling implementation for embedded
@@ -50,6 +38,9 @@ return), your program's execution continues at the point
 where it was when the signal was raised (whether by your program
 itself, or by an external event).  Signal handlers can also
 use functions such as <<exit>> and <<abort>> to avoid returning.
+
+The alternate function <<_signal_r>> is the reentrant version.
+The extra argument <[reent]> is a pointer to a reentrancy structure.
 
 @c FIXME: do we have setjmp.h and assoc fns?
 
@@ -81,78 +72,156 @@ without an operating system that can actually raise exceptions.
  * for the signal sig, or SIG_ERR if the request fails.
  */
 
-#define _DEFAULT_SOURCE
+/* _init_signal initialises the signal handlers for each signal. This function
+   is called by crt0 at program startup.  */
+
+#ifdef SIGNAL_PROVIDED
+
+int _dummy_simulated_signal;
+
+#else
+
 #include <errno.h>
 #include <signal.h>
-#include <unistd.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <reent.h>
+#include <_syslist.h>
 
-#if __SIZEOF_POINTER__ == 2 && defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_2)
-#define _USE_ATOMIC_SIGNAL
+#ifdef _REENT_THREAD_LOCAL
+_Thread_local void (**_tls_sig_func)(int);
 #endif
 
-#if __SIZEOF_POINTER__ == 4 && defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_4)
-#define _USE_ATOMIC_SIGNAL
-#endif
+int
+_init_signal_r (struct _reent *ptr)
+{
+  int i;
 
-#if __SIZEOF_POINTER__ == 8 && defined(__GCC_HAVE_SYNC_COMPARE_AND_SWAP_8)
-#define _USE_ATOMIC_SIGNAL
-#endif
+  if (_REENT_SIG_FUNC(ptr) == NULL)
+    {
+      _REENT_SIG_FUNC(ptr) = (_sig_func_ptr *)_malloc_r (ptr, sizeof (_sig_func_ptr) * NSIG);
+      if (_REENT_SIG_FUNC(ptr) == NULL)
+	return -1;
 
-#ifdef _USE_ATOMIC_SIGNAL
-#include <stdatomic.h>
-static _Atomic _sig_func_ptr _sig_func[_NSIG];
-#else
-static _sig_func_ptr _sig_func[_NSIG];
-#endif
+      for (i = 0; i < NSIG; i++)
+	_REENT_SIG_FUNC(ptr)[i] = SIG_DFL;
+    }
+
+  return 0;
+}
 
 _sig_func_ptr
-signal (int sig, _sig_func_ptr func)
+_signal_r (struct _reent *ptr,
+	int sig,
+	_sig_func_ptr func)
 {
-  if (sig < 0 || sig >= _NSIG)
+  _sig_func_ptr old_func;
+
+  if (sig < 0 || sig >= NSIG)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return SIG_ERR;
     }
 
-#ifdef _USE_ATOMIC_SIGNAL
-  return (_sig_func_ptr) atomic_exchange(&_sig_func[sig], func);
-#else
-  _sig_func_ptr old = _sig_func[sig];
-  _sig_func[sig] = func;
-  return old;
-#endif
+  if (_REENT_SIG_FUNC(ptr) == NULL && _init_signal_r (ptr) != 0)
+    return SIG_ERR;
+  
+  old_func = _REENT_SIG_FUNC(ptr)[sig];
+  _REENT_SIG_FUNC(ptr)[sig] = func;
+
+  return old_func;
 }
 
-int
-raise (int sig)
+int 
+_raise_r (struct _reent *ptr,
+     int sig)
 {
-  if (sig < 0 || sig >= _NSIG)
+  _sig_func_ptr func;
+
+  if (sig < 0 || sig >= NSIG)
     {
-      errno = EINVAL;
+      _REENT_ERRNO(ptr) = EINVAL;
       return -1;
     }
 
-  for (;;) {
-    _sig_func_ptr func;
-#ifdef _USE_ATOMIC_SIGNAL
-    func = (_sig_func_ptr) atomic_load(&_sig_func[sig]);
-#else
-    func = _sig_func[sig];
-#endif
-    if (func == SIG_IGN)
-      return 0;
-    else if (func == SIG_DFL)
-      _exit(128 + sig);
-#ifdef _USE_ATOMIC_SIGNAL
-    /* make sure it hasn't changed in the meantime */
-    if (!atomic_compare_exchange_strong(&_sig_func[sig],
-                                        &func,
-                                        SIG_DFL))
-      continue;
-#else
-    _sig_func[sig] = SIG_DFL;
-#endif
-    (*func)(sig);
+  if (_REENT_SIG_FUNC(ptr) == NULL)
+    func = SIG_DFL;
+  else
+    func = _REENT_SIG_FUNC(ptr)[sig];
+
+  if (func == SIG_DFL)
+    return _kill_r (ptr, _getpid_r (ptr), sig);
+  else if (func == SIG_IGN)
     return 0;
-  }
+  else if (func == SIG_ERR)
+    {
+      _REENT_ERRNO(ptr) = EINVAL;
+      return 1;
+    }
+  else
+    {
+      _REENT_SIG_FUNC(ptr)[sig] = SIG_DFL;
+      func (sig);
+      return 0;
+    }
 }
+
+int
+__sigtramp_r (struct _reent *ptr,
+     int sig)
+{
+  _sig_func_ptr func;
+
+  if (sig < 0 || sig >= NSIG)
+    {
+      return -1;
+    }
+
+  if (_REENT_SIG_FUNC(ptr) == NULL && _init_signal_r (ptr) != 0)
+    return -1;
+
+  func = _REENT_SIG_FUNC(ptr)[sig];
+  if (func == SIG_DFL)
+    return 1;
+  else if (func == SIG_ERR)
+    return 2;
+  else if (func == SIG_IGN)
+    return 3;
+  else
+    {
+      _REENT_SIG_FUNC(ptr)[sig] = SIG_DFL;
+      func (sig);
+      return 0;
+    }
+}
+
+#ifndef _REENT_ONLY
+
+int 
+raise (int sig)
+{
+  return _raise_r (_REENT, sig);
+}
+
+_sig_func_ptr
+signal (int sig,
+	_sig_func_ptr func)
+{
+  return _signal_r (_REENT, sig, func);
+}
+
+int 
+_init_signal (void)
+{
+  return _init_signal_r (_REENT);
+}
+
+int
+__sigtramp (int sig)
+{
+  return __sigtramp_r (_REENT, sig);
+}
+
+#endif
+
+#endif /* !SIGNAL_PROVIDED */

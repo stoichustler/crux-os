@@ -15,8 +15,6 @@
  */
 
 
-#include <picolibc.h>
-
 #define _ASM
 #define _SETJMP_H
 

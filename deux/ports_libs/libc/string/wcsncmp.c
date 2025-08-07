@@ -59,6 +59,7 @@ No supporting OS subroutines are required.
  * SUCH DAMAGE.
  */
 
+#include <_ansi.h>
 #include <wchar.h>
 
 int
@@ -73,7 +74,7 @@ wcsncmp (const wchar_t * s1,
     {
       if (*s1 != *s2++)
 	{
-          return (*s1 < *--s2 ? -1 : 1);
+	  return (*s1 - *--s2);
 	}
       if (*s1++ == 0)
 	break;

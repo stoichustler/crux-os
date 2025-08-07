@@ -38,7 +38,7 @@ SYNOPSIS
         #include <wchar.h>
         wint_t ungetwc(wint_t <[wc]>, FILE *<[stream]>);
 
-        wint_t ungetwc( wint_t <[wc]>, FILE *<[stream]>);
+        wint_t _ungetwc_r(struct _reent *<[reent]>, wint_t <[wc]>, FILE *<[stream]>);
 
 DESCRIPTION
 <<ungetwc>> is used to return wide characters back to <[stream]> to be
@@ -64,7 +64,8 @@ PORTABILITY
 C99
 */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -73,7 +74,7 @@ C99
 #include "local.h"
 
 wint_t
-ungetwc (
+_ungetwc_r (struct _reent *ptr,
 	wint_t wc,
 	register FILE *fp)
 {
@@ -84,18 +85,31 @@ ungetwc (
   (void) ORIENT (fp, 1);
   if (wc == WEOF)
     wc = WEOF;
-  else if ((len = wcrtomb(buf, wc, &fp->_mbstate)) == (size_t)-1)
+  else if ((len = _wcrtomb_r(ptr, buf, wc, &fp->_mbstate)) == (size_t)-1)
     {
       fp->_flags |= __SERR;
       wc = WEOF;
     }
   else
     while (len-- != 0)
-      if (ungetc( (unsigned char)buf[len], fp) == EOF)
+      if (_ungetc_r(ptr, (unsigned char)buf[len], fp) == EOF)
 	{
 	  wc = WEOF;
 	  break;
 	}
   _newlib_flockfile_end (fp);
   return wc;
+}
+
+/*
+ * MT-safe version.
+ */
+wint_t
+ungetwc (wint_t wc,
+	FILE *fp)
+{
+  struct _reent *reent = _REENT;
+
+  CHECK_INIT (reent, fp);
+  return _ungetwc_r (reent, wc, fp);
 }

@@ -37,10 +37,10 @@ SYNOPSIS
 	char *fgets_unlocked(char *restrict <[buf]>, int <[n]>, FILE *restrict <[fp]>);
 
         #include <stdio.h>
-	char *fgets( char *restrict <[buf]>, int <[n]>, FILE *restrict <[fp]>);
+	char *_fgets_r(struct _reent *<[ptr]>, char *restrict <[buf]>, int <[n]>, FILE *restrict <[fp]>);
 
         #include <stdio.h>
-	char *fgets_unlocked( char *restrict <[buf]>, int <[n]>, FILE *restrict <[fp]>);
+	char *_fgets_unlocked_r(struct _reent *<[ptr]>, char *restrict <[buf]>, int <[n]>, FILE *restrict <[fp]>);
 
 DESCRIPTION
 	Reads at most <[n-1]> characters from <[fp]> until a newline
@@ -77,7 +77,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include "local.h"
@@ -94,7 +94,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
  */
 
 char *
-fgets (
+_fgets_r (struct _reent * ptr,
        char *__restrict buf,
        int n,
        FILE *__restrict fp)
@@ -108,7 +108,7 @@ fgets (
 
   s = buf;
 
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   _newlib_flockfile_start (fp);
 #ifdef __SCLE
@@ -116,7 +116,7 @@ fgets (
     {
       int c = 0;
       /* Sorry, have to do it the slow way */
-      while (--n > 0 && (c = _sgetc ( fp)) != EOF)
+      while (--n > 0 && (c = __sgetc_r (ptr, fp)) != EOF)
 	{
 	  *s++ = c;
 	  if (c == '\n')
@@ -141,7 +141,7 @@ fgets (
        */
       if ((len = fp->_r) <= 0)
 	{
-	  if (_srefill ( fp))
+	  if (__srefill_r (ptr, fp))
 	    {
 	      /* EOF: stop with partial or no line */
 	      if (s == buf)
@@ -161,8 +161,8 @@ fgets (
        * newline, and stop.  Otherwise, copy entire chunk
        * and loop.
        */
-      if (len > (size_t) n)     /* n is always non-negative here */
-        len = (size_t) n;
+      if (len > n)
+	len = n;
       t = (unsigned char *) memchr ((void *) p, '\n', len);
       if (t != 0)
 	{
@@ -184,3 +184,15 @@ fgets (
   _newlib_flockfile_end (fp);
   return buf;
 }
+
+#ifndef _REENT_ONLY
+
+char *
+fgets (char *__restrict buf,
+       int n,
+       FILE *__restrict fp)
+{
+  return _fgets_r (_REENT, buf, n, fp);
+}
+
+#endif /* !_REENT_ONLY */

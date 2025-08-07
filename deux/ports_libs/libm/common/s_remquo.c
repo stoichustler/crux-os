@@ -57,12 +57,9 @@ C99, POSIX.
 
 */
 
-#include "fdlibm.h"
-
-#ifdef _NEED_FLOAT64
-
 #include <limits.h>
 #include <math.h>
+#include "fdlibm.h"
 
 /* For quotient, return either all 31 bits that can from calculation (using
  * int32_t), or as many as can fit into an int that is smaller than 32 bits.  */
@@ -72,7 +69,7 @@ C99, POSIX.
   #define QUO_MASK INT_MAX
 #endif
 
-static const __float64 Zero[] = {_F_64(0.0), _F_64(-0.0),};
+static const double Zero[] = {0.0, -0.0,};
 
 /*
  * Return the IEEE remainder and set *quo to the last n bits of the
@@ -82,8 +79,8 @@ static const __float64 Zero[] = {_F_64(0.0), _F_64(-0.0),};
  * method.  In practice, this is far more bits than are needed to use
  * remquo in reduction algorithms.
  */
-__float64
-remquo64(__float64 x, __float64 y, int *quo)
+double
+remquo(double x, double y, int *quo)
 {
 	__int32_t n,hx,hy,hz,ix,iy,sx,i;
 	__uint32_t lx,ly,lz,q,sxy;
@@ -115,18 +112,18 @@ remquo64(__float64 x, __float64 y, int *quo)
     /* determine ix = ilogb(x) */
 	if(hx<0x00100000) {	/* subnormal x */
 	    if(hx==0) {
-		for (ix = -1043, i=lx; i>0; i = lsl(i, 1)) ix -=1;
+		for (ix = -1043, i=lx; i>0; i<<=1) ix -=1;
 	    } else {
-		for (ix = -1022,i=lsl(hx, 11); i>0; i = lsl(i, 1)) ix -=1;
+		for (ix = -1022,i=(hx<<11); i>0; i<<=1) ix -=1;
 	    }
 	} else ix = (hx>>20)-1023;
 
     /* determine iy = ilogb(y) */
 	if(hy<0x00100000) {	/* subnormal y */
 	    if(hy==0) {
-		for (iy = -1043, i=ly; i>0; i = lsl(i, 1)) iy -=1;
+		for (iy = -1043, i=ly; i>0; i<<=1) iy -=1;
 	    } else {
-		for (iy = -1022,i= lsl(hy, 11); i>0; i = lsl(i, 1)) iy -=1;
+		for (iy = -1022,i=(hy<<11); i>0; i<<=1) iy -=1;
 	    }
 	} else iy = (hy>>20)-1023;
 
@@ -136,7 +133,7 @@ remquo64(__float64 x, __float64 y, int *quo)
 	else {		/* subnormal x, shift x to normal */
 	    n = -1022-ix;
 	    if(n<=31) {
-	        hx = lsl(hx, n)|(lx>>(32-n));
+	        hx = (hx<<n)|(lx>>(32-n));
 	        lx <<= n;
 	    } else {
 		hx = lx<<(n-32);
@@ -148,7 +145,7 @@ remquo64(__float64 x, __float64 y, int *quo)
 	else {		/* subnormal y, shift y to normal */
 	    n = -1022-iy;
 	    if(n<=31) {
-	        hy = lsl(hy, n)|(ly>>(32-n));
+	        hy = (hy<<n)|(ly>>(32-n));
 	        ly <<= n;
 	    } else {
 		hy = ly<<(n-32);
@@ -179,7 +176,7 @@ remquo64(__float64 x, __float64 y, int *quo)
 	    iy -= 1;
 	}
 	if(iy>= -1022) {	/* normalize output */
-	    hx = ((hx-0x00100000)|lsl((iy+1023), 20));
+	    hx = ((hx-0x00100000)|((iy+1023)<<20));
 	} else {		/* subnormal output */
 	    n = -1022 - iy;
 	    if(n<=20) {
@@ -193,13 +190,13 @@ remquo64(__float64 x, __float64 y, int *quo)
 	}
 fixup:
 	INSERT_WORDS(x,hx,lx);
-	y = fabs64(y);
-	if (y < _F_64(0x1p-1021)) {
+	y = fabs(y);
+	if (y < 0x1p-1021) {
 	    if (x+x>y || (x+x==y && (q & 1))) {
 		q++;
 		x-=y;
 	    }
-	} else if (x>_F_64(0.5)*y || (x==_F_64(0.5)*y && (q & 1))) {
+	} else if (x>0.5*y || (x==0.5*y && (q & 1))) {
 	    q++;
 	    x-=y;
 	}
@@ -209,7 +206,3 @@ fixup:
 	*quo = (sxy ? -q : q);
 	return x;
 }
-
-_MATH_ALIAS_d_ddI(remquo)
-
-#endif /* _NEED_FLOAT64 */

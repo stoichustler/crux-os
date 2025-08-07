@@ -1,7 +1,4 @@
 /*
-Copyright (c) 2016 Corinna Vinschen <corinna@vinschen.de>
- */
-/*
 FUNCTION
 	<<strcoll_l>>---locale-specific character string compare
 	
@@ -40,12 +37,10 @@ QUICKREF
 	strcoll_l ansi pure
 */
 
-#define _DEFAULT_SOURCE
 #include <string.h>
 
 int
-strcoll_l (const char *a, const char *b, locale_t locale)
+strcoll_l (const char *a, const char *b, struct __locale_t *locale)
 {
-  (void) locale;
   return strcmp (a, b);
 }

@@ -29,13 +29,11 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 /* SPU timer start and alloc library services.  */
-#include <picolibc.h>
-
 #include <spu_timer.h>
 #include "spu_timer_internal.h"
 
 /* The timers.  */
-spu_timer_t __spu_timers[SPU_TIMER_NTIMERS] __aligned(16);
+spu_timer_t __spu_timers[SPU_TIMER_NTIMERS] __attribute__ ((aligned (16)));
 
 /* Active timer list.  */
 spu_timer_t *__spu_timers_active;

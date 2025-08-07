@@ -35,14 +35,16 @@
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "from @(#)strtol.c	8.1 (Berkeley) 6/4/93";
 #endif /* LIBC_SCCS and not lint */
-#define _DEFAULT_SOURCE
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD: head/lib/libc/stdlib/strtoimax.c 251672 2013-06-13 00:19:30Z emaste $");
 
 #include <ctype.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdint.h>
-#include "local.h"
+#include <reent.h>
+#include "../locale/setlocale.h"
 
 /*
  * Convert a string to an intmax_t integer.
@@ -51,10 +53,12 @@ static char sccsid[] = "from @(#)strtol.c	8.1 (Berkeley) 6/4/93";
  * alphabets and digits are each contiguous.
  */
 
-
-intmax_t
-strtoimax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
-	    locale_t loc)
+/*
+ *Reentrant version of strtoimax.
+ */
+static intmax_t
+_strtoimax_l(struct _reent *rptr, const char * __restrict nptr,
+	     char ** __restrict endptr, int base, locale_t loc)
 {
 	const char *s = nptr;
 	uintmax_t acc = 0;
@@ -132,10 +136,10 @@ strtoimax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
 	}
 	if (any < 0) {
 		acc = neg ? INTMAX_MIN : INTMAX_MAX;
-		errno = ERANGE;
+		_REENT_ERRNO(rptr) = ERANGE;
 	} else if (!any) {
 noconv:
-		errno = EINVAL;
+		_REENT_ERRNO(rptr) = EINVAL;
 	} else if (neg)
 		acc = -acc;
 	if (endptr != NULL)
@@ -144,8 +148,25 @@ noconv:
 }
 
 intmax_t
-strtoimax(const char* __restrict nptr, char** __restrict endptr, int base)
+_strtoimax_r(struct _reent *rptr, const char *__restrict nptr,
+	     char **__restrict endptr, int base)
 {
-	return strtoimax_l(nptr, endptr, base, __get_current_locale());
+	return _strtoimax_l(rptr, nptr, endptr, base, __get_current_locale());
 }
 
+#ifndef _REENT_ONLY
+
+intmax_t
+strtoimax_l(const char * __restrict nptr, char ** __restrict endptr, int base,
+	    locale_t loc)
+{
+	return _strtoimax_l(_REENT, nptr, endptr, base, loc);
+}
+
+intmax_t
+strtoimax(const char* __restrict nptr, char** __restrict endptr, int base)
+{
+	return _strtoimax_l(_REENT, nptr, endptr, base, __get_current_locale());
+}
+
+#endif

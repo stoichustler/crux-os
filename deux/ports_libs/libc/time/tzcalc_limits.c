@@ -1,4 +1,3 @@
-/* Copyright (c) 2002 Arthur David Olson */
 /*
  * tzcalc_limits.c
  * Original Author: Adapted from tzcode maintained by Arthur David Olson.
@@ -46,7 +45,7 @@ __tzcalc_limits (int year)
 	{
 	  const int yleap = isleap(year);
 	  int m_day, m_wday, wday_diff;
-	  const uint8_t *const ip = __month_lengths[yleap];
+	  const int *const ip = __month_lengths[yleap];
 
 	  days = year_days;
 

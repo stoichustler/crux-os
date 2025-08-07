@@ -37,10 +37,10 @@ SYNOPSIS
 	int fputs_unlocked(const char *restrict <[s]>, FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	int fputs( const char *restrict <[s]>, FILE *restrict <[fp]>);
+	int _fputs_r(struct _reent *<[ptr]>, const char *restrict <[s]>, FILE *restrict <[fp]>);
 
 	#include <stdio.h>
-	int fputs_unlocked( const char *restrict <[s]>, FILE *restrict <[fp]>);
+	int _fputs_unlocked_r(struct _reent *<[ptr]>, const char *restrict <[s]>, FILE *restrict <[fp]>);
 
 DESCRIPTION
 <<fputs>> writes the string at <[s]> (but without the trailing null)
@@ -71,7 +71,7 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
 <<lseek>>, <<read>>, <<sbrk>>, <<write>>.
 */
 
-#define _GNU_SOURCE
+#include <_ansi.h>
 #include <stdio.h>
 #include <string.h>
 #include "fvwrite.h"
@@ -86,11 +86,11 @@ Supporting OS subroutines required: <<close>>, <<fstat>>, <<isatty>>,
  * Write the given string to the given file.
  */
 int
-fputs (
+_fputs_r (struct _reent * ptr,
        char const *__restrict s,
        FILE *__restrict fp)
 {
-#ifdef __FVWRITE_IN_STREAMIO
+#ifdef _FVWRITE_IN_STREAMIO
   int result;
   struct __suio uio;
   struct __siov iov;
@@ -100,19 +100,19 @@ fputs (
   uio.uio_iov = &iov;
   uio.uio_iovcnt = 1;
 
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   _newlib_flockfile_start (fp);
   if (ORIENT (fp, -1) != -1)
     result = EOF;
   else
-    result = _sfvwrite (fp, &uio);
+    result = __sfvwrite_r (ptr, fp, &uio);
   _newlib_flockfile_end (fp);
   return result;
 #else
   const char *p = s;
 
-  CHECK_INIT();
+  CHECK_INIT(ptr, fp);
 
   _newlib_flockfile_start (fp);
   /* Make sure we can write.  */
@@ -121,7 +121,7 @@ fputs (
 
   while (*p)
     {
-      if (_sputc ( *p++, fp) == EOF)
+      if (__sputc_r (ptr, *p++, fp) == EOF)
 	goto error;
     }
   _newlib_flockfile_exit (fp);
@@ -132,3 +132,12 @@ error:
   return EOF;
 #endif
 }
+
+#ifndef _REENT_ONLY
+int
+fputs (char const *__restrict s,
+       FILE *__restrict fp)
+{
+  return _fputs_r (_REENT, s, fp);
+}
+#endif /* !_REENT_ONLY */

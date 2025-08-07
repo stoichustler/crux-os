@@ -6,14 +6,31 @@
 
 #include "fdlibm.h"
 
-float fdimf(float x, float y)
+#ifdef __STDC__
+	float fdimf(float x, float y)
+#else
+	float fdimf(x,y)
+	float x;
+	float y;
+#endif
 {
-  if (isnanf(x) || isnanf(y)) return(x+y);
+  if (__fpclassifyf(x) == FP_NAN)  return(x);
+  if (__fpclassifyf(y) == FP_NAN)  return(y);
 
-  float z = x > y ? x - y : 0.0f;
-  if (!isinf(x) && !isinf(y))
-    z = check_oflowf(z);
-  return z;
+  return x > y ? x - y : 0.0;
 }
 
-_MATH_ALIAS_f_ff(fdim)
+#ifdef _DOUBLE_IS_32BITS
+
+#ifdef __STDC__
+	double fdim(double x, double y)
+#else
+	double fdim(x,y)
+	double x;
+	double y;
+#endif
+{
+  return (double) fdimf((float) x, (float) y);
+}
+
+#endif /* defined(_DOUBLE_IS_32BITS) */

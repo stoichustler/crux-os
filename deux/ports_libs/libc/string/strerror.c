@@ -1,19 +1,3 @@
-/*
-Copyright (c) 1994 Cygnus Support.
-All rights reserved.
-
-Redistribution and use in source and binary forms are permitted
-provided that the above copyright notice and this paragraph are
-duplicated in all such forms and that any documentation,
-and/or other materials related to such
-distribution and use acknowledge that the software was developed
-at Cygnus Support, Inc.  Cygnus Support, Inc. may not be used to
-endorse or promote products derived from this software without
-specific prior written permission.
-THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- */
 /***
 **** CAUTION!!! KEEP DOC CONSISTENT---if you change text of a message
 ****            here, change two places:
@@ -397,21 +381,17 @@ QUICKREF
 	strerror ansi pure
 */
 
-#define _DEFAULT_SOURCE
 #include <errno.h>
 #include <string.h>
-#include "string_private.h"
-#include "local.h"
-
-extern char *_user_strerror (int, int, int *) __weak;
 
 char *
-_strerror_r (
+_strerror_r (struct _reent *ptr,
 	int errnum,
 	int internal,
 	int *errptr)
 {
   char *error;
+  extern char *_user_strerror (int, int, int *);
 
   switch (errnum)
     {
@@ -902,8 +882,8 @@ _strerror_r (
 #endif
     default:
       if (!errptr)
-        errptr = &errno;
-      if (&_user_strerror == NULL || (error = _user_strerror (errnum, internal, errptr)) == 0)
+        errptr = &_REENT_ERRNO(ptr);
+      if ((error = _user_strerror (errnum, internal, errptr)) == 0)
         error = "";
       break;
     }
@@ -914,13 +894,12 @@ _strerror_r (
 char *
 strerror (int errnum)
 {
-  return _strerror_r (errnum, 0, NULL);
+  return _strerror_r (_REENT, errnum, 0, NULL);
 }
 
 char *
 strerror_l (int errnum, locale_t locale)
 {
-  (void) locale;
   /* We don't support per-locale error messages. */
-  return _strerror_r (errnum, 0, NULL);
+  return _strerror_r (_REENT, errnum, 0, NULL);
 }

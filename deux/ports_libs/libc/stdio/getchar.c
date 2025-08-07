@@ -64,15 +64,30 @@ static char sccsid[] = "%W% (Berkeley) %G%";
  * A subroutine version of the macro getchar.
  */
 
-#define _DEFAULT_SOURCE
+#include <_ansi.h>
+#include <reent.h>
 #include <stdio.h>
 #include "local.h"
 
 #undef getchar
 
 int
+_getchar_r (struct _reent *reent)
+{
+  _REENT_SMALL_CHECK_INIT (reent);
+  return _getc_r (reent, _stdin_r (reent));
+}
+
+#ifndef _REENT_ONLY
+
+int
 getchar (void)
 {
+  struct _reent *reent = _REENT;
+
   /* CHECK_INIT is called (eventually) by __srefill_r.  */
-  return getc ( stdin );
+  _REENT_SMALL_CHECK_INIT (reent);
+  return _getc_r (reent, _stdin_r (reent));
 }
+
+#endif

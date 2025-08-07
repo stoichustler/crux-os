@@ -24,7 +24,6 @@
  * SUCH DAMAGE.
  */
 
-#define _DEFAULT_SOURCE
 #include <strings.h>
 #include <limits.h>
 

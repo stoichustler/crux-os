@@ -1,37 +1,7 @@
-/*
-Copyright (c) 2002 Red Hat Incorporated.
-All rights reserved.
-Modified (m) 2017 Thomas Wolff to refer to generated Unicode data tables.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
-Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-
-Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-
-The name of Red Hat Incorporated may not be used to endorse
-or promote products derived from this software without specific
-prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL RED HAT INCORPORATED BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS   
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 /* based on eucjp-208A.txt */
 
 /* a1 is contiguous from a1a1 to a1fe */
-static const unsigned short a1[] = {
+static unsigned short a1[] = {
   0x3000,
   0x3001,
   0x3002,
@@ -48,7 +18,7 @@ static const unsigned short a1[] = {
   0xFF40,
   0x00A8,
   0xFF3E,
-  0xFFE3,
+  0x203E,
   0xFF3F,
   0x30FD,
   0x30FE,
@@ -60,7 +30,7 @@ static const unsigned short a1[] = {
   0x3006,
   0x3007,
   0x30FC,
-  0x2015,
+  0x2014,
   0x2010,
   0xFF0F,
   0xFF3C,
@@ -110,7 +80,7 @@ static const unsigned short a1[] = {
   0x2032,
   0x2033,
   0x2103,
-  0xFFE5,
+  0x00A5,
   0xFF04,
   0x00A2,
   0x00A3,
@@ -129,7 +99,7 @@ static const unsigned short a1[] = {
 };
 
 /* a2 has a number of holes between a2a1 and a2fe which we fill with 0x0000 */
-static const unsigned short a2[] = {
+static unsigned short a2[] = {
   0x25C6,
   0x25A1,
   0x25A0,
@@ -178,7 +148,7 @@ static const unsigned short a2[] = {
   0x21D4,
   0x2200,
   0x2203,
-  0x0000,
+  0x2229,
   0x0000,
   0x0000,
   0x0000,
@@ -219,7 +189,7 @@ static const unsigned short a2[] = {
   0x2020,
   0x2021,
   0x00B6,
-  0x0000,
+  0x222C,
   0x0000,
   0x0000,
   0x0000,
@@ -229,7 +199,7 @@ static const unsigned short a2[] = {
 
 /* a3a1 to a3fe is mostly contiguous.  Conversion output values are
    of the form 0xFFxx where xx is (yy - 0xA0) where the input is 0xA3yy */
-static const unsigned char a3[] = {
+static unsigned char a3[] = {
   0,
   0,
   0,
@@ -294,6 +264,7 @@ static const unsigned char a3[] = {
   0,
   0,
   0,
+  0,
   1,
   1,
   1,
@@ -319,7 +290,7 @@ static const unsigned char a3[] = {
   1,
   1,
   1,
-  1,
+  1
 };
 
 /* a4 is contiguous from a4a1 to a4f3 */
@@ -329,7 +300,7 @@ static const unsigned char a3[] = {
 /* transform = 0x30xx where xx = last byte */
 
 /* a6 is mostly contiguous from a6a1 to a6d8 */
-static const unsigned short a6[] = {
+static unsigned short a6[] = {
   0x0391,
   0x0392,
   0x0393,
@@ -389,7 +360,7 @@ static const unsigned short a6[] = {
 };
 
 /* a7 is mostly contiguous from a7a1 to a7f1 */
-static const unsigned short a7[] = {
+static unsigned short a7[] = {
   0x0410,
   0x0411,
   0x0412,
@@ -474,7 +445,7 @@ static const unsigned short a7[] = {
 };
 
 /* a8 is contiguous from a8a1 to a8c0 */
-static const unsigned short a8[] = {
+static unsigned short a8[] = {
   0x2500,
   0x2502,
   0x250C,
@@ -512,7 +483,7 @@ static const unsigned short a8[] = {
 /* no conversion a9 to af */
 
 /* b0a1 to cfd3 is contiguous except for illegal sequences with 0xfe */
-static const unsigned short b02cf[] = {
+static unsigned short b02cf[] = {
   0x4E9C,
   0x5516,
   0x5A03,
@@ -3482,7 +3453,7 @@ static const unsigned short b02cf[] = {
 
 /* d0a1 to f4a6 is contiguous */
 
-static const unsigned short d02f4[] = {
+static unsigned short d02f4[] = {
   0x5F0C,
   0x4E10,
   0x4E15,
