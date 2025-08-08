@@ -46,7 +46,7 @@ bool __init pci_ecam_need_p2m_hwdom_mapping(struct domain *d,
     struct pci_config_window *cfg = bridge->cfg;
 
     /*
-     * We do not want ECAM address space to be mapped in Domain-0's p2m,
+     * We do not want ECAM address space to be mapped in domain-0's p2m,
      * so we can trap access to it.
      */
     return cfg->phys_addr != addr;

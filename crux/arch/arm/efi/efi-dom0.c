@@ -1,5 +1,5 @@
 /*
- *  efi-dom0.c - Domain0 EFI Boot Support
+ *  efi-dom0.c - domain0 EFI Boot Support
  *
  *  Copyright (C) 2016 Shannon Zhao <shannon.zhao@linaro.org>
  *

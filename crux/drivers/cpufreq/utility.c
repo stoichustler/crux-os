@@ -2,7 +2,7 @@
  *  utility.c - misc functions for cpufreq driver and Px statistic
  *
  *  Copyright (C) 2001 Russell King
- *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
+ *            (C) 2002 - 2003 dominik Brodowski <linux@brodo.de>
  *
  *  Oct 2005 - Ashok Raj <ashok.raj@intel.com>
  *    Added handling for CPU hotplug

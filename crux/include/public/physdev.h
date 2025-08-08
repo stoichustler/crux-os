@@ -294,7 +294,7 @@ DEFINE_CRUX_GUEST_HANDLE(physdev_pci_device_add_t);
 #define PHYSDEVOP_pci_device_remove     26
 #define PHYSDEVOP_restore_msi_ext       27
 /*
- * Dom0 should use these two to announce MMIO resources assigned to
+ * dom0 should use these two to announce MMIO resources assigned to
  * MSI-X capable devices won't (prepare) or may (release) change.
  */
 #define PHYSDEVOP_prepare_msix          30

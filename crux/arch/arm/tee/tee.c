@@ -26,7 +26,7 @@ extern const struct tee_mediator_desc _steemediator[], _eteemediator[];
 static const struct tee_mediator_desc __read_mostly *cur_mediator;
 
 /*
- * TODO: Add function to alter Dom0 DTB, so we can properly describe
+ * TODO: Add function to alter dom0 DTB, so we can properly describe
  * present TEE.
  */
 

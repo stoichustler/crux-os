@@ -1,7 +1,7 @@
 /******************************************************************************
  * domctl.c
  *
- * Domain management operations. For use by node control stack.
+ * domain management operations. For use by node control stack.
  *
  * Copyright (c) 2002-2006, K A Fraser
  */

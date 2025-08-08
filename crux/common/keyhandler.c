@@ -56,7 +56,7 @@ static struct keyhandler {
         KEYHANDLER('r', dump_runq, "dump run queues", 1),
     IRQ_KEYHANDLER('R', reboot_machine, "reboot machine", 0),
         KEYHANDLER('t', read_clocks, "display multi-cpu clock info", 1),
-        KEYHANDLER('0', dump_hwdom_registers, "dump Dom0 registers", 1),
+        KEYHANDLER('0', dump_hwdom_registers, "dump dom0 registers", 1),
     IRQ_KEYHANDLER('*', run_all_keyhandlers, "print all diagnostics", 0),
 
 #ifdef CONFIG_PERF_COUNTERS
@@ -235,7 +235,7 @@ static void cf_check dump_hwdom_registers(unsigned char key)
     if ( hardware_domain == NULL )
         return;
 
-    printk("'%c' pressed -> dumping Dom0's registers\n", key);
+    printk("'%c' pressed -> dumping dom0's registers\n", key);
 
     for_each_vcpu ( hardware_domain, v )
     {

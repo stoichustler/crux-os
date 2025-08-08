@@ -2,7 +2,7 @@
 /******************************************************************************
  * domctl.h
  *
- * Domain management operations. For use by node control stack.
+ * domain management operations. For use by node control stack.
  *
  * Copyright (c) 2002-2003, B Dragovic
  * Copyright (c) 2002-2006, K Fraser
@@ -133,10 +133,10 @@ struct crux_domctl_getdomaininfo {
     /* OUT variables. */
     domid_t  domain;              /* Also echoed in domctl.domain */
     uint16_t pad1;
- /* Domain is scheduled to die. */
+ /* domain is scheduled to die. */
 #define _CRUX_DOMINF_dying     0
 #define CRUX_DOMINF_dying      (1U<<_CRUX_DOMINF_dying)
- /* Domain is an HVM guest (as opposed to a PV guest). */
+ /* domain is an HVM guest (as opposed to a PV guest). */
 #define _CRUX_DOMINF_hvm_guest 1
 #define CRUX_DOMINF_hvm_guest  (1U<<_CRUX_DOMINF_hvm_guest)
  /* The guest OS has shut down. */
@@ -148,7 +148,7 @@ struct crux_domctl_getdomaininfo {
  /* Currently blocked pending an event.     */
 #define _CRUX_DOMINF_blocked   4
 #define CRUX_DOMINF_blocked    (1U<<_CRUX_DOMINF_blocked)
- /* Domain is currently running.            */
+ /* domain is currently running.            */
 #define _CRUX_DOMINF_running   5
 #define CRUX_DOMINF_running    (1U<<_CRUX_DOMINF_running)
  /* Being debugged.  */
@@ -172,7 +172,7 @@ struct crux_domctl_getdomaininfo {
     uint64_aligned_t shared_info_frame; /* GMFN of shared_info struct */
     uint64_aligned_t cpu_time;
     uint32_t nr_online_vcpus;    /* Number of VCPUs currently online. */
-#define CRUX_INVALID_MAX_VCPU_ID (~0U) /* Domain has no vcpus? */
+#define CRUX_INVALID_MAX_VCPU_ID (~0U) /* domain has no vcpus? */
     uint32_t max_vcpu_id;        /* Maximum VCPUID in use by this domain. */
     uint32_t ssidref;
     crux_domain_handle_t handle;
@@ -548,7 +548,7 @@ struct crux_domctl_sendtrigger {
 /* CRUX_DOMCTL_assign_device */
 /*
  * CRUX_DOMCTL_test_assign_device: Pass DOMID_INVALID to find out whether the
- * given device is assigned to any DomU at all. Pass a specific domain ID to
+ * given device is assigned to any domU at all. Pass a specific domain ID to
  * find out whether the given device can be assigned to that domain.
  */
 /*
@@ -832,9 +832,9 @@ struct crux_domctl_gdbsx_domstatus {
 #define CRUX_VM_EVENT_GET_VERSION          3
 
 /*
- * Domain memory paging
+ * domain memory paging
  * Page memory in and out.
- * Domctl interface to set up and tear down the
+ * domctl interface to set up and tear down the
  * pager<->hypervisor interface. Use CRUXMEM_paging_op*
  * to perform per-page operations.
  *
@@ -1261,10 +1261,10 @@ struct crux_domctl_set_llc_colors {
  */
 struct crux_domctl_get_domain_state {
     uint16_t state;
-#define CRUX_DOMCTL_GETDOMSTATE_STATE_EXIST     0x0001  /* Domain is existing. */
+#define CRUX_DOMCTL_GETDOMSTATE_STATE_EXIST     0x0001  /* domain is existing. */
 #define CRUX_DOMCTL_GETDOMSTATE_STATE_SHUTDOWN  0x0002  /* Shutdown finished. */
-#define CRUX_DOMCTL_GETDOMSTATE_STATE_DYING     0x0004  /* Domain dying. */
-#define CRUX_DOMCTL_GETDOMSTATE_STATE_DEAD      0x0008  /* Domain dead. */
+#define CRUX_DOMCTL_GETDOMSTATE_STATE_DYING     0x0004  /* domain dying. */
+#define CRUX_DOMCTL_GETDOMSTATE_STATE_DEAD      0x0008  /* domain dead. */
     uint16_t caps;
 #define CRUX_DOMCTL_GETDOMSTATE_CAP_CONTROL     0x0001  /* Control domain. */
 #define CRUX_DOMCTL_GETDOMSTATE_CAP_HARDWARE    0x0002  /* Hardware domain. */

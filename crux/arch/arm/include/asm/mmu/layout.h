@@ -16,7 +16,7 @@
  *                    space
  *
  *   1G -   2G   cruxheap: always-mapped memory
- *   2G -   4G   Domheap: on-demand-mapped
+ *   2G -   4G   domheap: on-demand-mapped
  *
  * ARM64 layout:
  * 0x0000000000000000 - 0x000009ffffffffff (10TB, L0 slots [0..19])

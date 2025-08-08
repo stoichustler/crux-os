@@ -127,7 +127,7 @@ void *map_domain_page(mfn_t mfn)
         static int max_tries = 32;
         if ( i >= max_tries )
         {
-            dprintk(CRUXLOG_WARNING, "Domheap map is filling: %i tries\n", i);
+            dprintk(CRUXLOG_WARNING, "domheap map is filling: %i tries\n", i);
             max_tries *= 2;
         }
     }

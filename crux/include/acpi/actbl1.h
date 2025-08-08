@@ -893,7 +893,7 @@ struct acpi_table_msct {
 	u64 max_address;	/* Max physical address in system */
 };
 
-/* Subtable - Maximum Proximity Domain Information. Version 1 */
+/* Subtable - Maximum Proximity domain Information. Version 1 */
 
 struct acpi_msct_proximity {
 	u8 revision;

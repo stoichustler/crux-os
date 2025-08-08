@@ -97,7 +97,7 @@ struct grant_table {
      */
     struct radix_tree_root maptrack_tree;
 
-    /* Domain to which this struct grant_table belongs. */
+    /* domain to which this struct grant_table belongs. */
     struct domain *domain;
 };
 
@@ -373,7 +373,7 @@ struct active_grant_entry {
     (x) << (GNTPIN_cntr_width - 1);                        \
 })
 
-    domid_t       domid;  /* Domain being granted access.             */
+    domid_t       domid;  /* domain being granted access.             */
     domid_t       src_domid; /* Original domain granting access.      */
     unsigned int  start:15; /* For sub-page grants, the start offset
                                in the page.                           */

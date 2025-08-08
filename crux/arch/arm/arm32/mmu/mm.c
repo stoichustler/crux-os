@@ -162,7 +162,7 @@ void __init setup_mm(void)
     printk("crux heap: %"PRIpaddr"-%"PRIpaddr" (%lu pages%s)\n",
            e - (pfn_to_paddr(cruxheap_pages)), e, cruxheap_pages,
            opt_cruxheap_megabytes ? ", from command-line" : "");
-    printk("Dom heap: %lu pages\n", domheap_pages);
+    printk("dom heap: %lu pages\n", domheap_pages);
 
     /*
      * We need some memory to allocate the page-tables used for the

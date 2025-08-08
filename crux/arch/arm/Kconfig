@@ -166,7 +166,7 @@ config NEW_VGIC
 	controller emulation, based on the Linux/KVM VGIC. It has a better
 	design and fixes many shortcomings of the existing GIC emulation in
 	crux. It will eventually replace the existing/old VGIC.
-	However at the moment it lacks support for Dom0 using the ITS for
+	However at the moment it lacks support for dom0 using the ITS for
 	using MSIs.
 	Say Y if you want to help testing this new code or if you experience
 	problems with the standard emulation.

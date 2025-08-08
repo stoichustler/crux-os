@@ -198,7 +198,7 @@ struct csched_unit {
 };
 
 /*
- * Domain
+ * domain
  */
 struct csched_dom {
     struct list_head active_unit;

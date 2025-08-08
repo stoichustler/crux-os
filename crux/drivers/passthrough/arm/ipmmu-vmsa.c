@@ -498,7 +498,7 @@ static void ipmmu_utlb_disable(struct ipmmu_vmsa_domain *domain,
         ipmmu_imuctr_write(mmu, utlb, 0);
 }
 
-/* Domain/Context Management */
+/* domain/Context Management */
 static int ipmmu_domain_allocate_context(struct ipmmu_vmsa_device *mmu,
                                          struct ipmmu_vmsa_domain *domain)
 {

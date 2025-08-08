@@ -25,7 +25,7 @@ void send_guest_vcpu_virq(struct vcpu *v, uint32_t virq);
 
 /*
  * send_guest_domain_virq:
- *  @d:        Domain to which VIRQ should be sent
+ *  @d:        domain to which VIRQ should be sent
  *  @virq:     Virtual IRQ number (VIRQ_*), may not be per-vCPU
  */
 void send_guest_domain_virq(struct domain *d, uint32_t virq);
@@ -45,7 +45,7 @@ int set_global_virq_handler(struct domain *d, uint32_t virq);
 
 /*
  * send_guest_pirq:
- *  @d:        Domain to which physical IRQ should be sent
+ *  @d:        domain to which physical IRQ should be sent
  *  @pirq:     Physical IRQ number
  */
 void send_guest_pirq(struct domain *d, const struct pirq *pirq);

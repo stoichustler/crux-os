@@ -514,9 +514,9 @@ static int its_handle_invall(struct virt_its *its, uint64_t *cmdptr)
     /*
      * As this implementation walks over all mapped LPIs, it might take
      * too long for a real guest, so we might want to revisit this
-     * implementation for DomUs.
+     * implementation for domUs.
      * However this command is very rare, also we don't expect many
-     * LPIs to be actually mapped, so it's fine for Dom0 to use.
+     * LPIs to be actually mapped, so it's fine for dom0 to use.
      */
     ASSERT(is_hardware_domain(its->d));
 
@@ -630,7 +630,7 @@ static void its_unmap_device(struct virt_its *its, uint32_t devid)
         goto out;
 
     /*
-     * For DomUs we need to check that the number of events per device
+     * For domUs we need to check that the number of events per device
      * is really limited, otherwise looping over all events can take too
      * long for a guest. This ASSERT can then be removed if that is
      * covered.
@@ -665,7 +665,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
     /*
      * There is no easy and clean way for crux to know the ITS device ID of a
      * particular (PCI) device, so we have to rely on the guest telling
-     * us about it. For *now* we are just using the device ID *Dom0* uses,
+     * us about it. For *now* we are just using the device ID *dom0* uses,
      * because the driver there has the actual knowledge.
      * Eventually this will be replaced with a dedicated hypercall to
      * announce pass-through of devices.
@@ -674,7 +674,7 @@ static int its_handle_mapd(struct virt_its *its, uint64_t *cmdptr)
     {
 
         /*
-         * Dom0's ITSes are mapped 1:1, so both addresses are the same.
+         * dom0's ITSes are mapped 1:1, so both addresses are the same.
          * Also the device IDs are equal.
          */
         ret = gicv3_its_map_guest_device(its->d, its->doorbell_address, devid,
@@ -1175,7 +1175,7 @@ static bool vgic_v3_verify_its_status(struct virt_its *its, bool status)
      * can change the tables at any point in time anyway. Right now there are
      * expectations about the tables being consistent (a VCPU lock protecting
      * an LPI), which should go away with proper per-IRQ locking.
-     * So for now we ignore this issue and rely on Dom0 not doing bad things.
+     * So for now we ignore this issue and rely on dom0 not doing bad things.
      */
     ASSERT(is_hardware_domain(its->d));
 
@@ -1511,7 +1511,7 @@ unsigned int vgic_v3_its_count(const struct domain *d)
     struct host_its *hw_its;
     unsigned int ret = 0;
 
-    /* Only Dom0 can use emulated ITSes so far. */
+    /* Only dom0 can use emulated ITSes so far. */
     if ( !is_hardware_domain(d) )
         return 0;
 

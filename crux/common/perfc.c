@@ -235,7 +235,7 @@ static int perfc_copy_info(CRUX_GUEST_HANDLE_64(crux_sysctl_perfc_desc_t) desc,
     return 0;
 }
 
-/* Dom0 control of perf counters */
+/* dom0 control of perf counters */
 int perfc_control(struct crux_sysctl_perfc_op *pc)
 {
     static DEFINE_SPINLOCK(lock);

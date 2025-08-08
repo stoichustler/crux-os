@@ -2,7 +2,7 @@
  *  crux/include/acpi/cpufreq/cpufreq.h
  *
  *  Copyright (C) 2001 Russell King
- *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
+ *            (C) 2002 - 2003 dominik Brodowski <linux@brodo.de>
  *
  * $Id: cpufreq.h,v 1.36 2003/01/20 17:31:48 db Exp $
  *

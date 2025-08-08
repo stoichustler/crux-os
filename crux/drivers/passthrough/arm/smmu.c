@@ -668,7 +668,7 @@ struct arm_smmu_cfg {
 	u8				irptndx;
 	u32				cbar;
 
-	/* crux: Domain associated to this configuration */
+	/* crux: domain associated to this configuration */
 	struct domain			*domain;
 };
 #define INVALID_IRPTNDX			0xff

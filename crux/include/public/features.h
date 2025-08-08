@@ -74,7 +74,7 @@
 /* x86: pirq can be used by HVM guests */
 #define CRUXFEAT_hvm_pirqs                 10
 
-/* operation as Dom0 is supported */
+/* operation as dom0 is supported */
 #define CRUXFEAT_dom0                      11
 
 /* crux also maps grant references at pfn = mfn.
@@ -106,7 +106,7 @@
  * If neither flag is set (e.g. older crux releases) the assumptions are:
  * - not auto_translated domains (x86 only) are always direct-mapped
  * - on x86, auto_translated domains are not direct-mapped
- * - on ARM, Dom0 is direct-mapped, DomUs are not
+ * - on ARM, dom0 is direct-mapped, domUs are not
  */
 #define CRUXFEAT_not_direct_mapped         16
 #define CRUXFEAT_direct_mapped             17

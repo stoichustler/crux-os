@@ -229,7 +229,7 @@ static inline void sgi_target_init(struct sgi_target *sgi_target)
 struct vgic_ops {
     /* Initialize vGIC */
     int (*vcpu_init)(struct vcpu *v);
-    /* Domain specific initialization of vGIC */
+    /* domain specific initialization of vGIC */
     int (*domain_init)(struct domain *d);
     /* Release resources that were allocated by domain_init */
     void (*domain_free)(struct domain *d);

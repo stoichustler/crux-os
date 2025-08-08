@@ -1,4 +1,3 @@
-obj-$(CONFIG_X86) += x86/
 
 lib-y += bsearch.o
 lib-y += ctors.o
@@ -17,7 +16,7 @@ lib-y += memset.o
 lib-y += muldiv64.o
 lib-y += parse-size.o
 lib-y += rbtree.o
-lib-$(CONFIG_X86) += sha2-256.o
+
 lib-y += sort.o
 lib-y += strcasecmp.o
 lib-y += strchr.o
@@ -38,9 +37,6 @@ lib-y += strtol.o
 lib-y += strtoll.o
 lib-y += strtoul.o
 lib-y += strtoull.o
-lib-$(CONFIG_X86) += x86-generic-hweightl.o
-lib-$(CONFIG_X86) += xxhash32.o
-lib-$(CONFIG_X86) += xxhash64.o
 
 lib32-y := divmod.o
 lib32-$(CONFIG_64BIT) :=

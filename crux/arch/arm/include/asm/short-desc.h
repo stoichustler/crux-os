@@ -33,7 +33,7 @@ typedef struct __packed {
     bool b:1;                   /* Bufferable */
     bool c:1;                   /* Cacheable */
     bool xn:1;                  /* Execute Never */
-    unsigned int dom:4;         /* Domain field */
+    unsigned int dom:4;         /* domain field */
     bool impl:1;                /* Implementation defined */
     unsigned int ap:2;          /* AP[1:0] */
     unsigned int tex:3;         /* TEX[2:0] */

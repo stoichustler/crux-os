@@ -35,22 +35,22 @@ void hwdom_shutdown(unsigned char reason)
     switch ( reason )
     {
     case SHUTDOWN_poweroff:
-        printk("Hardware Dom%u halted: halting machine\n",
+        printk("Hardware dom%u halted: halting machine\n",
                hardware_domain->domain_id);
         machine_halt();
 
     case SHUTDOWN_crash:
-        printk("Hardware Dom%u crashed: ", hardware_domain->domain_id);
+        printk("Hardware dom%u crashed: ", hardware_domain->domain_id);
         kexec_crash(CRASHREASON_HWDOM);
         reboot_or_halt();
 
     case SHUTDOWN_reboot:
-        printk("Hardware Dom%u shutdown: rebooting machine\n",
+        printk("Hardware dom%u shutdown: rebooting machine\n",
                hardware_domain->domain_id);
         machine_restart(0);
 
     case SHUTDOWN_watchdog:
-        printk("Hardware Dom%u shutdown: watchdog rebooting machine\n",
+        printk("Hardware dom%u shutdown: watchdog rebooting machine\n",
                hardware_domain->domain_id);
         kexec_crash(CRASHREASON_WATCHDOG);
         machine_restart(0);
@@ -61,7 +61,7 @@ void hwdom_shutdown(unsigned char reason)
         machine_restart(0);
 
     default:
-        printk("Hardware Dom%u shutdown (unknown reason %u): ",
+        printk("Hardware dom%u shutdown (unknown reason %u): ",
                hardware_domain->domain_id, reason);
         reboot_or_halt();
     }

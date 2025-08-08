@@ -1,6 +1,3 @@
-obj-$(CONFIG_INTEL_IOMMU) += vtd/
-obj-$(CONFIG_AMD_IOMMU) += amd/
-obj-$(CONFIG_X86) += x86/
 obj-$(CONFIG_ARM) += arm/
 
 obj-y += iommu.o

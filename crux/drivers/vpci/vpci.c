@@ -704,8 +704,8 @@ uint32_t vpci_read(pci_sbdf_t sbdf, unsigned int reg, unsigned int size)
 
     /*
      * Find the PCI dev matching the address, which for hwdom also requires
-     * consulting DomCRUX.  Passthrough everything that's not trapped.
-     * If this is hwdom and the device is assigned to DomCRUX, acquiring hwdom's
+     * consulting domCRUX.  Passthrough everything that's not trapped.
+     * If this is hwdom and the device is assigned to domCRUX, acquiring hwdom's
      * pci_lock is sufficient.
      */
     read_lock(&d->pci_lock);
@@ -825,8 +825,8 @@ void vpci_write(pci_sbdf_t sbdf, unsigned int reg, unsigned int size,
 
     /*
      * Find the PCI dev matching the address, which for hwdom also requires
-     * consulting DomCRUX.  Passthrough everything that's not trapped.
-     * If this is hwdom and the device is assigned to DomCRUX, acquiring hwdom's
+     * consulting domCRUX.  Passthrough everything that's not trapped.
+     * If this is hwdom and the device is assigned to domCRUX, acquiring hwdom's
      * pci_lock is sufficient.
      *
      * TODO: We need to take pci_locks in exclusive mode only if we

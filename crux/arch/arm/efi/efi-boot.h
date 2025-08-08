@@ -753,13 +753,13 @@ static int __init handle_module_node(const EFI_LOADED_IMAGE *loaded_image,
                                     "multiboot,kernel") == 0) )
         {
             /*
-            * This is the Dom0 kernel, wire it to the kernel variable because it
+            * This is the dom0 kernel, wire it to the kernel variable because it
             * will be verified by the shim lock protocol later in the common
             * code.
             */
             if ( kernel.addr )
             {
-                PrintStr(L"Dom0 kernel already found in cfg file.\r\n");
+                PrintStr(L"dom0 kernel already found in cfg file.\r\n");
                 return ERROR_DOM0_ALREADY_FOUND;
             }
             kernel.need_to_free = false; /* Freed using the module array */
@@ -770,7 +770,7 @@ static int __init handle_module_node(const EFI_LOADED_IMAGE *loaded_image,
                   (fdt_node_check_compatible(fdt_efi, module_node_offset,
                                              "multiboot,ramdisk") == 0) )
         {
-            PrintStr(L"Dom0 ramdisk already found in cfg file.\r\n");
+            PrintStr(L"dom0 ramdisk already found in cfg file.\r\n");
             return ERROR_DOM0_RAMDISK_FOUND;
         }
         else if ( xsm.addr &&

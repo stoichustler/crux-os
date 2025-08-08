@@ -134,7 +134,7 @@ unsigned long __must_check domain_adjust_tot_pages(struct domain *d,
 int domain_set_outstanding_pages(struct domain *d, unsigned long pages);
 void get_outstanding_claims(uint64_t *free_pages, uint64_t *outstanding_pages);
 
-/* Domain suballocator. These functions are *not* interrupt-safe.*/
+/* domain suballocator. These functions are *not* interrupt-safe.*/
 void init_domheap_pages(paddr_t ps, paddr_t pe);
 struct page_info *alloc_domheap_pages(
     struct domain *d, unsigned int order, unsigned int memflags);

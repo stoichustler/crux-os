@@ -431,7 +431,7 @@ static int adjacent_write(const struct domain *d, const struct vpci_msix *msix,
      */
     if ( VMSIX_ADDR_IN_RANGE(addr, vpci, VPCI_MSIX_PBA) &&
          (!access_allowed(msix->pdev, addr, len) || !is_hardware_domain(d)) )
-        /* Ignore writes to PBA for DomUs, it's undefined behavior. */
+        /* Ignore writes to PBA for domUs, it's undefined behavior. */
         return X86EMUL_OKAY;
 
     slot = get_slot(vpci, addr);

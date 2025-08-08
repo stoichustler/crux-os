@@ -545,12 +545,12 @@ class argo
     # Enable initialization of a domain's argo subsystem and
     # permission to access the argo hypercall operations.
     enable
-    # Domain requesting registration of a communication ring
+    # domain requesting registration of a communication ring
     # to receive messages from a specific other domain.
     register_single_source
-    # Domain requesting registration of a communication ring
+    # domain requesting registration of a communication ring
     # to receive messages from any other domain.
     register_any_source
-    # Domain sending a message to another domain.
+    # domain sending a message to another domain.
     send
 }

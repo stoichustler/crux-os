@@ -1510,8 +1510,8 @@ int __init make_timer_node(const struct kernel_info *kinfo)
 }
 
 /*
- * This function is used as part of the device tree generation for Dom0
- * on ACPI systems, and DomUs started directly from crux based on device
+ * This function is used as part of the device tree generation for dom0
+ * on ACPI systems, and domUs started directly from crux based on device
  * tree information.
  */
 int __init make_chosen_node(const struct kernel_info *kinfo)

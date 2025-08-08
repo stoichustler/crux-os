@@ -128,7 +128,7 @@ static void modify_decoding(const struct pci_dev *pdev, uint16_t cmd,
      * enabled.
      *
      * FIXME: punching holes after the p2m has been set up might be racy for
-     * DomU usage, needs to be revisited.
+     * domU usage, needs to be revisited.
      */
 #ifdef CONFIG_HAS_PCI_MSI
     if ( map && !rom_only && vpci_make_msix_hole(pdev) )
@@ -432,7 +432,7 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
     /*
      * Check for overlaps with other BARs. Note that only BARs that are
      * currently mapped (enabled) are checked for overlaps. Note also that
-     * for hwdom we also need to include hidden, i.e. DomCRUX's, devices.
+     * for hwdom we also need to include hidden, i.e. domCRUX's, devices.
      */
     for ( d = pdev->domain != dom_crux ? pdev->domain : hardware_domain; ; )
     {
@@ -501,7 +501,7 @@ static int modify_bars(const struct pci_dev *pdev, uint16_t cmd, bool rom_only)
     if ( system_state < SYS_STATE_active )
     {
         /*
-         * Mappings might be created when building Dom0 if the memory decoding
+         * Mappings might be created when building dom0 if the memory decoding
          * bit of PCI devices is enabled. In that case it's not possible to
          * defer the operation, so call apply_map in order to create the
          * mappings right away. Note that at build time this function will only
@@ -534,8 +534,8 @@ static void cf_check cmd_write(
     }
 
     /*
-     * Let Dom0 play with all the bits directly except for the memory
-     * decoding one. Bits that are not allowed for DomU are already
+     * Let dom0 play with all the bits directly except for the memory
+     * decoding one. Bits that are not allowed for domU are already
      * handled above and by the rsvdp_mask.
      */
     if ( header->bars_mapped != !!(cmd & PCI_COMMAND_MEMORY) )
@@ -830,7 +830,7 @@ static int vpci_init_ext_capability_list(const struct pci_dev *pdev)
     unsigned int pos = PCI_CFG_SPACE_SIZE;
 
     if ( !is_hardware_domain(pdev->domain) )
-        /* Extended capabilities read as zero, write ignore for DomU */
+        /* Extended capabilities read as zero, write ignore for domU */
         return vpci_add_register(pdev->vpci, vpci_read_val, NULL,
                                  pos, 4, (void *)0);
 
@@ -920,8 +920,8 @@ int vpci_init_header(struct pci_dev *pdev)
     cmd = pci_conf_read16(pdev->sbdf, PCI_COMMAND);
 
     /*
-     * For DomUs, clear PCI_COMMAND_{MASTER,MEMORY,IO} and other
-     * DomU-controllable bits in PCI_COMMAND. Devices assigned to DomUs will
+     * For domUs, clear PCI_COMMAND_{MASTER,MEMORY,IO} and other
+     * domU-controllable bits in PCI_COMMAND. Devices assigned to domUs will
      * start with memory decoding disabled, and modify_bars() will not be called
      * at the end of this function.
      */

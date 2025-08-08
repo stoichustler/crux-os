@@ -166,7 +166,7 @@ static int __init handle_passthrough_prop(struct kernel_info *kinfo,
         if ( gstart & ~PAGE_MASK || mstart & ~PAGE_MASK || size & ~PAGE_MASK )
         {
             printk(CRUXLOG_ERR
-                   "DomU passthrough config has not page aligned addresses/sizes\n");
+                   "domU passthrough config has not page aligned addresses/sizes\n");
             return -EINVAL;
         }
 
@@ -743,7 +743,7 @@ static int __init construct_domU(struct kernel_info *kinfo,
     rc = dt_property_read_u64(node, "memory", &mem);
     if ( !rc )
     {
-        printk("Error building DomU: cannot read \"memory\" property\n");
+        printk("Error building domU: cannot read \"memory\" property\n");
         return -EINVAL;
     }
     kinfo->unassigned_mem = (paddr_t)mem * SZ_1K;
@@ -845,7 +845,7 @@ void __init create_domUs(void)
         /*
          * The variable max_init_domid is initialized with zero, so here it's
          * very important to use the pre-increment operator to call
-         * domain_create() with a domid > 0. (domid == 0 is reserved for Dom0)
+         * domain_create() with a domid > 0. (domid == 0 is reserved for dom0)
          */
         ki.bd.d = domain_create(++max_init_domid,
                                 &ki.bd.create_cfg, ki.bd.create_flags);

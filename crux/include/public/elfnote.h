@@ -156,7 +156,7 @@
 
 /*
  * The (non-default) location the initial phys-to-machine map should be
- * placed at by the hypervisor (Dom0) or the tools (DomU).
+ * placed at by the hypervisor (dom0) or the tools (domU).
  * The kernel must be prepared for this mapping to be established using
  * large pages, despite such otherwise not being available to guests. Note
  * that these large pages may be misaligned in PFN space (they'll obviously

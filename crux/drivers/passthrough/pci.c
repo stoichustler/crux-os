@@ -773,7 +773,7 @@ int pci_add_device(u16 seg, u8 bus, u8 devfn,
 
         /*
          * For devices not discovered by crux during boot, add vPCI handlers
-         * when Dom0 first informs crux about such devices.
+         * when dom0 first informs crux about such devices.
          */
         ret = vpci_assign_device(pdev);
         if ( ret )
@@ -842,7 +842,7 @@ int pci_remove_device(u16 seg, u8 bus, u8 devfn)
                 struct pci_dev *vf_pdev;
 
                 /*
-                 * Linux Dom0 has been observed to not respect an error code
+                 * Linux dom0 has been observed to not respect an error code
                  * returned from PHYSDEVOP_pci_device_remove. Mark VFs and PF
                  * broken.
                  */
@@ -1235,7 +1235,7 @@ static int __hwdom_init cf_check _setup_hwdom_pci_devices(
                 pdev->domain = dom_crux;
             }
             else if ( pdev->domain != ctxt->d )
-                printk(CRUXLOG_WARNING "Dom%d owning %pp?\n",
+                printk(CRUXLOG_WARNING "dom%d owning %pp?\n",
                        pdev->domain->domain_id, &pdev->sbdf);
 
             if ( iommu_verbose )
@@ -1372,7 +1372,7 @@ static int cf_check _dump_pci_devices(struct pci_seg *pseg, void *arg)
         printk("%pp - ", &pdev->sbdf);
 #ifdef CONFIG_X86
         if ( pdev->domain == dom_io )
-            printk("DomIO:%x", pdev->arch.pseudo_domid);
+            printk("domIO:%x", pdev->arch.pseudo_domid);
         else
 #endif
             printk("%pd", pdev->domain);

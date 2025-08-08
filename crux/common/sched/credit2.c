@@ -411,7 +411,7 @@ integer_param("credit2_balance_under", opt_underload_balance_tolerance);
 static int __read_mostly opt_overload_balance_tolerance = -3;
 integer_param("credit2_balance_over", opt_overload_balance_tolerance);
 /*
- * Domains subject to a cap receive a replenishment of their runtime budget
+ * domains subject to a cap receive a replenishment of their runtime budget
  * once every opt_cap_period interval. Default is 10 ms. The amount of budget
  * they receive depends on their cap. For instance, a domain with a 50% cap
  * will receive 50% of 10 ms, so 5 ms.
@@ -581,7 +581,7 @@ struct csched2_unit {
 };
 
 /*
- * Domain
+ * domain
  */
 struct csched2_dom {
     struct domain *dom;         /* Up-pointer to domain                       */
@@ -3870,7 +3870,7 @@ csched2_dump(const struct scheduler *ops)
                CPUMASK_PR(&rqd->smt_idle));
     }
 
-    printk("Domain info:\n");
+    printk("domain info:\n");
     loop = 0;
     list_for_each( iter_sdom, &prv->sdom )
     {
@@ -3879,7 +3879,7 @@ csched2_dump(const struct scheduler *ops)
 
         sdom = list_entry(iter_sdom, struct csched2_dom, sdom_elem);
 
-        printk("\tDomain: %d w %d c %u v %d\n",
+        printk("\tdomain: %d w %d c %u v %d\n",
                sdom->dom->domain_id,
                sdom->weight,
                sdom->cap,

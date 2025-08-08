@@ -46,7 +46,7 @@
 #define HVM_PARAM_CALLBACK_TYPE_PCI_INTX 1
 /*
  * val[55:0] is a delivery PCI INTx line:
- * Domain = val[47:32], Bus = val[31:16] DevFn = val[15:8], IntX = val[1:0]
+ * domain = val[47:32], Bus = val[31:16] DevFn = val[15:8], IntX = val[1:0]
  */
 
 #if defined(__i386__) || defined(__x86_64__)

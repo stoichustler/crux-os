@@ -13,7 +13,7 @@
 #include <asm/processor.h>
 #include <asm/system.h>
 
-/* opt_dom0_sve: allow Dom0 to use SVE and set maximum vector length. */
+/* opt_dom0_sve: allow dom0 to use SVE and set maximum vector length. */
 int __initdata opt_dom0_sve;
 
 extern unsigned int sve_get_hw_vl(void);

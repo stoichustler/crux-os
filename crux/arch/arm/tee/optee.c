@@ -156,7 +156,7 @@ struct optee_shm_buf {
     struct page_info *pages[];
 };
 
-/* Domain context */
+/* domain context */
 struct optee_domain {
     struct list_head call_list;
     struct list_head shm_rpc_list;
@@ -1531,7 +1531,7 @@ static void handle_rpc_func_alloc(struct optee_domain *ctx,
 
     if ( ptr & (OPTEE_MSG_NONCONTIG_PAGE_SIZE - 1) )
     {
-        gdprintk(CRUXLOG_WARNING, "Domain returned invalid RPC command buffer\n");
+        gdprintk(CRUXLOG_WARNING, "domain returned invalid RPC command buffer\n");
         /*
          * OP-TEE is waiting for a response to the RPC. We can't just
          * return error to the guest. We need to provide some invalid

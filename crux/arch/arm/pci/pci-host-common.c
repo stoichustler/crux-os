@@ -376,7 +376,7 @@ int pci_host_iterate_bridges_and_count(struct domain *d,
 
 /*
  * For each PCI host bridge we need to only map those ranges
- * which are used by Domain-0 to properly initialize the bridge,
+ * which are used by domain-0 to properly initialize the bridge,
  * e.g. we do not want to map ECAM configuration space which lives in
  * "reg" device tree property, but we want to map other regions of
  * the host bridge. The PCI aperture defined by the "ranges" device

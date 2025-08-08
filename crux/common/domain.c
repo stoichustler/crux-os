@@ -509,7 +509,7 @@ static int late_hwdom_init(struct domain *d)
      * access.  Apply these ranges to the actual hardware domain.
      *
      * Because the lists are being swapped, a side effect of this
-     * operation is that Domain 0's rangesets are cleared.  Since
+     * operation is that domain 0's rangesets are cleared.  Since
      * domain 0 should not be accessing the hardware when it constructs
      * a hardware domain, this should not be a problem.  Both lists
      * may be modified after this hypercall returns if a more complex
@@ -1048,7 +1048,7 @@ void __init setup_system_domains(void)
      * Any crux-heap pages that we will allow to be mapped will have
      * their domain field set to dom_crux.
      * Hidden PCI devices will also be associated with this domain
-     * (but be [partly] controlled by Dom0 nevertheless).
+     * (but be [partly] controlled by dom0 nevertheless).
      */
     dom_crux = domain_create(DOMID_CRUX, NULL, 0);
     if ( IS_ERR(dom_crux) )
@@ -1282,13 +1282,13 @@ void __domain_crash(struct domain *d)
     }
     else if ( d == current->domain )
     {
-        printk("Domain %d (vcpu#%d) crashed on cpu#%d:\n",
+        printk("domain %d (vcpu#%d) crashed on cpu#%d:\n",
                d->domain_id, current->vcpu_id, smp_processor_id());
         show_execution_state(guest_cpu_user_regs());
     }
     else
     {
-        printk("Domain %d reported crashed by domain %d on cpu#%d:\n",
+        printk("domain %d reported crashed by domain %d on cpu#%d:\n",
                d->domain_id, current->domain->domain_id, smp_processor_id());
     }
 
@@ -2255,7 +2255,7 @@ long common_vcpu_op(int cmd, struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
         struct vcpu_register_runstate_memory_area area;
 
         rc = -ENOSYS;
-        if ( 0 /* TODO: Dom's CRUXFEAT_runstate_phys_area setting */ )
+        if ( 0 /* TODO: dom's CRUXFEAT_runstate_phys_area setting */ )
             break;
 
         rc = -EFAULT;

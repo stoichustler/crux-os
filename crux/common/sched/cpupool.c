@@ -27,7 +27,7 @@
 
 #include "private.h"
 
-struct cpupool *cpupool0;                /* Initial cpupool with Dom0 */
+struct cpupool *cpupool0;                /* Initial cpupool with dom0 */
 cpumask_t cpupool_free_cpus;             /* cpus not in any cpupool */
 
 static LIST_HEAD(cpupool_list);          /* linked list, sorted by poolid */

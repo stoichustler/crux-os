@@ -161,8 +161,8 @@
 #define VTCR            p15,4,c2,c1,2   /* Virtualization Translation Control Register */
 #define VTTBR           p15,6,c2        /* Virtualization Translation Table Base Register */
 
-/* CP15 CR3: Domain Access Control Register */
-#define DACR            p15,0,c3,c0,0   /* Domain Access Control Register */
+/* CP15 CR3: domain Access Control Register */
+#define DACR            p15,0,c3,c0,0   /* domain Access Control Register */
 
 /* CP15 CR4: */
 #define ICC_PMR         p15,0,c4,c6,0   /* Interrupt Priority Mask Register */

@@ -41,7 +41,7 @@
 
 struct memop_args {
     /* INPUT */
-    struct domain *domain;     /* Domain to be affected. */
+    struct domain *domain;     /* domain to be affected. */
     CRUX_GUEST_HANDLE(crux_pfn_t) extent_list; /* List of extent base addrs. */
     unsigned int nr_extents;   /* Number of extents to allocate or free. */
     unsigned int extent_order; /* Size of each extent. */
@@ -371,7 +371,7 @@ int guest_remove_page(struct domain *d, unsigned long gmfn)
 #ifdef CONFIG_X86
         put_gfn(d, gmfn);
 #endif
-        gdprintk(CRUXLOG_INFO, "Domain %u page number %lx invalid\n",
+        gdprintk(CRUXLOG_INFO, "domain %u page number %lx invalid\n",
                 d->domain_id, gmfn);
 
         return -EINVAL;
@@ -405,7 +405,7 @@ int guest_remove_page(struct domain *d, unsigned long gmfn)
         put_gfn(d, gmfn);
         if ( !p2m_is_paging(p2mt) )
 #endif
-            gdprintk(CRUXLOG_INFO, "Bad page free for Dom%u GFN %lx\n",
+            gdprintk(CRUXLOG_INFO, "Bad page free for dom%u GFN %lx\n",
                      d->domain_id, gmfn);
 
         return -ENXIO;
@@ -1114,7 +1114,7 @@ static long xatp_permission_check(struct domain *d, unsigned int space)
         return -EACCES;
 
     /*
-     * CRUXMAPSPACE_dev_mmio mapping is only supported for hardware Domain
+     * CRUXMAPSPACE_dev_mmio mapping is only supported for hardware domain
      * to map this kind of space to itself.
      */
     if ( (space == CRUXMAPSPACE_dev_mmio) &&

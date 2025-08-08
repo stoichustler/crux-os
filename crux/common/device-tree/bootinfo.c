@@ -263,7 +263,7 @@ struct boot_module __init *add_boot_module(boot_module_kind kind,
 
 /*
  * boot_module_find_by_kind can only be used to return crux modules (e.g
- * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
+ * XSM, DTB) or dom0 modules. This is not suitable for looking up guest
  * modules.
  */
 struct boot_module * __init boot_module_find_by_kind(boot_module_kind kind)
@@ -307,7 +307,7 @@ void __init add_boot_cmdline(const char *name, const char *cmdline,
 
 /*
  * boot_cmdline_find_by_kind can only be used to return crux modules (e.g
- * XSM, DTB) or Dom0 modules. This is not suitable for looking up guest
+ * XSM, DTB) or dom0 modules. This is not suitable for looking up guest
  * modules.
  */
 struct bootcmdline * __init boot_cmdline_find_by_kind(boot_module_kind kind)

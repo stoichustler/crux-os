@@ -31,7 +31,7 @@
 /*
  * The following log levels are as follows:
  *
- *   CRUXLOG_ERR: Fatal errors, either crux, Guest or Dom0
+ *   CRUXLOG_ERR: Fatal errors, either crux, Guest or dom0
  *               is about to crash.
  *
  *   CRUXLOG_WARNING: Something bad happened, but we can recover.

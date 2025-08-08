@@ -502,8 +502,8 @@ static void cf_check conring_dump_keyhandler(unsigned char key)
 }
 
 /*
- * CTRL-<switch_char> changes input direction, rotating among crux, Dom0,
- * and the DomUs started from crux at boot.
+ * CTRL-<switch_char> changes input direction, rotating among crux, dom0,
+ * and the domUs started from crux at boot.
  */
 #define switch_code (opt_conswitch[0]-'a'+1)
 /*

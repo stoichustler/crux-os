@@ -1194,7 +1194,7 @@ void show_execution_state(const struct cpu_user_regs *regs)
 
 void vcpu_show_execution_state(struct vcpu *v)
 {
-    printk("### Dumping Dom%d vcpu#%d state:\n",
+    printk("### Dumping dom%d vcpu#%d state:\n",
            v->domain->domain_id, v->vcpu_id);
 
     if ( v == current )
@@ -2142,7 +2142,7 @@ void asmlinkage do_trap_guest_sync(struct cpu_user_regs *regs)
         break;
     case HSR_EC_SVE:
         GUEST_BUG_ON(regs_mode_is_32bit(regs));
-        gprintk(CRUXLOG_WARNING, "Domain tried to use SVE while not allowed\n");
+        gprintk(CRUXLOG_WARNING, "domain tried to use SVE while not allowed\n");
         inject_undef_exception(regs);
         break;
 #endif

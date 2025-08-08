@@ -70,7 +70,7 @@
     ((_e) & TRC_SCHED_EVT_MASK) )
 
 /* Trace classes for DOM0 operations */
-#define TRC_DOM0_DOMOPS     0x00041000   /* Domains manipulations */
+#define TRC_DOM0_DOMOPS     0x00041000   /* domains manipulations */
 
 /* Trace classes for Hardware */
 #define TRC_HW_PM           0x00801000   /* Power management traces */

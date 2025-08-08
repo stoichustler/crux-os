@@ -71,7 +71,7 @@ struct crux_memory_reservation {
 #endif
 
     /*
-     * Domain whose reservation is being changed.
+     * domain whose reservation is being changed.
      * Unprivileged domains can specify only DOMID_SELF.
      */
     domid_t        domid;
@@ -132,7 +132,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_memory_exchange_t);
 #define CRUXMEM_maximum_ram_page     2
 
 struct crux_memory_domain {
-    /* [IN] Domain information is being queried for. */
+    /* [IN] domain information is being queried for. */
     domid_t domid;
 };
 
@@ -712,7 +712,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_vmemrange_t);
  * CRUXMEM_get_vnumainfo hypercall expects to see from guest
  * nr_vnodes, nr_vmemranges and nr_vcpus to indicate available memory.
  * After filling guests structures, nr_vnodes, nr_vmemranges and nr_vcpus
- * copied back to guest. Domain returns expected values of nr_vnodes,
+ * copied back to guest. domain returns expected values of nr_vnodes,
  * nr_vmemranges and nr_vcpus to guest if the values where incorrect.
  */
 struct crux_vnuma_topology_info {

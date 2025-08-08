@@ -7,8 +7,7 @@ obj-$(CONFIG_HAS_MESON) += meson-uart.o
 obj-$(CONFIG_HAS_MVEBU) += mvebu-uart.o
 obj-$(CONFIG_HAS_OMAP) += omap-uart.o
 obj-$(CONFIG_HAS_SCIF) += scif-uart.o
-obj-$(CONFIG_HAS_EHCI) += ehci-dbgp.o
-obj-$(CONFIG_XHCI) += xhci-dbc.o
+
 obj-$(CONFIG_HAS_IMX_LPUART) += imx-lpuart.o
 obj-$(CONFIG_HAS_LINFLEX) += linflex-uart.o
 obj-$(CONFIG_GENERIC_UART_INIT) += uart-init.o

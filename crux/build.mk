@@ -9,7 +9,7 @@
 #######################################################
 
 # Don't refresh this files during e.g., 'sudo make install'
-quiet_cmd_compile.h = UPD     $@
+quiet_cmd_compile.h =
 define cmd_compile.h
     if [ ! -r $@ -o -O $@ ]; then \
 	cat scripts/banner; \

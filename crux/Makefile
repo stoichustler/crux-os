@@ -608,7 +608,7 @@ define set_exuberant_flags
     exuberant_flags=`$1 --version 2>/dev/null | (grep -iq exuberant && \
 	echo "-I __initdata,__exitdata,__acquires,__releases \
 	    -I EXPORT_SYMBOL \
-	    --extra=+f --c-kinds=+px") || true` 
+	    --extras=+f --c-kinds=+px") || true` 
 endef
 
 .PHONY: note

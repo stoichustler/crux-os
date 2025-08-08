@@ -611,7 +611,7 @@ typedef void lock_profile_subfunc(struct lock_profile *data, int32_t type,
 static s_time_t lock_profile_start;
 static struct lock_profile_anc lock_profile_ancs[] = {
     [LOCKPROF_TYPE_GLOBAL] = { .name = "Global" },
-    [LOCKPROF_TYPE_PERDOM] = { .name = "Domain" },
+    [LOCKPROF_TYPE_PERDOM] = { .name = "domain" },
 };
 static struct lock_profile_qhead lock_profile_glb_q;
 static spinlock_t lock_profile_lock = SPIN_LOCK_UNLOCKED;
@@ -722,7 +722,7 @@ static void cf_check spinlock_profile_ucopy_elem(struct lock_profile *data,
         p->pc->nr_elem++;
 }
 
-/* Dom0 control of lock profiling */
+/* dom0 control of lock profiling */
 int spinlock_profile_control(struct crux_sysctl_lockprof_op *pc)
 {
     int rc = 0;

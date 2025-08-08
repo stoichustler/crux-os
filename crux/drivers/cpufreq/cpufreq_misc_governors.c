@@ -2,7 +2,7 @@
  *  crux/drivers/cpufreq/cpufreq_misc_gov.c
  *
  *  Copyright (C)  2001 Russell King
- *            (C)  2002 - 2004 Dominik Brodowski <linux@brodo.de>
+ *            (C)  2002 - 2004 dominik Brodowski <linux@brodo.de>
  *
  *     Nov 2008 Liu Jinsong <jinsong.liu@intel.com>
  *     Porting cpufreq_userspace.c, cpufreq_performance.c, and 

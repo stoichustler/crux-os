@@ -77,7 +77,7 @@
  */
 struct null_private {
     spinlock_t lock;        /* scheduler lock; nests inside cpupool_lock */
-    struct list_head ndom;  /* Domains of this scheduler                 */
+    struct list_head ndom;  /* domains of this scheduler                 */
     struct list_head waitq; /* units not assigned to any pCPU            */
     spinlock_t waitq_lock;  /* serializes waitq; nests inside runq locks */
     cpumask_t cpus_free;    /* CPUs without a unit associated to them    */
@@ -99,7 +99,7 @@ struct null_unit {
 };
 
 /*
- * Domain
+ * domain
  */
 struct null_dom {
     struct list_head ndom_elem;
@@ -995,7 +995,7 @@ static void cf_check null_dump(const struct scheduler *ops)
 
     printk("\tcpus_free = %*pbl\n", CPUMASK_PR(&prv->cpus_free));
 
-    printk("Domain info:\n");
+    printk("domain info:\n");
     loop = 0;
     list_for_each( iter, &prv->ndom )
     {
@@ -1004,7 +1004,7 @@ static void cf_check null_dump(const struct scheduler *ops)
 
         ndom = list_entry(iter, struct null_dom, ndom_elem);
 
-        printk("\tDomain: %d\n", ndom->dom->domain_id);
+        printk("\tdomain: %d\n", ndom->dom->domain_id);
         for_each_sched_unit( ndom->dom, unit )
         {
             struct null_unit * const nvc = null_unit(unit);

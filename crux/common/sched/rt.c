@@ -219,7 +219,7 @@ struct rt_unit {
 };
 
 /*
- * Domain
+ * domain
  */
 struct rt_dom {
     struct list_head sdom_elem; /* link list on rt_priv */
@@ -405,7 +405,7 @@ rt_dump(const struct scheduler *ops)
         rt_dump_unit(ops, svc);
     }
 
-    printk("Domain info:\n");
+    printk("domain info:\n");
     list_for_each ( iter, &prv->sdom )
     {
         const struct sched_unit *unit;

@@ -105,7 +105,7 @@ struct crux_pmu_data {
     uint32_t pcpu_id;
 
     /*
-     * Domain that was interrupted. On non-privileged guests set to DOMID_SELF.
+     * domain that was interrupted. On non-privileged guests set to DOMID_SELF.
      * On privileged guests can be DOMID_SELF, DOMID_CRUX, or, when in
      * CRUXPMU_MODE_ALL mode, domain ID of another domain.
      */

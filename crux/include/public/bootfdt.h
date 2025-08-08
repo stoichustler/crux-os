@@ -9,7 +9,7 @@
 #define __CRUX_PUBLIC_BOOTFDT_H__
 
 /*
- * Domain Capabilities specified in the "capabilities" property.  Use of
+ * domain Capabilities specified in the "capabilities" property.  Use of
  * this property allows splitting up the monolithic dom0 into separate,
  * less privileged components.  A regular domU has no capabilities
  * (which is the default if nothing is specified).  A traditional dom0

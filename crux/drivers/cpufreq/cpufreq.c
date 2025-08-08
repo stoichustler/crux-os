@@ -1,7 +1,7 @@
 /*
  *  Copyright (C) 2001, 2002 Andy Grover <andrew.grover@intel.com>
  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
- *  Copyright (C) 2002 - 2004 Dominik Brodowski <linux@brodo.de>
+ *  Copyright (C) 2002 - 2004 dominik Brodowski <linux@brodo.de>
  *  Copyright (C) 2006        Denis Sadykov <denis.m.sadykov@intel.com>
  *
  *  Feb 2008 - Liu Jinsong <jinsong.liu@intel.com>

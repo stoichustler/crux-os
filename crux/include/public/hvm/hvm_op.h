@@ -45,7 +45,7 @@ struct crux_hvm_altp2m_suppress_ve_multi {
 /* Set the logical level of one of a domain's PCI INTx wires. */
 #define HVMOP_set_pci_intx_level  2
 struct crux_hvm_set_pci_intx_level {
-    /* Domain to be updated. */
+    /* domain to be updated. */
     domid_t  domid;
     /* PCI INTx identification in PCI topology (domain:bus:device:intx). */
     uint8_t  domain, bus, device, intx;
@@ -58,7 +58,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_hvm_set_pci_intx_level_t);
 /* Set the logical level of one of a domain's ISA IRQ wires. */
 #define HVMOP_set_isa_irq_level   3
 struct crux_hvm_set_isa_irq_level {
-    /* Domain to be updated. */
+    /* domain to be updated. */
     domid_t  domid;
     /* ISA device identification, by ISA IRQ (0-15). */
     uint8_t  isa_irq;
@@ -70,7 +70,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_hvm_set_isa_irq_level_t);
 
 #define HVMOP_set_pci_link_route  4
 struct crux_hvm_set_pci_link_route {
-    /* Domain to be updated. */
+    /* domain to be updated. */
     domid_t  domid;
     /* PCI link identifier (0-3). */
     uint8_t  link;
@@ -116,7 +116,7 @@ typedef enum {
 /* Hint from PV drivers for pagetable destruction. */
 #define HVMOP_pagetable_dying        9
 struct crux_hvm_pagetable_dying {
-    /* Domain with a pagetable about to be destroyed. */
+    /* domain with a pagetable about to be destroyed. */
     domid_t  domid;
     uint16_t pad[3]; /* align next field on 8-byte boundary */
     /* guest physical address of the toplevel pagetable dying */
@@ -155,7 +155,7 @@ DEFINE_CRUX_GUEST_HANDLE(crux_hvm_cruxtrace_t);
 #define HVMOP_get_mem_type    15
 /* Return hvmmem_type_t for the specified pfn. */
 struct crux_hvm_get_mem_type {
-    /* Domain to be queried. */
+    /* domain to be queried. */
     domid_t domid;
     /* OUT variable. */
     uint16_t mem_type;

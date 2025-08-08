@@ -299,7 +299,7 @@ int dw_pcie_child_config_read(struct pci_host_bridge *bridge, pci_sbdf_t sbdf,
     /*
      * FIXME: we cannot read iATU settings at the early initialization
      * (probe) as the host's HW is not yet initialized at that phase.
-     * This read operation is the very first thing Domain-0 will do
+     * This read operation is the very first thing domain-0 will do
      * during its initialization, so take this opportunity and read
      * iATU setting now.
      */
@@ -341,7 +341,7 @@ bool __init dw_pcie_child_need_p2m_hwdom_mapping(struct domain *d,
     struct pci_config_window *cfg = bridge->child_cfg;
 
     /*
-     * We do not want ECAM address space to be mapped in Domain-0's p2m,
+     * We do not want ECAM address space to be mapped in domain-0's p2m,
      * so we can trap access to it.
      */
     return cfg->phys_addr != addr;
@@ -395,7 +395,7 @@ dw_pcie_host_probe(struct dt_device_node *dev, const void *data,
 
     /*
      * FIXME: we cannot read iATU unroll enable now as the host bridge's
-     * HW is not yet initialized by Domain-0: leave it for later.
+     * HW is not yet initialized by domain-0: leave it for later.
      */
 
     printk(CRUXLOG_INFO "%s number of view ports: %d\n", dt_node_full_name(dev),

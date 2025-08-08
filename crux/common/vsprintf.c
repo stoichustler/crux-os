@@ -330,7 +330,7 @@ static char *pointer(char *str, const char *end, const char **fmt_ptr,
 
         return print_bitmap_string(str, end, arg, field_width);
 
-    case 'd': /* Domain ID from a struct domain *. */
+    case 'd': /* domain ID from a struct domain *. */
         ++*fmt_ptr;
         return print_domain(str, end, arg);
 

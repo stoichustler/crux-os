@@ -717,7 +717,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
             if ( ret )
             {
                 printk(CRUXLOG_ERR
-                       "GICv2: Failed to route v2m MSI SPI[%d] to Dom%d.\n",
+                       "GICv2: Failed to route v2m MSI SPI[%d] to dom%d.\n",
                        spi, d->domain_id);
                 return ret;
             }
@@ -726,7 +726,7 @@ static int gicv2_map_hwdom_extra_mappings(struct domain *d)
             if ( !vgic_reserve_virq(d, spi) )
             {
                 printk(CRUXLOG_ERR
-                       "GICv2: Failed to reserve v2m MSI SPI[%d] for Dom%d.\n",
+                       "GICv2: Failed to reserve v2m MSI SPI[%d] for dom%d.\n",
                        spi, d->domain_id);
                 return -EINVAL;
             }

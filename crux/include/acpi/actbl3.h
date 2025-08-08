@@ -541,7 +541,7 @@ struct acpi_pmtt_controller {
 	u16 domain_count;
 };
 
-/* 1a: Proximity Domain substructure */
+/* 1a: Proximity domain substructure */
 
 struct acpi_pmtt_domain {
 	u32 proximity_domain;

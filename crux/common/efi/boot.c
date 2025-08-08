@@ -1555,12 +1555,12 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
         /* efi_check_dt_boot throws some error */
         blexit(L"Error processing boot modules on DT.");
 
-    /* Check if at least one of Dom0 or DomU(s) is specified */
+    /* Check if at least one of dom0 or domU(s) is specified */
     if ( !dt_modules_found && !kernel.ptr )
         blexit(L"No initial domain kernel specified.");
 
     /*
-     * The Dom0 kernel can be loaded from the configuration file or by the
+     * The dom0 kernel can be loaded from the configuration file or by the
      * device tree through the efi_check_dt_boot function, in this stage
      * verify it.
      */
@@ -1569,7 +1569,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
          !EFI_ERROR(efi_bs->LocateProtocol(&shim_lock_guid, NULL,
                                            (void **)&shim_lock)) &&
          (status = shim_lock->Verify(kernel.ptr, kernel.size)) != EFI_SUCCESS )
-        PrintErrMesg(L"Dom0 kernel image could not be verified", status);
+        PrintErrMesg(L"dom0 kernel image could not be verified", status);
 
     efi_arch_edd();
 

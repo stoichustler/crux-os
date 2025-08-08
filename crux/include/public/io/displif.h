@@ -141,7 +141,7 @@
  * dom-id
  *      Values:         <uint16_t>
  *
- *      Domain identifier.
+ *      domain identifier.
  *
  * dev-id
  *      Values:         <uint16_t>

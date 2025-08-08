@@ -17,13 +17,13 @@ config DEVICE_TREE_PARSE
 	select LIBFDT
 
 config DOM0LESS_BOOT
-	bool "Dom0less boot support" if EXPERT
+	bool "dom0less boot support" if EXPERT
 	depends on HAS_DOM0LESS && DOMAIN_BUILD_HELPERS
 	select DEVICE_TREE_PARSE
 	default y
 	help
-	  Dom0less boot support enables crux to create and start domU guests during
-	  crux boot without the need of a control domain (Dom0), which could be
+	  dom0less boot support enables crux to create and start domU guests during
+	  crux boot without the need of a control domain (dom0), which could be
 	  present anyway.
 
 config DOMAIN_BUILD_HELPERS
@@ -58,8 +58,8 @@ config EVTCHN_FIFO
 	  If unsure, say Y.
 
 config PDX_COMPRESSION
-	bool "PDX (Page inDeX) compression" if EXPERT && !X86 && !RISCV
-	default ARM || PPC
+	bool "PDX (Page inDeX) compression" if EXPERT && !RISCV
+	default ARM
 	help
 	  PDX compression is a technique designed to reduce the memory
 	  overhead of physical memory management on platforms with sparse RAM
@@ -221,22 +221,6 @@ config SPECULATIVE_HARDEN_ARRAY
 	  This is a best-effort mitigation.  There are no guarantees that all
 	  areas of code open to abuse have been hardened.
 
-config SPECULATIVE_HARDEN_BRANCH
-	bool "Speculative Conditional Branch Hardening"
-	default y
-	depends on X86
-	help
-	  Compile crux with extra hardening for some conditional branches.
-
-	  When enabled, specific conditions which have been deemed liable to
-	  be speculatively abused will be hardened to avoid entering the wrong
-	  basic block.
-
-	  This is a best-effort mitigation.  There are no guarantees that all
-	  areas of code open to abuse have been hardened, nor that
-	  optimisations in the compiler haven't subverted the attempts to
-	  harden.
-
 config SPECULATIVE_HARDEN_GUEST_ACCESS
 	bool "Speculative PV Guest Memory Access Hardening"
 	default y
@@ -247,16 +231,6 @@ config SPECULATIVE_HARDEN_GUEST_ACCESS
 	  When enabled, code paths accessing PV guest memory will have guest
 	  controlled addresses massaged such that memory accesses through them
 	  won't touch hypervisor address space.
-
-config SPECULATIVE_HARDEN_LOCK
-	bool "Speculative lock context hardening"
-	default y
-	depends on X86
-	help
-	  Compile crux with extra hardening for locked regions.
-
-	  This option is disabled by default at run time, and needs to be
-	  enabled on the command line.
 
 endmenu
 
@@ -311,8 +285,8 @@ config HYPFS_CONFIG
 	  want to hide the .config contents from dom0.
 
 config IOREQ_SERVER
-	bool "IOREQ support (EXPERT)" if EXPERT && !X86
-	default X86
+	bool "IOREQ support (EXPERT)" if EXPERT
+	default ARM
 	depends on HVM
 	help
 	  Enables generic mechanism for providing emulated devices to the guests.
@@ -339,17 +313,6 @@ config EFI_SET_VIRTUAL_ADDRESS_MAP
       missing.
 
       If unsure, say N.
-
-config CRUXOPROF
-	bool "crux Oprofile Support" if EXPERT
-	depends on X86
-	help
-	  crux OProfile (cruxoprof) is a system-wide profiler for crux virtual
-	  machine environments, capable of profiling the crux virtual machine
-	  monitor, multiple Linux guest operating systems, and applications
-	  running on them.
-
-	  If unsure, say Y.
 
 config XSM
 	bool "crux Security Modules support"
@@ -395,7 +358,7 @@ config XSM_FLASK_POLICY
 	  This includes a default XSM policy in the hypervisor so that the
 	  bootloader does not need to load a policy to get sane behavior from an
 	  XSM-enabled hypervisor.  If this is disabled, a policy must be
-	  provided by the bootloader or by Domain 0.  Even if this is enabled, a
+	  provided by the bootloader or by domain 0.  Even if this is enabled, a
 	  policy provided by the bootloader will override it.
 
 	  This requires that the SELinux policy compiler (checkpolicy) be
@@ -430,26 +393,6 @@ choice
 		bool "SILO" if XSM_SILO
 endchoice
 
-config LATE_HWDOM
-	bool "Dedicated hardware domain"
-	default n
-	depends on XSM && X86
-	help
-	  Allows the creation of a dedicated hardware domain distinct from
-	  domain 0 that manages devices without needing access to other
-	  privileged functionality such as the ability to manage domains.
-	  This requires that the actual domain 0 be a stub domain that
-	  constructs the actual hardware domain instead of initializing the
-	  hardware itself.  Because the hardware domain needs access to
-	  hypercalls not available to unprivileged guests, an XSM policy
-	  is required to properly define the privilege of these domains.
-
-	  This feature does nothing if the "hardware_dom" boot parameter is
-	  not present.  If this feature is being used for security, it should
-	  be combined with an IOMMU in strict mode.
-
-	  If unsure, say N.
-
 config ARGO
 	bool "Argo: hypervisor-mediated interdomain communication (UNSUPPORTED)" if UNSUPPORTED
 	help
@@ -476,7 +419,7 @@ config CRYPTO
 
 config LIVEPATCH
 	bool "Live patching support"
-	default X86
+	default ARM
 	depends on "$(CRUX_HAS_BUILD_ID)" = "y" && SYSCTL && HAS_VMAP
 	select CC_SPLIT_SECTIONS
 	help

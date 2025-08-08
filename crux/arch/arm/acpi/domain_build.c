@@ -121,7 +121,7 @@ static int __init acpi_make_hypervisor_node(const struct kernel_info *kinfo,
 }
 
 /*
- * Prepare a minimal DTB for Dom0 which contains bootargs, initrd, memory
+ * Prepare a minimal DTB for dom0 which contains bootargs, initrd, memory
  * information, EFI table.
  */
 static int __init create_acpi_dtb(struct kernel_info *kinfo,
@@ -191,7 +191,7 @@ static void __init acpi_map_other_tables(struct domain *d)
     unsigned long res;
     u64 addr, size;
 
-    /* Map all ACPI tables to Dom0 using 1:1 mappings. */
+    /* Map all ACPI tables to dom0 using 1:1 mappings. */
     for( i = 0; i < acpi_gbl_root_table_list.count; i++ )
     {
         addr = acpi_gbl_root_table_list.tables[i].address;
@@ -514,7 +514,7 @@ int __init prepare_acpi(struct domain *d, struct kernel_info *kinfo)
     memset(d->arch.efi_acpi_table, 0, d->arch.efi_acpi_len);
 
     /*
-     * For ACPI, Dom0 doesn't use kinfo->gnttab_start to get the grant table
+     * For ACPI, dom0 doesn't use kinfo->gnttab_start to get the grant table
      * region. So we use it as the ACPI table mapped address. Also it needs to
      * check if the size of grant table region is enough for those ACPI tables.
      */
@@ -549,7 +549,7 @@ int __init prepare_acpi(struct domain *d, struct kernel_info *kinfo)
     acpi_create_efi_system_table(d, tbl_add);
     acpi_create_efi_mmap_table(d, kernel_info_get_mem(kinfo), tbl_add);
 
-    /* Map the EFI and ACPI tables to Dom0 */
+    /* Map the EFI and ACPI tables to dom0 */
     rc = map_regions_p2mt(d,
                           gaddr_to_gfn(d->arch.efi_acpi_gpa),
                           PFN_UP(d->arch.efi_acpi_len),

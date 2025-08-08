@@ -58,7 +58,7 @@ struct crux_pci_op {
     int32_t err;
 
     /* IN: which device to touch */
-    uint32_t domain; /* PCI Domain/Segment */
+    uint32_t domain; /* PCI domain/Segment */
     uint32_t bus;
     uint32_t devfn;
 
@@ -84,7 +84,7 @@ struct crux_pcie_aer_op
     int32_t err;
 
     /* IN: which device to touch */
-    uint32_t domain; /* PCI Domain/Segment*/
+    uint32_t domain; /* PCI domain/Segment*/
     uint32_t bus;
     uint32_t devfn;
 };

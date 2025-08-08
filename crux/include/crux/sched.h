@@ -462,7 +462,7 @@ struct domain
     /* Is this guest dying (i.e., a zombie)? */
     enum { DOMDYING_alive, DOMDYING_dying, DOMDYING_dead } is_dying;
 
-    /* Domain is paused by controller software? */
+    /* domain is paused by controller software? */
     int              controller_pause_count;
 
     struct {
@@ -571,7 +571,7 @@ struct domain
     /* OProfile support. */
     struct cruxoprof *cruxoprof;
 
-    /* Domain watchdog. */
+    /* domain watchdog. */
 #define NR_DOMAIN_WATCHDOG_TIMERS 2
     spinlock_t watchdog_lock;
     uint32_t watchdog_inuse_map;
@@ -983,7 +983,7 @@ static inline struct domain *next_domain_in_cpupool(
 /*
  * Per-VCPU pause flags.
  */
- /* Domain is blocked waiting for an event. */
+ /* domain is blocked waiting for an event. */
 #define _VPF_blocked         0
 #define VPF_blocked          (1UL<<_VPF_blocked)
  /* VCPU is offline. */

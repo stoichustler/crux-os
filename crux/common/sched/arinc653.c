@@ -668,7 +668,7 @@ a653_switch_sched(struct scheduler *new_ops, unsigned int cpu,
  * ARINC 653 schedule or to retrieve the schedule currently in place.
  *
  * @param ops       Pointer to this instance of the scheduler structure
- * @param sc        Pointer to the scheduler operation specified by Domain 0
+ * @param sc        Pointer to the scheduler operation specified by domain 0
  */
 static int cf_check
 a653sched_adjust_global(const struct scheduler *ops,

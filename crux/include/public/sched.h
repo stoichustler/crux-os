@@ -155,14 +155,14 @@ DEFINE_CRUX_GUEST_HANDLE(sched_pin_override_t);
  * not care about the shutdown code.
  */
 /* ` enum sched_shutdown_reason { */
-#define SHUTDOWN_poweroff   0  /* Domain exited normally. Clean up and kill. */
+#define SHUTDOWN_poweroff   0  /* domain exited normally. Clean up and kill. */
 #define SHUTDOWN_reboot     1  /* Clean up, kill, and then restart.          */
 #define SHUTDOWN_suspend    2  /* Clean up, save suspend info, kill.         */
 #define SHUTDOWN_crash      3  /* Tell controller we've crashed.             */
 #define SHUTDOWN_watchdog   4  /* Restart because watchdog time expired.     */
 
 /*
- * Domain asked to perform 'soft reset' for it. The expected behavior is to
+ * domain asked to perform 'soft reset' for it. The expected behavior is to
  * reset internal crux state for the domain returning it to the point where it
  * was created but leaving the domain's memory contents and vCPU contexts
  * intact. This will allow the domain to start over and set up all crux specific

@@ -53,7 +53,7 @@
  * matching interrupt ID and return a reference to the IRQ structure.
  *
  * TODO: This is more documentation of how it should be done. A list is
- * not a good data structure for Dom0's LPIs, it merely serves as an
+ * not a good data structure for dom0's LPIs, it merely serves as an
  * example here how to properly do the locking, allocation and refcounting.
  * So lpi_list_head should be replaced with something more appropriate.
  */
@@ -127,7 +127,7 @@ struct vgic_irq *vgic_get_irq(struct domain *d, struct vcpu *vcpu,
  * This should always be called after a vgic_get_irq(), though the reference
  * can be deliberately held for longer periods, if needed.
  *
- * TODO: A linked list is not a good data structure for LPIs in Dom0.
+ * TODO: A linked list is not a good data structure for LPIs in dom0.
  * Replace this with proper data structure once we get proper LPI support.
  */
 void vgic_put_irq(struct domain *d, struct vgic_irq *irq)

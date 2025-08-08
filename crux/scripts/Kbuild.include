@@ -51,7 +51,6 @@ define filechk
 	trap "rm -f $(dot-target).tmp" EXIT;			\
 	{ $(filechk_$(1)); } > $(dot-target).tmp;		\
 	if [ ! -r $@ ] || ! cmp -s $@ $(dot-target).tmp; then	\
-		$(kecho) '  UPD     $@';			\
 		mv -f $(dot-target).tmp $@;			\
 	fi
 endef

@@ -571,7 +571,7 @@ DEFINE_CRUX_GUEST_HANDLE(mmuext_op_t);
 #define MAX_VMASST_TYPE                  3
 #endif
 
-/* Domain ids >= DOMID_FIRST_RESERVED cannot be used for ordinary domains. */
+/* domain ids >= DOMID_FIRST_RESERVED cannot be used for ordinary domains. */
 #define DOMID_FIRST_RESERVED crux_mk_uint(0x7FF0)
 
 /* DOMID_SELF is used in certain contexts to refer to oneself. */
@@ -579,7 +579,7 @@ DEFINE_CRUX_GUEST_HANDLE(mmuext_op_t);
 
 /*
  * DOMID_IO is used to restrict page-table updates to mapping I/O memory.
- * Although no Foreign Domain need be specified to map I/O pages, DOMID_IO
+ * Although no Foreign domain need be specified to map I/O pages, DOMID_IO
  * is useful to ensure that no mappings to the OS's own heap are accidentally
  * installed. (e.g., in Linux this could cause havoc as reference counts
  * aren't adjusted on the I/O-mapping code path).
@@ -748,7 +748,7 @@ struct shared_info {
      * A domain can create "event channels" on which it can send and receive
      * asynchronous event notifications. There are three classes of event that
      * are delivered by this mechanism:
-     *  1. Bi-directional inter- and intra-domain connections. Domains must
+     *  1. Bi-directional inter- and intra-domain connections. domains must
      *     arrange out-of-band to set up a connection (usually by allocating
      *     an unbound 'listener' port and avertising that via a storage service
      *     such as cruxstore).
@@ -831,7 +831,7 @@ typedef struct shared_info shared_info_t;
  *     bootstrap element. If necessary, the bootstrap virtual region is
  *     extended by an extra 4MB to ensure this.
  *
- * Note: Prior to 25833:bb85bbccb1c9. ("x86/32-on-64 adjust Dom0 initial page
+ * Note: Prior to 25833:bb85bbccb1c9. ("x86/32-on-64 adjust dom0 initial page
  * table layout") a bug caused the pt_base (3.g above) and cr3 to not point
  * to the start of the guest page tables (it was offset by two pages).
  * This only manifested itself on 32-on-64 dom0 kernels and not 32-on-64 domU
@@ -918,7 +918,7 @@ struct crux_multiboot_mod_list
     uint32_t pad;
 };
 /*
- * `incontents 200 startofday_dom0_console Dom0_console
+ * `incontents 200 startofday_dom0_console dom0_console
  *
  * The console structure in start_info.console.dom0
  *

@@ -597,7 +597,7 @@ int __init iommu_setup(void)
         if ( iommu_quarantine_init() )
             panic("Could not set up quarantine\n");
 
-        printk(" - Dom0 mode: %s\n",
+        printk(" - dom0 mode: %s\n",
                iommu_hwdom_passthrough ? "Passthrough" :
                iommu_hwdom_strict ? "Strict" : "Relaxed");
 #ifndef iommu_intremap

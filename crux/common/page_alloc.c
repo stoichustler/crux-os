@@ -32,7 +32,7 @@
  *             crux heap pages are always anonymous (that is, not tied
  *             or accounted to any particular domain).
  *
- * - Dom heap: Memory which must be explicitly mapped, usually
+ * - dom heap: Memory which must be explicitly mapped, usually
  *             transiently with map_domain_page(), in order to be
  *             used. va() and pa() are not valid for such memory. Care
  *             should be taken when stashing pointers to dom heap
@@ -40,7 +40,7 @@
  *             map_domain_page_global()), it is not safe to stash
  *             transient mappings such as those from map_domain_page()
  *
- *             Dom heap pages are often tied to a particular domain,
+ *             dom heap pages are often tied to a particular domain,
  *             but need not be (passing domain==NULL results in an
  *             anonymous dom heap allocation).
  *
@@ -66,7 +66,7 @@
  *
  *   Memory allocated from the crux heap is flagged (in
  *   page_info.count_info) with PGC_crux_heap. Memory allocated from
- *   the Dom heap must still be explicitly mapped before use
+ *   the dom heap must still be explicitly mapped before use
  *   (e.g. with map_domain_page) in particular in common code.
  *
  *   cruxheap_max_mfn() should not be called by arch code.
@@ -245,7 +245,7 @@ custom_param("bootscrub", parse_bootscrub_param);
 static unsigned long __initdata opt_bootscrub_chunk = MB(128);
 size_param("bootscrub_chunk", opt_bootscrub_chunk);
 
- /* scrub-domheap -> Domheap pages are scrubbed when freed */
+ /* scrub-domheap -> domheap pages are scrubbed when freed */
 static bool __read_mostly opt_scrub_domheap;
 boolean_param("scrub-domheap", opt_scrub_domheap);
 
@@ -719,7 +719,7 @@ static void __init setup_low_mem_virq(void)
     halve = (opt_low_mem_virq == ((paddr_t) -1));
     threshold = halve ? DEFAULT_LOW_MEM_VIRQ : opt_low_mem_virq;
 
-    /* Dom0 has already been allocated by now. So check we won't be
+    /* dom0 has already been allocated by now. So check we won't be
      * complaining immediately with whatever's left of the heap. */
     threshold = min(threshold,
                     ((paddr_t) total_avail_pages) << PAGE_SHIFT);
@@ -2181,7 +2181,7 @@ void __init end_boot_allocator(void)
     if ( !dma_bitsize && arch_want_default_dmazone() )
         dma_bitsize = arch_get_dma_bitsize();
 
-    printk("Domain heap initialised");
+    printk("domain heap initialised");
     if ( dma_bitsize )
         printk(" DMA width %u bits", dma_bitsize);
     printk("\n");
@@ -2433,7 +2433,7 @@ void init_cruxheap_pages(paddr_t ps, paddr_t pe)
         return;
 
     /*
-     * Yuk! Ensure there is a one-page buffer between crux and Dom zones, to
+     * Yuk! Ensure there is a one-page buffer between crux and dom zones, to
      * prevent merging of power-of-two blocks across the zone boundary.
      */
     if ( ps && !is_crux_heap_mfn(mfn_add(maddr_to_mfn(ps), -1)) )
@@ -2633,7 +2633,7 @@ int assign_pages(
     {
         ASSERT(page_get_owner(&pg[i]) == NULL);
         page_set_owner(&pg[i], d);
-        smp_wmb(); /* Domain pointer must be visible before updating refcnt. */
+        smp_wmb(); /* domain pointer must be visible before updating refcnt. */
         pg[i].count_info =
             (pg[i].count_info & PGC_preserved) | PGC_allocated | 1;
 
@@ -2837,7 +2837,7 @@ static void cf_check pagealloc_info(unsigned char key)
         }
     }
 
-    printk("    Dom heap: %lukB free\n", total << (PAGE_SHIFT-10));
+    printk("    dom heap: %lukB free\n", total << (PAGE_SHIFT-10));
 
     dump_llc_coloring_info();
 }
