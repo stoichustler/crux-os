@@ -28,7 +28,15 @@ config ARCH_BOARD_QEMU_ARMV8A
 		This options selects support for ROUX on the QEMU ARMv8a + virt
 		board featuring the qemu ARMv8a CPUs.
 
-config ARCH_BOARD_CRUX_GVM
+config ARCH_BOARD_CRUX_RK356X
+	bool "CRUX Gvm CPUs board"
+	depends on ARCH_CHIP_CRUX
+	select ARCH_HAVE_IRQBUTTONS
+	---help---
+		This options selects support for ROUX on the CRUX Gvm + virt
+		board featuring the CRUX Gvm CPUs.
+
+config ARCH_BOARD_CRUX_RK3588
 	bool "CRUX Gvm CPUs board"
 	depends on ARCH_CHIP_CRUX
 	select ARCH_HAVE_IRQBUTTONS
@@ -154,7 +162,8 @@ config ARCH_BOARD
 	default "raspberrypi-4b"            if ARCH_BOARD_RASPBERRYPI_4B
 	default "rv-virt"                   if ARCH_BOARD_QEMU_RV_VIRT
 	default "qemu-armv8a"               if ARCH_BOARD_QEMU_ARMV8A
-	default "crux-gvm"                  if ARCH_BOARD_CRUX_GVM
+	default "crux-rk356x"               if ARCH_BOARD_CRUX_RK356X
+	default "crux-rk3588"               if ARCH_BOARD_CRUX_RK3588
 	default "nanopi_m4"                 if ARCH_BOARD_NANOPI_M4
 	default "imx8qm-mek"                if ARCH_BOARD_IMX8QM_MEK
 	default "imx93-evk"                 if ARCH_BOARD_IMX93_EVK
@@ -207,8 +216,11 @@ comment "Board-Specific Options"
 if ARCH_BOARD_QEMU_ARMV8A
 source "boards/arm64/qemu/qemu-armv8a/Kconfig"
 endif
-if ARCH_BOARD_CRUX_GVM
-source "boards/arm64/crux/crux-gvm/Kconfig"
+if ARCH_BOARD_CRUX_RK356X
+source "boards/arm64/crux/crux-rk356x/Kconfig"
+endif
+if ARCH_BOARD_CRUX_RK3588
+source "boards/arm64/crux/crux-rk3588/Kconfig"
 endif
 if ARCH_BOARD_IMX8QM_MEK
 source "boards/arm64/imx8/imx8qm-mek/Kconfig"

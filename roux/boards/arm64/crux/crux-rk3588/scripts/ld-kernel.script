@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/scripts/ld-kernel.script
+ * boards/arm64/crux/crux-rk3588/scripts/ld-kernel.script
  *
  * SPDX-License-Identifier: Apache-2.0
  *

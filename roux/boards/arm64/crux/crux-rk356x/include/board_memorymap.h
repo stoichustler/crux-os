@@ -1,5 +1,5 @@
 /****************************************************************************
- * apps/system/nsh/nsh_main.c
+ * boards/arm64/crux/crux-rk356x/include/board_memorymap.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,75 +20,41 @@
  *
  ****************************************************************************/
 
+#ifndef __BOARDS_ARM64_CRUX_CRUX_RK356X_INCLUDE_BOARD_MEMORYMAP_H
+#define __BOARDS_ARM64_CRUX_CRUX_RK356X_INCLUDE_BOARD_MEMORYMAP_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <roux/config.h>
 
-#include <errno.h>
-#include <sched.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/boardctl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include "nshlib/nshlib.h"
-
-#define NSH_BANNER        \
-"    _______  __  __\n" \
-"   /__\\_  _\\/  \\/ _\\\n" \
-"  /  \\ / / / / /\\ \\\n" \
-"  \\/\\/ \\/  \\__/\\__/ ROUX 2025\n"
-
 /****************************************************************************
- * Public Functions
+ * Pre-processor Definitions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: nsh_main
- *
- * Description:
- *   This is the main logic for the case of the NSH task.  It will perform
- *   one-time NSH initialization and start an interactive session on the
- *   current console device.
- *
+ * Public Data
  ****************************************************************************/
 
-int main(int argc, FAR char *argv[])
-{
-	struct sched_param param;
-	int ret = 0;
+#ifndef __ASSEMBLY__
 
-	printf(NSH_BANNER); /* HUSTLER: personal tagging */
-
-	/* Check the task priority that we were started with */
-
-	sched_getparam(0, &param);
-	if (param.sched_priority != CONFIG_SYSTEM_NSH_PRIORITY) {
-		/* If not then set the priority to the configured priority */
-
-		param.sched_priority = CONFIG_SYSTEM_NSH_PRIORITY;
-		sched_setparam(0, &param);
-	}
-
-	/* Initialize the NSH library */
-
-	nsh_initialize();
-
-#ifdef CONFIG_NSH_CONSOLE
-	/* If the serial console front end is selected, run it on this thread */
-
-	ret = nsh_consolemain(argc, argv);
-
-	/* nsh_consolemain() should not return.  So if we get here, something
-	 * is wrong.
-	 */
-
-	dprintf(STDERR_FILENO, "ERROR: nsh_consolemain() returned: %d\n", ret);
-	ret = 1;
+#undef EXTERN
+#if defined(__cplusplus)
+#define EXTERN extern "C"
+extern "C" {
+#else
+#define EXTERN extern
 #endif
 
-	return ret;
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+#undef EXTERN
+#if defined(__cplusplus)
 }
+#endif
+
+#endif /* __ASSEMBLY__ */
+#endif /* __BOARDS_ARM64_CRUX_CRUX_RK356X_INCLUDE_BOARD_MEMORYMAP_H */

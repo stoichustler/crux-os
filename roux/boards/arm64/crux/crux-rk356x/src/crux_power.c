@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/src/crux_power.c
+ * boards/arm64/crux/crux-rk356x/src/crux_power.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *

@@ -1,5 +1,5 @@
 /****************************************************************************
- * apps/system/nsh/nsh_main.c
+ * boards/arm64/crux/crux-rk3588/src/crux_power.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,69 +26,47 @@
 
 #include <roux/config.h>
 
-#include <errno.h>
-#include <sched.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/boardctl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include "nshlib/nshlib.h"
-
-#define NSH_BANNER        \
-"    _______  __  __\n" \
-"   /__\\_  _\\/  \\/ _\\\n" \
-"  /  \\ / / / / /\\ \\\n" \
-"  \\/\\/ \\/  \\__/\\__/ ROUX 2025\n"
+#include <roux/arch.h>
+#include <roux/board.h>
 
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 
+#ifdef CONFIG_BOARDCTL_POWEROFF
+int board_power_off(int status)
+{
+	up_systempoweroff();
+	return 0;
+}
+#endif
+
+#ifdef CONFIG_BOARDCTL_RESET
+
 /****************************************************************************
- * Name: nsh_main
+ * Name: board_reset
  *
  * Description:
- *   This is the main logic for the case of the NSH task.  It will perform
- *   one-time NSH initialization and start an interactive session on the
- *   current console device.
+ *   Reset board.  Support for this function is required by board-level
+ *   logic if CONFIG_BOARDCTL_RESET is selected.
+ *
+ * Input Parameters:
+ *   status - Status information provided with the reset event.  This
+ *            meaning of this status information is board-specific.  If not
+ *            used by a board, the value zero may be provided in calls to
+ *            board_reset().
+ *
+ * Returned Value:
+ *   If this function returns, then it was not possible to power-off the
+ *   board due to some constraints.  The return value int this case is a
+ *   board-specific reason for the failure to shutdown.
  *
  ****************************************************************************/
 
-int main(int argc, FAR char *argv[])
+int board_reset(int status)
 {
-	struct sched_param param;
-	int ret = 0;
-
-	printf(NSH_BANNER); /* HUSTLER: personal tagging */
-
-	/* Check the task priority that we were started with */
-
-	sched_getparam(0, &param);
-	if (param.sched_priority != CONFIG_SYSTEM_NSH_PRIORITY) {
-		/* If not then set the priority to the configured priority */
-
-		param.sched_priority = CONFIG_SYSTEM_NSH_PRIORITY;
-		sched_setparam(0, &param);
-	}
-
-	/* Initialize the NSH library */
-
-	nsh_initialize();
-
-#ifdef CONFIG_NSH_CONSOLE
-	/* If the serial console front end is selected, run it on this thread */
-
-	ret = nsh_consolemain(argc, argv);
-
-	/* nsh_consolemain() should not return.  So if we get here, something
-	 * is wrong.
-	 */
-
-	dprintf(STDERR_FILENO, "ERROR: nsh_consolemain() returned: %d\n", ret);
-	ret = 1;
-#endif
-
-	return ret;
+	up_systemreset();
+	return 0;
 }
+
+#endif /* CONFIG_BOARDCTL_RESET */

@@ -3,5 +3,5 @@
 # see the file kconfig-language.txt in the ROUX tools repository.
 #
 
-if ARCH_BOARD_CRUX_GVM
+if ARCH_BOARD_CRUX_RK356X
 endif

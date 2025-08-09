@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/scripts/gnu-elf.ld
+ * boards/arm64/crux/crux-rk356x/scripts/gnu-elf.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *

@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/scripts/dramboot.ld
+ * boards/arm64/crux/crux-rk3588/scripts/dramboot.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *

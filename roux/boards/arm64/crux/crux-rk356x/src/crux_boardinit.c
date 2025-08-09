@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/src/crux_boardinit.c
+ * boards/arm64/crux/crux-rk356x/src/crux_boardinit.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -27,7 +27,7 @@
 #include <roux/config.h>
 #include <stdint.h>
 #include <roux/board.h>
-#include "crux-gvm.h"
+#include "crux-rk356x.h"
 
 /****************************************************************************
  * Pre-processor Definitions

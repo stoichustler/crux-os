@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/include/board_memorymap.h
+ * boards/arm64/crux/crux-rk356x/src/crux-rk356x.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,8 +20,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM64_CRUX_CRUX_GVM_INCLUDE_BOARD_MEMORYMAP_H
-#define __BOARDS_ARM64_CRUX_CRUX_GVM_INCLUDE_BOARD_MEMORYMAP_H
+#ifndef __BOARDS_ARM64_CRUX_CRUX_RK356X_SRC_CRUX_RK356X_H
+#define __BOARDS_ARM64_CRUX_CRUX_RK356X_SRC_CRUX_RK356X_H
 
 /****************************************************************************
  * Included Files
@@ -29,8 +29,10 @@
 
 #include <roux/config.h>
 
+#include <stdint.h>
+
 /****************************************************************************
- * Pre-processor Definitions
+ * Public Types
  ****************************************************************************/
 
 /****************************************************************************
@@ -39,22 +41,21 @@
 
 #ifndef __ASSEMBLY__
 
-#undef EXTERN
-#if defined(__cplusplus)
-#define EXTERN extern "C"
-extern "C" {
-#else
-#define EXTERN extern
-#endif
-
 /****************************************************************************
- * Public Function Prototypes
+ * Public Functions Definitions
  ****************************************************************************/
 
-#undef EXTERN
-#if defined(__cplusplus)
-}
+/****************************************************************************
+ * Name: crux_bringup
+ *
+ * Description:
+ *   Bring up board features
+ *
+ ****************************************************************************/
+
+#if defined(CONFIG_BOARDCTL) || defined(CONFIG_BOARD_LATE_INITIALIZE)
+int crux_bringup(void);
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif /* __BOARDS_ARM64_CRUX_CRUX_GVM_INCLUDE_BOARD_MEMORYMAP_H */
+#endif /* __BOARDS_ARM64_CRUX_CRUX_RK356X_SRC_CRUX_RK356X_H */

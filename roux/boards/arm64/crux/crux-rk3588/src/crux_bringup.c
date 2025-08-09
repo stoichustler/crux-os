@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm64/crux/crux-gvm/src/crux-gvm.h
+ * boards/arm64/crux/crux-rk3588/src/crux_bringup.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,42 +20,110 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM64_CRUX_CRUX_GVM_SRC_CRUX_GVM_H
-#define __BOARDS_ARM64_CRUX_CRUX_GVM_SRC_CRUX_GVM_H
-
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <roux/config.h>
 
-#include <stdint.h>
+#include <sys/types.h>
+#include <syslog.h>
+
+#include <roux/fs/fs.h>
+#include <roux/virtio/virtio-mmio.h>
+#include <roux/fdt.h>
+#include <roux/pci/pci_ecam.h>
+
+#ifdef CONFIG_LIBC_FDT
+#include <libfdt.h>
+#endif
+
+#include "crux-rk3588.h"
 
 /****************************************************************************
- * Public Types
+ * Pre-processor Definitions
+ ****************************************************************************/
+
+#ifndef CRUX_SPI_IRQ_BASE
+#define CRUX_SPI_IRQ_BASE 32
+#endif
+
+#define FDT_PCI_TYPE_IO 0x01000000
+#define FDT_PCI_TYPE_MEM32 0x02000000
+#define FDT_PCI_TYPE_MEM64 0x03000000
+#define FDT_PCI_TYPE_MASK 0x03000000
+#define FDT_PCI_PREFETCH 0x40000000
+
+/****************************************************************************
+ * Private Functions
+ ****************************************************************************/
+
+#if defined(CONFIG_LIBC_FDT) && defined(CONFIG_DEVICE_TREE)
+
+/****************************************************************************
+ * Name: register_devices_from_fdt
+ ****************************************************************************/
+
+static void register_devices_from_fdt(void)
+{
+	const void *fdt = fdt_get();
+	int ret;
+
+	if (fdt == NULL) {
+		return;
+	}
+
+#ifdef CONFIG_DRIVERS_VIRTIO_MMIO
+
+	ret = fdt_virtio_mmio_devices_register(fdt, CRUX_SPI_IRQ_BASE);
+	if (ret < 0) {
+		syslog(LOG_ERR, "fdt_virtio_mmio_devices_register failed, ret=%d\n", ret);
+	}
+#endif
+
+	UNUSED(ret);
+}
+
+#endif
+
+/****************************************************************************
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Public Data
- ****************************************************************************/
-
-#ifndef __ASSEMBLY__
-
-/****************************************************************************
- * Public Functions Definitions
- ****************************************************************************/
-
-/****************************************************************************
- * Name: crux_bringup
+ * Name: imx_bringup
  *
  * Description:
  *   Bring up board features
  *
  ****************************************************************************/
 
-#if defined(CONFIG_BOARDCTL) || defined(CONFIG_BOARD_LATE_INITIALIZE)
-int crux_bringup(void);
+int crux_bringup(void)
+{
+	int ret;
+
+#ifdef CONFIG_FS_TMPFS
+	/* Mount the tmp file system */
+
+	ret = nx_mount(NULL, CONFIG_LIBC_TMPDIR, "tmpfs", 0, NULL);
+	if (ret < 0) {
+		syslog(LOG_ERR, "ERROR: Failed to mount tmpfs at /tmp: %d\n", ret);
+	}
 #endif
 
-#endif /* __ASSEMBLY__ */
-#endif /* __BOARDS_ARM64_CRUX_CRUX_GVM_SRC_CRUX_GVM_H */
+#ifdef CONFIG_FS_PROCFS
+	/* Mount the procfs file system */
+
+	ret = nx_mount(NULL, "/proc", "procfs", 0, NULL);
+	if (ret < 0) {
+		syslog(LOG_ERR, "ERROR: Failed to mount procfs at /proc: %d\n", ret);
+	}
+#endif
+
+#if defined(CONFIG_LIBC_FDT) && defined(CONFIG_DEVICE_TREE)
+	register_devices_from_fdt();
+#endif
+
+	UNUSED(ret);
+	return OK;
+}

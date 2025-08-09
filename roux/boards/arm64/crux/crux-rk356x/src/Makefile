@@ -1,5 +1,5 @@
 ############################################################################
-# boards/arm64/crux/crux-gvm/scripts/Make.defs
+# boards/arm64/crux/crux-rk356x/src/Makefile
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -20,31 +20,16 @@
 #
 ############################################################################
 
-include $(TOPDIR)/.config
-include $(TOPDIR)/tools/Config.mk
-include $(TOPDIR)/arch/arm64/src/Toolchain.defs
+include $(TOPDIR)/Make.defs
 
-ifeq ($(CONFIG_BUILD_KERNEL),y)
-  LDSCRIPT = ld-kernel.script
-else
-  LDSCRIPT = dramboot.ld
+CSRCS = crux_boardinit.c crux_bringup.c
+
+ifeq ($(CONFIG_BOARDCTL),y)
+CSRCS += crux_appinit.c crux_power.c
 endif
 
-ARCHSCRIPT += $(BOARD_DIR)/scripts/$(LDSCRIPT)
+ifeq ($(CONFIG_LIBC_FDT),y)
+CFLAGS += ${INCDIR_PREFIX}$(TOPDIR)/libs/libc/fdt/dtc/libfdt
+endif
 
-CFLAGS := $(ARCHCFLAGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
-CPICFLAGS = $(ARCHPICFLAGS) $(CFLAGS)
-CXXFLAGS := $(ARCHCXXFLAGS) $(ARCHOPTIMIZATION) $(ARCHCPUFLAGS) $(ARCHXXINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
-CXXPICFLAGS = $(ARCHPICFLAGS) $(CXXFLAGS)
-CPPFLAGS := $(ARCHINCLUDES) $(ARCHDEFINES) $(EXTRAFLAGS)
-AFLAGS := $(CFLAGS) -D__ASSEMBLY__
-
-# NXFLAT module definitions
-
-NXFLATLDFLAGS1 = -r -d -warn-common
-NXFLATLDFLAGS2 = $(NXFLATLDFLAGS1) -T$(TOPDIR)/binfmt/libnxflat/gnu-nxflat-pcrel.ld -no-check-sections
-LDNXFLATFLAGS = -e main -s 2048
-
-# ELF module definitions
-
-SHMODULEFLAGS = -Bsymbolic -G -Bdynamic
+include $(TOPDIR)/boards/Board.mk
