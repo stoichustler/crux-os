@@ -151,16 +151,6 @@ static elf_errorstatus elf_memcpy(struct vcpu *v, void *dst, void *src,
 {
     unsigned int res;
 
-#ifdef CONFIG_X86
-    if ( is_hvm_vcpu(v) )
-    {
-        enum hvm_translation_result rc;
-
-        rc = hvm_copy_to_guest_phys((paddr_t)dst, src, size, v);
-        return rc != HVMTRANS_okay ? -1 : 0;
-    }
-#endif
-
     res = src ? raw_copy_to_guest(dst, src, size) :
                 raw_clear_guest(dst, size);
 

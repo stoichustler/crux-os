@@ -171,29 +171,6 @@ struct xsm_ops {
 
     int (*platform_op)(uint32_t cmd);
 
-#ifdef CONFIG_X86
-    int (*do_mca)(void);
-    int (*shadow_control)(struct domain *d, uint32_t op);
-    int (*mem_sharing_op)(struct domain *d, struct domain *cd, int op);
-    int (*apic)(struct domain *d, int cmd);
-    int (*machine_memory_map)(void);
-    int (*domain_memory_map)(struct domain *d);
-#define XSM_MMU_UPDATE_READ      1
-#define XSM_MMU_UPDATE_WRITE     2
-#define XSM_MMU_NORMAL_UPDATE    4
-#define XSM_MMU_MACHPHYS_UPDATE  8
-    int (*mmu_update)(struct domain *d, struct domain *t,
-                      struct domain *f, uint32_t flags);
-    int (*mmuext_op)(struct domain *d, struct domain *f);
-    int (*update_va_mapping)(struct domain *d, struct domain *f,
-                             l1_pgentry_t pte);
-    int (*priv_mapping)(struct domain *d, struct domain *t);
-    int (*ioport_permission)(struct domain *d, uint32_t s, uint32_t e,
-                             uint8_t allow);
-    int (*ioport_mapping)(struct domain *d, uint32_t s, uint32_t e,
-                          uint8_t allow);
-    int (*pmu_op)(struct domain *d, unsigned int op);
-#endif
     int (*dm_op)(struct domain *d);
     int (*crux_version)(uint32_t cmd);
     int (*domain_resource_map)(struct domain *d);
@@ -680,84 +657,6 @@ static inline int xsm_platform_op(xsm_default_t def, uint32_t op)
 {
     return alternative_call(xsm_ops.platform_op, op);
 }
-
-#ifdef CONFIG_X86
-static inline int xsm_do_mca(xsm_default_t def)
-{
-    return alternative_call(xsm_ops.do_mca);
-}
-
-static inline int xsm_shadow_control(
-    xsm_default_t def, struct domain *d, uint32_t op)
-{
-    return alternative_call(xsm_ops.shadow_control, d, op);
-}
-
-static inline int xsm_mem_sharing_op(
-    xsm_default_t def, struct domain *d, struct domain *cd, int op)
-{
-    return alternative_call(xsm_ops.mem_sharing_op, d, cd, op);
-}
-
-static inline int xsm_apic(xsm_default_t def, struct domain *d, int cmd)
-{
-    return alternative_call(xsm_ops.apic, d, cmd);
-}
-
-static inline int xsm_machine_memory_map(xsm_default_t def)
-{
-    return alternative_call(xsm_ops.machine_memory_map);
-}
-
-static inline int xsm_domain_memory_map(xsm_default_t def, struct domain *d)
-{
-    return alternative_call(xsm_ops.domain_memory_map, d);
-}
-
-static inline int xsm_mmu_update(
-    xsm_default_t def, struct domain *d, struct domain *t, struct domain *f,
-    uint32_t flags)
-{
-    return alternative_call(xsm_ops.mmu_update, d, t, f, flags);
-}
-
-static inline int xsm_mmuext_op(
-    xsm_default_t def, struct domain *d, struct domain *f)
-{
-    return alternative_call(xsm_ops.mmuext_op, d, f);
-}
-
-static inline int xsm_update_va_mapping(
-    xsm_default_t def, struct domain *d, struct domain *f, l1_pgentry_t pte)
-{
-    return alternative_call(xsm_ops.update_va_mapping, d, f, pte);
-}
-
-static inline int xsm_priv_mapping(
-    xsm_default_t def, struct domain *d, struct domain *t)
-{
-    return alternative_call(xsm_ops.priv_mapping, d, t);
-}
-
-static inline int xsm_ioport_permission(
-    xsm_default_t def, struct domain *d, uint32_t s, uint32_t e, uint8_t allow)
-{
-    return alternative_call(xsm_ops.ioport_permission, d, s, e, allow);
-}
-
-static inline int xsm_ioport_mapping(
-    xsm_default_t def, struct domain *d, uint32_t s, uint32_t e, uint8_t allow)
-{
-    return alternative_call(xsm_ops.ioport_mapping, d, s, e, allow);
-}
-
-static inline int xsm_pmu_op(
-    xsm_default_t def, struct domain *d, unsigned int op)
-{
-    return alternative_call(xsm_ops.pmu_op, d, op);
-}
-
-#endif /* CONFIG_X86 */
 
 static inline int xsm_dm_op(xsm_default_t def, struct domain *d)
 {

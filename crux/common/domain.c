@@ -45,10 +45,6 @@
 #include <crux/trace.h>
 #include <asm/setup.h>
 
-#ifdef CONFIG_X86
-#include <asm/guest.h>
-#endif
-
 /* Linux config option: propageted to domain0 */
 /* crux_processor_pmbits: crux control Cx, Px, ... */
 unsigned int crux_processor_pmbits = CRUX_PROCESSOR_PM_PX;
@@ -517,11 +513,6 @@ static int late_hwdom_init(struct domain *d)
      */
     rangeset_swap(d->irq_caps, dom0->irq_caps);
     rangeset_swap(d->iomem_caps, dom0->iomem_caps);
-#ifdef CONFIG_X86
-    rangeset_swap(d->arch.ioport_caps, dom0->arch.ioport_caps);
-    setup_io_bitmap(d);
-    setup_io_bitmap(dom0);
-#endif
 
     rcu_unlock_domain(dom0);
 
@@ -1300,11 +1291,6 @@ int domain_shutdown(struct domain *d, u8 reason)
 {
     struct vcpu *v;
 
-#ifdef CONFIG_X86
-    if ( pv_shim )
-        return pv_shim_shutdown(reason);
-#endif
-
     spin_lock(&d->shutdown_lock);
 
     if ( d->shutdown_code == SHUTDOWN_CODE_INVALID )
@@ -2075,11 +2061,6 @@ long common_vcpu_op(int cmd, struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
         break;
 
     case VCPUOP_up:
-#ifdef CONFIG_X86
-        if ( pv_shim )
-            rc = continue_hypercall_on_cpu(0, pv_shim_cpu_up, v);
-        else
-#endif
         {
             bool wake = false;
 
@@ -2112,13 +2093,8 @@ long common_vcpu_op(int cmd, struct vcpu *v, CRUX_GUEST_HANDLE_PARAM(void) arg)
         rc = 0;
         v = d->vcpu[vcpuid];
 
-#ifdef CONFIG_X86
-        if ( pv_shim )
-            rc = continue_hypercall_on_cpu(0, pv_shim_cpu_down, v);
-        else
-#endif
-            if ( !test_and_set_bit(_VPF_down, &v->pause_flags) )
-                vcpu_sleep_nosync(v);
+        if ( !test_and_set_bit(_VPF_down, &v->pause_flags) )
+            vcpu_sleep_nosync(v);
 
         break;
 
@@ -2419,10 +2395,6 @@ int continue_hypercall_on_cpu(
 
 domid_t get_initial_domain_id(void)
 {
-#ifdef CONFIG_X86
-    if ( pv_shim )
-        return pv_shim_get_initial_domain_id();
-#endif
     return 0;
 }
 

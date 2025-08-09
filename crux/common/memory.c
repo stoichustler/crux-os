@@ -35,10 +35,6 @@
 #include <public/memory.h>
 #include <xsm/xsm.h>
 
-#ifdef CONFIG_X86
-#include <asm/guest.h>
-#endif
-
 struct memop_args {
     /* INPUT */
     struct domain *domain;     /* domain to be affected. */
@@ -318,95 +314,28 @@ out:
 int guest_remove_page(struct domain *d, unsigned long gmfn)
 {
     struct page_info *page;
-#ifdef CONFIG_X86
-    p2m_type_t p2mt;
-#endif
     mfn_t mfn;
 #ifdef CONFIG_HAS_PASSTHROUGH
     bool *dont_flush_p, dont_flush;
 #endif
     int rc;
 
-#ifdef CONFIG_X86
-    mfn = get_gfn_query(d, gmfn, &p2mt);
-    if ( unlikely(p2mt == p2m_invalid) || unlikely(p2mt == p2m_mmio_dm) )
-    {
-        put_gfn(d, gmfn);
-
-        return -ENOENT;
-    }
-
-    if ( unlikely(p2m_is_paging(p2mt)) )
-    {
-        /*
-         * If the page hasn't yet been paged out, there is an
-         * actual page that needs to be released.
-         */
-        if ( p2mt == p2m_ram_paging_out )
-        {
-            ASSERT(mfn_valid(mfn));
-            goto obtain_page;
-        }
-
-        rc = guest_physmap_remove_page(d, _gfn(gmfn), mfn, 0);
-        if ( rc )
-            goto out_put_gfn;
-
-        put_gfn(d, gmfn);
-
-        p2m_mem_paging_drop_page(d, _gfn(gmfn), p2mt);
-
-        return 0;
-    }
-    if ( p2mt == p2m_mmio_direct )
-    {
-        rc = -EPERM;
-        goto out_put_gfn;
-    }
-#else
     mfn = gfn_to_mfn(d, _gfn(gmfn));
-#endif
+
     if ( unlikely(!mfn_valid(mfn)) )
     {
-#ifdef CONFIG_X86
-        put_gfn(d, gmfn);
-#endif
         gdprintk(CRUXLOG_INFO, "domain %u page number %lx invalid\n",
                 d->domain_id, gmfn);
 
         return -EINVAL;
     }
-            
-#ifdef CONFIG_X86
-    if ( p2m_is_shared(p2mt) )
-    {
-        /*
-         * Unshare the page, bail out on error. We unshare because we
-         * might be the only one using this shared page, and we need to
-         * trigger proper cleanup. Once done, this is like any other page.
-         */
-        rc = mem_sharing_unshare_page(d, gmfn);
-        if ( rc )
-        {
-            mem_sharing_notify_enomem(d, gmfn, false);
-            goto out_put_gfn;
-        }
-        /* Maybe the mfn changed */
-        mfn = get_gfn_query_unlocked(d, gmfn, &p2mt);
-        ASSERT(!p2m_is_shared(p2mt));
-    }
-#endif /* CONFIG_X86 */
 
  obtain_page: __maybe_unused;
     page = mfn_to_page(mfn);
     if ( unlikely(!get_page(page, d)) )
     {
-#ifdef CONFIG_X86
-        put_gfn(d, gmfn);
-        if ( !p2m_is_paging(p2mt) )
-#endif
-            gdprintk(CRUXLOG_INFO, "Bad page free for dom%u GFN %lx\n",
-                     d->domain_id, gmfn);
+        gdprintk(CRUXLOG_INFO, "Bad page free for dom%u GFN %lx\n",
+                 d->domain_id, gmfn);
 
         return -ENXIO;
     }
@@ -439,11 +368,6 @@ int guest_remove_page(struct domain *d, unsigned long gmfn)
         put_page_alloc_ref(page);
 
     put_page(page);
-
-#ifdef CONFIG_X86
- out_put_gfn:
-    put_gfn(d, gmfn);
-#endif
 
     /*
      * Filter out -ENOENT return values that aren't a result of an empty p2m
@@ -676,25 +600,10 @@ static long memory_exchange(CRUX_GUEST_HANDLE_PARAM(crux_memory_exchange_t) arg)
 
             for ( k = 0; k < (1UL << exch.in.extent_order); k++ )
             {
-#ifdef CONFIG_X86
-                p2m_type_t p2mt;
-
-                /* Shared pages cannot be exchanged */
-                mfn = get_gfn_unshare(d, gmfn + k, &p2mt);
-                if ( p2m_is_shared(p2mt) )
-                {
-                    put_gfn(d, gmfn + k);
-                    rc = -ENOMEM;
-                    goto fail; 
-                }
-#else /* !CONFIG_X86 */
                 mfn = gfn_to_mfn(d, _gfn(gmfn + k));
-#endif
+
                 if ( unlikely(!mfn_valid(mfn)) )
                 {
-#ifdef CONFIG_X86
-                    put_gfn(d, gmfn + k);
-#endif
                     rc = -EINVAL;
                     goto fail;
                 }
@@ -704,16 +613,10 @@ static long memory_exchange(CRUX_GUEST_HANDLE_PARAM(crux_memory_exchange_t) arg)
                 rc = steal_page(d, page, MEMF_no_refcount);
                 if ( unlikely(rc) )
                 {
-#ifdef CONFIG_X86
-                    put_gfn(d, gmfn + k);
-#endif
                     goto fail;
                 }
 
                 page_list_add(page, &in_chunk_list);
-#ifdef CONFIG_X86
-                put_gfn(d, gmfn + k);
-#endif
             }
         }
 
@@ -1443,12 +1346,6 @@ long do_memory_op(unsigned long cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
             return start_extent;
         }
 
-#ifdef CONFIG_X86
-        if ( pv_shim && op != CRUXMEM_decrease_reservation && !start_extent )
-            /* Avoid calling pv_shim_online_memory when in a continuation. */
-            pv_shim_online_memory(args.nr_extents, args.extent_order);
-#endif
-
         switch ( op )
         {
         case CRUXMEM_increase_reservation:
@@ -1465,12 +1362,6 @@ long do_memory_op(unsigned long cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
         rcu_unlock_domain(d);
 
         rc = args.nr_done;
-
-#ifdef CONFIG_X86
-        if ( pv_shim && op == CRUXMEM_decrease_reservation )
-            pv_shim_offline_memory(args.nr_done - start_extent,
-                                   args.extent_order);
-#endif
 
         if ( args.preempted )
            return hypercall_create_continuation(
@@ -1931,15 +1822,6 @@ int check_get_page_from_gfn(struct domain *d, gfn_t gfn, bool readonly,
             put_page(page);
 
         return -EAGAIN;
-    }
-#endif
-#ifdef CONFIG_X86
-    if ( p2mt == p2m_mmio_direct )
-    {
-        if ( page )
-            put_page(page);
-
-        return -EPERM;
     }
 #endif
 

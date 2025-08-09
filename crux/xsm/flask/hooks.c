@@ -38,11 +38,7 @@
 #include <conditional.h>
 #include "private.h"
 
-#ifdef CONFIG_X86
-#include <asm/pv/shim.h>
-#else
 #define pv_shim false
-#endif
 
 static uint32_t domain_sid(const struct domain *dom)
 {
@@ -695,13 +691,6 @@ static int cf_check flask_domctl(struct domain *d, unsigned int cmd,
     /* These have individual XSM hooks (arch/../domctl.c) */
     case CRUX_DOMCTL_bind_pt_irq:
     case CRUX_DOMCTL_unbind_pt_irq:
-#ifdef CONFIG_X86
-    /* These have individual XSM hooks (arch/x86/domctl.c) */
-    case CRUX_DOMCTL_shadow_op:
-    case CRUX_DOMCTL_ioport_permission:
-    case CRUX_DOMCTL_ioport_mapping:
-    case CRUX_DOMCTL_gsi_permission:
-#endif
 #ifdef CONFIG_HAS_PASSTHROUGH
     /*
      * These have individual XSM hooks
@@ -868,9 +857,6 @@ static int cf_check flask_sysctl(int cmd)
     case CRUX_SYSCTL_getdomaininfolist:
     case CRUX_SYSCTL_page_offline_op:
     case CRUX_SYSCTL_scheduler_op:
-#ifdef CONFIG_X86
-    case CRUX_SYSCTL_cpu_hotplug:
-#endif
         return 0;
 
     case CRUX_SYSCTL_tbuf_op:
@@ -1531,15 +1517,6 @@ static int cf_check flask_platform_op(uint32_t op)
 {
     switch ( op )
     {
-#ifdef CONFIG_X86
-    /* These operations have their own XSM hooks */
-    case CRUXPF_cpu_online:
-    case CRUXPF_cpu_offline:
-    case CRUXPF_cpu_hotadd:
-    case CRUXPF_mem_hotadd:
-        return 0;
-#endif
-
     case CRUXPF_settime32:
     case CRUXPF_settime64:
         return domain_has_crux(current->domain, CRUX__SETTIME);
@@ -1599,202 +1576,7 @@ static int cf_check flask_platform_op(uint32_t op)
     }
 }
 
-#ifdef CONFIG_X86
-static int cf_check flask_do_mca(void)
-{
-    return domain_has_crux(current->domain, CRUX__MCA_OP);
-}
-
-static int cf_check flask_shadow_control(struct domain *d, uint32_t op)
-{
-    uint32_t perm;
-
-    switch ( op )
-    {
-    case CRUX_DOMCTL_SHADOW_OP_OFF:
-        perm = SHADOW__DISABLE;
-        break;
-    case CRUX_DOMCTL_SHADOW_OP_ENABLE:
-    case CRUX_DOMCTL_SHADOW_OP_ENABLE_TEST:
-    case CRUX_DOMCTL_SHADOW_OP_GET_ALLOCATION:
-    case CRUX_DOMCTL_SHADOW_OP_SET_ALLOCATION:
-        perm = SHADOW__ENABLE;
-        break;
-    case CRUX_DOMCTL_SHADOW_OP_ENABLE_LOGDIRTY:
-    case CRUX_DOMCTL_SHADOW_OP_PEEK:
-    case CRUX_DOMCTL_SHADOW_OP_CLEAN:
-        perm = SHADOW__LOGDIRTY;
-        break;
-    default:
-        return avc_unknown_permission("shadow_control", op);
-    }
-
-    return current_has_perm(d, SECCLASS_SHADOW, perm);
-}
-
-struct ioport_has_perm_data {
-    uint32_t ssid;
-    uint32_t dsid;
-    uint32_t perm;
-    uint32_t use_perm;
-};
-
-static int cf_check _ioport_has_perm(
-    void *v, uint32_t sid, unsigned long start, unsigned long end)
-{
-    struct ioport_has_perm_data *data = v;
-    struct avc_audit_data ad;
-    int rc;
-
-    AVC_AUDIT_DATA_INIT(&ad, RANGE);
-    ad.range.start = start;
-    ad.range.end = end;
-
-    rc = avc_has_perm(data->ssid, sid, SECCLASS_RESOURCE, data->perm, &ad);
-
-    if ( rc )
-        return rc;
-
-    return avc_has_perm(data->dsid, sid, SECCLASS_RESOURCE, data->use_perm, &ad);
-}
-
-static int cf_check flask_ioport_permission(
-    struct domain *d, uint32_t start, uint32_t end, uint8_t access)
-{
-    int rc;
-    struct ioport_has_perm_data data;
-
-    rc = current_has_perm(d, SECCLASS_RESOURCE,
-                         resource_to_perm(access));
-
-    if ( rc )
-        return rc;
-
-    if ( access )
-        data.perm = RESOURCE__ADD_IOPORT;
-    else
-        data.perm = RESOURCE__REMOVE_IOPORT;
-
-    data.ssid = domain_sid(current->domain);
-    data.dsid = domain_sid(d);
-    data.use_perm = flask_iommu_resource_use_perm(d);
-
-    return security_iterate_ioport_sids(start, end, _ioport_has_perm, &data);
-}
-
-static int cf_check flask_ioport_mapping(
-    struct domain *d, uint32_t start, uint32_t end, uint8_t access)
-{
-    return flask_ioport_permission(d, start, end, access);
-}
-
-static int cf_check flask_mem_sharing_op(
-    struct domain *d, struct domain *cd, int op)
-{
-    int rc = current_has_perm(cd, SECCLASS_HVM, HVM__MEM_SHARING);
-    if ( rc )
-        return rc;
-    return domain_has_perm(d, cd, SECCLASS_HVM, HVM__SHARE_MEM);
-}
-
-static int cf_check flask_apic(struct domain *d, int cmd)
-{
-    uint32_t perm;
-
-    switch ( cmd )
-    {
-    case PHYSDEVOP_apic_read:
-    case PHYSDEVOP_alloc_irq_vector:
-        perm = CRUX__READAPIC;
-        break;
-    case PHYSDEVOP_apic_write:
-        perm = CRUX__WRITEAPIC;
-        break;
-    default:
-        return avc_unknown_permission("apic", cmd);
-    }
-
-    return domain_has_crux(d, perm);
-}
-
-static int cf_check flask_machine_memory_map(void)
-{
-    return avc_current_has_perm(SECINITSID_CRUX, SECCLASS_MMU, MMU__MEMORYMAP, NULL);
-}
-
-static int cf_check flask_domain_memory_map(struct domain *d)
-{
-    return current_has_perm(d, SECCLASS_MMU, MMU__MEMORYMAP);
-}
-
-static int cf_check flask_mmu_update(
-    struct domain *d, struct domain *t, struct domain *f, uint32_t flags)
-{
-    int rc = 0;
-    uint32_t map_perms = 0;
-
-    if ( t && d != t )
-        rc = domain_has_perm(d, t, SECCLASS_MMU, MMU__REMOTE_REMAP);
-    if ( rc )
-        return rc;
-
-    if ( flags & XSM_MMU_UPDATE_READ )
-        map_perms |= MMU__MAP_READ;
-    if ( flags & XSM_MMU_UPDATE_WRITE )
-        map_perms |= MMU__MAP_WRITE;
-    if ( flags & XSM_MMU_MACHPHYS_UPDATE )
-        map_perms |= MMU__UPDATEMP;
-
-    if ( map_perms )
-        rc = domain_has_perm(d, f, SECCLASS_MMU, map_perms);
-    return rc;
-}
-
-static int cf_check flask_mmuext_op(struct domain *d, struct domain *f)
-{
-    return domain_has_perm(d, f, SECCLASS_MMU, MMU__MMUEXT_OP);
-}
-
-static int cf_check flask_update_va_mapping(
-    struct domain *d, struct domain *f, l1_pgentry_t pte)
-{
-    uint32_t map_perms = MMU__MAP_READ;
-    if ( !(l1e_get_flags(pte) & _PAGE_PRESENT) )
-        return 0;
-    if ( l1e_get_flags(pte) & _PAGE_RW )
-        map_perms |= MMU__MAP_WRITE;
-
-    return domain_has_perm(d, f, SECCLASS_MMU, map_perms);
-}
-
-static int cf_check flask_priv_mapping(struct domain *d, struct domain *t)
-{
-    return domain_has_perm(d, t, SECCLASS_MMU, MMU__TARGET_HACK);
-}
-
-static int cf_check flask_pmu_op(struct domain *d, unsigned int op)
-{
-    uint32_t dsid = domain_sid(d);
-
-    switch ( op )
-    {
-    case CRUXPMU_mode_set:
-    case CRUXPMU_mode_get:
-    case CRUXPMU_feature_set:
-    case CRUXPMU_feature_get:
-        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_CRUX2,
-                            CRUX2__PMU_CTRL, NULL);
-    case CRUXPMU_init:
-    case CRUXPMU_finish:
-    case CRUXPMU_lvtpc_set:
-    case CRUXPMU_flush:
-        return avc_has_perm(dsid, SECINITSID_CRUX, SECCLASS_CRUX2,
-                            CRUX2__PMU_USE, NULL);
-    default:
-        return -EPERM;
-    }
-}
-#endif /* CONFIG_X86 */
+/* HUSTLER */
 
 static int cf_check flask_dm_op(struct domain *d)
 {
@@ -2001,21 +1783,6 @@ static const struct xsm_ops __initconst_cf_clobber flask_ops = {
 #endif
 
     .platform_op = flask_platform_op,
-#ifdef CONFIG_X86
-    .do_mca = flask_do_mca,
-    .shadow_control = flask_shadow_control,
-    .mem_sharing_op = flask_mem_sharing_op,
-    .apic = flask_apic,
-    .machine_memory_map = flask_machine_memory_map,
-    .domain_memory_map = flask_domain_memory_map,
-    .mmu_update = flask_mmu_update,
-    .mmuext_op = flask_mmuext_op,
-    .update_va_mapping = flask_update_va_mapping,
-    .priv_mapping = flask_priv_mapping,
-    .ioport_permission = flask_ioport_permission,
-    .ioport_mapping = flask_ioport_mapping,
-    .pmu_op = flask_pmu_op,
-#endif
     .dm_op = flask_dm_op,
     .crux_version = flask_crux_version,
     .domain_resource_map = flask_domain_resource_map,

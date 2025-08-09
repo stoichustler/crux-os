@@ -599,24 +599,6 @@ int sched_init_vcpu(struct vcpu *v)
          */
         sched_set_affinity(unit, cpumask_of(processor), &cpumask_all);
     }
-#ifdef CONFIG_X86
-    else if ( d->domain_id == 0 )
-    {
-        /*
-         * In absence of dom0_vcpus_pin instead, the hard and soft affinity of
-         * dom0 is controlled by the (x86 only) dom0_nodes parameter. At this
-         * point it has been parsed and decoded into the dom0_cpus mask.
-         *
-         * Note that we always honor what user explicitly requested, for both
-         * hard and soft affinity, without doing any dynamic computation of
-         * either of them.
-         */
-        if ( !dom0_affinity_relaxed )
-            sched_set_affinity(unit, &dom0_cpus, &cpumask_all);
-        else
-            sched_set_affinity(unit, &cpumask_all, &dom0_cpus);
-    }
-#endif
     else
         sched_set_affinity(unit, &cpumask_all, &cpumask_all);
 
@@ -1457,7 +1439,6 @@ static long do_poll(const struct sched_poll *sched_poll)
 
     arch_vcpu_block(v);
 
-#ifndef CONFIG_X86 /* set_bit() implies mb() on x86 */
     /* Check for events /after/ setting flags: avoids wakeup waiting race. */
     smp_mb();
 
@@ -1471,7 +1452,6 @@ static long do_poll(const struct sched_poll *sched_poll)
          !test_bit(_VPF_blocked, &v->pause_flags) ||
          !test_bit(v->vcpu_id, d->poll_mask) )
         goto out;
-#endif
 
     rc = 0;
     if ( local_events_need_delivery() )
@@ -3481,18 +3461,6 @@ void wait(void)
 {
     schedule();
 }
-
-#ifdef CONFIG_X86
-void __init sched_setup_dom0_vcpus(struct domain *d)
-{
-    unsigned int i;
-
-    for ( i = 1; i < d->max_vcpus; i++ )
-        vcpu_create(d, i);
-
-    domain_update_node_affinity(d);
-}
-#endif
 
 #ifdef CONFIG_COMPAT
 #include "compat.c"

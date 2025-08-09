@@ -1,7 +1,5 @@
 ifneq ($(CONFIG_COMPAT),)
 
-compat-arch-$(CONFIG_X86) := x86_32
-
 headers-y := \
     compat/arch-$(compat-arch-y).h \
     compat/elfnote.h \
@@ -17,10 +15,7 @@ headers-y := \
     compat/version.h \
     compat/crux.h \
     compat/xlat.h
-headers-$(CONFIG_X86)     += compat/arch-x86/pmu.h
-headers-$(CONFIG_X86)     += compat/arch-x86/crux-mca.h
-headers-$(CONFIG_X86)     += compat/arch-x86/crux.h
-headers-$(CONFIG_X86)     += compat/arch-x86/crux-$(compat-arch-y).h
+
 headers-$(CONFIG_ARGO)    += compat/argo.h
 headers-$(CONFIG_PV)      += compat/callback.h
 headers-$(CONFIG_GRANT_TABLE) += compat/grant_table.h
@@ -37,11 +32,9 @@ headers-$(CONFIG_XSM_FLASK) += compat/xsm/flask_op.h
 headers-n := $(sort $(filter-out $(headers-y),$(headers-n) $(headers-)))
 
 cppflags-y                := -include public/crux-compat.h -DCRUX_GENERATING_COMPAT_HEADERS
-cppflags-$(CONFIG_X86)    += -m32
 
 endif
 
-public-$(CONFIG_X86) := $(sort $(wildcard $(srcdir)/public/arch-x86/*.h $(srcdir)/public/arch-x86/*/*.h))
 public-$(CONFIG_ARM) := $(sort $(wildcard $(srcdir)/public/arch-arm/*.h $(srcdir)/public/arch-arm/*/*.h))
 
 .PHONY: all

@@ -60,32 +60,9 @@ extern uint8_t iommu_quarantine;
 #define iommu_enabled false
 #endif
 
-#ifdef CONFIG_X86
-extern enum __packed iommu_intremap {
-   iommu_intremap_off,
-   /*
-    * Interrupt remapping enabled, but only able to generate interrupts
-    * with an 8-bit APIC ID.
-    */
-   iommu_intremap_restricted,
-   iommu_intremap_full,
-} iommu_intremap;
-extern bool iommu_igfx, iommu_qinval;
-#ifdef CONFIG_INTEL_IOMMU
-extern bool iommu_snoop;
-#else
-# define iommu_snoop true
-#endif /* CONFIG_INTEL_IOMMU */
-#else
-# define iommu_intremap false
-# define iommu_snoop false
-#endif
-
-#if defined(CONFIG_X86) && defined(CONFIG_HVM)
-extern bool iommu_intpost;
-#else
-# define iommu_intpost false
-#endif
+#define iommu_intremap false
+#define iommu_snoop false
+#define iommu_intpost false
 
 #if defined(CONFIG_IOMMU_FORCE_PT_SHARE)
 #define iommu_hap_pt_share true
@@ -352,21 +329,6 @@ struct iommu_ops {
     int __must_check (*lookup_page)(struct domain *d, dfn_t dfn, mfn_t *mfn,
                                     unsigned int *flags);
 
-#ifdef CONFIG_X86
-    int (*enable_x2apic)(void);
-    void (*disable_x2apic)(void);
-
-    void (*update_ire_from_apic)(unsigned int apic, unsigned int pin,
-                                 uint64_t rte);
-    unsigned int (*read_apic_from_ire)(unsigned int apic, unsigned int reg);
-
-    int (*setup_hpet_msi)(struct msi_desc *msi_desc);
-
-    void (*adjust_irq_affinities)(void);
-    void (*clear_root_pgtable)(struct domain *d);
-    int (*update_ire_from_msi)(struct msi_desc *msi_desc, struct msi_msg *msg);
-#endif /* CONFIG_X86 */
-
     int __must_check (*suspend)(void);
     void (*resume)(void);
     void (*crash_shutdown)(void);
@@ -503,21 +465,6 @@ void iommu_dev_iotlb_flush_timeout(struct domain *d, struct pci_dev *pdev);
 DECLARE_PER_CPU(bool, iommu_dont_flush_iotlb);
 
 bool arch_iommu_use_permitted(const struct domain *d);
-
-#ifdef CONFIG_X86
-/*
- * Return values:
- *  - < 0 on error.
- *  - 0 on success and no need to write msi_msg to the hardware.
- *  - 1 on success and msi_msg must be propagated to the hardware.
- */
-static inline int iommu_update_ire_from_msi(
-    struct msi_desc *msi_desc, struct msi_msg *msg)
-{
-    return iommu_intremap
-           ? iommu_call(&iommu_ops, update_ire_from_msi, msi_desc, msg) : 0;
-}
-#endif
 
 #endif /* CRUX__IOMMU_H */
 

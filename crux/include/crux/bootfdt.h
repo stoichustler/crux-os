@@ -113,10 +113,6 @@ typedef enum {
 struct boot_domain {
     struct domain *d;
 
-#ifdef CONFIG_X86
-    domid_t domid;
-#endif
-
     struct boot_module *kernel;
     struct boot_module *initrd;
 
@@ -135,7 +131,7 @@ struct boot_domain {
 #define BOOTMOD_MAX_CMDLINE 1024
 struct boot_module {
     boot_module_kind kind;
-#ifndef CONFIG_X86
+
     /*
      * The domU flag is set for kernels and ramdisks of "crux,domain" nodes.
      * The purpose of the domU flag is to avoid getting confused in
@@ -143,7 +139,7 @@ struct boot_module {
      * initrd to be compatible with all versions of the multiboot spec.
      */
     bool domU;
-#endif
+
     paddr_t start;
     paddr_t size;
 

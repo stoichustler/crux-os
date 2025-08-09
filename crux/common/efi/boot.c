@@ -21,16 +21,6 @@
 #endif
 #include <crux/string.h>
 #include <crux/stringify.h>
-#ifdef CONFIG_X86
-/*
- * Keep this arch-specific modified include in the common file, as moving
- * it to the arch specific include file would obscure that special care is
- * taken to include it with __ASSEMBLY__ defined.
- */
-#define __ASSEMBLY__ /* avoid pulling in ACPI stuff (conflicts with EFI) */
-#include <asm/fixmap.h>
-#undef __ASSEMBLY__
-#endif
 
 #define EFI_REVISION(major, minor) (((major) << 16) | (minor))
 

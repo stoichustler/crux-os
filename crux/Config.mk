@@ -188,35 +188,4 @@ APPEND_CFLAGS += $(foreach i, $(APPEND_INCLUDES), -I$(i))
 EMBEDDED_EXTRA_CFLAGS := -fno-pie
 EMBEDDED_EXTRA_CFLAGS += -fno-exceptions -fno-asynchronous-unwind-tables
 
-CRUX_EXTFILES_URL ?= https://cruxbits.crux.org/crux-extfiles
-# All the files at that location were downloaded from elsewhere on
-# the internet.  The original download URL is preserved as a comment
-# near the place in the crux Makefiles where the file is used.
-
-# Where to look for inlined subtrees (for example, from a tarball)
-QEMU_UPSTREAM_INTREE ?= $(CRUX_ROOT)/tools/qemu-crux
-
-
-# Handle legacy options
-ifneq (,$(SEABIOS_UPSTREAM_TAG))
-SEABIOS_UPSTREAM_REVISION ?= $(SEABIOS_UPSTREAM_TAG)
-endif
-
-OVMF_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/ovmf.git
-OVMF_UPSTREAM_REVISION ?= ba91d0292e593df8528b66f99c1b0b14fadc8e16
-
-QEMU_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/qemu-crux.git
-QEMU_UPSTREAM_REVISION ?= master
-
-MINIOS_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/mini-os.git
-MINIOS_UPSTREAM_REVISION ?= 6732fd42d8eb8d0af9f5eb54aca17f4c250213a8
-
-SEABIOS_UPSTREAM_URL ?= https://cruxbits.crux.org/git-http/seabios.git
-SEABIOS_UPSTREAM_REVISION ?= rel-1.16.3
-
-ETHERBOOT_NICS ?= rtl8139 8086100e
-
-QEMU_UPSTREAM_LOC ?= $(call or,$(wildcard $(QEMU_UPSTREAM_INTREE)),\
-                               $(QEMU_UPSTREAM_URL))
-
 CONFIG_TESTS       ?= y

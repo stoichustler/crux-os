@@ -1267,115 +1267,16 @@ void __hwdom_init setup_hwdom_pci_devices(
     pcidevs_unlock();
 }
 
-/* APEI not supported on ARM yet. */
-#if defined(CONFIG_ACPI) && defined(CONFIG_X86)
-#include <acpi/acpi.h>
-#include <acpi/apei.h>
-
-static int hest_match_pci(const struct acpi_hest_aer_common *p,
-                          const struct pci_dev *pdev)
-{
-    return ACPI_HEST_SEGMENT(p->bus) == pdev->seg &&
-           ACPI_HEST_BUS(p->bus)     == pdev->bus &&
-           p->device                 == PCI_SLOT(pdev->devfn) &&
-           p->function               == PCI_FUNC(pdev->devfn);
-}
-
-static bool hest_match_type(const struct acpi_hest_header *hest_hdr,
-                              const struct pci_dev *pdev)
-{
-    unsigned int pos = pci_find_cap_offset(pdev->sbdf, PCI_CAP_ID_EXP);
-    u8 pcie = MASK_EXTR(pci_conf_read16(pdev->sbdf, pos + PCI_EXP_FLAGS),
-                        PCI_EXP_FLAGS_TYPE);
-
-    switch ( hest_hdr->type )
-    {
-    case ACPI_HEST_TYPE_AER_ROOT_PORT:
-        return pcie == PCI_EXP_TYPE_ROOT_PORT;
-    case ACPI_HEST_TYPE_AER_ENDPOINT:
-        return pcie == PCI_EXP_TYPE_ENDPOINT;
-    case ACPI_HEST_TYPE_AER_BRIDGE:
-        return pci_conf_read16(pdev->sbdf, PCI_CLASS_DEVICE) ==
-               PCI_CLASS_BRIDGE_PCI;
-    }
-
-    return 0;
-}
-
-struct aer_hest_parse_info {
-    const struct pci_dev *pdev;
-    bool firmware_first;
-};
-
-static bool hest_source_is_pcie_aer(const struct acpi_hest_header *hest_hdr)
-{
-    if ( hest_hdr->type == ACPI_HEST_TYPE_AER_ROOT_PORT ||
-         hest_hdr->type == ACPI_HEST_TYPE_AER_ENDPOINT ||
-         hest_hdr->type == ACPI_HEST_TYPE_AER_BRIDGE )
-        return 1;
-    return 0;
-}
-
-static int cf_check aer_hest_parse(
-    const struct acpi_hest_header *hest_hdr, void *data)
-{
-    struct aer_hest_parse_info *info = data;
-    const struct acpi_hest_aer_common *p;
-    bool ff;
-
-    if ( !hest_source_is_pcie_aer(hest_hdr) )
-        return 0;
-
-    p = (const struct acpi_hest_aer_common *)(hest_hdr + 1);
-    ff = !!(p->flags & ACPI_HEST_FIRMWARE_FIRST);
-
-    /*
-     * If no specific device is supplied, determine whether
-     * FIRMWARE_FIRST is set for *any* PCIe device.
-     */
-    if ( !info->pdev )
-    {
-        info->firmware_first |= ff;
-        return 0;
-    }
-
-    /* Otherwise, check the specific device */
-    if ( p->flags & ACPI_HEST_GLOBAL ?
-         hest_match_type(hest_hdr, info->pdev) :
-         hest_match_pci(p, info->pdev) )
-    {
-        info->firmware_first = ff;
-        return 1;
-    }
-
-    return 0;
-}
-
-bool pcie_aer_get_firmware_first(const struct pci_dev *pdev)
-{
-    struct aer_hest_parse_info info = { .pdev = pdev };
-
-    return pci_find_cap_offset(pdev->sbdf, PCI_CAP_ID_EXP) &&
-           apei_hest_parse(aer_hest_parse, &info) >= 0 &&
-           info.firmware_first;
-}
-#endif
-
 static int cf_check _dump_pci_devices(struct pci_seg *pseg, void *arg)
 {
     struct pci_dev *pdev;
 
-    printk("==== segment %04x ====\n", pseg->nr);
+    printk("### segment %04x ###\n", pseg->nr);
 
     list_for_each_entry ( pdev, &pseg->alldevs_list, alldevs_list )
     {
         printk("%pp - ", &pdev->sbdf);
-#ifdef CONFIG_X86
-        if ( pdev->domain == dom_io )
-            printk("domIO:%x", pdev->arch.pseudo_domid);
-        else
-#endif
-            printk("%pd", pdev->domain);
+        printk("%pd", pdev->domain);
         printk(" - node %-3d", (pdev->node != NUMA_NO_NODE) ? pdev->node : -1);
         pdev_dump_msi(pdev);
         printk("\n");
@@ -1386,7 +1287,7 @@ static int cf_check _dump_pci_devices(struct pci_seg *pseg, void *arg)
 
 static void cf_check dump_pci_devices(unsigned char ch)
 {
-    printk("==== PCI devices ====\n");
+    printk("### PCI devices ###\n");
     pcidevs_lock();
     pci_segments_iterate(_dump_pci_devices, NULL);
     pcidevs_unlock();

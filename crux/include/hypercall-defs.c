@@ -208,9 +208,6 @@ hvm_op(unsigned long op, void *arg)
 #ifdef CONFIG_HYPFS
 hypfs_op(unsigned int cmd, const char *arg1, unsigned long arg2, void *arg3, unsigned long arg4)
 #endif
-#ifdef CONFIG_X86
-cruxpmu_op(unsigned int op, crux_pmu_params_t *arg)
-#endif
 
 #ifdef CONFIG_PV
 caller: pv64
@@ -218,12 +215,7 @@ caller: pv64
 caller: pv32
 #endif
 #endif
-#if defined(CONFIG_HVM) && defined(CONFIG_X86)
-caller: hvm64
-#ifdef CONFIG_COMPAT
-caller: hvm32
-#endif
-#endif
+
 #ifdef CONFIG_ARM
 caller: arm
 #endif

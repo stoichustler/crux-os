@@ -721,12 +721,10 @@ long do_domctl(CRUX_GUEST_HANDLE_PARAM(crux_domctl_t) u_domctl)
              (gfn + nr_mfns - 1) < gfn ) /* wrap? */
             break;
 
-#ifndef CONFIG_X86 /* XXX ARM!? */
         ret = -E2BIG;
         /* Must break hypercall up as this could take a while. */
         if ( nr_mfns > 64 )
             break;
-#endif
 
         ret = -EPERM;
         if ( !iomem_access_permitted(current->domain, mfn, mfn_end) ||

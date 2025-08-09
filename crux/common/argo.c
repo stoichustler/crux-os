@@ -1433,12 +1433,6 @@ find_ring_mfn(struct domain *d, gfn_t gfn, mfn_t *mfn)
             ret = -EINVAL;
         break;
 
-#ifdef CONFIG_X86
-    case p2m_ram_logdirty:
-        ret = -EAGAIN;
-        break;
-#endif
-
     default:
         ret = -EINVAL;
         break;

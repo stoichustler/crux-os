@@ -67,11 +67,9 @@ struct hw_interrupt_type {
     void (*enable)(struct irq_desc *desc);
     void (*disable)(struct irq_desc *desc);
     void (*ack)(struct irq_desc *desc);
-#ifdef CONFIG_X86
-    void (*end)(struct irq_desc *desc, u8 vector);
-#else
+
     void (*end)(struct irq_desc *desc);
-#endif
+
     void (*set_affinity)(struct irq_desc *desc, const cpumask_t *mask);
 };
 

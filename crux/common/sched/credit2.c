@@ -36,11 +36,7 @@
  */
 static unsigned int cpu_nr_siblings(unsigned int cpu)
 {
-#ifdef CONFIG_X86
-    return cpu_data[cpu].x86_num_siblings;
-#else
     return 1;
-#endif
 }
 
 /*

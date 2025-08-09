@@ -10,20 +10,7 @@
 DEFINE_CRUX_GUEST_HANDLE(CHAR16);
 
 struct efi_rs_state {
-#ifdef CONFIG_X86
- /*
-  * The way stacks get set up leads to them always being on an 8-byte
-  * boundary not evenly divisible by 16 (see asm/current.h). The EFI ABI,
-  * just like the CPU one, however requires stacks to be 16-byte aligned
-  * before every function call. Since the compiler assumes this (unless
-  * passing it -mpreferred-stack-boundary=3), it wouldn't generate code to
-  * align the stack to 16 bytes even if putting a 16-byte aligned object
-  * there. Hence we need to force larger than 16-byte alignment, even if we
-  * don't strictly need that.
-  */
- unsigned long __aligned(32) cr3;
-    unsigned long msr_s_cet;
-#endif
+	/* Empty */
 };
 
 struct efi_rs_state efi_rs_enter(void);

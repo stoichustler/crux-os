@@ -27,7 +27,7 @@ union compat_pf_efi_info;
 struct cruxpf_efi_runtime_call;
 struct compat_pf_efi_runtime_call;
 
-#if defined(CONFIG_X86) || defined(CONFIG_ARM)
+#if defined(CONFIG_ARM)
 bool efi_enabled(unsigned int feature);
 #else
 static inline bool efi_enabled(unsigned int feature)

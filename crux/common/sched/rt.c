@@ -678,9 +678,7 @@ rt_init(struct scheduler *ops)
     int rc = -ENOMEM;
     struct rt_private *prv = xzalloc(struct rt_private);
 
-    printk("Initializing RTDS scheduler\n"
-           "WARNING: This is experimental software in development.\n"
-           "Use at your own risk.\n");
+    printk("Initializing RTDS scheduler\n");
 
     if ( prv == NULL )
         goto err;
@@ -742,7 +740,7 @@ rt_switch_sched(struct scheduler *new_ops, unsigned int cpu,
          prv->repl_timer.status == TIMER_STATUS_killed )
     {
         init_timer(&prv->repl_timer, repl_timer_handler, (void *)new_ops, cpu);
-        dprintk(CRUXLOG_DEBUG, "RTDS: timer initialized on cpu %u\n", cpu);
+        printk("RTDS: timer initialized on cpu %u\n", cpu);
     }
 
     sched_idle_unit(cpu)->priv = vdata;
@@ -763,7 +761,7 @@ static void move_repl_timer(struct rt_private *prv, unsigned int old_cpu)
     if ( new_cpu >= nr_cpu_ids )
     {
         kill_timer(&prv->repl_timer);
-        dprintk(CRUXLOG_DEBUG, "RTDS: timer killed on cpu %d\n", old_cpu);
+        printk("RTDS: timer killed on cpu %d\n", old_cpu);
     }
     else
     {

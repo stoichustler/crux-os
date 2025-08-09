@@ -148,15 +148,8 @@
 #include <public/sysctl.h>
 #include <public/sched.h>
 
-#ifdef CONFIG_X86
-#include <asm/guest.h>
-#include <asm/p2m.h>
-#include <asm/setup.h> /* for highmem_start only */
-#include <asm/paging.h>
-#else
 #define p2m_pod_offline_or_broken_hit(pg) 0
 #define p2m_pod_offline_or_broken_replace(pg) BUG_ON(pg)
-#endif
 
 #ifndef PGC_static
 #define PGC_static 0
@@ -347,13 +340,7 @@ void __init init_boot_pages(paddr_t ps, paddr_t pe)
 {
     unsigned long bad_spfn, bad_epfn;
     const char *p;
-#ifdef CONFIG_X86
-    const struct platform_bad_page *badpage;
-    unsigned int i, array_size;
 
-    BUILD_BUG_ON(8 * sizeof(frame_table->u.free.first_dirty) <
-                 MAX_ORDER + 1);
-#endif
     BUILD_BUG_ON(sizeof(frame_table->u) != sizeof(unsigned long));
 
     ps = round_pgup(ps);
@@ -364,39 +351,6 @@ void __init init_boot_pages(paddr_t ps, paddr_t pe)
     first_valid_mfn = mfn_min(maddr_to_mfn(ps), first_valid_mfn);
 
     bootmem_region_add(ps >> PAGE_SHIFT, pe >> PAGE_SHIFT);
-
-#ifdef CONFIG_X86
-    /*
-     * Here we put platform-specific memory range workarounds, i.e.
-     * memory known to be corrupt or otherwise in need to be reserved on
-     * specific platforms.
-     * We get these certain pages and remove them from memory region list.
-     */
-    badpage = get_platform_badpages(&array_size);
-    if ( badpage )
-    {
-        for ( i = 0; i < array_size; i++ )
-        {
-            bootmem_region_zap(badpage->mfn,
-                               badpage->mfn + (1UL << badpage->order));
-            badpage++;
-        }
-    }
-
-    if ( pv_shim )
-    {
-        badpage = pv_shim_reserved_pages(&array_size);
-        if ( badpage )
-        {
-            for ( i = 0; i < array_size; i++ )
-            {
-                bootmem_region_zap(badpage->mfn,
-                                   badpage->mfn + (1UL << badpage->order));
-                badpage++;
-            }
-        }
-    }
-#endif
 
     /* Check new pages against the bad-page list. */
     p = opt_badpage;
@@ -436,24 +390,6 @@ mfn_t __init alloc_boot_pages(unsigned long nr_pfns, unsigned long pfn_align)
         pg = (r->e - nr_pfns) & ~(pfn_align - 1);
         if ( pg >= r->e || pg < r->s )
             continue;
-
-#if defined(CONFIG_X86) && !defined(NDEBUG)
-        /*
-         * Filtering pfn_align == 1 since the only allocations using a bigger
-         * alignment are the ones used for setting up the frame table chunks.
-         * Those allocations get remapped anyway, i.e. them not having 1:1
-         * mappings always accessible is not a problem.
-         */
-        if ( highmem_start && pfn_align == 1 &&
-             r->e > PFN_DOWN(highmem_start) )
-        {
-            pg = r->s;
-            if ( pg + nr_pfns > PFN_DOWN(highmem_start) )
-                continue;
-            r->s = pg + nr_pfns;
-            return _mfn(pg);
-        }
-#endif
 
         _e = r->e;
         r->e = pg;

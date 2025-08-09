@@ -22,7 +22,7 @@ define cmd_compile.h
 	    -e 's/@@version@@/$(CRUX_VERSION)/g' \
 	    -e 's/@@subversion@@/$(CRUX_SUBVERSION)/g' \
 	    -e 's/@@extraversion@@/$(CRUX_EXTRAVERSION)/g' \
-	    -e 's!@@changeset@@!$(shell $(srctree)/tools/scmversion $(CRUX_ROOT) || echo "unavailable")!g' \
+	    -e 's!@@changeset@@!$(echo "None")!g' \
 	    < $< > $(dot-target).tmp; \
 	sed -rf $(srctree)/tools/process-banner.sed < scripts/banner >> $(dot-target).tmp; \
 	mv -f $(dot-target).tmp $@; \

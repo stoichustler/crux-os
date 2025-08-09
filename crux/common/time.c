@@ -109,14 +109,8 @@ void update_domain_wallclock_time(struct domain *d)
     sec = wc_sec + d->time_offset.seconds;
     shared_info(d, wc_sec)    = sec;
     shared_info(d, wc_nsec)   = wc_nsec;
-#if defined(CONFIG_X86) && defined(CONFIG_COMPAT)
-    if ( likely(!has_32bit_shinfo(d)) )
-        d->shared_info->native.wc_sec_hi = sec >> 32;
-    else
-        d->shared_info->compat.arch.wc_sec_hi = sec >> 32;
-#else
+
     shared_info(d, wc_sec_hi) = sec >> 32;
-#endif
 
     smp_wmb();
     *wc_version = version_update_end(*wc_version);

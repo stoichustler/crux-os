@@ -19,23 +19,23 @@ void __init warning_add(const char *warning)
 
 void __init warning_print(void)
 {
-    unsigned int i, j;
+    unsigned int i, j, countdown;
 
     if ( !nr_warnings )
         return;
 
-    printk("***************************************************\n");
-
     for ( i = 0; i < nr_warnings; i++ )
     {
-        printk("%s", warnings[i]);
-        printk("***************************************************\n");
+        /* printk("%s", warnings[i]); */
         process_pending_softirqs();
     }
 
     for ( i = 0; i < 3; i++ )
     {
-        printk("%u... ", 3 - i);
+        countdown = 3 - i;
+        printk("%s%u...",
+            countdown == 3 ? "Kicking crux in " : "",
+            countdown);
         for ( j = 0; j < 100; j++ )
         {
             process_pending_softirqs();

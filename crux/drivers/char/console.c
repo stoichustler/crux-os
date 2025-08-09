@@ -34,9 +34,6 @@
 #include <crux/sections.h>
 #include <crux/consoled.h>
 
-#ifdef CONFIG_X86
-#include <asm/guest.h>
-#endif
 #ifdef CONFIG_SBSA_VUART_CONSOLE
 #include <asm/vpl011.h>
 #endif
@@ -62,7 +59,7 @@ enum {
 };
 
 /* Prefix for hypervisor's diagnostic console messages. */
-#define CONSOLE_PREFIX      "<crux> "
+#define CONSOLE_PREFIX      "<c> "
 
 static void console_send(const char *str, size_t len, unsigned int flags);
 
@@ -138,11 +135,6 @@ static uint32_t __read_mostly conring_size = _CONRING_SIZE;
 static uint32_t conringc, conringp;
 
 static int __read_mostly sercon_handle = -1;
-
-#ifdef CONFIG_X86
-/* Tristate: 0 disabled, 1 user enabled, -1 default enabled */
-int8_t __read_mostly opt_console_crux; /* console=crux */
-#endif
 
 static DEFINE_RSPINLOCK(console_lock);
 
@@ -651,27 +643,9 @@ static void cf_check serial_rx(char c)
     __serial_rx(c);
 }
 
-#ifdef CONFIG_X86
-static inline void crux_console_write_debug_port(const char *buf, size_t len)
-{
-    unsigned long tmp;
-    asm volatile ( "rep outsb;"
-                   : "=&S" (tmp), "=&c" (tmp)
-                   : "0" (buf), "1" (len), "d" (CRUX_HVM_DEBUGCONS_IOPORT) );
-}
-#endif
-
 static inline void console_debug_puts(const char *str, size_t len)
 {
-#ifdef CONFIG_X86
-    if ( opt_console_crux )
-    {
-        if ( crux_guest )
-            crux_hypercall_console_write(str, len);
-        else
-            crux_console_write_debug_port(str, len);
-    }
-#endif
+    /* Not implemented */
 }
 
 /*
@@ -1060,10 +1034,6 @@ void __init console_init_preirq(void)
             video_init();
         else if ( !strncmp(p, "pv", 2) )
             pv_console_init();
-#ifdef CONFIG_X86
-        else if ( !strncmp(p, "crux", 3) )
-            opt_console_crux = 1;
-#endif
         else if ( !strncmp(p, "none", 4) )
             continue;
         else if ( (sh = serial_parse_handle(p)) >= 0 )
@@ -1081,11 +1051,6 @@ void __init console_init_preirq(void)
                 *q = ',';
         }
     }
-
-#ifdef CONFIG_X86
-    if ( opt_console_crux == -1 )
-        opt_console_crux = 0;
-#endif
 
     serial_set_rx_handler(sercon_handle, serial_rx);
     pv_console_set_rx_handler(serial_rx);
@@ -1355,11 +1320,7 @@ void panic(const char *fmt, ...)
     if ( opt_noreboot )
         printk("Manual reset required ('noreboot' specified)\n");
     else
-#ifdef CONFIG_X86
-        printk("%s in five seconds...\n", pv_shim ? "Crash" : "Reboot");
-#else
         printk("Reboot in five seconds...\n");
-#endif
 
     spin_unlock_irqrestore(&lock, flags);
 

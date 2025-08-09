@@ -61,14 +61,7 @@ void __init free_ebmalloc_unused_mem(void)
 
     destroy_crux_mappings(start, end);
 
-#ifdef CONFIG_X86
-    /*
-     * By reserving the space early in the E820 map, it gets freed way before
-     * we make it here. Don't free the range a 2nd time.
-     */
-#else
     init_cruxheap_pages(__pa(start), __pa(end));
-#endif
 
     printk(CRUXLOG_INFO "Freed %lukB unused BSS memory\n", (end - start) >> 10);
 }

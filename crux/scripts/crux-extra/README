@@ -10,6 +10,3 @@
 
 [0] initrd.ext4
     rootfs for crux-os/core linux kernel
-
-[1] u-boot.bin
-	u-boot for arm64 qemu

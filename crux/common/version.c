@@ -183,38 +183,6 @@ void __init crux_build_init(void)
     sz = (uintptr_t)__note_gnu_build_id_end - (uintptr_t)n;
 
     rc = crux_build_id_check(n, sz, &crux_build_id, &crux_build_id_len);
-
-#ifdef CONFIG_X86
-    /*
-     * crux.efi built with a new enough toolchain will have a CodeView record,
-     * not an ELF note.
-     */
-    if ( rc )
-    {
-        const struct pe_external_debug_directory *dir = (const void *)n;
-
-        /*
-         * Validate that the full-note-header check above won't prevent
-         * fall-through to the CodeView case here.
-         */
-        BUILD_BUG_ON(sizeof(*n) > sizeof(*dir));
-
-        if ( sz > sizeof(*dir) + sizeof(struct cv_info_pdb70) &&
-             dir->type == PE_IMAGE_DEBUG_TYPE_CODEVIEW &&
-             dir->size > sizeof(struct cv_info_pdb70) &&
-             CRUX_VIRT_START + dir->rva_of_data == (unsigned long)(dir + 1) )
-        {
-            const struct cv_info_pdb70 *info = (const void *)(dir + 1);
-
-            if ( info->cv_signature == CVINFO_PDB70_CVSIGNATURE )
-            {
-                crux_build_id = info->signature;
-                crux_build_id_len = sizeof(info->signature);
-                rc = 0;
-            }
-        }
-    }
-#endif /* CONFIG_X86 */
 }
 #endif /* BUILD_ID */
 /*

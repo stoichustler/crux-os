@@ -11,6 +11,9 @@ export CROSS_COMPILE      := aarch64-none-elf-
 export CRUX_TARGET_ARCH    := arm64
 #######################################################
 
+# Compilation start time
+START_TS := $(shell date +%s)
+
 # $(lastword,) for GNU Make older than 3.81
 lastword = $(word $(words $(1)),$(1))
 this-makefile := $(call lastword,$(MAKEFILE_LIST))
@@ -555,7 +558,7 @@ _debug:
 
 .PHONY: _clean
 _clean:
-	$(Q)echo "cleaning built objects"
+	$(Q)echo "Cleaning built objects"
 	$(Q)$(MAKE) $(clean)=tools
 	$(Q)$(MAKE) $(clean)=include
 	$(Q)$(MAKE) $(clean)=common
@@ -613,7 +616,7 @@ endef
 
 .PHONY: note
 note:
-	@echo "cooking CRUX $(CRUX_FULLVERSION) for $(CONFIG_PLAT_OPT) SoC"
+	@echo "Cooking CRUX $(CRUX_FULLVERSION) for $(CONFIG_PLAT_OPT) board"
 
 .PHONY: cruxversion
 cruxversion:
@@ -644,8 +647,9 @@ cscope:
 #######################################################
 .PHONY: dtbs
 dtbs:
-	$(Q)echo "cooking device tree blob"
+	$(Q)echo "Cooking device tree for $(CONFIG_PLAT_OPT) board"
 	$(Q)$(MAKE) -C arch/$(SRCARCH)/dts
+	$(Q)echo "Done compilation within $$(($(shell date +%s)-$(START_TS))) seconds @ $(shell date +%T)"
 #######################################################
 
 .PHONY: _MAP

@@ -65,10 +65,6 @@ typedef struct crash_crux_info {
     unsigned long crux_compile_date;
     unsigned long crux_compile_time;
     unsigned long tainted;
-#if defined(CONFIG_X86)
-    unsigned long crux_phys_start;
-    unsigned long dom0_pfn_to_mfn_frame_list_list;
-#endif
 } crash_crux_info_t;
 
 #endif /* __ELFCOREC_H__ */

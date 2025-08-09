@@ -959,7 +959,7 @@ int vpci_init_header(struct pci_dev *pdev)
         if ( (val & PCI_BASE_ADDRESS_SPACE) == PCI_BASE_ADDRESS_SPACE_IO )
         {
             bars[i].type = VPCI_BAR_IO;
-            if ( !IS_ENABLED(CONFIG_X86) && !is_hwdom )
+            if ( !is_hwdom )
             {
                 rc = vpci_add_register(pdev->vpci, vpci_read_val, NULL,
                                        reg, 4, (void *)0);

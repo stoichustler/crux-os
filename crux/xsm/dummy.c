@@ -130,21 +130,6 @@ static const struct xsm_ops __initconst_cf_clobber dummy_ops = {
 #endif
 
     .platform_op                   = xsm_platform_op,
-#ifdef CONFIG_X86
-    .do_mca                        = xsm_do_mca,
-    .shadow_control                = xsm_shadow_control,
-    .mem_sharing_op                = xsm_mem_sharing_op,
-    .apic                          = xsm_apic,
-    .machine_memory_map            = xsm_machine_memory_map,
-    .domain_memory_map             = xsm_domain_memory_map,
-    .mmu_update                    = xsm_mmu_update,
-    .mmuext_op                     = xsm_mmuext_op,
-    .update_va_mapping             = xsm_update_va_mapping,
-    .priv_mapping                  = xsm_priv_mapping,
-    .ioport_permission             = xsm_ioport_permission,
-    .ioport_mapping                = xsm_ioport_mapping,
-    .pmu_op                        = xsm_pmu_op,
-#endif
     .dm_op                         = xsm_dm_op,
     .crux_version                   = xsm_crux_version,
     .domain_resource_map           = xsm_domain_resource_map,

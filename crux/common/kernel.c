@@ -673,9 +673,6 @@ long do_crux_version(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
         {
         case 0:
             fi.submap = (1U << CRUXFEAT_memory_op_vnode_supported) |
-#ifdef CONFIG_X86
-                        (1U << CRUXFEAT_vcpu_time_phys_area) |
-#endif
                         (1U << CRUXFEAT_runstate_phys_area);
             if ( VM_ASSIST(d, pae_extended_cr3) )
                 fi.submap |= (1U << CRUXFEAT_pae_pgdir_above_4gb);
@@ -687,17 +684,6 @@ long do_crux_version(int cmd, CRUX_GUEST_HANDLE_PARAM(void) arg)
                 fi.submap |= 1U << CRUXFEAT_dom0;
 #ifdef CONFIG_ARM
             fi.submap |= (1U << CRUXFEAT_ARM_SMCCC_supported);
-#endif
-#ifdef CONFIG_X86
-            if ( is_pv_domain(d) )
-                fi.submap |= (1U << CRUXFEAT_mmu_pt_update_preserve_ad) |
-                             (1U << CRUXFEAT_highmem_assist) |
-                             (1U << CRUXFEAT_gnttab_map_avail_bits);
-            else
-                fi.submap |= (1U << CRUXFEAT_hvm_safe_pvclock) |
-                             (1U << CRUXFEAT_hvm_callback_vector) |
-                             (has_pirq(d) ? (1U << CRUXFEAT_hvm_pirqs) : 0);
-            fi.submap |= (1U << CRUXFEAT_dm_msix_all_writes);
 #endif
             if ( !paging_mode_translate(d) || is_domain_direct_mapped(d) )
                 fi.submap |= (1U << CRUXFEAT_direct_mapped);
