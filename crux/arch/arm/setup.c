@@ -159,7 +159,7 @@ static void __init processor_id(void)
            system_cpuinfo.aux64.bits[0], system_cpuinfo.aux64.bits[1]);
     printk("  Memory Model Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.mm64.bits[0], system_cpuinfo.mm64.bits[1]);
-    printk("  ISA Features:  %016"PRIx64" %016"PRIx64"\n",
+    printk("  ISA Features: %016"PRIx64" %016"PRIx64"\n",
            system_cpuinfo.isa64.bits[0], system_cpuinfo.isa64.bits[1]);
 #endif
 

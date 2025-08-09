@@ -64,7 +64,7 @@ struct its_quirk {
 
 static uint32_t __ro_after_init its_quirk_flags;
 
-static bool gicv3_its_enable_quirk_gen4(struct host_its *hw_its)
+static bool gicv3_its_enable_quirk(struct host_its *hw_its)
 {
     its_quirk_flags |= HOST_ITS_WORKAROUND_NC_NS |
         HOST_ITS_WORKAROUND_32BIT_ADDR;
@@ -74,10 +74,10 @@ static bool gicv3_its_enable_quirk_gen4(struct host_its *hw_its)
 
 static const struct its_quirk its_quirks[] = {
     {
-        .desc	= "R-Car Gen4",
+        .desc	= "Generic System", /* HUSTLER: To be verified */
         .iidr	= 0x0201743b,
         .mask	= 0xffffffff,
-        .init	= gicv3_its_enable_quirk_gen4,
+        .init	= gicv3_its_enable_quirk,
     },
     {
         /* Sentinel. */
@@ -1110,7 +1110,7 @@ static void add_to_host_its_list(paddr_t addr, paddr_t size,
     its_data->size = size;
     its_data->dt_node = node;
 
-    printk("GICv3: Found ITS @0x%lx\n", addr);
+    printk("GICv3: Found ITS @ 0x%lx\n", addr);
 
     list_add_tail(&its_data->entry, &host_its_list);
 }

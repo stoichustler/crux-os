@@ -55,7 +55,6 @@
 		dom0 {
 			compatible = "multiboot,kernel","multiboot,module";
 			reg = <0x02000000 0x800000>; // 8M
-			/* capabilities = <0x1>; */
 		};
 
 		domU1 {
@@ -79,7 +78,6 @@
 			compatible = "crux,domain";
 			memory = <0x0 0x80000>; // 512M
 			cpus = <4>;
-			/* capabilities = <0x2>; */
 			vpl011;
 
 			module@0x0a200000 {

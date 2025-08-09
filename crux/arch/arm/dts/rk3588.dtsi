@@ -16,6 +16,25 @@
 	compatible = "rockchip,rk3588";
 	model = "roc-rk3588-rt";
 
+	/* ROC-RK3588-RT Android 12 u-boot: bdinfo
+	 *
+	 * arch_number = 0x00000000
+	 * boot_params = 0x00000000
+	 * DRAM bank   = 0x00000000
+	 * -> start    = 0x00200000
+	 * -> size     = 0x08200000
+	 * DRAM bank   = 0x00000001
+	 * -> start    = 0x09400000
+	 * -> size     = 0xE6C00000
+	 * baudrate    = 1500000 bps
+	 * TLB addr    = 0xEFFF0000
+	 * relocaddr   = 0xEDC35000
+	 * reloc off   = 0xEDA35000
+	 * irq_sp      = 0xEB9F9EA0
+	 * sp start    = 0xEB9F9EA0
+	 * Early malloc usage: 31f8 / 80000
+	 * fdt_blob = 0000000008300000
+	 */
 	chosen {
 		#address-cells = <1>;
 		#size-cells = <1>;

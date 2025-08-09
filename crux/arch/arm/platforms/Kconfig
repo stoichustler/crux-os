@@ -27,6 +27,7 @@ config RK3566
 	select GICV3
 	select ARM_SMMU
 	select HAS_NS16550
+	select HAS_ITS
 	help
 	  Enable all the required drivers for Rockchip rk356x SoC.
 
@@ -36,6 +37,7 @@ config RK3588
 	select GICV3
 	select ARM_SMMU
 	select HAS_NS16550
+	select HAS_ITS
 	help
 	  Enable all the required drivers for Rockchip rk3588 SoC.
 
