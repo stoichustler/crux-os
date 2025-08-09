@@ -1,0 +1,19 @@
+/*
+ * HUSTLER
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "roc_rk3588_rt.dts"
+
+/delete-node/ &{/cpus/cpu@1};
+/delete-node/ &{/cpus/cpu@2};
+/delete-node/ &{/cpus/cpu@3};
+/delete-node/ &{/cpus/cpu@4};
+/delete-node/ &{/cpus/cpu@5};
+/delete-node/ &{/cpus/cpu@6};
+/delete-node/ &{/cpus/cpu@7};
+
+&uart2 {
+	status = "disabled";
+	current-speed = <1500000>;
+};

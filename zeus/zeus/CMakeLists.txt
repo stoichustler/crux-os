@@ -21,6 +21,12 @@ if (BOARD STREQUAL "radxa_zero3w/rk3568/xen_dom0")
   endif()
 endif()
 
+if (BOARD STREQUAL "roc_rk3588_rt/rk3588/xen_dom0")
+  if(NOT xen_dom0 IN_LIST SNIPPET)
+    set(SNIPPET xen_dom0 ${SNIPPET} CACHE STRING "" FORCE)
+  endif()
+endif()
+
 if (BOARD STREQUAL "qemu_cortex_a53/qemu_cortex_a53")
   if(NOT xen_dom0 IN_LIST SNIPPET)
     set(SNIPPET xen_dom0 ${SNIPPET} CACHE STRING "" FORCE)

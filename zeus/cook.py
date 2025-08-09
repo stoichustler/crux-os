@@ -9,6 +9,7 @@ BUILD_DIR = "zeus/out"
 
 SUPPORTED_PROJECTS = (
     "radxa_zero3w/rk3568/xen_dom0",
+    "roc_rk3588_rt/rk3588/xen_dom0",
     "qemu_cortex_a53/qemu_cortex_a53",
 )
 

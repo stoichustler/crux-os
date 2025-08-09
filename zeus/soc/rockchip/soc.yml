@@ -4,4 +4,5 @@ family:
       - name: rk35
         socs:
           - name: rk3588s
+          - name: rk3588
           - name: rk3568
