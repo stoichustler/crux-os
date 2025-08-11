@@ -528,7 +528,7 @@ static void sanitize_reg(u64 *cur_reg, u64 new_reg, const char *reg_name,
 						const struct arm64_ftr_bits *ftrp)
 {
 	int taint = 0;
-	u64 old_reg = *cur_reg;
+	/* u64 old_reg = *cur_reg; */
 
 	for (;ftrp->width != 0;ftrp++)
 	{
@@ -545,17 +545,9 @@ static void sanitize_reg(u64 *cur_reg, u64 new_reg, const char *reg_name,
 							arm64_ftr_safe_value(ftrp, new_field, cur_field));
 	}
 
-	if (old_reg != new_reg)
-		printk(CRUXLOG_DEBUG "SANITY DIF: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
-				reg_name, old_reg, new_reg);
-	if (old_reg != *cur_reg)
-		printk(CRUXLOG_DEBUG "SANITY FIX: %s 0x%"PRIx64" -> 0x%"PRIx64"\n",
-				reg_name, old_reg, *cur_reg);
-
+	/* HUSTLER: Todo for big.LITTLE support */
 	if (taint)
 	{
-		printk(CRUXLOG_WARNING "SANITY CHECK: Unexpected variation in %s.\n",
-				reg_name);
 		add_taint(TAINT_CPU_OUT_OF_SPEC);
 	}
 }

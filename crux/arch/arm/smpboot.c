@@ -348,13 +348,10 @@ void asmlinkage noreturn start_secondary(void)
         }
         else
         {
-            printk(CRUXLOG_ERR
-                   "CPU%u MIDR (0x%"PRIregister") does not match boot CPU MIDR (0x%"PRIregister"),\n"
-                   CRUXLOG_ERR "hmp-unsafe turned on so tainting crux and keep core on!!\n",
-                   smp_processor_id(), current_cpu_data.midr.bits,
-                   system_cpuinfo.midr.bits);
+            printk(CRUXLOG_ERR "big.LITTLE CPU%u (0x%"PRIregister") core on\n",
+                   smp_processor_id(), current_cpu_data.midr.bits);
             add_taint(TAINT_CPU_OUT_OF_SPEC);
-         }
+        }
     }
 
     if ( dcache_line_bytes != read_dcache_line_bytes() )

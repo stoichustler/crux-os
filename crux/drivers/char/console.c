@@ -58,8 +58,11 @@ enum {
     CONSOLE_ALL             = CONSOLE_DEFAULT | CONSOLE_RING,
 };
 
-/* Prefix for hypervisor's diagnostic console messages. */
-#define CONSOLE_PREFIX      "<c> "
+/* Prefix for hypervisor's diagnostic console messages.
+ *
+ * HUSTLER: No console prefix is preferred.
+ */
+#define CONSOLE_PREFIX      ""
 
 static void console_send(const char *str, size_t len, unsigned int flags);
 
