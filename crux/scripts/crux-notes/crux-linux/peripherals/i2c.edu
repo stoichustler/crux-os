@@ -1,0 +1,41 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+I2C Debugging
+=============
+
+$ ls -l /sys/bus/i2c/devices/
+
+$ i2cdetect -l
+
+$ i2cdetect -y BUS
+
+$ i2cdump -fy BUS CHIP
+
+$ i2ctransfer [-f] [-y] [-v] BUS DESC [DATA]
+	BUS:  The number or name of the I2C bus to be used
+	DESC: Describes the transfer in the form:
+	      "{r|w}LENGTH [@address]"
+	DATA: The data bytes for a write message
+
+
+I2C BASICS
+==========
+
+The I2C bus connects one or more controller chips and
+one or more target chips.
+
+                        --x---x-- Vdd
+                          |   |
+                          :   :
+                          |   |
+------------------------------x---- SDA
+                          |
+--------------------------x-------- SDL
