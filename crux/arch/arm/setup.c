@@ -305,7 +305,10 @@ void __init init_pdx(void)
 
 size_t __read_mostly dcache_line_bytes;
 
-/* C entry point for boot CPU */
+/* C entry point for boot CPU
+ *
+ * HUSTLER - 2025/08/12
+ */
 void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
 {
     size_t fdt_size;
@@ -342,7 +345,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
     fdt_size = boot_fdt_info(device_tree_flattened, fdt_paddr);
 
     cmdline = boot_fdt_cmdline(device_tree_flattened);
-    printk("Command line: %s\n", cmdline);
+    printk("cmdline: %s\n", cmdline);
     cmdline_parse(cmdline);
 
     llc_coloring_init();
@@ -352,6 +355,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
      * coloring info are required in order to create colored mappings
      */
     setup_pagetables();
+
     /* Device-tree was mapped in boot page tables, remap it in the new tables */
     device_tree_flattened = early_fdt_map(fdt_paddr);
 

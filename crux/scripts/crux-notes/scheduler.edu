@@ -1,0 +1,67 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#
+#######################################################
+
+The Linux Schedulers
+
+
+Scheduling classes and policies
+===============================
+
+Stop
+	No policy {highest priority class, can preempt
+	everything and is preempted by nothing.}
+
+Deadline
+	SCHED_DEADLINE {implemented with red-black tree,
+	wtih self-balancing ability}
+
+Real Time
+	{task priority: 0 - 99, 0 highest in kernel,
+	implemented with linked lists.}
+	SCHED_FIFO
+	SCHED_RR
+
+Fair
+	{implemented with red-black tree (self balancing).
+	tracks Virtual runtime of tasks (amount of time
+	task has run).
+	tasks with shortest vruntime runs first.
+	priority is used to set task’s weight, that affects
+	vruntime.
+	higher the weight, slower will vruntime increase.
+	task’s priority is calculated by 120 + nice
+	(-20 to +19).
+	used for all other system tasks.}
+	SCHED_NORMAL
+	SCHED_BATCH
+	SCHED_IDLE
+
+Idle
+	No policy
+
+
+RunQueues
+=========
+
+Each CPU has an instance of “struct rq”.
+Each “rq” has DL, RT and CFS runqueues within it.
+Runnable tasks are enqueued on those runqueues.
+Lots of other information, stats are available in
+struct rq.
+
+#######################################################
+
+The Zephyr Schedulers
+
+
+
+
+
+#######################################################

@@ -551,7 +551,7 @@ static void console_switch_input(void)
         if ( next_rx++ >= max_console_rx )
         {
             console_rx = 0;
-            printk("### Serial input to crux");
+            printk("### switch console to crux");
             break;
         }
 
@@ -568,13 +568,13 @@ static void console_switch_input(void)
                 continue;
 
             console_rx = next_rx;
-            printk("### Serial input to dom%u", domid);
+            printk("### switch console to dom%u", domid);
             break;
         }
     }
 
     if ( switch_code )
-        printk(" (type 'CTRL-%c' three times to switch input)",
+        printk(" (type 'CTRL-%c' 3 times to switch)",
                opt_conswitch[0]);
     printk("\n");
 }
@@ -1068,9 +1068,8 @@ void __init console_init_preirq(void)
 
     conring_flush(flags);
 
-    /* HELLO WORLD --- start-of-day banner text. */
     nrspin_lock(&console_lock);
-    __putstr(crux_banner());
+    __putstr("Everyday's a Hustle.\n");
     nrspin_unlock(&console_lock);
 
     /* Locate the buildid, if possible. */

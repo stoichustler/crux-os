@@ -15,6 +15,7 @@
 #include <crux/sort.h>
 #include <crux/unaligned.h>
 #include <crux/static-shmem.h>
+#include <crux/version.h>
 #include <xsm/xsm.h>
 #include <asm/setup.h>
 
@@ -284,8 +285,6 @@ static int __init process_chosen_node(const void *fdt, int node,
     {
         int rc;
 
-        printk("Checking for static heap in /chosen\n");
-
         rc = device_tree_get_meminfo(fdt, node, "crux,static-heap",
                                      address_cells, size_cells,
                                      bootinfo_get_reserved_mem(),
@@ -296,12 +295,11 @@ static int __init process_chosen_node(const void *fdt, int node,
         using_static_heap = true;
     }
 
-    printk("Checking for initrd in /chosen\n");
-
     prop = fdt_get_property(fdt, node, "linux,initrd-start", &len);
     if ( !prop )
         /* No initrd present. */
         return 0;
+
     if ( len != sizeof(u32) && len != sizeof(u64) )
     {
         printk("linux,initrd-start property has invalid length %d\n", len);
@@ -341,8 +339,6 @@ static int __init process_domain_node(const void *fdt, int node,
                                       u32 address_cells, u32 size_cells)
 {
     const struct fdt_property *prop;
-
-    printk("Checking for \"crux,static-mem\" in domain node\n");
 
     prop = fdt_get_property(fdt, node, "crux,static-mem", NULL);
     if ( !prop )
@@ -411,7 +407,7 @@ static void __init early_print_info(void)
                 mi->bank[i].start + mi->bank[i].size - 1);
 
     for ( i = 0 ; i < mods->nr_mods; i++ )
-        printk("MODULE[%d]: %"PRIpaddr" - %"PRIpaddr" %-12s\n",
+        printk("module[%d]: %"PRIpaddr" - %"PRIpaddr" %-12s\n",
                 i,
                 mods->module[i].start,
                 mods->module[i].start + mods->module[i].size - 1,
@@ -419,7 +415,7 @@ static void __init early_print_info(void)
 
     for ( i = 0; i < mem_resv->nr_banks; i++ )
     {
-        printk(" RESVD[%u]: %"PRIpaddr" - %"PRIpaddr"\n", i,
+        printk("  rsvd[%u]: %"PRIpaddr" - %"PRIpaddr"\n", i,
                mem_resv->bank[i].start,
                mem_resv->bank[i].start + mem_resv->bank[i].size - 1);
     }
@@ -428,10 +424,9 @@ static void __init early_print_info(void)
 #endif
 
     for ( i = 0 ; i < cmds->nr_mods; i++ )
-        printk("CMDLINE[%"PRIpaddr"]: %s %s\n", cmds->cmdline[i].start,
+        printk("cmdline[%"PRIpaddr"]: %s %s\n", cmds->cmdline[i].start,
                cmds->cmdline[i].dt_name,
                &cmds->cmdline[i].cmdline[0]);
-
 }
 
 /* This function assumes that memory regions are not overlapped */
@@ -473,6 +468,8 @@ size_t __init boot_fdt_info(const void *fdt, paddr_t paddr)
     ret = fdt_check_header(fdt);
     if ( ret < 0 )
         panic("No valid device tree\n");
+
+    printk(crux_banner());
 
     add_boot_module(BOOTMOD_FDT, paddr, fdt_totalsize(fdt), false);
 
