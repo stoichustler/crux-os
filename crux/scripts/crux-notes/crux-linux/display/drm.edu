@@ -7,3 +7,86 @@
 #                  - Hustle Embedded -
 #
 #######################################################
+
+The Direct Rendering Manager (DRM) is a subsystem of
+the Linux kernel responsible for interfacing with GPUs
+of modern video cards.
+
+                                        From Wikipedia
+
+Linux Display Diagram
+=====================
+
+    libdrm
+      |
+ +---------------------------------+
+ |                                 |
+ |             +-----+  +-----+    |
+ | DRM core    | GEM |  | KMS |    |
+ |             +-----+  +-----+    |
+ +----------------|--------|-------+
+                  |        |
+                  V        V
+ +---------------------------------+
+ |           Video Card            |
+ +---------------------------------+
+
+KMS (Kernel Mode Settings)
+==========================
+
+A framebuffer is a region of memory that contains the
+pixel data for a display.
+
+ +-------------+    +-------+    +------+    +---------+    +-----------+
+ | Framebuffer |--->| Plane |--->| CRTC |--->| Encoder |--->| Connector |
+ +-------------+    +-------+    +------+    +---------+    +-----------+
+        :
+
+Planes
+	Image source
+	Associated with one (or more) framebuffers
+	Holds a resized / cropped version of that framebuffer
+
+CRTCs (Cathode Ray Tube Controller) is responsible for
+	generating the video signal.
+
+	- Pixel Clock: drive the pixel stream (1 pixel updated
+	  per clock cycle)
+	- VSYNC: Vertical synchronization signal, asserted at
+	  the beginning of each frame
+	- HSYNC: Horizontal synchronization signal, asserted at
+	  the beginning of each pixel line
+
+       hback           hactive             hfront
+HSYNC |-----|-----------------------------|------| hsync pulse|
+       porch                               porch |____________|
+                                                                      VSYNC
+Pixel |******                                                           |
+Clock |------------------------------------------------------>+ vback   |
+      |                                                       | porch   |
+      |                                                       |         :
+      |                      ACTIVE AREA                      | vactive |
+      |                                                       |         |
+      |                                                       |         :
+      |------------------------------------------------------>+ vfront  |
+                                                              | porch   |
+                                                                        |
+                                                              +---------+
+                                                              | vsync
+                                                              | pulse
+                                                              +---------+
+
+	Note:
+
+	HSYNC pulse is used to inform the display it should
+	go to the next pixel line.
+	VSYNC pulse is used to inform the display it should
+	start to disply a new frame and thus go back to the
+	first line.
+
+Encoders
+	Take the raw data from the CRTC and convert it to a
+	particular format
+
+
+The Graphics Execution Manager (GEM)
