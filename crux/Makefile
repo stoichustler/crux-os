@@ -639,6 +639,10 @@ gtags:
 	$(Q)set -e; rm -f GTAGS GSYMS GPATH GRTAGS
 	$(all_sources) | gtags -f -
 
+.PHONY: code
+code:
+	$(Q)ctags --languages=Asm,c,c++ -R
+
 .PHONY: cscope
 cscope:
 	$(all_sources) > cscope.files
