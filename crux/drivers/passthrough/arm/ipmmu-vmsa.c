@@ -695,7 +695,7 @@ static int ipmmu_attach_device(struct ipmmu_vmsa_domain *domain,
         ipmmu_ctx_write_cache(domain, IMCTR,
                               ipmmu_ctx_read_root(domain, IMCTR) | IMCTR_FLUSH);
 
-        dev_info(dev, "Using IPMMU context %u\n", domain->context_id);
+        dev_info(dev, "using IPMMU context %u\n", domain->context_id);
     }
     else if ( domain->mmu != mmu )
     {

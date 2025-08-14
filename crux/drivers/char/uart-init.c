@@ -77,7 +77,7 @@ static void __init dt_uart_init(void)
     else
         options = "";
 
-    printk("Looking for dtuart at \"%s\", options \"%s\"\n", devpath, options);
+    printk("looking for dtuart at \"%s\", options \"%s\"\n", devpath, options);
     if ( *devpath == '/' )
         dev = dt_find_node_by_path(devpath);
     else

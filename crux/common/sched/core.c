@@ -3027,7 +3027,7 @@ void __init scheduler_init(void)
         printk("Could not find scheduler: %s\n", opt_sched);
         scheduler = sched_get_by_name(CONFIG_SCHED_DEFAULT);
         BUG_ON(!scheduler);
-        printk("Using '%s' (%s)\n", scheduler->name, scheduler->opt_name);
+        printk("using '%s' (%s)\n", scheduler->name, scheduler->opt_name);
     }
     operations = *scheduler;
 
@@ -3035,7 +3035,7 @@ void __init scheduler_init(void)
         BUG();
     register_cpu_notifier(&cpu_schedule_nfb);
 
-    printk("Using scheduler: %s (%s)\n", operations.name, operations.opt_name);
+    printk("using scheduler: %s (%s)\n", operations.name, operations.opt_name);
     if ( sched_init(&operations) )
         panic("scheduler returned error on init\n");
 

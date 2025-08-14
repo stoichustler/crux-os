@@ -140,7 +140,7 @@ static int __init scmi_init(void)
     if ( ret )
         goto err;
 
-    printk(CRUXLOG_INFO "Using SCMI with SMC ID: 0x%x\n", scmi_smc_id);
+    printk(CRUXLOG_INFO "using SCMI with SMC ID: 0x%x\n", scmi_smc_id);
 
     return 0;
 

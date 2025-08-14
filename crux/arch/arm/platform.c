@@ -52,11 +52,11 @@ void __init platform_init(void)
     if ( platform == _eplatform )
     {
         /* TODO: dump DT machine compatible node */
-        printk(CRUXLOG_INFO "Platform: Generic System\n");
+        printk(CRUXLOG_INFO "platform: generic system\n");
         platform = NULL;
     }
     else
-        printk(CRUXLOG_INFO "Platform: %s\n", platform->name);
+        printk(CRUXLOG_INFO "platform: %s\n", platform->name);
 
     if ( platform && platform->init )
         res = platform->init();

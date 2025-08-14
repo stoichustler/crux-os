@@ -1112,7 +1112,7 @@ void __init console_init_ring(void)
     conring_size = opt_conring_size;
     nrspin_unlock_irqrestore(&console_lock, flags);
 
-    printk("Allocated console ring of %u KiB.\n", opt_conring_size >> 10);
+    printk("allocated console ring of %u KiB.\n", opt_conring_size >> 10);
 }
 
 void __init console_init_irq(void)

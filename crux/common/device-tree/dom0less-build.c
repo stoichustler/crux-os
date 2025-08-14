@@ -752,7 +752,7 @@ static int __init construct_domU(struct kernel_info *kinfo,
     if ( rc != 0 )
         return rc;
 
-    printk("### LOADING DOMU (cpus=%u memory=%#"PRIx64"KB)\n",
+    printk("### loading domU (cpus=%u memory=%#"PRIx64"KB)\n",
            d->max_vcpus, mem);
 
     rc = dt_property_read_string(node, "crux,enhanced", &dom0less_enhanced);

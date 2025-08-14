@@ -94,6 +94,7 @@ static void __init init_idle_domain(void)
     /* TODO: setup_idle_pagetable(); */
 }
 
+#if defined(CONFIG_DEBUG_VERBOSE)
 static const char * __initdata processor_implementers[] = {
     ['A'] = "ARM Limited",
     ['B'] = "Broadcom Corporation",
@@ -105,15 +106,19 @@ static const char * __initdata processor_implementers[] = {
     ['V'] = "Marvell Semiconductor Inc.",
     ['i'] = "Intel Corporation",
 };
+#endif
 
 static void __init processor_id(void)
 {
+#if defined(CONFIG_DEBUG_VERBOSE)
     const char *implementer = "Unknown";
+#endif
     struct cpuinfo_arm *c = &system_cpuinfo;
 
     identify_cpu(c);
     current_cpu_data = *c;
 
+#if defined(CONFIG_DEBUG_VERBOSE)
     if ( c->midr.implementer < ARRAY_SIZE(processor_implementers) &&
          processor_implementers[c->midr.implementer] )
         implementer = processor_implementers[c->midr.implementer];
@@ -201,6 +206,7 @@ static void __init processor_id(void)
     {
         printk("32-bit Execution: Unsupported\n");
     }
+#endif /* CONFIG_DEBUG_VERBOSE */
 
     processor_setup();
 }
@@ -376,13 +382,13 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
 
     if ( acpi_disabled )
     {
-        printk("Booting using Device Tree\n");
+        printk("booting using device tree\n");
         relocate_fdt(&device_tree_flattened, fdt_size);
         dt_unflatten_host_device_tree();
     }
     else
     {
-        printk("Booting using ACPI\n");
+        printk("booting using ACPI\n");
         device_tree_flattened = NULL;
     }
 
@@ -402,7 +408,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
 
     smp_init_cpus();
     nr_cpu_ids = smp_get_max_cpus();
-    printk(CRUXLOG_INFO "SMP: Allowing %u CPUs\n", nr_cpu_ids);
+    printk(CRUXLOG_INFO "SMP: allowing %u CPUs\n", nr_cpu_ids);
 
     /*
      * Some errata relies on SMCCC version which is detected by psci_init()
@@ -456,8 +462,7 @@ void asmlinkage __init noreturn start_crux(unsigned long fdt_paddr)
         }
     }
 
-    printk("Brought up %ld CPUs\n", (long)num_online_cpus());
-    /* TODO: smp_cpus_done(); */
+    printk("brought up %ld CPUs\n", (long)num_online_cpus());
 
     /* This should be done in a vpmu driver but we do not have one yet. */
     vpmu_is_available = cpu_has_pmu;

@@ -104,8 +104,6 @@ void print_version(void)
            crux_compile_by(), crux_compile_domain(), crux_compiler(),
            crux_build_info(), crux_compile_date());
 
-    printk("Latest ChangeSet: %s\n", crux_changeset());
-
     if ( crux_build_id_len )
         printk("build-id: %*phN\n", crux_build_id_len, crux_build_id);
 }

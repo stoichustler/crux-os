@@ -295,7 +295,7 @@ static void __init allocate_memory_11(struct domain *d,
      */
     BUG_ON(!is_domain_direct_mapped(d));
 
-    printk("Allocating 1:1 mappings totalling %ldMB for dom0:\n",
+    printk("allocating 1:1 mappings total %ldMB for dom0:\n",
            /* Don't want format this as PRIpaddr (16 digit hex) */
            (unsigned long)(kinfo->unassigned_mem >> 20));
 
@@ -393,7 +393,8 @@ static void __init allocate_memory_11(struct domain *d,
 
     for( i = 0; i < mem->nr_banks; i++ )
     {
-        printk("BANK[%d] %#"PRIpaddr"-%#"PRIpaddr" (%ldMB)\n",
+        printk("%pd BANK[%d] [%"PRIpaddr" - %"PRIpaddr"] (%ldMB)\n",
+               d,
                i,
                mem->bank[i].start,
                mem->bank[i].start + mem->bank[i].size,
@@ -1157,7 +1158,7 @@ int __init make_hypervisor_node(struct domain *d,
         u64 start = ext_regions->bank[i].start;
         u64 size = ext_regions->bank[i].size;
 
-        printk("%pd: extended region %d: %#"PRIpaddr"-%#"PRIpaddr"\n",
+        printk("%pd extended region %d [%"PRIpaddr" - %"PRIpaddr"]\n",
                d, i, start, start + size);
 
         dt_child_set_range(&cells, addrcells, sizecells, start, size);
@@ -1823,7 +1824,7 @@ void __init evtchn_allocate(struct domain *d)
 
     d->arch.evtchn_irq = res;
 
-    printk("Allocating PPI %u for event channel interrupt\n",
+    printk("allocating PPI %u for event channel interrupt\n",
            d->arch.evtchn_irq);
 
     /* Set the value of domain param HVM_PARAM_CALLBACK_IRQ */
@@ -1859,7 +1860,7 @@ static void __init find_gnttab_region(struct domain *d,
     BUG_ON((kinfo->gnttab_start + kinfo->gnttab_size) > GB(4));
 #endif
 
-    printk("Grant table range: %#"PRIpaddr"-%#"PRIpaddr"\n",
+    printk("grant table range: [%"PRIpaddr" - %"PRIpaddr"]\n",
            kinfo->gnttab_start, kinfo->gnttab_start + kinfo->gnttab_size);
 }
 
@@ -1876,7 +1877,7 @@ int __init construct_domain(struct domain *d, struct kernel_info *kinfo)
     /* if aarch32 mode is not supported at EL1 do not allow 32-bit domain */
     if ( !(cpu_has_el1_32) && kinfo->arch.type == DOMAIN_32BIT )
     {
-        printk("Platform does not support 32-bit domain\n");
+        printk("platform does not support 32-bit domain\n");
         return -EINVAL;
     }
 
@@ -1962,7 +1963,7 @@ static int __init construct_dom0(struct domain *d)
     /* Sanity! */
     BUG_ON(d->domain_id != 0);
 
-    printk("### LOADING DOM0\n");
+    printk("### loading dom0\n");
 
     /* The ordering of operands is to work around a clang5 issue. */
     if ( CONFIG_DOM0_MEM[0] && !dom0_mem_set )

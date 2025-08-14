@@ -437,7 +437,7 @@ int gicv3_lpi_init_host_lpis(unsigned int host_lpi_bits)
      * It's very unlikely that we need more than 24 bits worth of LPIs.
      */
     if ( lpi_data.max_host_lpi_ids > BIT(24, UL) )
-        warning_add("Using high number of LPIs, limit memory usage with max_lpi_bits\n");
+        warning_add("using high number of LPIs, limit memory usage with max_lpi_bits\n");
 
     spin_lock_init(&lpi_data.host_lpis_lock);
     lpi_data.next_free_lpi = 0;

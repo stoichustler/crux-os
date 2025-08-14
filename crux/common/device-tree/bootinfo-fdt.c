@@ -402,12 +402,12 @@ static void __init early_print_info(void)
     unsigned int i;
 
     for ( i = 0; i < mi->nr_banks; i++ )
-        printk("RAM:       %"PRIpaddr" - %"PRIpaddr"\n",
+        printk("RAM:       [%"PRIpaddr" - %"PRIpaddr"]\n",
                 mi->bank[i].start,
                 mi->bank[i].start + mi->bank[i].size - 1);
 
     for ( i = 0 ; i < mods->nr_mods; i++ )
-        printk("module[%d]: %"PRIpaddr" - %"PRIpaddr" %-12s\n",
+        printk("module[%d]: [%"PRIpaddr" - %"PRIpaddr"] %-12s\n",
                 i,
                 mods->module[i].start,
                 mods->module[i].start + mods->module[i].size - 1,
@@ -415,7 +415,7 @@ static void __init early_print_info(void)
 
     for ( i = 0; i < mem_resv->nr_banks; i++ )
     {
-        printk("  rsvd[%u]: %"PRIpaddr" - %"PRIpaddr"\n", i,
+        printk("  rsvd[%u]: [%"PRIpaddr" - %"PRIpaddr"]\n", i,
                mem_resv->bank[i].start,
                mem_resv->bank[i].start + mem_resv->bank[i].size - 1);
     }

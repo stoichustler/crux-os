@@ -116,7 +116,7 @@ static int __apply_alternatives(const struct alt_region *region,
     u32 *updptr;
     alternative_cb_t alt_cb;
 
-    printk(CRUXLOG_INFO "alternatives: Patching with alt table %p -> %p\n",
+    printk(CRUXLOG_INFO "alternatives: patching with alt table [%p - %p]\n",
            region->begin, region->end);
 
     for ( alt = region->begin; alt < region->end; alt++ )

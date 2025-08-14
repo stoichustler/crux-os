@@ -44,7 +44,7 @@ void vgic_v2_setup_hw(paddr_t dbase, paddr_t cbase, paddr_t csize,
     gic_v2_hw_data.vbase = vbase;
     gic_v2_hw_data.aliased_offset = aliased_offset;
 
-    printk("Using the new VGIC implementation.\n");
+    printk("using the new VGIC implementation.\n");
 }
 
 /*

@@ -85,7 +85,7 @@ static int __init tee_init(void)
     {
         if ( desc->ops->probe() )
         {
-            printk(CRUXLOG_INFO "Using TEE mediator for %s\n", desc->name);
+            printk(CRUXLOG_INFO "using TEE mediator for %s\n", desc->name);
             cur_mediator = desc;
             return 0;
         }

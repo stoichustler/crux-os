@@ -478,7 +478,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
 
     if ( cfgfile_options )
     {
-        PrintStr(L"Using bootargs from crux configuration file.\r\n");
+        PrintStr(L"using bootargs from crux configuration file.\r\n");
         prop_len += snprintf(buf + prop_len,
                                EFI_PAGE_SIZE - prop_len, " %s", cfgfile_options);
         if ( prop_len >= EFI_PAGE_SIZE )
@@ -491,7 +491,7 @@ static void __init efi_arch_handle_cmdline(CHAR16 *cmdline_options,
                                                    "crux,crux-bootargs", NULL);
         if ( dt_bootargs_prop )
         {
-            PrintStr(L"Using bootargs from device tree.\r\n");
+            PrintStr(L"using bootargs from device tree.\r\n");
             prop_len += snprintf(buf + prop_len, EFI_PAGE_SIZE - prop_len,
                                  " %s", dt_bootargs_prop);
             if ( prop_len >= EFI_PAGE_SIZE )
@@ -968,7 +968,7 @@ static bool __init efi_arch_use_config_file(EFI_SYSTEM_TABLE *SystemTable)
          */
         return true;
     }
-    PrintStr(L"Using modules provided by bootloader in FDT\r\n");
+    PrintStr(L"using modules provided by bootloader in FDT\r\n");
     /* We have modules already defined in fdt, just add space. */
     fdt_efi = fdt_increase_size(&dtbfile, EFI_PAGE_SIZE);
 

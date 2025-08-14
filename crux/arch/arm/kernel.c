@@ -147,8 +147,8 @@ static void __init kernel_zimage_load(struct kernel_info *info)
 
     place_modules(info, load_addr, load_addr + len);
 
-    printk("Loading zImage from %"PRIpaddr" to %"PRIpaddr"-%"PRIpaddr"\n",
-           paddr, load_addr, load_addr + len);
+    printk("loading %pd zImage to [%"PRIpaddr" - %"PRIpaddr"]\n",
+           info->bd.d, load_addr, load_addr + len);
 
     kernel = ioremap_wc(paddr, len);
     if ( !kernel )

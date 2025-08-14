@@ -118,7 +118,7 @@ void __init allocate_static_memory(struct domain *d, struct kernel_info *kinfo,
         if ( mfn_eq(smfn, INVALID_MFN) )
             goto fail;
 
-        printk(CRUXLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
+        printk(CRUXLOG_INFO "%pd: BANK[%u] [%"PRIpaddr" - %"PRIpaddr"] (static)\n",
                d, bank, pbase, pbase + psize);
 
         while ( 1 )
@@ -223,7 +223,7 @@ void __init assign_static_memory_11(struct domain *d, struct kernel_info *kinfo,
         if ( mfn_eq(smfn, INVALID_MFN) )
             goto fail;
 
-        printk(CRUXLOG_INFO "%pd: STATIC BANK[%u] %#"PRIpaddr"-%#"PRIpaddr"\n",
+        printk(CRUXLOG_INFO "%pd: BANK[%u] [%"PRIpaddr" - %"PRIpaddr"] (static)\n",
                d, bank, pbase, pbase + psize);
 
         /* One guest memory bank is matched with one physical memory bank. */

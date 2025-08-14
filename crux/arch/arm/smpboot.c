@@ -137,7 +137,7 @@ static void __init dt_smp_init_cpus(void)
     if ( !cpus )
     {
         printk(CRUXLOG_WARNING "WARNING: Can't find /cpus in the device tree.\n"
-               "Using only 1 CPU\n");
+               "using only 1 CPU\n");
         return;
     }
 
@@ -247,7 +247,7 @@ static void __init dt_smp_init_cpus(void)
     if ( !bootcpu_valid )
     {
         printk(CRUXLOG_WARNING "DT missing boot CPU MPIDR[23:0]\n"
-               "Using only 1 CPU\n");
+               "using only 1 CPU\n");
         return;
     }
 
@@ -270,7 +270,7 @@ void __init smp_init_cpus(void)
     if ( (rc = arch_smp_init()) < 0 )
     {
         printk(CRUXLOG_WARNING "SMP init failed (%d)\n"
-               "Using only 1 CPU\n", rc);
+               "using only 1 CPU\n", rc);
         return;
     }
 
@@ -400,7 +400,7 @@ void asmlinkage noreturn start_secondary(void)
     check_local_cpu_errata();
     check_local_cpu_features();
 
-    printk(CRUXLOG_DEBUG "CPU %u booted.\n", smp_processor_id());
+    printk(CRUXLOG_DEBUG "CPU%u booted.\n", smp_processor_id());
 
     startup_cpu_idle_loop();
 }
@@ -476,8 +476,6 @@ int __cpu_up(unsigned int cpu)
 {
     int rc;
     s_time_t deadline;
-
-    printk("Bringing up CPU%d\n", cpu);
 
     rc = prepare_secondary_mm(cpu);
     if ( rc < 0 )

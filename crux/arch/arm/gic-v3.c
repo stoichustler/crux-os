@@ -441,7 +441,7 @@ static void gicv3_dump_state(const struct vcpu *v)
     else
     {
         for ( i = 0; i < gicv3_info.nr_lrs; i++ )
-            printk("   VCPU_LR[%d]=%" PRIx64 "\n", i, v->arch.gic.v3.lr[i]);
+            printk("   vCPU_LR[%d]=%" PRIx64 "\n", i, v->arch.gic.v3.lr[i]);
     }
 }
 
@@ -800,7 +800,7 @@ static int __init gicv3_populate_rdist(void)
                     }
                 }
 
-                printk("GICv3: CPU%d: Found redistributor in region %d @%p\n",
+                printk("GICv3: CPU%d: found redistributor in region %d @ %p\n",
                         smp_processor_id(), i, ptr);
                 return 0;
             }

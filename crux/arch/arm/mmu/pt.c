@@ -81,7 +81,7 @@ void dump_pt_walk(paddr_t ttbr, paddr_t addr,
          */
         BUG_ON(root_level == 0);
         root_table = offsets[root_level - 1];
-        printk("Using concatenated root table %u\n", root_table);
+        printk("using concatenated root table %u\n", root_table);
         if ( root_table >= nr_root_tables )
         {
             printk("Invalid root table offset\n");

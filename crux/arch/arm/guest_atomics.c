@@ -40,10 +40,6 @@ static void calibrate_safe_atomic(void)
     } while (NOW() < deadline);
 
     this_cpu(guest_safe_atomic_max) = counter;
-
-    printk(CRUXLOG_DEBUG
-           "CPU%u: Guest atomics will try %u times before pausing the domain\n",
-           smp_processor_id(), counter);
 }
 
 static int cpu_guest_safe_atomic_callback(struct notifier_block *nfb,

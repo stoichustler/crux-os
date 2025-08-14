@@ -204,11 +204,11 @@ int __init kernel_probe(struct kernel_info *info,
         return -ENOENT;
     }
 
-    printk("Loading %pd kernel from boot module @ %"PRIpaddr"\n",
+    printk("loading %pd kernel from boot module @ %"PRIpaddr"\n",
            info->bd.d, info->bd.kernel->start);
     if ( info->bd.initrd )
-        printk("Loading ramdisk from boot module @ %"PRIpaddr"\n",
-               info->bd.initrd->start);
+        printk("loading %pd ramdisk from boot module @ %"PRIpaddr"\n",
+               info->bd.d, info->bd.initrd->start);
 
     /*
      * uImage isn't really used nowadays thereby leave kernel_uimage_probe()

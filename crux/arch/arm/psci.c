@@ -126,7 +126,7 @@ static void __init psci_init_smccc(void)
     if ( smccc_ver >= SMCCC_VERSION(1, 1) )
         cpus_set_cap(ARM_SMCCC_1_1);
 
-    printk(CRUXLOG_INFO "Using SMC Calling Convention v%u.%u\n",
+    printk(CRUXLOG_INFO "using SMC Calling Convention v%u.%u\n",
            SMCCC_VERSION_MAJOR(smccc_ver), SMCCC_VERSION_MINOR(smccc_ver));
 }
 
@@ -223,7 +223,7 @@ int __init psci_init(void)
 
     psci_init_smccc();
 
-    printk(CRUXLOG_INFO "Using PSCI v%u.%u\n",
+    printk(CRUXLOG_INFO "using PSCI v%u.%u\n",
            PSCI_VERSION_MAJOR(psci_ver), PSCI_VERSION_MINOR(psci_ver));
 
     return 0;

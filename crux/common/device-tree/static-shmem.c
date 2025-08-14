@@ -778,7 +778,7 @@ void __init early_print_info_shmem(void)
 
     for ( bank = 0; bank < shmem->nr_banks; bank++, printed++ )
         if ( shmem->bank[bank].start != INVALID_PADDR )
-            printk(" SHMEM[%u]: %"PRIpaddr" - %"PRIpaddr"\n", printed,
+            printk(" shmem[%u]: [%"PRIpaddr" - %"PRIpaddr"]\n", printed,
                 shmem->bank[bank].start,
                 shmem->bank[bank].start + shmem->bank[bank].size - 1);
 }

@@ -1415,7 +1415,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
 
         /* Read and parse the config file. */
         if ( read_section(loaded_image, L"config", &cfg, NULL) )
-            PrintStr(L"Using builtin config file\r\n");
+            PrintStr(L"using builtin config file\r\n");
         else if ( !cfg_file_name && file_name )
         {
             CHAR16 *tail;
@@ -1429,7 +1429,7 @@ void EFIAPI __init noreturn efi_start(EFI_HANDLE ImageHandle,
             }
             if ( !tail )
                 blexit(L"No configuration file found.");
-            PrintStr(L"Using configuration file '");
+            PrintStr(L"using configuration file '");
             PrintStr(file_name);
             PrintStr(L"'\r\n");
         }

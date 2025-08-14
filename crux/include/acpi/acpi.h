@@ -57,11 +57,11 @@
 #include "actypes.h"		/* Fundamental common data types */
 #include "acexcep.h"		/* ACPI exception codes */
 #include "acmacros.h"		/* C macros */
-#include "actbl.h"		/* ACPI table definitions */
+#include "actbl.h"		    /* ACPI table definitions */
 #include "aclocal.h"		/* Internal data types */
 #include "acoutput.h"		/* Error output and Debug macros */
 #include "acpiosxf.h"		/* Interfaces to the ACPI-to-OS layer */
-#include "acpixf.h"		/* ACPI core subsystem external interfaces */
+#include "acpixf.h"		    /* ACPI core subsystem external interfaces */
 #include "acglobal.h"		/* All global variables */
 #include "achware.h"		/* Hardware defines and interfaces */
 #include "acutils.h"		/* Utility interfaces */
