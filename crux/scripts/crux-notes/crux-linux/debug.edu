@@ -8,5 +8,8 @@
 #
 #######################################################
 
-[0] Initrd
-    tiny rootfs (ext4) for crux-os/core linux kernel
+echo 0 > /proc/sys/kernel/printk
+
+#######################################################
+
+cat /sys/kernel/debug/*

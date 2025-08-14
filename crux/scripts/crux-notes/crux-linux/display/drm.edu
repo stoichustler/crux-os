@@ -1,5 +1,5 @@
 #######################################################
-#                      _____     __  __
+                       _____     __  __
 #             /\/\/\/\/ __  \/\ / _\/__\
 #             \ - \ \ \ \/ // // _\/  \
 #              \/\/\_/\_/\/ \__\__\\/\/ @2025
@@ -17,19 +17,20 @@ of modern video cards.
 Linux Display Diagram
 =====================
 
-    libdrm
-      |
- +---------------------------------+
- |                                 |
- |             +-----+  +-----+    |
- | DRM core    | GEM |  | KMS |    |
- |             +-----+  +-----+    |
- +----------------|--------|-------+
-                  |        |
-                  V        V
- +---------------------------------+
- |           Video Card            |
- +---------------------------------+
+         +--- Applications -----+   API
+         |         |            |--------> 2D Rendering libraries
+Display  |      Toolkits        |                     |
+protocol |         |            |     OpenGL          V
+         |         V            |----------------> Mesa 3D
+         +--> Display Server ---+     Vulkan          |
+                   |                                  | driver uAPI
+                   | libdrm                           |
+                   V                                  V
+                DRM KMS ----> DRM GEM <---------- DRM Render
+                   | registers   | allocation         | command stream
+                   V             |                    |
+            Display Engine <-- DRAM/VRAM <---------> GPU
+                                              DMA
 
 KMS (Kernel Mode Settings)
 ==========================
@@ -37,10 +38,17 @@ KMS (Kernel Mode Settings)
 A framebuffer is a region of memory that contains the
 pixel data for a display.
 
- +-------------+    +-------+    +------+    +---------+    +-----------+
- | Framebuffer |--->| Plane |--->| CRTC |--->| Encoder |--->| Connector |
- +-------------+    +-------+    +------+    +---------+    +-----------+
-        :
+ +-------------+    +-------+    +------+    +---------+
+ | Framebuffer |--->| Plane |--->| CRTC |--->| Encoder |
+ +-------------+    +-------+    +------+    +---------+
+                                                  |
+                                             +---------+
+                                             | Bridge  |
+                                             +---------+
+                                                  |
+                                             +---------+
+                                             | Panel   |
+                                             +---------+
 
 Planes
 	Image source
@@ -58,23 +66,23 @@ CRTCs (Cathode Ray Tube Controller) is responsible for
 	  the beginning of each pixel line
 
        hback           hactive             hfront
-HSYNC |-----|-----------------------------|------| hsync pulse|
-       porch                               porch |____________|
-                                                                      VSYNC
-Pixel |******                                                           |
-Clock |------------------------------------------------------>+ vback   |
-      |                                                       | porch   |
-      |                                                       |         :
-      |                      ACTIVE AREA                      | vactive |
-      |                                                       |         |
-      |                                                       |         :
-      |------------------------------------------------------>+ vfront  |
-                                                              | porch   |
-                                                                        |
-                                                              +---------+
-                                                              | vsync
-                                                              | pulse
-                                                              +---------+
+HSYNC |-----|-----------------------------|------| hsync |
+       porch                               porch | pulse |
+
+Pixel |>>>>>                                        | VSYNC
+Clock       |---------------------------->+ vback   |
+            |                             | porch   |
+            |                             |         :
+            |          ACTIVE AREA        | vactive |
+            |                             |         |
+            |                             |         :
+            |---------------------------->+ vfront  |
+                                          | porch   |
+                                                    |
+                                          +---------+
+                                          | vsync
+                                          | pulse
+                                          +---------+
 
 	Note:
 
@@ -90,3 +98,4 @@ Encoders
 
 
 The Graphics Execution Manager (GEM)
+====================================

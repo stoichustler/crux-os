@@ -17,7 +17,13 @@ $ i2cdetect -l
 
 $ i2cdetect -y BUS
 
-$ i2cdump -fy BUS CHIP
+$ i2cdump -f -y BUS CHIP
+
+$ i2cget -f -y BUS CHIP [REG [MODE [LENGTH]]]
+
+$ i2cset -f -y BUS CHIP REG [VALUE]
+
+OR:
 
 $ i2ctransfer [-f] [-y] [-v] BUS DESC [DATA]
 	BUS:  The number or name of the I2C bus to be used
