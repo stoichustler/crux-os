@@ -100,9 +100,6 @@ install_bp_hardening_vec(const struct arm_cpu_capabilities *entry,
     if ( !entry->matches(entry) )
         return true;
 
-    printk(CRUXLOG_INFO "CPU%u will %s on exception entry\n",
-           smp_processor_id(), desc);
-
     spin_lock(&bp_lock);
 
     /*

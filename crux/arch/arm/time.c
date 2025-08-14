@@ -201,7 +201,7 @@ int __init init_crux_time(void)
     if ( !cpu_has_gentimer )
         panic("CPU does not support the Generic Timer v1 interface\n");
 
-    printk("Generic Timer IRQ: phys=%u hyp=%u virt=%u Freq: %lu KHz\n",
+    printk("generic timer IRQ: phys=%u hyp=%u virt=%u freq: %lu KHz\n",
            timer_irq[TIMER_PHYS_NONSECURE_PPI],
            timer_irq[TIMER_HYP_PPI],
            timer_irq[TIMER_VIRT_PPI],

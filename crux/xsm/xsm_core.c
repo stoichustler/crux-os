@@ -146,7 +146,7 @@ int __init xsm_multiboot_init(struct boot_info *bi)
     void *policy_buffer = NULL;
     size_t policy_size = 0;
 
-    printk("XSM Framework v" XSM_FRAMEWORK_VERSION " initialized\n");
+    /* printk("XSM Framework v" XSM_FRAMEWORK_VERSION " initialized\n"); */
 
     if ( XSM_MAGIC )
     {
@@ -173,7 +173,7 @@ int __init xsm_dt_init(void)
     void *policy_buffer = NULL;
     size_t policy_size = 0;
 
-    printk("XSM Framework v" XSM_FRAMEWORK_VERSION " initialized\n");
+    /* printk("XSM Framework v" XSM_FRAMEWORK_VERSION " initialized\n"); */
 
     if ( XSM_MAGIC )
     {

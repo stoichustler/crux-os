@@ -1081,7 +1081,7 @@ void __init console_init_preirq(void)
     {
         serial_start_sync(sercon_handle);
         add_taint(TAINT_SYNC_CONSOLE);
-        printk("Console output is synchronous.\n");
+        printk("console output is synchronous.\n");
         warning_add(warning_sync_console);
     }
 }
@@ -1136,13 +1136,15 @@ void __init console_init_postirq(void)
 
 void __init console_endboot(void)
 {
-    printk("Std. Loglevel: %s", loglvl_str(cruxlog_lower_thresh));
+#if defined(CONFIG_DEBUG_VERBOSE)
+    printk("std. loglevel: %s", loglvl_str(cruxlog_lower_thresh));
     if ( cruxlog_upper_thresh != cruxlog_lower_thresh )
-        printk(" (Rate-limited: %s)", loglvl_str(cruxlog_upper_thresh));
-    printk("\nGuest Loglevel: %s", loglvl_str(cruxlog_guest_lower_thresh));
+        printk(" (rate-limited: %s)", loglvl_str(cruxlog_upper_thresh));
+    printk("\nguest loglevel: %s", loglvl_str(cruxlog_guest_lower_thresh));
     if ( cruxlog_guest_upper_thresh != cruxlog_guest_lower_thresh )
-        printk(" (Rate-limited: %s)", loglvl_str(cruxlog_guest_upper_thresh));
+        printk(" (rate-limited: %s)", loglvl_str(cruxlog_guest_upper_thresh));
     printk("\n");
+#endif
 
     warning_print();
 

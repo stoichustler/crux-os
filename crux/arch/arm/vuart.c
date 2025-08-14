@@ -89,7 +89,7 @@ static void vuart_print_char(struct vcpu *v, char c)
         if ( c != '\n' )
             uart->buf[uart->idx++] = '\n';
         uart->buf[uart->idx] = '\0';
-        printk(CRUXLOG_G_DEBUG "DOM%u: %s", d->domain_id, uart->buf);
+        printk(CRUXLOG_G_DEBUG "dom%u: %s", d->domain_id, uart->buf);
         uart->idx = 0;
     }
     spin_unlock(&uart->lock);

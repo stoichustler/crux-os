@@ -34,7 +34,7 @@ void __init warning_print(void)
     {
         countdown = 3 - i;
         printk("%s%u...",
-            countdown == 3 ? "Kicking crux in " : "",
+            countdown == 3 ? "kicking crux in " : "",
             countdown);
         for ( j = 0; j < 100; j++ )
         {

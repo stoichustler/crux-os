@@ -348,7 +348,7 @@ void asmlinkage noreturn start_secondary(void)
         }
         else
         {
-            printk(CRUXLOG_ERR "big.LITTLE CPU%u (0x%"PRIregister") core on\n",
+            printk(CRUXLOG_ERR "big.LITTLE CPU%u (0x%"PRIregister") kicking\n",
                    smp_processor_id(), current_cpu_data.midr.bits);
             add_taint(TAINT_CPU_OUT_OF_SPEC);
         }
@@ -400,7 +400,7 @@ void asmlinkage noreturn start_secondary(void)
     check_local_cpu_errata();
     check_local_cpu_features();
 
-    printk(CRUXLOG_DEBUG "CPU%u booted.\n", smp_processor_id());
+    printk(CRUXLOG_DEBUG "CPU%u booted\n", smp_processor_id());
 
     startup_cpu_idle_loop();
 }

@@ -99,6 +99,7 @@ unsigned int __ro_after_init crux_build_id_len;
 
 void print_version(void)
 {
+#if defined(CONFIG_DEBUG_VERBOSE)
     printk("crux version %d.%d%s (%s@%s) (%s) %s %s\n",
            crux_major_version(), crux_minor_version(), crux_extra_version(),
            crux_compile_by(), crux_compile_domain(), crux_compiler(),
@@ -106,6 +107,7 @@ void print_version(void)
 
     if ( crux_build_id_len )
         printk("build-id: %*phN\n", crux_build_id_len, crux_build_id);
+#endif
 }
 
 #ifdef BUILD_ID

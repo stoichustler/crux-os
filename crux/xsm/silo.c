@@ -116,7 +116,7 @@ static const struct xsm_ops __initconst_cf_clobber silo_xsm_ops = {
 
 const struct xsm_ops *__init silo_init(void)
 {
-    printk("Initialising XSM SILO mode\n");
+    /* printk("Initialising XSM SILO mode\n"); */
 
     return &silo_xsm_ops;
 }

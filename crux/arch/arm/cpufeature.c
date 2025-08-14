@@ -27,7 +27,7 @@ static bool has_sb_instruction(const struct arm_cpu_capabilities *entry)
 static const struct arm_cpu_capabilities arm_features[] = {
 #ifdef CONFIG_ARM_64
     {
-        .desc = "Speculation barrier instruction (SB)",
+        .desc = "speculation barrier instruction (SB)",
         .capability = ARM_HAS_SB,
         .matches = has_sb_instruction,
     },

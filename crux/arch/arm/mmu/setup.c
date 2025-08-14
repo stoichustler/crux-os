@@ -513,8 +513,10 @@ void free_init_memory(void)
     if ( !using_static_heap )
     {
         init_domheap_pages(pa, pa + len);
-        printk("Freed %ldkB init memory.\n",
+#if defined(CONFIG_DEBUG_VERBOSE)
+        printk("freed %ldkB init memory.\n",
                (long)(__init_end-__init_begin) >> 10);
+#endif /* CONFIG_DEBUG_VERBOSE */
     }
 }
 
