@@ -36,12 +36,6 @@
 
 #include "nshlib/nshlib.h"
 
-#define NSH_BANNER        \
-"    _______  __  __\n" \
-"   /__\\_  _\\/  \\/ _\\\n" \
-"  /  \\ / / / / /\\ \\\n" \
-"  \\/\\/ \\/  \\__/\\__/ ROUX 2025\n"
-
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -60,8 +54,6 @@ int main(int argc, FAR char *argv[])
 {
 	struct sched_param param;
 	int ret = 0;
-
-	printf(NSH_BANNER); /* HUSTLER: personal tagging */
 
 	/* Check the task priority that we were started with */
 

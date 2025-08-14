@@ -64,10 +64,10 @@ menu "Command Line Configuration"
 
 config NSH_PROMPT_STRING
 	string "Prompt String"
-	default "roux $ "
+	default "zero $ "
 	---help---
 		Provide the shell prompt string with size limit NSH_PROMPT_MAX.
-		default is "nsh> ".
+		default is "roux $ ".
 
 config NSH_PROMPT_MAX
 	int "Maximum Size of Prompt String"
@@ -85,7 +85,7 @@ config NSH_PROMPT_ENV
 
 config NSH_PROMPT_SUFFIX
 	string "Suffix used to derive fallback prompt string"
-	default "roux $ "
+	default "<RTOS> "
 	---help---
 		When NSH_PROMPT_STRING is empty, the environment variable defined
 		by NSH_PROMPT_ENV or hostname will be used to derive the prompt
