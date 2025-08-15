@@ -103,7 +103,7 @@ static void gicv3_its_enable_quirks(struct host_its *hw_its)
     const struct its_quirk *quirk = gicv3_its_find_quirk(iidr);
 
     if ( quirk && quirk->init(hw_its) )
-        printk("GICv3: enabling workaround for ITS: %s\n", quirk->desc);
+        (void)0; /* Empty implementation */
 }
 
 static void gicv3_its_validate_quirks(void)
@@ -427,7 +427,6 @@ static void *its_map_cbaser(struct host_its *its)
     if ( !(reg & GITS_BASER_INNER_CACHEABILITY_MASK) )
     {
         its->flags |= HOST_ITS_FLUSH_CMD_QUEUE;
-        printk(CRUXLOG_WARNING "using non-cacheable ITS command queue\n");
     }
 
     return buffer;
@@ -541,8 +540,6 @@ static int gicv3_disable_its(struct host_its *hw_its)
         cpu_relax();
         udelay(1);
     } while ( NOW() <= deadline );
-
-    printk(CRUXLOG_ERR "ITS@%lx not quiescent.\n", hw_its->addr);
 
     return -ETIMEDOUT;
 }
@@ -1110,7 +1107,7 @@ static void add_to_host_its_list(paddr_t addr, paddr_t size,
     its_data->size = size;
     its_data->dt_node = node;
 
-    printk("GICv3: found ITS @ 0x%lx\n", addr);
+    printk("GICv3: found ITS 0x%lx\n", addr);
 
     list_add_tail(&its_data->entry, &host_its_list);
 }

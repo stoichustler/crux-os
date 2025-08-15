@@ -683,9 +683,6 @@ static void __init setup_low_mem_virq(void)
     /* Set bounds, ready to go */
     low_mem_virq_th = low_mem_virq_orig = 1UL << order;
     low_mem_virq_th_order = order;
-
-    printk("Initial low memory virq threshold set at %#lx pages.\n",
-            low_mem_virq_th);
 }
 
 static void check_low_mem_virq(void)
@@ -2077,7 +2074,7 @@ static void dump_color_heap(void)
 {
     unsigned int color;
 
-    printk("Dumping color heap info\n");
+    printk("dumping color heap info\n");
     for ( color = 0; color < get_max_nr_llc_colors(); color++ )
         if ( free_colored_pages[color] > 0 )
             printk("Color heap[%u]: %lu pages\n",
@@ -2117,10 +2114,7 @@ void __init end_boot_allocator(void)
     if ( !dma_bitsize && arch_want_default_dmazone() )
         dma_bitsize = arch_get_dma_bitsize();
 
-    printk("domain heap initialised");
-    if ( dma_bitsize )
-        printk(" DMA width %u bits", dma_bitsize);
-    printk("\n");
+    /* Check on dma_bitsize */
 }
 
 static void __init cf_check smp_scrub_heap_pages(void *data)

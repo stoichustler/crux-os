@@ -295,10 +295,6 @@ static void __init allocate_memory_11(struct domain *d,
      */
     BUG_ON(!is_domain_direct_mapped(d));
 
-    printk("allocating 1:1 mappings total %ldMB for dom0:\n",
-           /* Don't want format this as PRIpaddr (16 digit hex) */
-           (unsigned long)(kinfo->unassigned_mem >> 20));
-
     mem->nr_banks = 0;
 
     /*
@@ -393,7 +389,7 @@ static void __init allocate_memory_11(struct domain *d,
 
     for( i = 0; i < mem->nr_banks; i++ )
     {
-        printk("%pd BANK[%d] [%"PRIpaddr" - %"PRIpaddr"] (%ldMB)\n",
+        printk("%pd BANK[%d] [%"PRIpaddr" - %"PRIpaddr"] (%5ldMB)\n",
                d,
                i,
                mem->bank[i].start,
@@ -1824,9 +1820,6 @@ void __init evtchn_allocate(struct domain *d)
 
     d->arch.evtchn_irq = res;
 
-    printk("allocating PPI %u for event channel interrupt\n",
-           d->arch.evtchn_irq);
-
     /* Set the value of domain param HVM_PARAM_CALLBACK_IRQ */
     val = MASK_INSR(HVM_PARAM_CALLBACK_TYPE_PPI,
                     HVM_PARAM_CALLBACK_IRQ_TYPE_MASK);
@@ -1860,7 +1853,7 @@ static void __init find_gnttab_region(struct domain *d,
     BUG_ON((kinfo->gnttab_start + kinfo->gnttab_size) > GB(4));
 #endif
 
-    printk("grant table range: [%"PRIpaddr" - %"PRIpaddr"]\n",
+    printk("grant table range:   [%"PRIpaddr" - %"PRIpaddr"]\n",
            kinfo->gnttab_start, kinfo->gnttab_start + kinfo->gnttab_size);
 }
 

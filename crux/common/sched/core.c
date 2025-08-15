@@ -3424,7 +3424,7 @@ void schedule_dump(struct cpupool *c)
     {
         sched = c->sched;
         cpus = c->res_valid;
-        printk("Scheduler: %s (%s)\n", sched->name, sched->opt_name);
+        printk("scheduler: %s (%s)\n", sched->name, sched->opt_name);
         sched_dump_settings(sched);
     }
     else

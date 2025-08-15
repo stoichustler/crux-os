@@ -26,13 +26,13 @@ const char * __init boot_module_kind_as_string(boot_module_kind kind)
     switch ( kind )
     {
     case BOOTMOD_CRUX:       return "crux";
-    case BOOTMOD_FDT:        return "Device Tree";
-    case BOOTMOD_KERNEL:     return "Kernel";
-    case BOOTMOD_RAMDISK:    return "Ramdisk";
-    case BOOTMOD_XSM_POLICY: return "XSM Policy";
+    case BOOTMOD_FDT:        return "device tree";
+    case BOOTMOD_KERNEL:     return "kernel";
+    case BOOTMOD_RAMDISK:    return "ramdisk";
+    case BOOTMOD_XSM_POLICY: return "XSM policy";
     case BOOTMOD_GUEST_DTB:  return "DTB";
-    case BOOTMOD_MICROCODE:  return "Microcode";
-    case BOOTMOD_UNKNOWN:    return "Unknown";
+    case BOOTMOD_MICROCODE:  return "microcode";
+    case BOOTMOD_UNKNOWN:    return "unknown";
     default: BUG();
     }
 }

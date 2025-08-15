@@ -204,10 +204,10 @@ int __init kernel_probe(struct kernel_info *info,
         return -ENOENT;
     }
 
-    printk("loading %pd kernel  from boot module @ %"PRIpaddr"\n",
+    printk("loading %pd kernel  from boot module %"PRIpaddr"\n",
            info->bd.d, info->bd.kernel->start);
     if ( info->bd.initrd )
-        printk("loading %pd ramdisk from boot module @ %"PRIpaddr"\n",
+        printk("loading %pd ramdisk from boot module %"PRIpaddr"\n",
                info->bd.d, info->bd.initrd->start);
 
     /*

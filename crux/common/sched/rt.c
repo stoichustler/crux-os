@@ -384,21 +384,21 @@ rt_dump(const struct scheduler *ops)
     depletedq = rt_depletedq(ops);
     replq = rt_replq(ops);
 
-    printk("Global RunQueue info:\n");
+    printk("global runqueue info:\n");
     list_for_each ( iter, runq )
     {
         svc = q_elem(iter);
         rt_dump_unit(ops, svc);
     }
 
-    printk("Global DepletedQueue info:\n");
+    printk("global depletedqueue info:\n");
     list_for_each ( iter, depletedq )
     {
         svc = q_elem(iter);
         rt_dump_unit(ops, svc);
     }
 
-    printk("Global Replenishment Events info:\n");
+    printk("global replenishment events info:\n");
     list_for_each ( iter, replq )
     {
         svc = replq_elem(iter);
@@ -678,8 +678,6 @@ rt_init(struct scheduler *ops)
     int rc = -ENOMEM;
     struct rt_private *prv = xzalloc(struct rt_private);
 
-    printk("Initializing RTDS scheduler\n");
-
     if ( prv == NULL )
         goto err;
 
@@ -740,7 +738,7 @@ rt_switch_sched(struct scheduler *new_ops, unsigned int cpu,
          prv->repl_timer.status == TIMER_STATUS_killed )
     {
         init_timer(&prv->repl_timer, repl_timer_handler, (void *)new_ops, cpu);
-        printk("RTDS: timer initialized on cpu %u\n", cpu);
+        /* printk("RTDS: timer initialized on cpu %u\n", cpu); */
     }
 
     sched_idle_unit(cpu)->priv = vdata;
@@ -1552,7 +1550,7 @@ static void cf_check repl_timer_handler(void *data)
 }
 
 static const struct scheduler sched_rtds_def = {
-    .name           = "SMP RTDS Scheduler",
+    .name           = "SMP RTDS scheduler",
     .opt_name       = "rtds",
     .sched_id       = CRUX_SCHEDULER_RTDS,
     .sched_data     = NULL,

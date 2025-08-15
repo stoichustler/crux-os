@@ -239,10 +239,6 @@ void __init allocate_memory(struct domain *d, struct kernel_info *kinfo)
     unsigned int i, nr_banks = GUEST_RAM_BANKS;
     struct membanks *hwdom_free_mem = NULL;
 
-    printk(CRUXLOG_INFO "allocating mappings total %ldMB for %pd:\n",
-           /* Don't want format this as PRIpaddr (16 digit hex) */
-           (unsigned long)(kinfo->unassigned_mem >> 20), d);
-
     mem->nr_banks = 0;
     /*
      * Use host memory layout for hwdom. Only case for this is when LLC coloring
@@ -316,7 +312,7 @@ void __init allocate_memory(struct domain *d, struct kernel_info *kinfo)
 
     for( i = 0; i < mem->nr_banks; i++ )
     {
-        printk(CRUXLOG_INFO "%pd BANK[%d] [%"PRIpaddr" - %"PRIpaddr"] (%ldMB)\n",
+        printk(CRUXLOG_INFO "%pd BANK[%d] [%"PRIpaddr" - %"PRIpaddr"] (%5ldMB)\n",
                d,
                i,
                mem->bank[i].start,

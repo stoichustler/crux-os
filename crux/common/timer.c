@@ -562,7 +562,7 @@ static void cf_check dump_timerq(unsigned char key)
     s_time_t       now = NOW();
     unsigned int   i, j;
 
-    printk("Dumping timer queues:\n");
+    printk("dumping timer queues:\n");
 
     for_each_online_cpu( i )
     {

@@ -146,13 +146,13 @@ void cf_check dump_execstate(const struct cpu_user_regs *regs)
 
     if ( !guest_mode(regs) )
     {
-        printk("### Dumping CPU%u host state:\n", cpu);
+        printk("### dumping CPU%u host state:\n", cpu);
         show_execution_state(regs);
     }
 
     if ( !is_idle_vcpu(current) )
     {
-        printk("### Dumping CPU%u guest state (%pv):\n",
+        printk("### dumping CPU%u guest state (%pv):\n",
                smp_processor_id(), current);
         show_execution_state(guest_cpu_user_regs());
         printk("\n");
@@ -274,7 +274,7 @@ static void cf_check dump_domains(unsigned char key)
 
         process_pending_softirqs();
 
-        printk("General information for domain %u:\n", d->domain_id);
+        printk("general information for domain %u:\n", d->domain_id);
         printk("    refcnt=%d dying=%d pause_count=%d\n",
                atomic_read(&d->refcnt), d->is_dying,
                atomic_read(&d->pause_count));
@@ -317,7 +317,7 @@ static void cf_check dump_domains(unsigned char key)
         printk("NODE affinity for domain %d: [%*pbl]\n",
                d->domain_id, NODEMASK_PR(&d->node_affinity));
 
-        printk("VCPU information and callbacks for domain %u:\n",
+        printk("vCPU information and callbacks for domain %u:\n",
                d->domain_id);
 
         for_each_sched_unit ( d, unit )
@@ -331,7 +331,7 @@ static void cf_check dump_domains(unsigned char key)
                 if ( !(v->vcpu_id & 0x3f) )
                     process_pending_softirqs();
 
-                printk("    VCPU%d: CPU%d [has=%c] poll=%d "
+                printk("    vCPU%d: CPU%d [has=%c] poll=%d "
                        "upcall_pend=%02x upcall_mask=%02x ",
                        v->vcpu_id, v->processor,
                        v->is_running ? 'T':'F', v->poll_evtchn,

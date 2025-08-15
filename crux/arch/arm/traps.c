@@ -759,14 +759,14 @@ static void show_registers_32(const struct cpu_user_regs *regs,
 
 #ifdef CONFIG_ARM_64
     BUG_ON( ! (regs->cpsr & PSR_MODE_BIT) );
-    printk("PC:     %08"PRIx32"\n", regs->pc32);
+    printk("PC:      %08"PRIx32"\n", regs->pc32);
 #else
-    printk("PC:     %08"PRIx32, regs->pc);
+    printk("PC:      %08"PRIx32, regs->pc);
     if ( !guest_mode_on )
         printk(" %pS", _p(regs->pc));
     printk("\n");
 #endif
-    printk("CPSR:   %"PRIregister" MODE:%s\n", regs->cpsr,
+    printk("CPSR:    %"PRIregister" MODE:%s\n", regs->cpsr,
            mode_string(regs->cpsr));
     printk("     R0: %08"PRIx32" R1: %08"PRIx32" R2: %08"PRIx32" R3: %08"PRIx32"\n",
            regs->r0, regs->r1, regs->r2, regs->r3);
@@ -836,11 +836,11 @@ static void show_registers_64(const struct cpu_user_regs *regs,
 
     BUG_ON( (regs->cpsr & PSR_MODE_BIT) );
 
-    printk("PC:     %016"PRIx64, regs->pc);
+    printk("PC:      %016"PRIx64, regs->pc);
     if ( !guest_mode_on )
         printk(" %pS", _p(regs->pc));
     printk("\n");
-    printk("LR:     %016"PRIx64"\n", regs->lr);
+    printk("LR:      %016"PRIx64"\n", regs->lr);
     if ( guest_mode_on )
     {
         printk("SP_EL0: %016"PRIx64"\n", regs->sp_el0);
@@ -848,9 +848,9 @@ static void show_registers_64(const struct cpu_user_regs *regs,
     }
     else
     {
-        printk("SP:     %016"PRIx64"\n", regs->sp);
+        printk("SP:      %016"PRIx64"\n", regs->sp);
     }
-    printk("CPSR:   %016"PRIx64" MODE:%s\n", regs->cpsr,
+    printk("CPSR:    %016"PRIx64" MODE:%s\n", regs->cpsr,
            mode_string(regs->cpsr));
     printk("     X0: %016"PRIx64"  X1: %016"PRIx64"  X2: %016"PRIx64"\n",
            regs->x0, regs->x1, regs->x2);
@@ -896,7 +896,7 @@ static void _show_registers(const struct cpu_user_regs *regs,
 {
     print_crux_info();
 
-    printk("CPU:    %d\n", smp_processor_id());
+    printk("CPU:     %d\n", smp_processor_id());
 
     if ( guest_mode_on )
     {
@@ -1052,11 +1052,11 @@ static void show_guest_stack(struct vcpu *v, const struct cpu_user_regs *regs)
         return;
     }
 
-    printk("Guest stack trace from sp=%"PRIvaddr":\n  ", sp);
+    printk("guest stack trace from sp=%"PRIvaddr":\n  ", sp);
 
     if ( sp & ( sizeof(long) - 1 ) )
     {
-        printk("Stack is misaligned\n");
+        printk("stack is misaligned\n");
         return;
     }
 
@@ -1082,7 +1082,7 @@ static void show_guest_stack(struct vcpu *v, const struct cpu_user_regs *regs)
         stack++;
     }
     if ( i == 0 )
-        printk("Stack empty.");
+        printk("stack empty.");
     printk("\n");
     unmap_domain_page(mapped);
     put_page(page);
@@ -1180,7 +1180,7 @@ void show_stack(const struct cpu_user_regs *regs)
         printk(" %p", _p(addr));
     }
     if ( i == 0 )
-        printk("Stack empty.");
+        printk("stack empty.");
     printk("\n");
 
     show_trace(regs);
@@ -1194,7 +1194,7 @@ void show_execution_state(const struct cpu_user_regs *regs)
 
 void vcpu_show_execution_state(struct vcpu *v)
 {
-    printk("### Dumping dom%d vcpu#%d state:\n",
+    printk("### dumping dom%d vcpu#%d state:\n",
            v->domain->domain_id, v->vcpu_id);
 
     if ( v == current )
@@ -1214,9 +1214,9 @@ void vcpu_show_execution_state(struct vcpu *v)
 
 void do_unexpected_trap(const char *msg, const struct cpu_user_regs *regs)
 {
-    printk("CPU%d: Unexpected Trap: %s\n", smp_processor_id(), msg);
+    printk("CPU%d: unexpected trap: %s\n", smp_processor_id(), msg);
     show_execution_state(regs);
-    panic("CPU%d: Unexpected Trap: %s\n", smp_processor_id(), msg);
+    panic("CPU%d: unexpected trap: %s\n", smp_processor_id(), msg);
 }
 
 int do_bug_frame(const struct cpu_user_regs *regs, vaddr_t pc)

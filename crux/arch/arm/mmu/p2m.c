@@ -1784,6 +1784,7 @@ void __init setup_virt_paging(void)
     p2m_ipa_bits = 32 - t0sz_32.val;
 #endif
 
+#if defined(CONFIG_DEBUG_VERBOSE)
     printk("P2M: %d-bit IPA with %d-bit PA and %d-bit VMID\n",
            p2m_ipa_bits,
            pa_range_info[pa_range].pabits,
@@ -1791,6 +1792,7 @@ void __init setup_virt_paging(void)
 
     printk("P2M: %d levels with order-%d root, VTCR 0x%"PRIregister"\n",
            4 - P2M_ROOT_LEVEL, P2M_ROOT_ORDER, val);
+#endif /* CONFIG_DEBUG_VERBOSE */
 
     p2m_vmid_allocator_init();
 

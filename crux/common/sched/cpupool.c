@@ -74,8 +74,10 @@ static const char *sched_gran_get_name(enum sched_gran mode)
 
 static void sched_gran_print(enum sched_gran mode, unsigned int gran)
 {
-    printk("Scheduling granularity: %s, %u CPU%s per sched-resource\n",
+#if defined(CONFIG_DEBUG_VERBOSE)
+    printk("scheduling granularity: %s, %u CPU%s per sched-resource\n",
            sched_gran_get_name(mode), gran, gran == 1 ? "" : "s");
+#endif
 }
 
 #ifdef CONFIG_HAS_SCHED_GRANULARITY

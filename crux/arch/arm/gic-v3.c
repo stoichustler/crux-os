@@ -800,7 +800,7 @@ static int __init gicv3_populate_rdist(void)
                     }
                 }
 
-                printk("GICv3: CPU%d: found redistributor in region %d @ %p\n",
+                printk("GICv3: CPU%d found redistributor in region %d: %p\n",
                         smp_processor_id(), i, ptr);
                 return 0;
             }
