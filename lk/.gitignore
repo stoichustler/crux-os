@@ -1,0 +1,16 @@
+build-*
+*.swp
+*~
+tags
+TAGS
+local.mk
+*.orig
+cscope.*
+doit
+t
+tagit
+blk.bin
+*.dSYM
+scripts/toolpaths.local
+.clangd
+.vscode
