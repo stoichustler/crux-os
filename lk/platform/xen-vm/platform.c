@@ -46,15 +46,6 @@ struct mmu_initial_mapping mmu_initial_mappings[] = {
         .name = "memory"
     },
 
-    /* 1GB of peripherals */
-    {
-        .phys = PERIPHERAL_BASE_PHYS,
-        .virt = PERIPHERAL_BASE_VIRT,
-        .size = PERIPHERAL_BASE_SIZE,
-        .flags = MMU_INITIAL_MAPPING_FLAG_DEVICE,
-        .name = "peripherals"
-    },
-
     /* null entry to terminate the list */
     { 0 }
 };

@@ -83,6 +83,7 @@ extern const console_cmd_block __stop_commands __WEAK;
 static int cmd_help(int argc, const console_cmd_args *argv);
 static int cmd_help_panic(int argc, const console_cmd_args *argv);
 static int cmd_echo(int argc, const console_cmd_args *argv);
+static int cmd_clear(int argc, const console_cmd_args *argv);
 static int cmd_test(int argc, const console_cmd_args *argv);
 #if CONSOLE_ENABLE_HISTORY
 static int cmd_history(int argc, const console_cmd_args *argv);
@@ -95,6 +96,7 @@ STATIC_COMMAND_START
 STATIC_COMMAND("help", "this list", &cmd_help)
 STATIC_COMMAND_MASKED("help", "this list", &cmd_help_panic, CMD_AVAIL_PANIC)
 STATIC_COMMAND("echo", NULL, &cmd_echo)
+STATIC_COMMAND("clear", NULL, &cmd_clear)
 #if LK_DEBUGLEVEL > 1
 STATIC_COMMAND("test", "test the command processor", &cmd_test)
 #if CONSOLE_ENABLE_HISTORY
@@ -289,6 +291,8 @@ static int read_debug_line(const char **outbuffer, void *cookie) {
                         pos--;
                         fputs("\b \b", stdout); // wipe out a character
                     }
+                    break;
+                case 0x9: // do nothing with tab
                     break;
 
                 case 0x1b: // escape
@@ -815,6 +819,11 @@ static int cmd_help_panic(int argc, const console_cmd_args *argv) {
 static int cmd_echo(int argc, const console_cmd_args *argv) {
     if (argc > 1)
         console_get_current()->echo = argv[1].b;
+    return NO_ERROR;
+}
+
+static int cmd_clear(int argc, const console_cmd_args *argv) {
+    printf("\x1b[3J\x1b[2J\x1b[H");
     return NO_ERROR;
 }
 
