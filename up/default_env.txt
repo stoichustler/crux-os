@@ -1,0 +1,7 @@
+bootcmd= virtio scan && dm drivers && if part number virtio 1 uboot_env uboot_env_part; then if env verified_import virtio 1#uboot_env; then echo "Imported supplementary environment"; else reset; fi; else echo "No supplementary environment"; fi && if mtrr; then mtrr set 1 Combine 0000000000000000 0000001000000000 && mtrr enable 1; else true; fi && run uenvcmd || reset
+bootcmd_android=verified_boot_android virtio 0#misc
+bootmenu_delay=0
+uenvcmd=bootmenu && run bootcmd_android
+fastbootcmd=fastboot tcp -ipv6 && boot
+netretry=yes
+android_keymint_needed=N

@@ -1,0 +1,3 @@
+bootcmd=virtio scan && setenv bootargs "$cbootargs $bootargs" && verified_boot_android virtio 0 _a
+
+bootdelay=0

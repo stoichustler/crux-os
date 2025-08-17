@@ -1,0 +1,7 @@
+# crosvm's PCI implementation does not support updating config space in
+# various ways. This tells U-Boot to inherit -- but not touch -- the existing
+# PCI config space.
+CONFIG_PCI_ENUM_ONLY=y
+CONFIG_PCI_REGION_MULTI_ENTRY=y
+CONFIG_PCI_PNP=n
+CONFIG_PCI_ENHANCED_ALLOCATION=n

@@ -1,0 +1,325 @@
+load("@kernel_toolchain_info//:dict.bzl", "CLANG_VERSION")
+load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
+load("//build/bazel_common_rules/dist:dist.bzl", "copy_to_dist_dir")
+load("//build/kernel/kleaf:kernel.bzl", "kernel_build", "kernel_compile_commands")
+
+kernel_build(
+    name = "beagle_x15",
+    outs = [
+        "MLO",
+        "u-boot.img",
+    ],
+    build_config = "build.config.beagle_x15",
+    deps = [
+        "//prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9:binaries",
+    ],
+)
+
+copy_to_dist_dir(
+    name = "beagle_x15_dist",
+    data = [":beagle_x15"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "crosvm_aarch64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.bin",
+    ],
+    build_config = "build.config.crosvm.aarch64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "crosvm_aarch64_compile_commands",
+    kernel_build = ":crosvm_aarch64",
+)
+
+copy_to_dist_dir(
+    name = "crosvm_aarch64_dist",
+    data = [":crosvm_aarch64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "kiwi",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.rom",
+    ],
+    arch = "x86_64",
+    build_config = "build.config.kiwi",
+    deps = [
+        "//prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "kiwi_compile_commands",
+    kernel_build = ":kiwi",
+)
+
+copy_to_dist_dir(
+    name = "kiwi_dist",
+    data = [":kiwi"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "kiwi_p",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.rom",
+    ],
+    arch = "x86_64",
+    build_config = "build.config.kiwi_p",
+    deps = [
+        "//prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "kiwi_p_compile_commands",
+    kernel_build = ":kiwi_p",
+)
+
+copy_to_dist_dir(
+    name = "kiwi_p_dist",
+    data = [":kiwi_p"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "qemu_x86_64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.rom",
+    ],
+    arch = "x86_64",
+    build_config = "build.config.qemu.x86_64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "qemu_x86_64_compile_commands",
+    kernel_build = ":qemu_x86_64",
+)
+
+copy_to_dist_dir(
+    name = "qemu_x86_64_dist",
+    data = [":qemu_x86_64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "crosvm_x86",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.rom",
+    ],
+    arch = "x86_64",
+    build_config = "build.config.crosvm.x86",
+    deps = [
+        "//prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "crosvm_x86_compile_commands",
+    kernel_build = ":crosvm_x86",
+)
+
+copy_to_dist_dir(
+    name = "crosvm_x86_dist",
+    data = [":crosvm_x86"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "crosvm_x86_64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.rom",
+    ],
+    arch = "x86_64",
+    build_config = "build.config.crosvm.x86_64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "crosvm_x86_64_compile_commands",
+    kernel_build = ":crosvm_x86_64",
+)
+
+copy_to_dist_dir(
+    name = "crosvm_x86_64_dist",
+    data = [":crosvm_x86_64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "gem5_aarch64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.elf",
+    ],
+    build_config = "build.config.gem5.aarch64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "gem5_aarch64_compile_commands",
+    kernel_build = ":gem5_aarch64",
+)
+
+copy_to_dist_dir(
+    name = "gem5_aarch64_dist",
+    data = [":gem5_aarch64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "qemu_aarch64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.bin",
+    ],
+    build_config = "build.config.qemu.aarch64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "qemu_aarch64_compile_commands",
+    kernel_build = ":qemu_aarch64",
+)
+
+copy_to_dist_dir(
+    name = "qemu_aarch64_dist",
+    data = [":qemu_aarch64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "qemu_arm",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.bin",
+    ],
+    arch = "arm",
+    build_config = "build.config.qemu.arm",
+    deps = [
+        "//prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9:binaries",
+    ],
+)
+
+kernel_compile_commands(
+    name = "qemu_arm_compile_commands",
+    kernel_build = ":qemu_arm",
+)
+
+copy_to_dist_dir(
+    name = "qemu_arm_dist",
+    data = [":qemu_arm"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "qemu_riscv64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.bin",
+    ],
+    arch = "riscv64",
+    build_config = "build.config.qemu.riscv64",
+)
+
+copy_to_dist_dir(
+    name = "qemu_riscv64_dist",
+    data = [":qemu_riscv64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "rockpi4",
+    outs = [
+        "idbloader.img",
+        "u-boot.itb",
+    ],
+    build_config = "build.config.rockpi4",
+    deps = [
+        "//prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9:binaries",
+    ],
+)
+
+copy_to_dist_dir(
+    name = "rockpi4_dist",
+    data = [":rockpi4"],
+    dist_dir = "out/u-boot-mainline/dist",
+    flat = True,
+)
+
+kernel_build(
+    name = "xen_aarch64",
+    outs = [
+        "System.map",
+        "u-boot",
+        "u-boot.bin",
+    ],
+    build_config = "build.config.xen.aarch64",
+    deps = [
+        "//prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9:binaries",
+    ],
+)
+
+copy_to_dist_dir(
+    name = "xen_aarch64_dist",
+    data = [":xen_aarch64"],
+    dist_dir = "out/u-boot/dist",
+    flat = True,
+)
+
+# Use SWIG enabled Python
+py_runtime_pair(
+    name = "py_runtime_pair",
+    py3_runtime = "//prebuilts/clang/host/linux-x86/clang-{}:python3".format(
+        CLANG_VERSION,
+    ),
+)
+
+toolchain(
+    name = "py_toolchain",
+    toolchain = ":py_runtime_pair",
+    toolchain_type = "@bazel_tools//tools/python:toolchain_type",
+)

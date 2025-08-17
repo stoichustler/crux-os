@@ -1,0 +1,60 @@
+if ARCH_QEMU
+
+config SYS_VENDOR
+	default "emulation"
+
+config SYS_BOARD
+	default "qemu-arm"
+
+config SYS_CONFIG_NAME
+	default "qemu-arm"
+
+config SYS_SDRAM_BASE
+	hex "SDRAM base address"
+	default 0x40000000
+	help
+	  The address that is start of SDRAM.
+
+config SYS_FDT_ADDR
+	hex "FDT load address"
+	default 0x40000000
+	help
+	  The default FDT load address.
+
+config SYS_RAMDISK_ADDR_R
+	hex "Ramdisk load address"
+	default 0x44200000
+	help
+	  The default initramfs load address.
+
+config SYS_SCRIPT_ADDR
+	hex "Script load address"
+	default 0x44300000
+	help
+	  The default script load address.
+
+config SYS_PXEFILE_ADDR_R
+	hex "PXEfile load address"
+	default 0x44400000
+	help
+	  The default PXEfile load address.
+
+choice
+	prompt "QEMU ARM architecture"
+	default TARGET_QEMU_ARM_64BIT
+
+config TARGET_QEMU_ARM_32BIT
+	bool "ARMv7-A, 32bit"
+	select ARCH_SUPPORT_PSCI
+	select BOARD_LATE_INIT
+	select CPU_V7A
+	select SYS_ARCH_TIMER
+
+config TARGET_QEMU_ARM_64BIT
+	bool "ARMv8, 64bit"
+	select ARM64
+	select BOARD_LATE_INIT
+
+endchoice
+
+endif

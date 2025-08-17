@@ -1,0 +1,15 @@
+# crosvm does not support qemu-fw, therefore it cannot determine the number
+# of onlined CPUs, generate an MPTABLE, or use table-loader to generate the
+# PIEQ/ACPI tables. Disable these features to boot Linux with SMP.
+CONFIG_ACPI=n
+CONFIG_GENERATE_MP_TABLE=n
+CONFIG_GENERATE_PIRQ_TABLE=n
+CONFIG_MAX_CPUS=n
+CONFIG_SMP=n
+
+# crosvm does not implement the i440fx pch, which is defined in the qemu DT.
+# Disable the drivers to avoid failing probes.
+CONFIG_X86_PCH7=n
+CONFIG_X86_PCH9=n
+
+CONFIG_DEFAULT_FDT_FILE="qemu-x86_i440fx.dtb"
