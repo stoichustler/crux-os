@@ -6,14 +6,19 @@
  * https://opensource.org/licenses/MIT
  */
 #include <lk/reg.h>
-#include <stdio.h>
 #include <lk/trace.h>
+#include <stdio.h>
+
 #include <lib/cbuf.h>
+
 #include <dev/uart.h>
+
 #include <kernel/thread.h>
-#include <platform/interrupts.h>
+
 #include <platform/debug.h>
 #include <platform/xen-vm.h>
+#include <platform/interrupts.h>
+
 #include <target/debugconfig.h>
 
 /* PL011 implementation */
@@ -32,7 +37,7 @@
 #define UART_ICR   (0x44)
 #define UART_DMACR (0x48)
 
-#define UARTREG(base, reg)  (*REG32((base)  + (reg)))
+#define UARTREG(base, reg) (*REG32((base) + (reg)))
 
 #define RXBUF_SIZE 16
 #define NUM_UART 1
@@ -41,9 +46,9 @@ static cbuf_t uart_rx_buf[NUM_UART];
 
 static inline uintptr_t uart_to_ptr(unsigned int n) {
     switch (n) {
-        default:
-        case 0:
-            return UART_BASE;
+    case 0:
+    default:
+        return UART_BASE;
     }
 }
 
@@ -55,11 +60,11 @@ static enum handler_return uart_irq(void *arg) {
     /* read interrupt status and mask */
     uint32_t isr = UARTREG(base, UART_TMIS);
 
-    if (isr & (1<<4)) { // rxmis
+    if (isr & (1 << 4)) { // rxmis
         cbuf_t *rxbuf = &uart_rx_buf[port];
 
         /* while fifo is not empty, read chars out of it */
-        while ((UARTREG(base, UART_TFR) & (1<<4)) == 0) {
+        while ((UARTREG(base, UART_TFR) & (1 << 4)) == 0) {
 #if CONSOLE_HAS_INPUT_BUFFER
             if (port == DEBUG_UART) {
                 char c = UARTREG(base, UART_DR);
@@ -67,10 +72,10 @@ static enum handler_return uart_irq(void *arg) {
             } else
 #endif
             {
-                /* if we're out of rx buffer, mask the irq instead of handling it */
+            /* if we're out of rx buffer, mask the irq instead of handling it */
                 if (cbuf_space_avail(rxbuf) == 0) {
-                    UARTREG(base, UART_IMSC) &= ~(1<<4); // !rxim
-                    break;
+                      UARTREG(base, UART_IMSC) &= ~(1 << 4); // !rxim
+                      break;
                 }
 
                 char c = UARTREG(base, UART_DR);
@@ -101,10 +106,10 @@ void uart_init(void) {
         UARTREG(base, UART_IFLS) = 0; // 1/8 rxfifo, 1/8 txfifo
 
         // enable rx interrupt
-        UARTREG(base, UART_IMSC) = (1<<4); // rxim
+        UARTREG(base, UART_IMSC) = (1 << 4); // rxim
 
         // enable receive
-        UARTREG(base, UART_CR) |= (1<<9); // rxen
+        UARTREG(base, UART_CR) |= (1 << 9); // rxen
 
         // enable interrupt
         unmask_interrupt(UART0_INT + i);
@@ -113,7 +118,7 @@ void uart_init(void) {
 
 void uart_init_early(void) {
     for (size_t i = 0; i < NUM_UART; i++) {
-        UARTREG(uart_to_ptr(i), UART_CR) = (1<<8)|(1<<0); // tx_enable, uarten
+        UARTREG(uart_to_ptr(i), UART_CR) = (1 << 8) | (1 << 0); // tx_enable, uarten
     }
 }
 
@@ -121,7 +126,7 @@ int uart_putc(int port, char c) {
     uintptr_t base = uart_to_ptr(port);
 
     /* spin while fifo is full */
-    while (UARTREG(base, UART_TFR) & (1<<5))
+    while (UARTREG(base, UART_TFR) & (1 << 5))
         ;
     UARTREG(base, UART_DR) = c;
 
@@ -130,10 +135,10 @@ int uart_putc(int port, char c) {
 
 int uart_getc(int port, bool wait) {
     cbuf_t *rxbuf = &uart_rx_buf[port];
-
     char c;
+
     if (cbuf_read_char(rxbuf, &c, wait) == 1) {
-        UARTREG(uart_to_ptr(port), UART_IMSC) = (1<<4); // rxim
+        UARTREG(uart_to_ptr(port), UART_IMSC) = (1 << 4); // rxim
         return c;
     }
 
@@ -145,7 +150,7 @@ int uart_pputc(int port, char c) {
     uintptr_t base = uart_to_ptr(port);
 
     /* spin while fifo is full */
-    while (UARTREG(base, UART_TFR) & (1<<5))
+    while (UARTREG(base, UART_TFR) & (1 << 5))
         ;
     UARTREG(base, UART_DR) = c;
 
@@ -155,20 +160,15 @@ int uart_pputc(int port, char c) {
 int uart_pgetc(int port) {
     uintptr_t base = uart_to_ptr(port);
 
-    if ((UARTREG(base, UART_TFR) & (1<<4)) == 0) {
+    if ((UARTREG(base, UART_TFR) & (1 << 4)) == 0) {
         return UARTREG(base, UART_DR);
     } else {
         return -1;
     }
 }
 
+void uart_flush_tx(int port) {}
 
-void uart_flush_tx(int port) {
-}
+void uart_flush_rx(int port) {}
 
-void uart_flush_rx(int port) {
-}
-
-void uart_init_port(int port, uint baud) {
-}
-
+void uart_init_port(int port, uint baud) {}
