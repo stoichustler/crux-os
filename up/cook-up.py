@@ -7,6 +7,15 @@ SUPPORTED_CC_PREFIX = (
     "aarch64-linux-gnu-",
 )
 
+# QEMU
+def qemu() -> None:
+    ret = system(
+            """
+            qemu-system-aarch64 -machine virt,gic-version=3,virtualization=true \
+            -cpu cortex-a57 -nographic -smp 8 -m 512M -bios u-boot.bin
+            """)
+    assert ret == 0
+
 def clean() -> None:
     ret = system(f'make clean')
     assert ret == 0
@@ -39,6 +48,7 @@ def main() -> None:
     parser.add_argument("-b", "--build", action="store_true", help="build u-boot")
     parser.add_argument("-c", "--clean", action="store_true", help="clean u-boot")
     parser.add_argument("-r", "--distclean", action="store_true", help="distclean u-boot")
+    parser.add_argument("-q", "--qemu", action="store_true", help="run u-boot on qemu aarch64")
     parser.add_argument("-t", "--toolchain", metavar="TOOLCHAIN PATH", help="cross-compile toolchain path.")
     parser.add_argument("-f", "--config", metavar="CONFIG FILE", help="config file under configs/")
 
@@ -49,6 +59,9 @@ def main() -> None:
 
     if config is not None:
         kconfig(config)
+
+    if args.qemu:
+        qemu()
 
     if args.build:
         build(toolchain)

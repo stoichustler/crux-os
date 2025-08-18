@@ -48,11 +48,21 @@ static int do_coninfo(struct cmd_tbl *cmd, int flag, int argc,
 	return 0;
 }
 
-
+static int do_clear(struct cmd_tbl *cmd, int flag, int argc,
+		      char *const argv[])
+{
+	printf("\x1b[3J\x1b[2J\x1b[H");
+}
 /***************************************************/
 
 U_BOOT_CMD(
 	coninfo,	3,	1,	do_coninfo,
 	"print console devices and information",
+	""
+);
+
+U_BOOT_CMD(
+	clear,	    3,	1,	do_clear,
+	"clear the terminal",
 	""
 );

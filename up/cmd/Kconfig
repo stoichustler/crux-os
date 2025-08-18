@@ -78,7 +78,7 @@ config SYS_PROMPT
 	string "Shell prompt"
 	default "Zynq> " if ARCH_ZYNQ
 	default "ZynqMP> " if ARCH_ZYNQMP
-	default "=> "
+	default "up # "
 	help
 	  This string is displayed in the command line to the left of the
 	  cursor.
@@ -86,7 +86,7 @@ config SYS_PROMPT
 config SYS_PROMPT_HUSH_PS2
 	string "Hush shell secondary prompt"
 	depends on HUSH_PARSER
-	default "> "
+	default "up $ "
 	help
 	  This defines the secondary prompt string, which is
 	  printed when the command interpreter needs more input
