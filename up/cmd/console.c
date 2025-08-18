@@ -52,6 +52,8 @@ static int do_clear(struct cmd_tbl *cmd, int flag, int argc,
 		      char *const argv[])
 {
 	printf("\x1b[3J\x1b[2J\x1b[H");
+
+	return 0;
 }
 /***************************************************/
 

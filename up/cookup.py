@@ -1,3 +1,12 @@
+#######################################################
+#                      _____     __  __
+#             /\/\/\/\/ __  \/\ / _\/__\
+#             \ - \ \ \ \/ // // _\/  \
+#              \/\/\_/\_/\/ \__\__\\/\/ @2025
+#
+#                  - Hustle Embedded -
+#######################################################
+
 from argparse import ArgumentParser
 from os import system, environ
 from pathlib import Path
@@ -11,8 +20,8 @@ SUPPORTED_CC_PREFIX = (
 def qemu() -> None:
     ret = system(
             """
-            qemu-system-aarch64 -machine virt,gic-version=3,virtualization=true \
-            -cpu cortex-a57 -nographic -smp 8 -m 512M -bios u-boot.bin
+    qemu-system-aarch64 -machine virt,gic-version=3,virtualization=true \
+        -cpu cortex-a57 -nographic -smp 8 -m 512M -bios u-boot.bin
             """)
     assert ret == 0
 
@@ -26,6 +35,10 @@ def distclean() -> None:
 
 def kconfig(config: str) -> None:
     ret = system(f'make {config}')
+    assert ret == 0
+
+def list_config_files() -> None:
+    ret = system("find configs/ -name *defconfig")
     assert ret == 0
 
 def build(toolchain: str) -> None:
@@ -47,6 +60,7 @@ def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("-b", "--build", action="store_true", help="build u-boot")
     parser.add_argument("-c", "--clean", action="store_true", help="clean u-boot")
+    parser.add_argument("-l", "--list", action="store_true", help="list config files")
     parser.add_argument("-r", "--distclean", action="store_true", help="distclean u-boot")
     parser.add_argument("-q", "--qemu", action="store_true", help="run u-boot on qemu aarch64")
     parser.add_argument("-t", "--toolchain", metavar="TOOLCHAIN PATH", help="cross-compile toolchain path.")
@@ -59,6 +73,9 @@ def main() -> None:
 
     if config is not None:
         kconfig(config)
+
+    if args.list:
+        list_config_files()
 
     if args.qemu:
         qemu()
