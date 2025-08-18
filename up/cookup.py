@@ -56,6 +56,9 @@ def build(toolchain: str) -> None:
     ret = system(f'make ARCH=arm CROSS_COMPILE={toolchain_prefix} -j32')
     assert ret == 0
 
+    ret = system(f'make ARCH=arm CROSS_COMPILE={toolchain_prefix} u-boot.dis')
+    assert ret == 0
+
 def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("-b", "--build", action="store_true", help="build u-boot")

@@ -2108,6 +2108,13 @@ config TARGET_XENGUEST_ARM64
 	select XEN_SERIAL
 	imply OF_HAS_PRIOR_STAGE
 
+config TARGET_XENGUEST_ARM64_DOM0LESS
+	bool "Xen guest dom0less ARM64"
+	select ARM64
+	select OF_CONTROL
+	select LINUX_KERNEL_IMAGE_HEADER
+	imply OF_HAS_PRIOR_STAGE
+
 config ARCH_GXP
 	bool "Support HPE GXP SoCs"
 	select DM
