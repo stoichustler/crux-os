@@ -2,8 +2,8 @@
  *
  * (C) Copyright 2020 EPAM Systemc Inc.
  */
-#ifndef __XENGUEST_ARM64_H
-#define __XENGUEST_ARM64_H
+#ifndef __XENGUEST_ARM64_DOM0LESS_H
+#define __XENGUEST_ARM64_DOM0LESS_H
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
@@ -30,4 +30,4 @@
 /*below might needs to be removed*/
 #define CFG_PL01x_PORTS		{(void *)CFG_SYS_SERIAL0}
 
-#endif /* __XENGUEST_ARM64_H */
+#endif /* __XENGUEST_ARM64_DOM0LESS_H */

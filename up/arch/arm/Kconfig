@@ -2109,7 +2109,7 @@ config TARGET_XENGUEST_ARM64
 	imply OF_HAS_PRIOR_STAGE
 
 config TARGET_XENGUEST_ARM64_DOM0LESS
-	bool "Xen guest dom0less ARM64"
+	bool "Xen guest ARM64 dom0less"
 	select ARM64
 	select OF_CONTROL
 	select LINUX_KERNEL_IMAGE_HEADER
@@ -2379,6 +2379,7 @@ source "board/phytium/durian/Kconfig"
 source "board/phytium/pomelo/Kconfig"
 source "board/phytium/pe2201/Kconfig"
 source "board/xen/xenguest_arm64/Kconfig"
+source "board/xen/xenguest_arm64_dom0less/Kconfig"
 
 source "arch/arm/Kconfig.debug"
 

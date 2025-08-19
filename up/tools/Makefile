@@ -318,14 +318,14 @@ HOST_EXTRACFLAGS += -include $(srctree)/include/compiler.h \
 __build:	$(LOGO-y)
 
 $(LOGO_H):	$(obj)/bmp_logo $(LOGO_BMP)
-	$(obj)/bmp_logo --gen-info $(LOGO_BMP) > $@
+	@$(obj)/bmp_logo --gen-info $(LOGO_BMP) > $@
 
 ifeq ($(CONFIG_VIDEO),y)
 $(LOGO_DATA_H):	$(obj)/bmp_logo $(LOGO_BMP)
-	$(obj)/bmp_logo --gen-bmp $(LOGO_BMP) > $@
+	@$(obj)/bmp_logo --gen-bmp $(LOGO_BMP) > $@
 else
 $(LOGO_DATA_H):	$(obj)/bmp_logo $(LOGO_BMP)
-	$(obj)/bmp_logo --gen-data $(LOGO_BMP) > $@
+	@$(obj)/bmp_logo --gen-data $(LOGO_BMP) > $@
 #endif
 endif
 

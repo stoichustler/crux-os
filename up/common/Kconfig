@@ -348,7 +348,7 @@ if LOG
 
 config LOG_MAX_LEVEL
 	int "Maximum log level to record"
-	default 6
+	default 9
 	range 0 9
 	help
 	  This selects the maximum log level that will be recorded. Any value

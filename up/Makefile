@@ -963,7 +963,7 @@ endif
 # the raw binary, but certain simulators only accept an ELF file (but don't
 # do the relocation).
 ifneq ($(CONFIG_STATIC_RELA),)
-# $(2) is u-boot ELF, $(3) is u-boot bin, $(4) is text base
+# $(2) is u-boot ELF, $(3) is up.bin, $(4) is text base
 quiet_cmd_static_rela = RELOC   $@
 cmd_static_rela = \
 	tools/relocate-rela $(3) $(2)
@@ -973,7 +973,7 @@ cmd_static_rela =
 endif
 
 # Always append INPUTS so that arch config.mk's can add custom ones
-INPUTS-y += u-boot.bin u-boot.sym System.map binary_size_check
+INPUTS-y += up.bin u-boot.sym System.map binary_size_check
 # llvm-objcopy doesn't support srec as an output format
 ifeq ($(findstring llvm-,$(OBJCOPY)),)
 INPUTS-y += u-boot.srec
@@ -995,7 +995,7 @@ else
 ifeq ($(CONFIG_MX7)$(CONFIG_IMX_HAB), yy)
 INPUTS-$(CONFIG_SPL_FRAMEWORK) += u-boot-ivt.img
 else
-INPUTS-$(CONFIG_SPL_FRAMEWORK) += u-boot.img
+INPUTS-$(CONFIG_SPL_FRAMEWORK) += up.img
 endif
 endif
 INPUTS-$(CONFIG_TPL) += tpl/u-boot-tpl.bin
@@ -1033,7 +1033,7 @@ ifeq ($(CONFIG_ARCH_ROCKCHIP)$(CONFIG_SPL),yy)
 ifeq ($(CONFIG_ARM64),y)
 INPUTS-y += u-boot.itb
 else
-INPUTS-y += u-boot.img
+INPUTS-y += up.img
 endif
 endif
 
@@ -1141,7 +1141,7 @@ ifeq ($(CONFIG_BINMAN),y)
 endif
 	@touch $@
 
-all: .binman_stamp
+all: .binman_stamp u-boot.dis
 
 ifeq ($(CONFIG_DEPRECATED),y)
 	$(warning "You have deprecated configuration options enabled in your .config! Please check your configuration.")
@@ -1219,7 +1219,7 @@ u-boot-fit-dtb.bin: u-boot-nodtb.bin $(FINAL_DTB_CONTAINER)
 	$(call if_changed,cat)
 endif
 
-u-boot.bin: u-boot-fit-dtb.bin FORCE
+up.bin: u-boot-fit-dtb.bin FORCE
 	$(call if_changed,copy)
 
 ifneq ($(CONFIG_MPC85XX_HAVE_RESET_VECTOR)$(CONFIG_OF_SEPARATE),yy)
@@ -1234,11 +1234,11 @@ u-boot-dtb.bin: u-boot-nodtb.bin dts/dt.dtb FORCE
 	$(call if_changed,cat)
 endif
 
-u-boot.bin: u-boot-dtb.bin FORCE
+up.bin: u-boot-dtb.bin FORCE
 	$(call if_changed,copy)
 
 else
-u-boot.bin: u-boot-nodtb.bin FORCE
+up.bin: u-boot-nodtb.bin FORCE
 	$(call if_changed,copy)
 endif
 
@@ -1404,7 +1404,7 @@ endif
 endif
 
 ifdef CONFIG_SPL_LOAD_FIT
-MKIMAGEFLAGS_u-boot.img = -f auto -A $(ARCH) -T firmware -C none -O u-boot \
+MKIMAGEFLAGS_up.img = -f auto -A $(ARCH) -T firmware -C none -O u-boot \
 	-a $(CONFIG_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
 	-p $(CONFIG_FIT_EXTERNAL_OFFSET) \
 	-n "U-Boot $(UBOOTRELEASE) for $(BOARD) board" -E \
@@ -1412,7 +1412,7 @@ MKIMAGEFLAGS_u-boot.img = -f auto -A $(ARCH) -T firmware -C none -O u-boot \
 	$(patsubst %,-b arch/$(ARCH)/dts/%.dtb,$(subst ",,$(CONFIG_OF_LIST))) \
 	$(patsubst %,-b arch/$(ARCH)/dts/%.dtbo,$(subst ",,$(CONFIG_OF_OVERLAY_LIST)))
 else
-MKIMAGEFLAGS_u-boot.img = -A $(ARCH) -T firmware -C none -O u-boot \
+MKIMAGEFLAGS_up.img = -A $(ARCH) -T firmware -C none -O u-boot \
 	-a $(CONFIG_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
 	-n "U-Boot $(UBOOTRELEASE) for $(BOARD) board"
 MKIMAGEFLAGS_u-boot-ivt.img = -A $(ARCH) -T firmware_ivt -C none -O u-boot \
@@ -1421,7 +1421,7 @@ MKIMAGEFLAGS_u-boot-ivt.img = -A $(ARCH) -T firmware_ivt -C none -O u-boot \
 u-boot-ivt.img: MKIMAGEOUTPUT = u-boot-ivt.img.log
 endif
 
-MKIMAGEFLAGS_u-boot-dtb.img = $(MKIMAGEFLAGS_u-boot.img)
+MKIMAGEFLAGS_u-boot-dtb.img = $(MKIMAGEFLAGS_up.img)
 
 # Some boards have the kwbimage.cfg file written in advance, while some
 # other boards generate it on the fly during the build in the build tree.
@@ -1444,19 +1444,19 @@ MKIMAGEFLAGS_u-boot-with-spl.kwb = -n $(KWD_CONFIG_FILE) \
 MKIMAGEFLAGS_u-boot.pbl = -n $(srctree)/$(CONFIG_SYS_FSL_PBL_RCW:"%"=%) \
 		-R $(srctree)/$(CONFIG_SYS_FSL_PBL_PBI:"%"=%) -A $(ARCH) -T pblimage
 
-UBOOT_BIN := u-boot.bin
+UBOOT_BIN := up.bin
 
 MKIMAGEFLAGS_u-boot-lzma.img = -A $(ARCH) -T standalone -C lzma -O u-boot \
 	-a $(CONFIG_TEXT_BASE) -e $(CONFIG_SYS_UBOOT_START) \
 	-n "U-Boot $(UBOOTRELEASE) for $(BOARD) board"
 
-u-boot.bin.lzma: u-boot.bin FORCE
+up.bin.lzma: up.bin FORCE
 	$(call if_changed,lzma)
 
-u-boot-lzma.img: u-boot.bin.lzma FORCE
+u-boot-lzma.img: up.bin.lzma FORCE
 	$(call if_changed,mkimage)
 
-u-boot-dtb.img u-boot.img u-boot.kwb u-boot.pbl u-boot-ivt.img: \
+u-boot-dtb.img up.img u-boot.kwb u-boot.pbl u-boot-ivt.img: \
 		$(if $(CONFIG_SPL_LOAD_FIT),u-boot-nodtb.bin \
 			$(if $(CONFIG_OF_SEPARATE)$(CONFIG_OF_EMBED)$(CONFIG_SANDBOX),dts/dt.dtb) \
 		,$(UBOOT_BIN)) FORCE
@@ -1479,7 +1479,7 @@ u-boot.itb: u-boot-nodtb.bin \
 	$(BOARD_SIZE_CHECK)
 endif
 
-u-boot-with-spl.kwb: u-boot.bin spl/u-boot-spl.bin FORCE
+u-boot-with-spl.kwb: up.bin spl/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
 	$(BOARD_SIZE_CHECK)
 
@@ -1489,7 +1489,7 @@ u-boot.dis:	u-boot
 ifneq ($(CONFIG_SPL_PAYLOAD),)
 SPL_PAYLOAD := $(CONFIG_SPL_PAYLOAD:"%"=%)
 else
-SPL_PAYLOAD := u-boot.bin
+SPL_PAYLOAD := up.bin
 endif
 
 SPL_IMAGE := $(CONFIG_SPL_IMAGE:"%"=%)
@@ -1515,14 +1515,14 @@ OBJCOPYFLAGS_lpc32xx-boot-1.bin = -I binary -O binary --pad-to=$(CONFIG_SPL_PAD_
 lpc32xx-boot-1.bin: lpc32xx-spl.img FORCE
 	$(call if_changed,objcopy)
 
-lpc32xx-full.bin: lpc32xx-boot-0.bin lpc32xx-boot-1.bin u-boot.img FORCE
+lpc32xx-full.bin: lpc32xx-boot-0.bin lpc32xx-boot-1.bin up.img FORCE
 	$(call if_changed,cat)
 
 endif
 
 OBJCOPYFLAGS_u-boot-with-tpl.bin = -I binary -O binary \
 				   --pad-to=$(CONFIG_TPL_PAD_TO)
-tpl/u-boot-with-tpl.bin: tpl/u-boot-tpl.bin u-boot.bin FORCE
+tpl/u-boot-with-tpl.bin: tpl/u-boot-tpl.bin up.bin FORCE
 	$(call if_changed,pad_cat)
 
 SPL: spl/u-boot-spl.bin FORCE
@@ -1530,7 +1530,7 @@ SPL: spl/u-boot-spl.bin FORCE
 
 #ifeq ($(CONFIG_ARCH_IMX8M)$(CONFIG_ARCH_IMX8), y)
 ifeq ($(CONFIG_SPL_LOAD_IMX_CONTAINER), y)
-u-boot.cnt: u-boot.bin FORCE
+u-boot.cnt: up.bin FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 
 flash.bin: spl/u-boot-spl.bin u-boot.cnt FORCE
@@ -1546,13 +1546,13 @@ endif
 endif
 #endif
 
-u-boot.uim: u-boot.bin FORCE
+u-boot.uim: up.bin FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 
 u-boot-nand.imx: u-boot.imx FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 
-u-boot-with-spl.imx u-boot-with-nand-spl.imx: SPL $(if $(CONFIG_OF_SEPARATE),u-boot.img,u-boot.uim) FORCE
+u-boot-with-spl.imx u-boot-with-nand-spl.imx: SPL $(if $(CONFIG_OF_SEPARATE),up.img,u-boot.uim) FORCE
 	$(Q)$(MAKE) $(build)=arch/arm/mach-imx $@
 
 MKIMAGEFLAGS_u-boot.ubl = -n $(UBL_CONFIG) -T ublimage -e $(CONFIG_TEXT_BASE)
@@ -1566,12 +1566,12 @@ spl/u-boot-spl.ais: spl/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
 
 OBJCOPYFLAGS_u-boot.ais = -I binary -O binary --pad-to=$(CONFIG_SPL_PAD_TO)
-u-boot.ais: spl/u-boot-spl.ais u-boot.img FORCE
+u-boot.ais: spl/u-boot-spl.ais up.img FORCE
 	$(call if_changed,pad_cat)
 
-u-boot-signed.sb: u-boot.bin spl/u-boot-spl.bin
+u-boot-signed.sb: up.bin spl/u-boot-spl.bin
 	$(Q)$(MAKE) $(build)=arch/arm/cpu/arm926ejs/mxs u-boot-signed.sb
-u-boot.sb: u-boot.bin spl/u-boot-spl.bin
+u-boot.sb: up.bin spl/u-boot-spl.bin
 	$(Q)$(MAKE) $(build)=arch/arm/cpu/arm926ejs/mxs u-boot.sb
 
 MKIMAGEFLAGS_u-boot-spl.img = -A $(ARCH) -T firmware -C none \
@@ -1590,8 +1590,8 @@ spl/u-boot-splx4.sfp: spl/u-boot-spl.sfp FORCE
 	$(call if_changed,gensplx4)
 
 quiet_cmd_socboot = SOCBOOT $@
-cmd_socboot = cat	spl/u-boot-splx4.sfp u-boot.img > $@ || { rm -f $@; false; }
-u-boot-with-spl.sfp: spl/u-boot-splx4.sfp u-boot.img FORCE
+cmd_socboot = cat	spl/u-boot-splx4.sfp up.img > $@ || { rm -f $@; false; }
+u-boot-with-spl.sfp: spl/u-boot-splx4.sfp up.img FORCE
 	$(call if_changed,socboot)
 
 quiet_cmd_gensplpadx4 = GENSPLPADX4 $@
@@ -1605,8 +1605,8 @@ u-boot-spl-padx4.sfp: spl/u-boot-spl.sfp FORCE
 	$(call if_changed,gensplpadx4)
 
 quiet_cmd_socnandboot = SOCNANDBOOT $@
-cmd_socnandboot = cat	u-boot-spl-padx4.sfp u-boot.img > $@ || { rm -f $@; false; }
-u-boot-with-nand-spl.sfp: u-boot-spl-padx4.sfp u-boot.img FORCE
+cmd_socnandboot = cat	u-boot-spl-padx4.sfp up.img > $@ || { rm -f $@; false; }
+u-boot-with-nand-spl.sfp: u-boot-spl-padx4.sfp up.img FORCE
 	$(call if_changed,socnandboot)
 
 endif
@@ -1639,7 +1639,7 @@ OBJCOPYFLAGS_u-boot-app.efi := $(OBJCOPYFLAGS_EFI)
 u-boot-app.efi: u-boot FORCE
 	$(call if_changed,zobjcopy)
 
-u-boot.bin.o: u-boot.bin FORCE
+up.bin.o: up.bin FORCE
 	$(call if_changed,efipayload)
 
 u-boot-payload.lds: $(LDSCRIPT_EFI) FORCE
@@ -1659,7 +1659,7 @@ OBJCOPYFLAGS_u-boot-payload.efi := $(OBJCOPYFLAGS_EFI)
 u-boot-payload.efi: u-boot-payload FORCE
 	$(call if_changed,zobjcopy)
 
-u-boot-img.bin: spl/u-boot-spl.bin u-boot.img FORCE
+up.img.bin: spl/u-boot-spl.bin up.img FORCE
 	$(call if_changed,cat)
 
 #Add a target to create boot binary having SPL binary in PBI format
@@ -1673,9 +1673,9 @@ spl/u-boot-spl.pbl: spl/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
 
 ifeq ($(ARCH),arm)
-UBOOT_BINLOAD := u-boot.img
+UBOOT_BINLOAD := up.img
 else
-UBOOT_BINLOAD := u-boot.bin
+UBOOT_BINLOAD := up.bin
 endif
 
 OBJCOPYFLAGS_u-boot-with-spl-pbl.bin = -I binary -O binary --pad-to=$(CONFIG_SPL_PAD_TO) \
@@ -1689,7 +1689,7 @@ quiet_cmd_u-boot-elf ?= LD      $@
 	$(if $(CONFIG_SYS_BIG_ENDIAN),-EB,-EL) \
 	-T u-boot-elf.lds --defsym=$(CONFIG_PLATFORM_ELFENTRY)=$(CONFIG_TEXT_BASE) \
 	-Ttext=$(CONFIG_TEXT_BASE)
-u-boot.elf: u-boot.bin u-boot-elf.lds
+u-boot.elf: up.bin u-boot-elf.lds
 	$(Q)$(OBJCOPY) -I binary $(PLATFORM_ELFFLAGS) $< u-boot-elf.o
 	$(call if_changed,u-boot-elf)
 
@@ -1699,8 +1699,8 @@ u-boot-elf.lds: arch/u-boot-elf.lds prepare FORCE
 # MediaTek's ARM-based u-boot needs a header to contains its load address
 # which is parsed by the BootROM.
 # If the SPL build is enabled, the header will be added to the spl binary,
-# and the spl binary and the u-boot.img will be combined into one file.
-# Otherwise the header will be added to the u-boot.bin directly.
+# and the spl binary and the up.img will be combined into one file.
+# Otherwise the header will be added to the up.bin directly.
 
 ifeq ($(CONFIG_SPL),y)
 spl/u-boot-spl-mtk.bin: spl/u-boot-spl
@@ -1712,14 +1712,14 @@ MKIMAGEFLAGS_u-boot-mtk.bin = -T mtk_image \
 	-a $(CONFIG_TEXT_BASE) -e $(CONFIG_TEXT_BASE) \
 	-n "$(patsubst "%",%,$(CONFIG_MTK_BROM_HEADER_INFO))"
 
-u-boot-mtk.bin: u-boot.bin FORCE
+u-boot-mtk.bin: up.bin FORCE
 	$(call if_changed,mkimage)
 endif
 
 quiet_cmd_endian_swap = SWAP    $@
       cmd_endian_swap = $(srctree)/tools/endian-swap.py $< $@
 
-u-boot-swap.bin: u-boot.bin FORCE
+u-boot-swap.bin: up.bin FORCE
 	$(call if_changed,endian_swap)
 
 ARCH_POSTLINK := $(wildcard $(srctree)/arch/$(ARCH)/Makefile.postlink)
@@ -2109,11 +2109,11 @@ tags ctags:
 		ln -s ctags tags
 
 ifeq ($(CONFIG_BINMAN),y)
-compile_commands.json: System.map u-boot.bin u-boot.dtb u-boot-x86-start16.bin u-boot-x86-reset16.bin
+compile_commands.json: System.map up.bin u-boot.dtb u-boot-x86-start16.bin u-boot-x86-reset16.bin
 	$(call if_changed,binman)
 	$(srctree)/scripts/gen_compile_commands.py
 else
-compile_commands.json: System.map u-boot.bin
+compile_commands.json: System.map up.bin
 	$(srctree)/scripts/gen_compile_commands.py
 endif
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #######################################################
 #                      _____     __  __
 #             /\/\/\/\/ __  \/\ / _\/__\
@@ -10,6 +12,8 @@
 from argparse import ArgumentParser
 from os import system, environ
 from pathlib import Path
+
+OUTPUT = "build"
 
 SUPPORTED_CC_PREFIX = (
     "aarch64-none-linux-gnu-",
@@ -26,19 +30,19 @@ def qemu() -> None:
     assert ret == 0
 
 def clean() -> None:
-    ret = system(f'make clean')
+    ret = system(f'make clean O={OUTPUT}')
     assert ret == 0
 
 def distclean() -> None:
-    ret = system(f'make distclean')
+    ret = system(f'make distclean O={OUTPUT}')
     assert ret == 0
 
 def kconfig(config: str) -> None:
-    ret = system(f'make {config}')
+    ret = system(f'make {config} O={OUTPUT}')
     assert ret == 0
 
 def list_config_files() -> None:
-    ret = system("find configs/ -name *defconfig")
+    ret = system("find ./configs -name '*defconfig'")
     assert ret == 0
 
 def build(toolchain: str) -> None:
@@ -53,10 +57,7 @@ def build(toolchain: str) -> None:
     if toolchain_prefix is None:
         raise Exception(f"{toolchain_prefix} not exists.")
 
-    ret = system(f'make ARCH=arm CROSS_COMPILE={toolchain_prefix} -j32')
-    assert ret == 0
-
-    ret = system(f'make ARCH=arm CROSS_COMPILE={toolchain_prefix} u-boot.dis')
+    ret = system(f'make ARCH=arm CROSS_COMPILE={toolchain_prefix} O={OUTPUT} -j32')
     assert ret == 0
 
 def main() -> None:
