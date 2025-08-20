@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 #######################################################
 #                      _____     __  __
 #             /\/\/\/\/ __  \/\ / _\/__\
@@ -27,8 +29,8 @@ def build() -> None:
 
 def main() -> None:
     parser = ArgumentParser()
-    parser.add_argument("-b", "--build", action="store_true", help="build u-boot")
-    parser.add_argument("-c", "--clean", action="store_true", help="clean u-boot")
+    parser.add_argument("-b", "--build", action="store_true", help="build deux rtos")
+    parser.add_argument("-c", "--clean", action="store_true", help="clean deux rtos")
 
     args = parser.parse_args()
 
