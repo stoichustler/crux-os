@@ -18,6 +18,4 @@ CTestTestfile.cmake
 *.o
 *.axf
 *.map
-*.a
 *.htm
-

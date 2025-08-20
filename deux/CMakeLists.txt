@@ -33,6 +33,9 @@ endif()
 # Pick up the common stuff
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/common)
 
+# Add picolibc
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/utility/picolibc)
+
 # If the user provided an override, copy it to the custom directory
 if (NOT TX_USER_FILE)
     message(STATUS "Using default tx_user.h file")

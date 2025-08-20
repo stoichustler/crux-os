@@ -26,3 +26,7 @@ add_custom_command(
 	POST_BUILD
 	COMMAND ${CMAKE_OBJCOPY} ${EXE_NAME} -O binary ${APP_NAME}
 )
+
+message(STATUS "Find libc from ${CMAKE_SOURCE_DIR}/utility/picolibc")
+target_link_libraries(${EXE_NAME} ${CMAKE_SOURCE_DIR}/utility/picolibc/aarch64/libc.a)
+target_link_libraries(${EXE_NAME} ${PROJECT_NAME})
