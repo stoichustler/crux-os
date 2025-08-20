@@ -365,9 +365,9 @@ void __assert_fail(const char *assertion, const char *file, unsigned int line,
 #else
 /* Non-logging versions of the above which just return the error code */
 #define log_ret(_ret) (_ret)
-#define log_msg_ret(_msg, _ret)   ((void)(_msg), _ret)
+#define log_msg_ret(_msg, _ret)   (_ret)
 #define log_retz(_ret) (_ret)
-#define log_msg_retz(_msg, _ret)  ((void)(_msg), _ret)
+#define log_msg_retz(_msg, _ret)  (_ret)
 #endif
 
 /** * enum log_rec_flags - Flags for a log record */

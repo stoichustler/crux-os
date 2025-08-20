@@ -2111,7 +2111,9 @@ config TARGET_XENGUEST_ARM64
 config TARGET_XENGUEST_ARM64_DOM0LESS
 	bool "Xen guest ARM64 dom0less"
 	select ARM64
+	select DM
 	select OF_CONTROL
+	select DM_SERIAL
 	select LINUX_KERNEL_IMAGE_HEADER
 	imply OF_HAS_PRIOR_STAGE
 

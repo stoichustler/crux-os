@@ -64,13 +64,6 @@ int dram_init_banksize(void)
 	return fdtdec_setup_memory_banksize();
 }
 
-/*
- * Board specific reset that is system reset.
- */
-void reset_cpu(void)
-{
-}
-
 int ft_system_setup(void *blob, struct bd_info *bd)
 {
 	return 0;

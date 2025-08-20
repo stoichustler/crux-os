@@ -894,7 +894,7 @@ libs-y += $(if $(wildcard $(srctree)/board/$(BOARDDIR)/Makefile),board/$(BOARDDI
 
 libs-y := $(sort $(libs-y))
 
-u-boot-dirs	:= $(patsubst %/,%,$(filter %/, $(libs-y))) tools examples
+u-boot-dirs	:= $(patsubst %/,%,$(filter %/, $(libs-y))) tools
 
 u-boot-alldirs	:= $(sort $(u-boot-dirs) $(patsubst %/,%,$(filter %/, $(libs-))))
 
@@ -1483,8 +1483,9 @@ u-boot-with-spl.kwb: up.bin spl/u-boot-spl.bin FORCE
 	$(call if_changed,mkimage)
 	$(BOARD_SIZE_CHECK)
 
+# For debugging purpose
 u-boot.dis:	u-boot
-		$(OBJDUMP) -d $< > $@
+		@$(OBJDUMP) -d $< > $@
 
 ifneq ($(CONFIG_SPL_PAYLOAD),)
 SPL_PAYLOAD := $(CONFIG_SPL_PAYLOAD:"%"=%)
@@ -1879,9 +1880,6 @@ $(u-boot-dirs): prepare scripts
 tools: prepare
 # The "tools" are needed early
 $(filter-out tools, $(u-boot-dirs)): tools
-# The "examples" conditionally depend on U-Boot (say, when USE_PRIVATE_LIBGCC
-# is "yes"), so compile examples after U-Boot is compiled.
-examples: $(filter-out examples, $(u-boot-dirs))
 
 define filechk_uboot.release
 	echo "$(UBOOTVERSION)$$($(CONFIG_SHELL) $(srctree)/scripts/setlocalversion $(srctree))"

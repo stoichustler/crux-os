@@ -157,7 +157,7 @@ static int virtio_console_process_control_message(struct virtio_console_priv *pr
 	ret = return_control_buffer(priv, control_ptr);
 
 	if (ret)
-		log_msg_ret("returning control buffer", ret);
+		log_err("returning control buffer");
 
 	switch (control.event) {
 	case VIRTIO_CONSOLE_PORT_ADD:
