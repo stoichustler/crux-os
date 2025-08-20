@@ -1,0 +1,26 @@
+%rename link	picolibc_link
+%rename cpp	picolibc_cpp
+%rename cc1	picolibc_cc1
+%rename cc1plus	picolibc_cc1plus
+
+*cpp:
+-isystem /home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64/ %{-printf=*: -D_PICOLIBC_PRINTF='%*'} %{-scanf=*: -D_PICOLIBC_SCANF='%*'} %(picolibc_cpp)
+
+*cc1:
+-ftls-model=local-exec  %(picolibc_cc1) 
+
+*cc1plus:
+-isystem /home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64/ -ftls-model=local-exec  %(picolibc_cc1plus)  
+
+*link:
+%{DPICOLIBC_FLOAT_PRINTF_SCANF:--defsym=vfprintf=__f_vfprintf} %{DPICOLIBC_FLOAT_PRINTF_SCANF:--defsym=vfscanf=__f_vfscanf} %{DPICOLIBC_DOUBLE_PRINTF_SCANF:--defsym=vfprintf=__d_vfprintf} %{DPICOLIBC_DOUBLE_PRINTF_SCANF:--defsym=vfscanf=__d_vfscanf} %{DPICOLIBC_INTEGER_PRINTF_SCANF:--defsym=vfprintf=__i_vfprintf} %{DPICOLIBC_INTEGER_PRINTF_SCANF:--defsym=vfscanf=__i_vfscanff} %{DPICOLIBC_MINIMAL_PRINTF_SCANF:--defsym=vfprintf=__m_vfprintf} %{DPICOLIBC_MINIMAL_PRINTF_SCANF:--defsym=vfscanf=__i_vfscanff} -L/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64 %{-printf=*:--defsym=/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64vfprintf=/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64__%*_vfprintf} %{-scanf=*:--defsym=/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64vfscanf=/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64__%*_vfscanf} %{!T:-T} %(picolibc_link) --gc-sections 
+
+*lib:
+--start-group %(libgcc)  -lc %{-oslib=*:-l%*} --end-group
+
+*endfile:
+
+
+*startfile:
+/home/zeus/mbed/crux-os/deux/utility/picolibc/source/build-arm64/crt0.o 
+

@@ -23,7 +23,7 @@ target_sources(${EXE_NAME} PRIVATE
 )
 
 message(STATUS "Find libc from ${CMAKE_SOURCE_DIR}/utility/picolibc")
-target_link_libraries(${EXE_NAME} ${CMAKE_SOURCE_DIR}/utility/picolibc/aarch64/libc.a)
+target_link_libraries(${EXE_NAME} ${CMAKE_SOURCE_DIR}/utility/picolibc/aarch64/lib/libc.a)
 target_link_libraries(${EXE_NAME} ${PROJECT_NAME})
 
 add_custom_command(
