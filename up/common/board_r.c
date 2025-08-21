@@ -541,6 +541,16 @@ static int dm_announce(void)
 	return 0;
 }
 
+static int run_crux_os(void)
+{
+	printf("\nEVERYDAY'S A HUSTLE\n\n");
+
+	/* Todo: prepare to boot crux vm
+	 */
+
+	return 0;
+}
+
 static int run_main_loop(void)
 {
 #ifdef CONFIG_SANDBOX
@@ -739,6 +749,9 @@ static init_fnc_t init_sequence_r[] = {
 #if defined(CFG_PRAM)
 	initr_mem,
 #endif
+	/* crux os */
+	run_crux_os,
+
 	run_main_loop,
 };
 
