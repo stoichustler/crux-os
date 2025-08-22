@@ -7,5 +7,4 @@ obj-y	+= post.o
 obj-y	+= tests.o
 
 obj-y += drivers/
-obj-$(CONFIG_PPC) += lib_powerpc/
 obj-$(CONFIG_MPC83xx) += cpu/mpc83xx/
