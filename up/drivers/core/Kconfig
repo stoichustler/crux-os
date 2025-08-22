@@ -448,7 +448,7 @@ config OFNODE_MULTI_TREE_MAX
 config ACPIGEN
 	bool "Support ACPI table generation in driver model"
 	depends on ACPI
-	default y if SANDBOX || (GENERATE_ACPI_TABLE && !QEMU)
+	default y if SANDBOX || (GENERATE_ACPI_TABLE && !QEMU && !CRUX)
 	select LIB_UUID
 	help
 	  This option enables generation of ACPI tables using driver-model

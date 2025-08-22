@@ -1521,6 +1521,8 @@ dtb-$(CONFIG_TARGET_EA_LPC3250DEVKITV2) += lpc3250-ea3250.dtb
 
 dtb-$(CONFIG_ARCH_QEMU) += qemu-arm.dtb qemu-arm64.dtb
 
+dtb-$(CONFIG_ARCH_CRUX) += crux-arm64.dtb
+
 dtb-$(CONFIG_TARGET_CORSTONE1000) += corstone1000-mps3.dtb \
 				corstone1000-fvp.dtb
 

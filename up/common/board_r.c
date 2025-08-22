@@ -541,9 +541,17 @@ static int dm_announce(void)
 	return 0;
 }
 
+#define UBOOT_BANNER                       \
+"  __  __      __\n"                       \
+" / _\\/__\\/\\/\\/ _\\\n"                 \
+"/ / /  \\/ / /\\ \\\n"                    \
+"\\_\\ \\/\\/\\__/\\__/ bootloader 2025\n" \
+"\n"
+
 static int run_crux_os(void)
 {
-	printf("\nEVERYDAY'S A HUSTLE\n\n");
+	printf(UBOOT_BANNER);
+	printf("EVERYDAY'S A HUSTLE\n\n");
 
 	/* Todo: prepare to boot crux vm
 	 */

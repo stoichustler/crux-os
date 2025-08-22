@@ -27,7 +27,6 @@ config COUNTER_FREQUENCY
 	default 24000000 if ARCH_SUNXI || ARCH_EXYNOS || ROCKCHIP_RK3128 || \
 			ROCKCHIP_RK3288 || ROCKCHIP_RK322X || ROCKCHIP_RK3036
 	default 25000000 if ARCH_LX2160A || ARCH_LX2162A || ARCH_LS1088A
-	default 100000000 if ARCH_ZYNQMP
 	default 0
 	help
 	  For platforms with ARMv8-A and ARMv7-A which features a system
@@ -51,7 +50,7 @@ config POSITION_INDEPENDENT
 config INIT_SP_RELATIVE
 	bool "Specify the early stack pointer relative to the .bss section"
 	depends on ARM64
-	default n if ARCH_QEMU
+	default n if ARCH_QEMU || ARCH_CRUX
 	default y if POSITION_INDEPENDENT
 	help
 	  U-Boot typically uses a hard-coded value for the stack pointer
@@ -1051,6 +1050,28 @@ config ARCH_OWL
 
 config ARCH_QEMU
 	bool "QEMU Virtual Platform"
+	select DM
+	select DM_SERIAL
+	select OF_CONTROL
+	select PL01X_SERIAL
+	imply CMD_DM
+	imply DM_RNG
+	imply DM_RTC
+	imply RTC_PL031
+	imply OF_HAS_PRIOR_STAGE
+	imply VIDEO
+	imply VIDEO_BOCHS
+	imply SYS_WHITE_ON_BLACK
+	imply SYS_CONSOLE_IS_IN_ENV
+	imply PRE_CONSOLE_BUFFER
+	imply USB
+	imply USB_XHCI_HCD
+	imply USB_XHCI_PCI
+	imply USB_KEYBOARD
+	imply CMD_USB
+
+config ARCH_CRUX
+	bool "crux vm bootloader"
 	select DM
 	select DM_SERIAL
 	select OF_CONTROL
@@ -2221,6 +2242,7 @@ source "arch/arm/cpu/armv8/fsl-layerscape/Kconfig"
 source "arch/arm/mach-renesas/Kconfig"
 source "arch/arm/mach-mediatek/Kconfig"
 source "arch/arm/mach-qemu/Kconfig"
+source "arch/arm/mach-crux/Kconfig"
 source "arch/arm/mach-rockchip/Kconfig"
 source "arch/arm/mach-snapdragon/Kconfig"
 source "arch/arm/mach-sunxi/Kconfig"
@@ -2240,6 +2262,7 @@ source "board/armltd/vexpress64/Kconfig"
 source "board/broadcom/bcmns/Kconfig"
 source "board/broadcom/bcmns3/Kconfig"
 source "board/emulation/qemu-arm/Kconfig"
+source "board/emulation/crux-arm/Kconfig"
 source "board/hisilicon/hikey/Kconfig"
 source "board/hisilicon/hikey960/Kconfig"
 source "board/hisilicon/poplar/Kconfig"
