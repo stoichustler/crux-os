@@ -178,9 +178,6 @@ source "board/renesas/salvator-x/Kconfig"
 source "board/renesas/ulcb/Kconfig"
 source "board/renesas/v3hsk/Kconfig"
 source "board/renesas/v3msk/Kconfig"
-source "board/beacon/beacon-rzg2m/Kconfig"
-source "board/hoperun/hihope-rzg2/Kconfig"
-source "board/silinux/ek874/Kconfig"
 
 config MULTI_DTB_FIT_UNCOMPRESS_SZ
 	default 0x80000 if TARGET_BEACON_RZG2M

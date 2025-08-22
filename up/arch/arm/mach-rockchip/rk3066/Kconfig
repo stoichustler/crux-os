@@ -42,6 +42,4 @@ config TPL_LIBGENERIC_SUPPORT
 config TPL_SERIAL
 	default y
 
-source "board/rikomagic/mk808/Kconfig"
-
 endif

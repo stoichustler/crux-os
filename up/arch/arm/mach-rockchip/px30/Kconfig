@@ -92,9 +92,7 @@ config DEBUG_UART_CHANNEL
 	  For using the UART for early debugging the route to use needs
 	  to be declared (0 or 1).
 
-source "board/engicam/px30_core/Kconfig"
 source "board/hardkernel/odroid_go2/Kconfig"
 source "board/rockchip/evb_px30/Kconfig"
-source "board/theobroma-systems/ringneck_px30/Kconfig"
 
 endif

@@ -470,5 +470,3 @@ if ARM
 source "arch/Kconfig.nxp"
 
 endif
-
-source "board/keymile/Kconfig"

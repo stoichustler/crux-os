@@ -14,7 +14,7 @@ NAME =
 
 # Do not use make's built-in rules and variables
 # (this increases performance and avoids hard-to-debug behaviour)
-MAKEFLAGS += -rR
+MAKEFLAGS += -rR --no-print-directory
 
 # Determine target architecture for the sandbox
 include Makefile.host_arch

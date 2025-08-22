@@ -2207,128 +2207,27 @@ config SYS_KWD_CONFIG
 	  when packaging the U-Boot image for use.
 
 source "arch/arm/mach-apple/Kconfig"
-
-source "arch/arm/mach-aspeed/Kconfig"
-
-source "arch/arm/mach-at91/Kconfig"
-
 source "arch/arm/mach-bcm283x/Kconfig"
-
 source "arch/arm/mach-bcmbca/Kconfig"
-
 source "arch/arm/mach-bcmstb/Kconfig"
-
-source "arch/arm/mach-davinci/Kconfig"
-
-source "arch/arm/mach-exynos/Kconfig"
-
-source "arch/arm/mach-hpe/gxp/Kconfig"
-
-source "arch/arm/mach-highbank/Kconfig"
-
-source "arch/arm/mach-histb/Kconfig"
-
-source "arch/arm/mach-integrator/Kconfig"
-
-source "arch/arm/mach-ipq40xx/Kconfig"
-
-source "arch/arm/mach-k3/Kconfig"
-
-source "arch/arm/mach-keystone/Kconfig"
-
-source "arch/arm/mach-kirkwood/Kconfig"
-
-source "arch/arm/mach-lpc32xx/Kconfig"
-
-source "arch/arm/mach-mvebu/Kconfig"
-
-source "arch/arm/mach-octeontx/Kconfig"
-
-source "arch/arm/mach-octeontx2/Kconfig"
-
 source "arch/arm/cpu/armv7/ls102xa/Kconfig"
-
 source "arch/arm/mach-imx/mx3/Kconfig"
-
-source "arch/arm/mach-imx/mx5/Kconfig"
-
-source "arch/arm/mach-imx/mx6/Kconfig"
-
-source "arch/arm/mach-imx/mx7/Kconfig"
-
-source "arch/arm/mach-imx/mx7ulp/Kconfig"
-
 source "arch/arm/mach-imx/imx8/Kconfig"
-
 source "arch/arm/mach-imx/imx8m/Kconfig"
-
 source "arch/arm/mach-imx/imx8ulp/Kconfig"
-
 source "arch/arm/mach-imx/imx9/Kconfig"
-
 source "arch/arm/mach-imx/imxrt/Kconfig"
-
-source "arch/arm/mach-imx/mxs/Kconfig"
-
-source "arch/arm/mach-omap2/Kconfig"
-
 source "arch/arm/cpu/armv8/fsl-layerscape/Kconfig"
-
-source "arch/arm/mach-orion5x/Kconfig"
-
-source "arch/arm/mach-owl/Kconfig"
-
 source "arch/arm/mach-renesas/Kconfig"
-
-source "arch/arm/mach-meson/Kconfig"
-
 source "arch/arm/mach-mediatek/Kconfig"
-
 source "arch/arm/mach-qemu/Kconfig"
-
 source "arch/arm/mach-rockchip/Kconfig"
-
-source "arch/arm/mach-s5pc1xx/Kconfig"
-
 source "arch/arm/mach-snapdragon/Kconfig"
-
-source "arch/arm/mach-socfpga/Kconfig"
-
-source "arch/arm/mach-sti/Kconfig"
-
-source "arch/arm/mach-stm32/Kconfig"
-
-source "arch/arm/mach-stm32mp/Kconfig"
-
 source "arch/arm/mach-sunxi/Kconfig"
-
-source "arch/arm/mach-tegra/Kconfig"
-
-source "arch/arm/mach-u8500/Kconfig"
-
-source "arch/arm/mach-uniphier/Kconfig"
-
 source "arch/arm/cpu/armv7/vf610/Kconfig"
-
-source "arch/arm/mach-zynq/Kconfig"
-
-source "arch/arm/mach-zynqmp/Kconfig"
-
-source "arch/arm/mach-versal/Kconfig"
-
-source "arch/arm/mach-versal-net/Kconfig"
-
-source "arch/arm/mach-zynqmp-r5/Kconfig"
-
 source "arch/arm/cpu/armv7/Kconfig"
-
 source "arch/arm/cpu/armv8/Kconfig"
-
 source "arch/arm/mach-imx/Kconfig"
-
-source "arch/arm/mach-nexell/Kconfig"
-
-source "arch/arm/mach-npcm/Kconfig"
 
 source "board/armltd/total_compute/Kconfig"
 source "board/armltd/corstone1000/Kconfig"
@@ -2338,45 +2237,14 @@ source "board/Marvell/octeontx/Kconfig"
 source "board/Marvell/octeontx2/Kconfig"
 source "board/armltd/vexpress/Kconfig"
 source "board/armltd/vexpress64/Kconfig"
-source "board/cortina/presidio-asic/Kconfig"
 source "board/broadcom/bcmns/Kconfig"
 source "board/broadcom/bcmns3/Kconfig"
-source "board/cavium/thunderx/Kconfig"
-source "board/eets/pdu001/Kconfig"
 source "board/emulation/qemu-arm/Kconfig"
-source "board/freescale/ls2080aqds/Kconfig"
-source "board/freescale/ls2080ardb/Kconfig"
-source "board/freescale/ls1088a/Kconfig"
-source "board/freescale/ls1028a/Kconfig"
-source "board/freescale/ls1021aqds/Kconfig"
-source "board/freescale/ls1043aqds/Kconfig"
-source "board/freescale/ls1021atwr/Kconfig"
-source "board/freescale/ls1021atsn/Kconfig"
-source "board/freescale/ls1021aiot/Kconfig"
-source "board/freescale/ls1046aqds/Kconfig"
-source "board/freescale/ls1043ardb/Kconfig"
-source "board/freescale/ls1046ardb/Kconfig"
-source "board/freescale/ls1046afrwy/Kconfig"
-source "board/freescale/ls1012aqds/Kconfig"
-source "board/freescale/ls1012ardb/Kconfig"
-source "board/freescale/ls1012afrdm/Kconfig"
-source "board/freescale/lx2160a/Kconfig"
-source "board/grinn/chiliboard/Kconfig"
 source "board/hisilicon/hikey/Kconfig"
 source "board/hisilicon/hikey960/Kconfig"
 source "board/hisilicon/poplar/Kconfig"
-source "board/isee/igep003x/Kconfig"
-source "board/kontron/sl28/Kconfig"
-source "board/myir/mys_6ulx/Kconfig"
 source "board/samsung/common/Kconfig"
 source "board/siemens/common/Kconfig"
-source "board/seeed/npi_imx6ull/Kconfig"
-source "board/socionext/developerbox/Kconfig"
-source "board/st/stv0991/Kconfig"
-source "board/tcl/sl50/Kconfig"
-source "board/traverse/ten64/Kconfig"
-source "board/variscite/dart_6ul/Kconfig"
-source "board/vscom/baltos/Kconfig"
 source "board/phytium/durian/Kconfig"
 source "board/phytium/pomelo/Kconfig"
 source "board/phytium/pe2201/Kconfig"

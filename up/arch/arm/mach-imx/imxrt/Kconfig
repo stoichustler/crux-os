@@ -38,8 +38,4 @@ config TARGET_IMXRT1170_EVK
 
 endchoice
 
-source "board/freescale/imxrt1020-evk/Kconfig"
-source "board/freescale/imxrt1050-evk/Kconfig"
-source "board/freescale/imxrt1170-evk/Kconfig"
-
 endif

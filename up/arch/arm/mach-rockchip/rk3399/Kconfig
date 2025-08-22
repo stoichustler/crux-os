@@ -175,7 +175,5 @@ source "board/pine64/pinebook-pro-rk3399/Kconfig"
 source "board/pine64/pinephone-pro-rk3399/Kconfig"
 source "board/pine64/rockpro64_rk3399/Kconfig"
 source "board/rockchip/evb_rk3399/Kconfig"
-source "board/theobroma-systems/puma_rk3399/Kconfig"
-source "board/vamrs/rock960_rk3399/Kconfig"
 
 endif

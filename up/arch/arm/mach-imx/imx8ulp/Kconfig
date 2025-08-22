@@ -29,6 +29,4 @@ config TARGET_IMX8ULP_EVK
 
 endchoice
 
-source "board/freescale/imx8ulp_evk/Kconfig"
-
 endif

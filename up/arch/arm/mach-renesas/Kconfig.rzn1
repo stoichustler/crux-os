@@ -15,6 +15,4 @@ endchoice
 config SYS_SOC
 	default "rzn1"
 
-source "board/schneider/rzn1-snarc/Kconfig"
-
 endif
